@@ -3,6 +3,9 @@ Projeto Focado no TCC de Técnico de Informática para Internet
 
 ## Figma (Protótipo) do projeto: 
 https://www.figma.com/design/OfIRwYhogB1vUhzETBJfBr/Prot%C3%B3tipo-ShowMe?node-id=0-1&t=ab5oVOBfROuqjMkk-1
+
+## Diário de Bordo:
+https://docs.google.com/document/d/1eQmMmD_ZRE1Jcs-hp6PKNb1CXcPMcDlCV_TuUi69Axs/edit?usp=sharing
 <div align="center">
 
 <img src="./assets/banner.png" width="100%">

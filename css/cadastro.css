@@ -1,0 +1,165 @@
+:root{
+    --bg:#050505;
+    --card:#111111;
+
+    --green:#39FF14;
+    --pink:#FF3CAC;
+
+    --white:#ffffff;
+}
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+body{
+    background:var(--bg);
+    font-family:'Poppins',sans-serif;
+}
+
+.cadastro-container{
+    min-height:100vh;
+
+    display:flex;
+    flex-direction:column;
+
+    justify-content:center;
+    align-items:center;
+
+    padding:40px 20px;
+}
+
+.logo{
+    font-size:4rem;
+    font-weight:700;
+
+    margin-bottom:25px;
+}
+
+.show{
+    color:var(--green);
+}
+
+.me{
+    color:var(--pink);
+}
+
+.cadastro-card{
+    width:100%;
+    max-width:800px;
+
+    background:var(--card);
+
+    border:3px solid var(--pink);
+    border-radius:25px;
+
+    padding:40px;
+
+    box-shadow:
+        0 0 15px rgba(255,60,172,.35),
+        0 0 35px rgba(255,60,172,.12);
+}
+
+.cadastro-card h2{
+    color:var(--pink);
+
+    text-align:center;
+
+    font-size:2rem;
+    font-weight:700;
+
+    margin-bottom:35px;
+}
+
+.form-label{
+    color:white;
+    font-weight:600;
+
+    margin-bottom:8px;
+}
+
+.input-group-text{
+    background:#1b1b1b;
+
+    color:var(--pink);
+
+    border:2px solid var(--pink);
+    border-right:none;
+}
+
+.form-control{
+    background:#1b1b1b;
+
+    color:white;
+
+    border:2px solid var(--pink);
+
+    padding:12px;
+}
+
+.form-control::placeholder{
+    color:#9e9e9e;
+}
+
+.form-control:focus{
+    background:#1b1b1b;
+    color:white;
+
+    border-color:var(--green);
+
+    box-shadow:
+        0 0 10px rgba(57,255,20,.4);
+}
+
+.btn-cadastrar{
+    width:100%;
+
+    background:white;
+    color:black;
+
+    font-weight:700;
+
+    padding:12px;
+
+    border:none;
+    border-radius:12px;
+
+    transition:.3s;
+}
+
+.btn-cadastrar:hover{
+    background:var(--green);
+    transform:translateY(-2px);
+}
+
+.login-link{
+    text-align:center;
+
+    margin-top:20px;
+
+    color:white;
+}
+
+.login-link a{
+    color:var(--green);
+    text-decoration:none;
+    font-weight:600;
+}
+
+.login-link a:hover{
+    color:white;
+}
+
+@media(max-width:768px){
+
+    .logo{
+        font-size:3rem;
+    }
+
+    .cadastro-card{
+        padding:25px;
+    }
+
+}

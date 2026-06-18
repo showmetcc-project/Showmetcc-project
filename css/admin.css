@@ -1,0 +1,284 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
+:root{
+    --bg:#080808;
+    --card:#101010;
+    --green:#39ff14;
+    --pink:#ff4fa3;
+    --blue:#00d4ff;
+    --text:#f5f5f5;
+    --muted:#bdbdbd;
+}
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:'Poppins',sans-serif;
+}
+
+body{
+    background:var(--bg);
+    color:var(--text);
+    min-height:100vh;
+}
+
+/* TOPO */
+
+.topbar{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:20px 0;
+}
+
+.logo{
+    font-size:2rem;
+    font-weight:700;
+}
+
+.logo .show{
+    color:var(--green);
+}
+
+.logo .me{
+    color:var(--pink);
+}
+
+.admin-badge{
+    border:2px solid var(--green);
+    color:var(--green);
+    padding:10px 18px;
+    border-radius:30px;
+    font-weight:600;
+}
+
+.user-area{
+    display:flex;
+    align-items:center;
+    gap:20px;
+    color:#d4d4d4;
+}
+
+.btn-sair{
+    border:none;
+    background:none;
+    color:var(--pink);
+    font-size:1.1rem;
+    font-weight:600;
+}
+
+.divider{
+    border-color:var(--green);
+    opacity:1;
+    margin-bottom:40px;
+}
+
+/* HEADER */
+
+.header-admin{
+    margin-bottom:50px;
+}
+
+.header-admin h1{
+    font-size:2.5rem;
+    font-weight:700;
+}
+
+.header-admin p{
+    color:#bdbdbd;
+    margin-top:10px;
+}
+
+/* ESTATÍSTICAS */
+
+.stats{
+    display:flex;
+    justify-content:center;
+    gap:70px;
+    margin-bottom:50px;
+}
+
+.status-item{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    color:#d8d8d8;
+    font-weight:600;
+    cursor:pointer;
+}
+
+.status-item span{
+    width:35px;
+    height:35px;
+    border-radius:50%;
+    background:#1f1f1f;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+}
+
+.status-item.active span{
+    background:#f6f1cf;
+    color:#000;
+}
+
+/* EVENTOS */
+
+.evento-card{
+    background:#111;
+    border:2px solid #242424;
+    border-radius:25px;
+    overflow:hidden;
+    margin-bottom:25px;
+    transition:.3s;
+}
+
+.evento-card:first-of-type{
+    border-color:var(--blue);
+    box-shadow:0 0 20px rgba(0,212,255,.2);
+}
+
+.evento-header{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:25px;
+}
+
+.evento-info{
+    display:flex;
+    align-items:center;
+    gap:20px;
+}
+
+.evento-icon{
+    width:60px;
+    height:60px;
+    border-radius:15px;
+    background:#1b1b1b;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    color:#d8c9a3;
+    font-size:1.5rem;
+}
+
+.evento-info h3{
+    font-size:1.6rem;
+    margin-bottom:4px;
+}
+
+.evento-info small{
+    color:#bdbdbd;
+}
+
+.pendente{
+    color:#ffd84f;
+    font-size:1.3rem;
+    font-weight:700;
+}
+
+/* CORPO */
+
+.evento-body{
+    padding:0 25px 20px;
+    border-top:1px solid #232323;
+}
+
+.evento-body strong{
+    color:#fff;
+    display:block;
+    margin-top:12px;
+}
+
+.evento-body p{
+    color:#c7c7c7;
+    margin-bottom:10px;
+}
+
+/* RODAPÉ */
+
+.evento-footer{
+    padding:20px 25px;
+    border-top:1px solid #232323;
+    display:flex;
+    gap:12px;
+}
+
+.btn-editar,
+.btn-aprovar,
+.btn-reprovar{
+    border:none;
+    border-radius:10px;
+    padding:10px 18px;
+    font-weight:600;
+    transition:.3s;
+}
+
+.btn-editar{
+    background:#252525;
+    color:#ddd;
+}
+
+.btn-aprovar{
+    background:transparent;
+    color:var(--green);
+    border:2px solid var(--green);
+}
+
+.btn-reprovar{
+    background:transparent;
+    color:var(--pink);
+    border:2px solid var(--pink);
+}
+
+.btn-aprovar:hover{
+    background:var(--green);
+    color:#000;
+}
+
+.btn-reprovar:hover{
+    background:var(--pink);
+    color:#fff;
+}
+
+/* CARD FECHADO */
+
+.collapsed{
+    padding:25px;
+}
+
+.collapsed .evento-header{
+    padding:0;
+}
+
+.collapsed .evento-body,
+.collapsed .evento-footer{
+    display:none;
+}
+
+/* RESPONSIVO */
+
+@media(max-width:768px){
+
+    .topbar{
+        flex-direction:column;
+        gap:20px;
+    }
+
+    .stats{
+        flex-wrap:wrap;
+        gap:20px;
+    }
+
+    .evento-header{
+        flex-direction:column;
+        align-items:flex-start;
+        gap:15px;
+    }
+
+    .evento-footer{
+        flex-direction:column;
+    }
+}

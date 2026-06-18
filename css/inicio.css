@@ -1,0 +1,100 @@
+:root{
+    --green:#39FF14;
+    --pink:#FF3CAC;
+    --bg:#050505;
+}
+
+body{
+    background: var(--bg);
+    min-height:100vh;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    font-family: Arial, sans-serif;
+}
+
+.logo{
+    text-align:center;
+    font-size:4rem;
+    font-weight:700;
+    margin-bottom:30px;
+}
+
+.show{
+    color:var(--green);
+}
+
+.me{
+    color:var(--pink);
+}
+
+.login-card{
+    width:100%;
+    max-width:600px;
+    padding:40px;
+
+    border:3px solid var(--pink);
+    border-radius:25px;
+
+    background:rgba(255,255,255,.02);
+
+    box-shadow:
+    0 0 15px rgba(255,60,172,.4),
+    0 0 40px rgba(255,60,172,.2);
+}
+
+.login-title{
+    color:var(--pink);
+    text-align:center;
+    font-weight:700;
+    margin-bottom:30px;
+}
+
+.form-label{
+    color:white;
+    font-weight:600;
+}
+
+.form-control{
+    background:#111;
+    border:2px solid var(--pink);
+    color:white;
+    padding:12px;
+}
+
+.form-control:focus{
+    background:#111;
+    color:white;
+
+    border-color:var(--green);
+
+    box-shadow:
+    0 0 10px var(--green);
+}
+
+.btn-showme{
+    background:var(--green);
+    color:black;
+    font-weight:700;
+    padding:12px;
+
+    border:none;
+    border-radius:12px;
+
+    transition:.3s;
+}
+
+.btn-showme:hover{
+    background:#4cff2e;
+    transform:translateY(-2px);
+}
+
+.register-link{
+    color:var(--green);
+    text-decoration:none;
+    font-weight:600;
+}
+
+.register-link:hover{
+    color:white;
+}

@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Planejar Viagem | ShowMe</title>
+
+    <link rel="stylesheet" href="css/planejamento.css">
+
+    <link rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+</head>
+<body>
+
+    <!-- TOPO -->
+
+    <header class="topo-planejamento">
+
+        <a href="#" class="btn-voltar">
+            <i class="fa-solid fa-arrow-left"></i>
+        </a>
+
+        <div class="titulo-evento">
+
+            <h1>
+                Planejar
+                <span>Viagem</span>
+            </h1>
+
+            <p>
+                Harry Styles: Together, Together
+            </p>
+
+        </div>
+
+    </header>
+
+    <div class="barra-verde"></div>
+
+    <!-- CONTEÚDO -->
+
+    <main class="planejamento-container">
+
+        <!-- TIMELINE -->
+
+        <aside class="progresso">
+
+            <h2>Progresso</h2>
+
+            <div class="timeline">
+
+                <div class="step ativo">
+                    <div class="numero">1</div>
+                    <div class="texto">Orçamento</div>
+                </div>
+
+                <div class="conector"></div>
+
+                <div class="step">
+                    <div class="numero">2</div>
+                    <div class="texto">Transporte</div>
+                </div>
+
+                <div class="conector"></div>
+
+                <div class="step">
+                    <div class="numero">3</div>
+                    <div class="texto">Hospedagem</div>
+                </div>
+
+                <div class="conector"></div>
+
+                <div class="step">
+                    <div class="numero">4</div>
+                    <div class="texto">Resumo</div>
+                </div>
+
+            </div>
+
+        </aside>
+
+        <!-- CARD PRINCIPAL -->
+
+        <section class="card-planejamento">
+
+            <!-- ETAPA 1 -->
+
+            <div class="etapa ativa" id="etapa1">
+
+                <div class="icone-topo">
+                    <i class="fa-solid fa-wallet"></i>
+                </div>
+
+                <h2>Defina seu Orçamento</h2>
+
+                <p class="descricao">
+                    Quanto você pretende gastar para ir a este evento?
+                    Isso nos ajudará a sugerir as melhores opções.
+                </p>
+
+                <div class="campo">
+
+                    <label>
+                        Valor total disponível (R$)
+                    </label>
+
+                    <input
+                        type="number"
+                        id="orcamento"
+                        placeholder="500">
+
+                </div>
+
+                <div class="alerta">
+                    Custo mínimo estimado:
+                    <strong>R$ 265</strong>
+                    (Ingresso)
+                </div>
+
+                <button
+                    class="btn-principal"
+                    onclick="proximaEtapa(2)">
+                    Continuar
+                </button>
+
+            </div>
+
+            <!-- ETAPA 2 -->
+
+            <div class="etapa" id="etapa2">
+
+                <div class="icone-topo">
+                    <i class="fa-solid fa-bus"></i>
+                </div>
+
+                <h2>Transporte</h2>
+
+                <div class="orcamento-box">
+
+                    <span>Seu orçamento</span>
+
+                    <strong id="valorOrcamento">
+                        R$ 500
+                    </strong>
+
+                </div>
+
+                <h3>
+                    Pesquise opções de transporte
+                </h3>
+
+                <div class="opcoes">
+
+                    <button class="opcao">
+                        CliqueBus
+                    </button>
+
+                    <button class="opcao">
+                        BlaBlaCar
+                    </button>
+
+                    <button class="opcao">
+                        Google Flights
+                    </button>
+
+                    <button class="opcao">
+                        Uber
+                    </button>
+
+                </div>
+
+                <div class="campo">
+
+                    <label>
+                        Valor escolhido (R$)
+                    </label>
+
+                    <input
+                        type="number"
+                        id="transporte"
+                        value="0">
+
+                </div>
+
+                <div class="botoes">
+
+                    <button
+                        class="btn-secundario"
+                        onclick="voltarEtapa(1)">
+                        Voltar
+                    </button>
+
+                    <button
+                        class="btn-principal"
+                        onclick="proximaEtapa(3)">
+                        Continuar
+                    </button>
+
+                </div>
+
+            </div>
+
+            <!-- ETAPA 3 -->
+
+            <div class="etapa" id="etapa3">
+
+                <div class="icone-topo">
+                    <i class="fa-solid fa-hotel"></i>
+                </div>
+
+                <h2>Hospedagem</h2>
+
+                <div class="orcamento-box">
+
+                    <span>Orçamento restante</span>
+
+                    <strong id="restante">
+                        R$ 235
+                    </strong>
+
+                </div>
+
+                <h3>
+                    Escolha uma plataforma
+                </h3>
+
+                <div class="opcoes">
+
+                    <button class="opcao">
+                        Booking
+                    </button>
+
+                    <button class="opcao">
+                        Airbnb
+                    </button>
+
+                    <button class="opcao">
+                        Hotels.com
+                    </button>
+
+                    <button class="opcao">
+                        HostelWorld
+                    </button>
+
+                </div>
+
+                <div class="campo">
+
+                    <label>
+                        Valor da hospedagem (R$)
+                    </label>
+
+                    <input
+                        type="number"
+                        id="hospedagem"
+                        value="0">
+
+                </div>
+
+                <div class="botoes">
+
+                    <button
+                        class="btn-secundario"
+                        onclick="voltarEtapa(2)">
+                        Voltar
+                    </button>
+
+                    <button
+                        class="btn-principal"
+                        onclick="proximaEtapa(4)">
+                        Continuar
+                    </button>
+
+                </div>
+
+            </div>
+
+            <!-- ETAPA 4 -->
+
+            <div class="etapa" id="etapa4">
+
+                <div class="icone-topo">
+                    <i class="fa-solid fa-check"></i>
+                </div>
+
+                <h2>Resumo do Planejamento</h2>
+
+                <div class="resumo-box">
+
+                    <div class="linha-resumo">
+                        <span>Ingresso</span>
+                        <span>R$ 265</span>
+                    </div>
+
+                    <div class="linha-resumo">
+                        <span>Transporte</span>
+
+                        <span id="resumoTransporte">
+                            R$ 0
+                        </span>
+                    </div>
+
+                    <div class="linha-resumo">
+                        <span>Hospedagem</span>
+
+                        <span id="resumoHospedagem">
+                            R$ 0
+                        </span>
+                    </div>
+
+                    <hr>
+
+                    <div class="linha-resumo total">
+
+                        <span>Total</span>
+
+                        <span id="totalFinal">
+                            R$ 265
+                        </span>
+
+                    </div>
+
+                </div>
+
+                <div class="botoes">
+
+                    <button
+                        class="btn-secundario"
+                        onclick="voltarEtapa(3)">
+                        Voltar
+                    </button>
+
+                    <button class="btn-principal">
+                        Finalizar Planejamento
+                    </button>
+
+                </div>
+
+            </div>
+
+        </section>
+
+    </main>
+
+    <!-- FOOTER -->
+
+    <footer>
+
+        <div class="footer-col">
+
+            <h3>ShowMe</h3>
+
+            <p>
+                Democratizando o acesso à cultura
+                através da tecnologia.
+            </p>
+
+        </div>
+
+        <div class="footer-col">
+
+            <h3>Contato</h3>
+
+            <input
+                type="email"
+                placeholder="Seu e-mail">
+
+            <textarea
+                placeholder="Sua mensagem"></textarea>
+
+            <button>
+                Enviar
+            </button>
+
+        </div>
+
+        <div class="footer-col">
+
+            <h3>Informações</h3>
+
+            <a href="#">
+                Termos de Uso
+            </a>
+
+            <a href="#">
+                Política de Privacidade
+            </a>
+
+            <p>
+                © 2026 ShowMe
+            </p>
+
+        </div>
+
+    </footer>
+
+    <script src="js/planejamento.js"></script>
+
+</body>
+</html>

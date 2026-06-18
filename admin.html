@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ShowMe - Painel Administrativo</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <link rel="stylesheet" href="css/admin.css">
+
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" rel="stylesheet">
+</head>
+
+<body>
+
+    <div class="container py-4">
+
+        <nav class="topbar">
+
+            <div class="logo">
+                <span class="show">Show</span><span class="me">Me</span>
+            </div>
+
+            <div class="admin-badge">
+                <i class="fa-solid fa-shield-halved"></i>
+                Área Administrativa
+            </div>
+
+            <div class="user-area">
+                Administrador@gmail.com
+
+                <button class="btn-sair">
+                    <i class="fa-solid fa-right-from-bracket"></i>
+                    Sair
+                </button>
+            </div>
+
+        </nav>
+
+        <hr class="divider">
+
+        <section class="header-admin">
+
+            <h1>Painel Administrativo</h1>
+
+            <p>
+                Gerencie os eventos enviados pelos usuários.
+            </p>
+
+        </section>
+
+        <section class="stats">
+
+            <div class="status-item active">
+                Todos
+                <span>2</span>
+            </div>
+
+            <div class="status-item">
+                Aprovados
+                <span>0</span>
+            </div>
+
+            <div class="status-item">
+                Reprovados
+                <span>0</span>
+            </div>
+
+        </section>
+
+        <!-- EVENTO -->
+
+        <div class="evento-card">
+
+            <div class="evento-header">
+
+                <div class="evento-info">
+
+                    <div class="evento-icon">
+                        <i class="fa-solid fa-image"></i>
+                    </div>
+
+                    <div>
+
+                        <h3>Noite do Samba & Choro</h3>
+
+                        <small>
+                            Centro Cultural Rio de Janeiro - RJ
+                        </small>
+
+                    </div>
+
+                </div>
+
+                <div class="pendente">
+                    Pendente
+                </div>
+
+            </div>
+
+            <div class="evento-body">
+
+                <div class="row">
+
+                    <div class="col-md-6">
+
+                        <strong>Local</strong>
+                        <p>Centro Cultural Rio de Janeiro - RJ</p>
+
+                        <strong>Tipo</strong>
+                        <p>Cultural</p>
+
+                        <strong>Descrição</strong>
+                        <p>
+                            Uma noite dedicada ao samba e ao choro,
+                            com músicos convidados e apresentações ao vivo.
+                        </p>
+
+                    </div>
+
+                    <div class="col-md-6">
+
+                        <strong>Data</strong>
+                        <p>15/08/2026 às 20:00</p>
+
+                        <strong>Enviado em</strong>
+                        <p>09/07/2026</p>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="evento-footer">
+
+                <button class="btn-editar">
+                    <i class="fa-solid fa-pen"></i>
+                    Editar
+                </button>
+
+                <button class="btn-aprovar">
+                    <i class="fa-solid fa-circle-check"></i>
+                    Aprovar
+                </button>
+
+                <button class="btn-reprovar">
+                    <i class="fa-solid fa-circle-xmark"></i>
+                    Reprovar
+                </button>
+
+            </div>
+
+        </div>
+
+        <!-- EVENTO 2 -->
+
+        <div class="evento-card collapsed">
+
+            <div class="evento-header">
+
+                <div class="evento-info">
+
+                    <div class="evento-icon">
+                        <i class="fa-solid fa-image"></i>
+                    </div>
+
+                    <div>
+
+                        <h3>Exposição: Arte Urbana Brasileira</h3>
+
+                        <small>
+                            Museu de Arte Moderna - SP
+                        </small>
+
+                    </div>
+
+                </div>
+
+                <div class="pendente">
+                    Pendente
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</body>
+
+</html>

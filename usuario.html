@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meu Perfil - ShowMe</title>
+
+    <link rel="stylesheet" href="css/usuario.css">
+
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+</head>
+<body>
+
+    <main class="perfil-container">
+
+        <!-- TOPO -->
+        <div class="topo">
+            <a href="index.html" class="voltar">
+                <i class="fa-solid fa-arrow-left"></i>
+                Meu Perfil
+            </a>
+
+            <a href="login.html" class="sair">
+                <i class="fa-solid fa-right-from-bracket"></i>
+                Sair
+            </a>
+        </div>
+
+        <!-- CARD PERFIL -->
+        <section class="perfil-card">
+
+            <div class="banner"></div>
+
+            <div class="avatar">
+                <i class="fa-regular fa-user"></i>
+            </div>
+
+            <div class="perfil-header">
+
+                <div class="email-principal">
+                    User@gmail.com
+                </div>
+
+                <button class="btn-editar">
+                    <i class="fa-solid fa-pen"></i>
+                    Editar Perfil
+                </button>
+
+            </div>
+
+            <!-- FORM -->
+            <form class="perfil-form">
+
+                <div class="grupo">
+                    <label>Nome</label>
+
+                    <div class="input-icon">
+                        <i class="fa-regular fa-user"></i>
+
+                        <input
+                            type="text"
+                            value="Nome"
+                            readonly>
+                    </div>
+                </div>
+
+                <div class="grupo">
+                    <label>Sobrenome</label>
+
+                    <div class="input-icon">
+                        <i class="fa-regular fa-user"></i>
+
+                        <input
+                            type="text"
+                            value="User"
+                            readonly>
+                    </div>
+                </div>
+
+                <div class="grupo full">
+                    <label>Apelido</label>
+
+                    <div class="input-icon">
+                        <i class="fa-regular fa-user"></i>
+
+                        <input
+                            type="text"
+                            value="userzinho"
+                            readonly>
+                    </div>
+                </div>
+
+                <div class="grupo full">
+                    <label>E-mail</label>
+
+                    <div class="input-icon">
+                        <i class="fa-regular fa-envelope"></i>
+
+                        <input
+                            type="email"
+                            value="User@gmail.com"
+                            readonly>
+                    </div>
+                </div>
+
+            </form>
+
+            <!-- ESTATÍSTICAS -->
+            <section class="estatisticas">
+
+                <h2>Estatísticas</h2>
+
+                <div class="stats-grid">
+
+                    <div class="stat-card">
+                        <h3>12</h3>
+                        <p>Eventos favoritados</p>
+                    </div>
+
+                    <div class="stat-card">
+                        <h3>5</h3>
+                        <p>Viagens Planejadas</p>
+                    </div>
+
+                    <div class="stat-card">
+                        <h3>8</h3>
+                        <p>Eventos cadastrados</p>
+                    </div>
+
+                </div>
+
+            </section>
+
+        </section>
+
+    </main>
+
+    <!-- FOOTER -->
+    <footer>
+
+        <div>
+            <h3>ShowMe</h3>
+            <p>Democratizando o acesso à cultura desde 2026</p>
+
+            <div class="social">
+                <i class="fab fa-instagram"></i>
+                <i class="fab fa-twitter"></i>
+                <i class="fab fa-facebook"></i>
+            </div>
+        </div>
+
+        <div>
+            <h3>Entre em contato</h3>
+
+            <input type="email" placeholder="Seu e-mail">
+
+            <textarea placeholder="Sua mensagem"></textarea>
+
+            <button>Enviar</button>
+        </div>
+
+        <div>
+            <h3>Informações</h3>
+
+            <p>Termos de Uso</p>
+
+            <p>Política de Privacidade</p>
+
+            <p>© 2026 ShowMe. Todos os direitos reservados.</p>
+        </div>
+
+    </footer>
+
+    <script src="js/perfil.js"></script>
+
+</body>
+</html>

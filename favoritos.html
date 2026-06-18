@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meus Eventos - ShowMe</title>
+
+    <link rel="stylesheet" href="css/favoritos.css">
+
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+</head>
+
+<body>
+
+    <main class="container">
+
+        <a href="index.html" class="voltar">
+            <i class="fa-solid fa-arrow-left"></i>
+            Meus <span>Eventos</span>
+        </a>
+
+        <div class="linha"></div>
+
+        <div class="abas">
+
+            <button class="aba ativa" data-tab="favoritos">
+                <i class="fa-regular fa-heart"></i>
+                Favoritos (3)
+            </button>
+
+            <button class="aba" data-tab="planejados">
+                <i class="fa-regular fa-calendar"></i>
+                Planejados (2)
+            </button>
+
+        </div>
+
+        <!-- FAVORITOS -->
+
+        <section id="favoritos" class="conteudo ativa">
+
+            <div class="card-evento">
+
+                <img src="img/harry.jpg" alt="Harry Styles">
+
+                <div class="info">
+
+                    <h3>Harry Styles: Together, Together</h3>
+
+                    <p>
+                        <i class="fa-solid fa-location-dot"></i>
+                        São Paulo, SP
+                    </p>
+
+                    <p>
+                        <i class="fa-regular fa-calendar"></i>
+                        15 Jun 2026
+                    </p>
+
+                    <button class="btn-detalhes">
+                        Ver detalhes
+                    </button>
+
+                </div>
+
+                <div class="acoes">
+
+                    <span class="tag pago">
+                        Pago
+                    </span>
+
+                    <button class="btn-excluir">
+                        <i class="fa-solid fa-trash"></i>
+                    </button>
+
+                </div>
+
+            </div>
+
+            <div class="card-evento">
+
+                <img src="img/virada.jpg" alt="Virada Cultural">
+
+                <div class="info">
+
+                    <h3>Virada Cultural 2026</h3>
+
+                    <p>
+                        <i class="fa-solid fa-location-dot"></i>
+                        São Paulo, SP
+                    </p>
+
+                    <p>
+                        <i class="fa-regular fa-calendar"></i>
+                        22 Jul 2026
+                    </p>
+
+                    <button class="btn-detalhes">
+                        Ver detalhes
+                    </button>
+
+                </div>
+
+                <div class="acoes">
+
+                    <span class="tag gratis">
+                        Grátis
+                    </span>
+
+                    <button class="btn-excluir">
+                        <i class="fa-solid fa-trash"></i>
+                    </button>
+
+                </div>
+
+            </div>
+
+        </section>
+
+        <!-- PLANEJADOS -->
+
+        <section id="planejados" class="conteudo">
+
+            <div class="card-evento">
+
+                <img src="img/rockinrio.jpg" alt="Rock in Rio">
+
+                <div class="info">
+
+                    <h3>Rock in Rio</h3>
+
+                    <p>
+                        <i class="fa-solid fa-location-dot"></i>
+                        Rio de Janeiro, RJ
+                    </p>
+
+                    <p>
+                        <i class="fa-regular fa-calendar"></i>
+                        15 Set 2026
+                    </p>
+
+                    <div class="botoes">
+
+                        <button class="btn-detalhes">
+                            Ver detalhes
+                        </button>
+
+                        <button class="btn-planejamento">
+                            Ver planejamento
+                        </button>
+
+                    </div>
+
+                </div>
+
+                <div class="acoes">
+
+                    <span class="tag pago">
+                        Pago
+                    </span>
+
+                    <button class="btn-excluir">
+                        <i class="fa-solid fa-trash"></i>
+                    </button>
+
+                </div>
+
+            </div>
+
+            <div class="card-evento">
+
+                <img src="img/lollapalooza.jpg" alt="Lollapalooza">
+
+                <div class="info">
+
+                    <h3>Lollapalooza Brasil</h3>
+
+                    <p>
+                        <i class="fa-solid fa-location-dot"></i>
+                        São Paulo, SP
+                    </p>
+
+                    <p>
+                        <i class="fa-regular fa-calendar"></i>
+                        25 Mar 2027
+                    </p>
+
+                    <div class="botoes">
+
+                        <button class="btn-detalhes">
+                            Ver detalhes
+                        </button>
+
+                        <button class="btn-planejamento">
+                            Ver planejamento
+                        </button>
+
+                    </div>
+
+                </div>
+
+                <div class="acoes">
+
+                    <span class="tag pago">
+                        Pago
+                    </span>
+
+                    <button class="btn-excluir">
+                        <i class="fa-solid fa-trash"></i>
+                    </button>
+
+                </div>
+
+            </div>
+
+        </section>
+
+    </main>
+
+    <script src="js/meus-eventos.js"></script>
+
+</body>
+
+</html>

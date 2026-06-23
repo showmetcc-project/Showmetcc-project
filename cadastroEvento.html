@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Cadastro de Evento - ShowMe</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <link rel="stylesheet" href="css/cadastro-evento.css">
+
+    <link rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+</head>
+<body>
+
+<div class="container-fluid evento-container">
+
+    <div class="logo">
+        <span class="show">Show</span><span class="me">Me</span>
+    </div>
+
+    <div class="evento-card">
+
+        <h2>Cadastro de Evento</h2>
+
+        <form>
+
+            <div class="upload-area">
+
+                <i class="fa-solid fa-image"></i>
+
+                <p>Adicionar imagem do evento</p>
+
+                <input type="file">
+
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Nome do Evento</label>
+
+                <input
+                    type="text"
+                    class="form-control"
+                    placeholder="Digite o nome do evento">
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Local</label>
+
+                <input
+                    type="text"
+                    class="form-control"
+                    placeholder="Cidade ou endereço">
+            </div>
+
+            <div class="row">
+
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Data</label>
+
+                    <input
+                        type="date"
+                        class="form-control">
+                </div>
+
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Horário</label>
+
+                    <input
+                        type="time"
+                        class="form-control">
+                </div>
+
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Tipo de Evento</label>
+
+                <select class="form-select">
+
+                    <option>Música</option>
+                    <option>Festival</option>
+                    <option>Teatro</option>
+                    <option>Dança</option>
+                    <option>Exposição</option>
+
+                </select>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Descrição</label>
+
+                <textarea
+                    class="form-control"
+                    rows="5"
+                    placeholder="Descreva o evento"></textarea>
+            </div>
+
+            <div class="mb-4">
+                <label class="form-label">Artistas/Atrações</label>
+
+                <textarea
+                    class="form-control"
+                    rows="3"
+                    placeholder="Informe artistas, bandas ou atrações"></textarea>
+            </div>
+
+            <button
+                type="submit"
+                class="btn btn-enviar">
+
+                Enviar para análise
+
+            </button>
+
+        </form>
+
+    </div>
+
+</div>
+
+</body>
+</html>

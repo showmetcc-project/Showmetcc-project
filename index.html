@@ -57,13 +57,45 @@
 
       <nav id="navmenu" class="navmenu"> <!--227-->
         <ul>
-          <li><a href="#hero" class="active">Inicio</a></li>
+          <li><a href="#hero">Inicio</a></li>
           <li><a href="#about">Sobre Nós</a></li>
           <li><a href="#work-process">Como Funciona</a></li>
           <li><a href="#faq-2">Perguntas</a></li>
-          <li><a href="#team">Contato</a></li>
+          <li><a href="#footer">Contato</a></li>
 
-          <!-- <li><a href="#pricing">Pricing</a></li>
+          <li class="dropdown login-menu">
+            <a href="#">
+              <span class="preto"> Entrar</span>
+              <i class="bi bi-chevron-down toggle-dropdown"></i>
+            </a>
+
+            <ul>
+              <li>
+                <a href="#">
+                  <i class="bi bi-person"></i>
+
+                  <div>
+                    <span>Usuário Comum</span>
+                    <p>Acessar como usuário comum</p>
+                  </div>
+                </a>
+              </li>
+
+              
+
+              <li>
+                <a href="#">
+                  <i class="bi bi-shield"></i>
+
+                  <div>
+                    <span>Administrador</span>
+                    <p>Acessar como administrador</p>
+                  </div>
+                </a>
+              </li>
+            </ul>
+
+            <!-- <li><a href="#pricing">Pricing</a></li>
           <li><a href="blog.html">Blog</a></li>
           <li class="dropdown"><a href="#"><span>Dropdown</span> <i class="bi bi-chevron-down toggle-dropdown"></i></a>
             <ul>
@@ -87,8 +119,8 @@
         <i class="mobile-nav-toggle d-xl-none bi bi-list"></i>
 
       </nav>
-      <a class="btn-getstarted" href="#about">Futuro login talvez</a>
-    </div>
+
+
   </header>
 
 
@@ -180,7 +212,7 @@
 
       <!-- Como Funciona -->
       <div class="container section-title" data-aos="fade-up">
-        <h2>Como Funciona</h2>
+        <h2><span class="verde">Como</span> Funciona</h2>
       </div>
 
       <div class="container" data-aos="fade-up" data-aos-delay="100">
@@ -190,10 +222,10 @@
           <div class="col-lg-3 col-md-6" data-aos="fade-up" data-aos-delay="200">
             <div class="steps-item">
               <div class="steps-image">
-                <img src="//" alt="Step 1" class="img-fluid" loading="lazy">
+                <img src="assets/img/services/2.png" alt="Step 1" class="img-fluid" loading="lazy">
               </div>
               <div class="steps-content">
-                <h3>Descubra Eventos</h3>
+                <h3><span class="verde">Descubra Eventos</span></h3>
                 <p>Explore eventos culturais perto de você ou em qualquer lugar do Brasil</p>
                 <div class="steps-features">
                   <div class="feature-item">
@@ -216,10 +248,10 @@
           <div class="col-lg-3 col-md-6" data-aos="fade-up" data-aos-delay="300">
             <div class="steps-item">
               <div class="steps-image">
-                <img src="//" alt="Step 2" class="img-fluid" loading="lazy">
+                <img src="assets/img/services/3.png" alt="Step 2" class="img-fluid" loading="lazy">
               </div>
               <div class="steps-content">
-                <h3>Planeje Viagens</h3>
+                <h3><span class="rosa"> Planeje Viagens</span></h3>
                 <p>Calcule transporte, hospedagem e organize seu orçamento completo</p>
                 <div class="steps-features">
                   <div class="feature-item">
@@ -242,10 +274,10 @@
           <div class="col-lg-3 col-md-6" data-aos="fade-up" data-aos-delay="400">
             <div class="steps-item">
               <div class="steps-image">
-                <img src="//" alt="Step 3" class="img-fluid" loading="lazy">
+                <img src="assets/img/services/4.png" alt="Step 3" class="img-fluid" loading="lazy">
               </div>
               <div class="steps-content">
-                <h3>Rotas e Locais</h3>
+                <h3><span class="verde"> Rotas e Locais</span> </h3>
                 <p>Veja rotas otimizadas e descubra o melhor caminho até o evento</p>
                 <div class="steps-features">
                   <div class="feature-item">
@@ -268,10 +300,10 @@
           <div class="col-lg-3 col-md-6" data-aos="fade-up" data-aos-delay="400">
             <div class="steps-item">
               <div class="steps-image">
-                <img src="//" alt="Step 3" class="img-fluid" loading="lazy">
+                <img src="assets/img/services/1.png" alt="Step 3" class="img-fluid" loading="lazy">
               </div>
               <div class="steps-content">
-                <h3>Compartilhe</h3>
+                <h3><span class="rosa">Compartilhe</span></h3>
                 <p>Veja avaliações de outros usuários e compartilhe suas experiências</p>
                 <div class="steps-features">
                   <div class="feature-item">
@@ -300,89 +332,96 @@
 
 
 
-   
- 
+
+
 
     <!-- Faq 2 Section -->
     <section id="faq-2" class="faq-2 section">
 
-  
-  <div class="container section-title" data-aos="fade-up">
-    <h2>Perguntas Frequentes</h2>
-  </div>
 
-  <div class="container">
+      <div class="container section-title" data-aos="fade-up">
+        <h2>Perguntas <span class="verde">Frequentes</span></h2>
+      </div>
 
-    <div class="row justify-content-center">
+      <div class="container">
 
-      <div class="col-lg-10">
+        <div class="row justify-content-center">
 
-        <div class="faq-container">
+          <div class="col-lg-10">
 
-        
-          <div class="faq-item faq-active" data-aos="fade-up" data-aos-delay="200">
+            <div class="faq-container">
 
-            <i class="faq-icon bi bi-question-circle"></i>
 
-            <h3>Como funciona o ShowMe?</h3>
+              <div class="faq-item faq-active" data-aos="fade-up" data-aos-delay="200">
 
-            <i class="faq-toggle bi bi-chevron-right"></i>
+                <i class="faq-icon bi bi-question-circle"></i>
 
-            <div class="faq-content">
-              <p>
-                O ShowMe conecta você a eventos culturais e ajuda a planejar toda a experiência, desde transporte até hospedagem.
-              </p>
-            </div>
+                <h3>Como funciona o ShowMe?</h3>
 
-          </div>
+                <i class="faq-toggle bi bi-chevron-right"></i>
 
-          <!-- Pergunta2 -->
-          <div class="faq-item" data-aos="fade-up" data-aos-delay="300">
+                <div class="faq-content">
+                  <p>
+                    O ShowMe conecta você a eventos culturais e ajuda a planejar toda a experiência, desde transporte
+                    até hospedagem.
+                  </p>
+                </div>
 
-            <i class="faq-icon bi bi-question-circle"></i>
+              </div>
 
-            <h3>É gratuito?</h3>
+              <!-- Pergunta2 -->
+              <div class="faq-item" data-aos="fade-up" data-aos-delay="300">
 
-            <i class="faq-toggle bi bi-chevron-right"></i>
+                <i class="faq-icon bi bi-question-circle"></i>
 
-            <div class="faq-content">
-              <p>
-                Sim! O ShowMe é totalmente gratuito. Você só paga pelos ingressos, transporte e hospedagem que escolher.
-              </p>
-            </div>
+                <h3>É gratuito?</h3>
 
-          </div>
+                <i class="faq-toggle bi bi-chevron-right"></i>
 
-          <!-- 3 -->
-          <div class="faq-item" data-aos="fade-up" data-aos-delay="400">
+                <div class="faq-content">
+                  <p>
+                    Sim! O ShowMe é totalmente gratuito. Você só paga pelos ingressos, transporte e hospedagem que
+                    escolher.
+                  </p>
+                </div>
 
-            <i class="faq-icon bi bi-question-circle"></i>
+              </div>
 
-            <h3>Posso comprar ingressos pelo site?</h3>
+              <!-- 3 -->
+              <div class="faq-item" data-aos="fade-up" data-aos-delay="400">
 
-            <i class="faq-toggle bi bi-chevron-right"></i>
+                <i class="faq-icon bi bi-question-circle"></i>
 
-            <div class="faq-content">
-              <p>
-                O ShowMe não vende ingressos diretamente, mas direciona você para os canais oficiais de compra.
-              </p>
-            </div>
+                <h3>Posso comprar ingressos pelo site?</h3>
 
-          </div>
+                <i class="faq-toggle bi bi-chevron-right"></i>
 
-          <!--  4 -->
-          <div class="faq-item" data-aos="fade-up" data-aos-delay="500">
+                <div class="faq-content">
+                  <p>
+                    O ShowMe não vende ingressos diretamente, mas direciona você para os canais oficiais de compra.
+                  </p>
+                </div>
 
-            <i class="faq-icon bi bi-question-circle"></i>
+              </div>
 
-            <h3>Como faço para salvar eventos?</h3>
 
-            <i class="faq-toggle bi bi-chevron-right"></i>
+              <div class="faq-item" data-aos="fade-up" data-aos-delay="500">
 
-            <div class="faq-content">
-              <p>
-                Crie uma conta e você poderá favoritar eventos e montar planejamentos completos para suas viagens e passeios.
-              </p>
+                <i class="faq-icon bi bi-question-circle"></i>
+
+                <h3>Como faço para salvar eventos?</h3>
+
+                <i class="faq-toggle bi bi-chevron-right"></i>
+
+                <div class="faq-content">
+                  <p>
+                    Crie uma conta e você poderá favoritar eventos e montar planejamentos completos para suas viagens e
+                    passeios.
+                  </p>
+                </div>
+
+              </div>
+
             </div>
 
           </div>
@@ -391,72 +430,73 @@
 
       </div>
 
-    </div>
+    </section>
 
-  </div>
 
-</section>
-
-    
   </main>
 
   <footer id="footer" class="footer">
-    <hr>
 
-    
+    <div class="footer-line"></div>
 
     <div class="container footer-top">
+
       <div class="row gy-4">
+
+
         <div class="col-lg-4 col-md-6 footer-about">
-          <a href="index.html" class="d-flex align-items-center">
-            <span class="sitename">Arsha</span>
-          </a>
-          <div class="footer-contact pt-3">
-            <p>A108 Adam Street</p>
-            <p>New York, NY 535022</p>
-            <p class="mt-3"><strong>Phone:</strong> <span>+1 5589 55488 55</span></p>
-            <p><strong>Email:</strong> <span>info@example.com</span></p>
+
+          <h4 class="logo-footer">
+            <span class="verde">Show</span><span class="rosa">Me</span>
+          </h4>
+
+          <p>Democratizando o acesso à cultura desde 2026</p>
+
+          <div class="social-links">
+            <a href="#"><i class="bi bi-instagram"></i></a>
+            <a href="#"><i class="bi bi-twitter-x"></i></a>
+            <a href="#"><i class="bi bi-facebook"></i></a>
           </div>
+
         </div>
 
-        <div class="col-lg-2 col-md-3 footer-links">
-          <h4>Useful Links</h4>
+
+        <div class="col-lg-4 col-md-6">
+
+          <h4>Entre em Contato</h4>
+
+          <form class="footer-contact-form">
+
+            <input type="email" placeholder="Seu e-mail">
+
+            <textarea placeholder="Sua mensagem"></textarea>
+
+            <button type="submit">
+              <i class="bi bi-envelope"></i>
+              Enviar
+            </button>
+
+          </form>
+
+        </div>
+
+        <div class="col-lg-4 col-md-12 footer-links">
+
+          <h4>Informações</h4>
+
           <ul>
-            <li><i class="bi bi-chevron-right"></i> <a href="#">Home</a></li>
-            <li><i class="bi bi-chevron-right"></i> <a href="#">About us</a></li>
-            <li><i class="bi bi-chevron-right"></i> <a href="#">Services</a></li>
-            <li><i class="bi bi-chevron-right"></i> <a href="#">Terms of service</a></li>
+            <li><a href="#">Termos de Uso</a></li>
+            <li><a href="#">Política de Privacidade</a></li>
           </ul>
-        </div>
 
-        <div class="col-lg-2 col-md-3 footer-links">
-          <h4>Our Services</h4>
-          <ul>
-            <li><i class="bi bi-chevron-right"></i> <a href="#">Web Design</a></li>
-            <li><i class="bi bi-chevron-right"></i> <a href="#">Web Development</a></li>
-            <li><i class="bi bi-chevron-right"></i> <a href="#">Product Management</a></li>
-            <li><i class="bi bi-chevron-right"></i> <a href="#">Marketing</a></li>
-          </ul>
-        </div>
+          <p class="copyright-text">
+            © 2026 ShowMe. Todos os direitos reservados.
+          </p>
 
-        <div class="col-lg-4 col-md-12">
-          <h4>Follow Us</h4>
-          <p>Cras fermentum odio eu feugiat lide par naso tierra videa magna derita valies</p>
-          <div class="social-links d-flex">
-            <a href=""><i class="bi bi-twitter-x"></i></a>
-            <a href=""><i class="bi bi-facebook"></i></a>
-            <a href=""><i class="bi bi-instagram"></i></a>
-            <a href=""><i class="bi bi-linkedin"></i></a>
-          </div>
         </div>
 
       </div>
-    </div>
 
-    <div class="container copyright text-center mt-4">
-      <p>© <span>All Rights Reserved</span></p>
-      <div class="credits">
-      </div>
     </div>
 
   </footer>

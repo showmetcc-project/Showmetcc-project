@@ -1494,9 +1494,7 @@ section,
 /*--------------------------------------------------------------
 # Login
 --------------------------------------------------------------*/
-/* =======================
-   LOGIN SHOWME
-======================= */
+
 
 .main-login{
     min-height:100vh;
@@ -1514,14 +1512,14 @@ section,
 
 /* LOGO */
 
-.logo{
+.logo {
     display:flex;
     justify-content:center;
-    margin-bottom:30px;
+    margin-bottom:50px;
 }
 
 .logo img{
-    width: 135px;
+    width: 160px;
     height:auto;
     display:block;
 }
@@ -1598,15 +1596,12 @@ section,
     font-weight:600;
 }
 
-/* LABELS */
 
 label{
     display:block;
     color:#cfcfcf;
     margin-bottom:8px;
 }
-
-/* INPUTS */
 
 .custom-input{
     border:2px solid #00ff00;
@@ -1691,7 +1686,7 @@ label{
     text-decoration:underline;
 }
 
-/* RESPONSIVO */
+/* respo */
 
 @media(max-width:576px){
 
@@ -1707,4 +1702,314 @@ label{
         font-size:1.7rem;
     }
 
+}
+
+/********Login ADM********/
+
+.main-login{
+    min-height:100vh;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    background:#000;
+    padding:40px 20px;
+}
+
+.login-wrapper{
+    width:100%;
+    max-width:720px;
+}
+
+.logoadm p {
+  font-family:  "oswald", "serif-";;
+}
+
+.logoadm{
+    display:flex;
+    justify-content:center;
+    margin-bottom:25px;
+}
+
+.logoadm  img{
+    width:180px;
+    height:auto;
+}
+
+/* CARD */
+
+.login-card{
+    background:#000;
+    border:3px solid #00ff00;
+    border-radius:18px;
+    padding:40px;
+    max-width:650px;
+    margin:auto;
+}
+
+.login-card h2{
+  font-family: "Oswald",  sans-serif;
+    color:#00ff00;
+    font-size:2rem;
+    font-weight:700;
+    margin-bottom:30px;
+}
+
+
+
+
+.login-card label{
+    color:#cfcfcf;
+    font-size:.95rem;
+    margin-bottom:8px;
+    display:block;
+}
+
+
+
+.login-input{
+    background:#2b2b2b !important;
+    border:2px solid #444 !important;
+    border-radius:12px !important;
+    height:52px;
+    color:#fff !important;
+    padding:0 16px;
+}
+
+.login-input:focus{
+    background:#2b2b2b !important;
+    color:#fff !important;
+    box-shadow:none !important;
+    border-color:#666 !important;
+}
+
+.login-input::placeholder{
+    color:#777;
+}
+
+
+
+.password-wrapper{
+    position:relative;
+}
+
+.password-wrapper i{
+    position:absolute;
+    right:18px;
+    top:50%;
+    transform:translateY(-50%);
+    color:#888;
+    cursor:pointer;
+}
+
+
+.btn-login{
+    width:100%;
+    height:55px;
+    border:none;
+    border-radius:12px;
+    background:#00ff00;
+    color:#000;
+    font-size:1.2rem;
+    font-weight:700;
+    margin-top:10px;
+    transition:.3s;
+}
+
+.btn-login:hover{
+    background:#12ff12;
+}
+
+
+.bottom-text{
+    text-align:center;
+    margin-top:28px;
+    color:#666;
+    font-size:.95rem;
+}
+
+.bottom-text a{
+    color:#ff1493;
+    text-decoration:none;
+    font-weight:600;
+}
+
+.bottom-text a:hover{
+    text-decoration:underline;
+}
+
+
+
+@media(max-width:576px){
+
+    .login-card{
+        padding:25px;
+    }
+
+    .logo img{
+        width:140px;
+    }
+
+    .login-card h2{
+        font-size:1.5rem;
+    }
+
+}
+
+/* =========================
+   CADASTROoouu
+========================= */
+
+.main-cadastro{
+    min-height:100vh;
+    background:#000;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    padding:40px 20px;
+}
+
+.cadastro-container{
+    width:100%;
+    max-width:720px;
+}
+
+.cadastro-logo{
+    display:flex;
+    justify-content:center;
+    margin-bottom:25px;
+}
+
+.cadastro-logo img{
+    width:220px;
+    height:auto;
+}
+
+ 
+
+.cadastro-card{
+    background:#000;
+    border:3px solid #ff008c;
+    border-radius:22px;
+    padding:40px;
+}
+
+.cadastro-card h1{
+    text-align:center;
+    color:#ff008c;
+    font-family:'Poppins',sans-serif;
+    font-size:2rem;
+    font-weight:700;
+    margin-bottom:35px;
+}
+
+.cadastro-card p {
+  font-family: "Oswald",  sans-serif;
+  color: #666;
+}
+
+ 
+
+.cadastro-card label{
+    display:block;
+    color:#fff;
+    font-size:.95rem;
+    font-weight:500;
+    margin-bottom:8px;
+}
+
+ 
+
+.cadastro-input-box{
+    position:relative;
+}
+
+.cadastro-input-box i{
+    position:absolute;
+    left:16px;
+    top:50%;
+    transform:translateY(-50%);
+    color:#ff008c;
+    font-size:1.05rem;
+    z-index:2;
+}
+
+.cadastro-input{
+    background:#2b2b2b !important;
+    border:2px solid #ff008c !important;
+    border-radius:12px !important;
+    height:55px;
+    color:#000!important;
+    padding-left:48px !important;
+}
+
+.cadastro-input::placeholder{
+    color:#888;
+}
+
+.cadastro-input:focus{
+    background:#2b2b2b !important;
+    color:#fff !important;
+    border-color:#ff008c !important;
+    box-shadow:none !important;
+}
+
+ 
+
+.cadastro-btn{
+    width:100%;
+    height:56px;
+    border:none;
+    border-radius:12px;
+    background:#ff008c;
+    color:#fff;
+    font-size:1.05rem;
+    font-weight:700;
+    transition:.3s;
+}
+
+.cadastro-btn:hover{
+    background:#ff1493;
+     transform:translateY(-2px);
+}
+
+ 
+
+.cadastro-link{
+    text-align:center;
+    margin-top:22px;
+    color:#fff;
+}
+
+.cadastro-link a{
+    color:#1eff00;
+    text-decoration:none;
+    font-weight:600;
+}
+
+.cadastro-link a:hover{
+    text-decoration:underline;
+}
+
+/* RESPONSIVO */
+
+@media (max-width:768px){
+
+    .cadastro-card{
+        padding:28px;
+    }
+
+    .cadastro-logo img{
+        width:180px;
+    }
+}
+
+@media (max-width:576px){
+
+    .cadastro-card{
+        padding:22px;
+    }
+
+    .cadastro-card h1{
+        font-size:1.6rem;
+    }
 }

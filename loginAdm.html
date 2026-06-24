@@ -31,99 +31,67 @@
 
 
   <!--Google fontes, Anton-->
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link
-  href="https://fonts.googleapis.com/css2?family=Anton&family=Archivo+Black&family=Bodoni+Moda:ital,opsz,wght@0,6..96,400..900;1,6..96,400..900&family=Libertinus+Serif+Display&family=Noto+Sans+JP:wght@100..900&family=Noto+Serif:ital,wght@0,100..900;1,100..900&family=Open+Sans:ital,wght@0,300..800;1,300..800&family=Roboto+Condensed:ital,wght@0,100..900;1,100..900&family=Story+Script&family=Vend+Sans:ital,wght@0,300..700;1,300..700&display=swap"
-  rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Anton&family=Archivo+Black&family=Bodoni+Moda:ital,opsz,wght@0,6..96,400..900;1,6..96,400..900&family=Libertinus+Serif+Display&family=Noto+Sans+JP:wght@100..900&family=Noto+Serif:ital,wght@0,100..900;1,100..900&family=Open+Sans:ital,wght@0,300..800;1,300..800&family=Roboto+Condensed:ital,wght@0,100..900;1,100..900&family=Story+Script&family=Vend+Sans:ital,wght@0,300..700;1,300..700&display=swap"
+    rel="stylesheet">
 
 </head>
 
 
 <body class="index-page">
 
- <main class="main-login">
+  <main class="main-login">
 
     <div class="login-wrapper">
 
-        <div class="logo">
-            <img src="assets/img/showme.png">
-        </div>
+      <div class="logoadm">
+        <img src="assets/img/showme.png" alt="ShowMe">
+      </div>
 
-        <div class="login-card">
+      <div class="login-card">
 
-            <h2>Entrar</h2>
+        <h2>Entrar como Administrador</h2>
 
-            <button type="button" class="social-btn google-btn">
-                <i class="bi bi-google"></i>
-                Continuar com Google
-            </button>
+        <form>
 
-            <button type="button" class="social-btn spotify-btn">
-                <i class="bi bi-spotify"></i>
-                Continuar com Spotify
-            </button>
+          <div class="mb-4">
+            <label for="email">E-mail</label>
 
-            <div class="divider">
-                <span>ou</span>
+            <input id="email" type="email" class="form-control login-input" placeholder="seu@gmail.com">
+          </div>
+
+          <div class="mb-4">
+            <label for="senha">Senha</label>
+
+            <div class="password-wrapper">
+
+              <input id="senha" type="password" class="form-control login-input" placeholder="••••••••">
+
+               
+
             </div>
 
-            <form>
+          </div>
 
-                <div class="mb-3">
-                    <label>E-mail</label>
+          <button type="submit" class="btn-login">
+            Entrar
+          </button>
 
-                    <div class="input-group custom-input">
+        </form>
 
-                        <span class="input-group-text">
-                            <i class="bi bi-envelope-fill"></i>
-                        </span>
+        <p class="bottom-text">
+          Não é administrador?
+          <a href="login.html">Entrar como usuário comum.</a>
+        </p>
 
-                        <input
-                            type="email"
-                            class="form-control"
-                            placeholder="seu@gmail.com">
-                    </div>
-
-                </div>
-
-                <div class="mb-3">
-                    <label>Senha</label>
-
-                    <div class="input-group custom-input">
-
-                        <span class="input-group-text">
-                            <i class="bi bi-lock-fill"></i>
-                        </span>
-
-                        <input
-                            type="password"
-                            class="form-control"
-                            placeholder="••••••••">
-                    </div>
-
-                </div>
-
-                <button type="submit" class="btn-login">
-                    Entrar
-                </button>
-
-            </form>
-
-            <div class="admin-link">
-                Procurando pela
-                <a href="loginAdm.html">área administrativa?</a>
-            </div>
-
-            <div class="register-link">
-                <a href="cadastro.html">Não tenho Cadastro</a>
-            </div>
-
-        </div>
+      </div>
 
     </div>
 
-</main>
+  </main>
+
   <footer id="footer" class="footer">
 
     <div class="footer-line"></div>

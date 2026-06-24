@@ -5,10 +5,21 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Meu Perfil - ShowMe</title>
 
-    <link rel="stylesheet" href="assets/css/usuario.css">
+    <!-- Favicons -->
+    <link href="assets/img/showme.png" rel="icon">
 
-    <link rel="stylesheet"
-        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com" rel="preconnect">
+    <link href="https://fonts.gstatic.com" rel="preconnect" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800&family=Poppins:wght@300;400;500;600;700&family=Jost:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Vendor CSS -->
+    <link href="assets/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <link href="assets/vendor/bootstrap-icons/bootstrap-icons.css" rel="stylesheet">
+    <link href="assets/vendor/aos/aos.css" rel="stylesheet">
+
+    <!-- CSS customizado -->
+    <link rel="stylesheet" href="assets/css/usuario.css">
 </head>
 <body>
 
@@ -17,12 +28,11 @@
         <!-- TOPO -->
         <div class="topo">
             <a href="index.html" class="voltar">
-                <i class="fa-solid fa-arrow-left"></i>
+                <i class="bi bi-arrow-left"></i>
                 Meu Perfil
             </a>
-
             <a href="login.html" class="sair">
-                <i class="fa-solid fa-right-from-bracket"></i>
+                <i class="bi bi-box-arrow-right"></i>
                 Sair
             </a>
         </div>
@@ -30,23 +40,21 @@
         <!-- CARD PERFIL -->
         <section class="perfil-card">
 
+            <!-- BANNER -->
             <div class="banner"></div>
 
+            <!-- AVATAR -->
             <div class="avatar">
-                <i class="fa-regular fa-user"></i>
+                <i class="bi bi-person"></i>
             </div>
 
+            <!-- HEADER DO PERFIL -->
             <div class="perfil-header">
-
-                <div class="email-principal">
-                    User@gmail.com
-                </div>
-
+                <div class="email-principal">User@gmail.com</div>
                 <button class="btn-editar">
-                    <i class="fa-solid fa-pen"></i>
+                    <i class="bi bi-pencil"></i>
                     Editar Perfil
                 </button>
-
             </div>
 
             <!-- FORM -->
@@ -54,53 +62,33 @@
 
                 <div class="grupo">
                     <label>Nome</label>
-
                     <div class="input-icon">
-                        <i class="fa-regular fa-user"></i>
-
-                        <input
-                            type="text"
-                            value="Nome"
-                            readonly>
+                        <i class="bi bi-person"></i>
+                        <input type="text" value="Nome" readonly>
                     </div>
                 </div>
 
                 <div class="grupo">
                     <label>Sobrenome</label>
-
                     <div class="input-icon">
-                        <i class="fa-regular fa-user"></i>
-
-                        <input
-                            type="text"
-                            value="User"
-                            readonly>
+                        <i class="bi bi-person"></i>
+                        <input type="text" value="User" readonly>
                     </div>
                 </div>
 
                 <div class="grupo full">
                     <label>Apelido</label>
-
                     <div class="input-icon">
-                        <i class="fa-regular fa-user"></i>
-
-                        <input
-                            type="text"
-                            value="userzinho"
-                            readonly>
+                        <i class="bi bi-at"></i>
+                        <input type="text" value="userzinho" readonly>
                     </div>
                 </div>
 
                 <div class="grupo full">
                     <label>E-mail</label>
-
                     <div class="input-icon">
-                        <i class="fa-regular fa-envelope"></i>
-
-                        <input
-                            type="email"
-                            value="User@gmail.com"
-                            readonly>
+                        <i class="bi bi-envelope"></i>
+                        <input type="email" value="User@gmail.com" readonly>
                     </div>
                 </div>
 
@@ -114,16 +102,19 @@
                 <div class="stats-grid">
 
                     <div class="stat-card">
+                        <i class="bi bi-heart-fill stat-icon"></i>
                         <h3>12</h3>
                         <p>Eventos favoritados</p>
                     </div>
 
                     <div class="stat-card">
+                        <i class="bi bi-map-fill stat-icon"></i>
                         <h3>5</h3>
-                        <p>Viagens Planejadas</p>
+                        <p>Viagens planejadas</p>
                     </div>
 
                     <div class="stat-card">
+                        <i class="bi bi-calendar-check-fill stat-icon"></i>
                         <h3>8</h3>
                         <p>Eventos cadastrados</p>
                     </div>
@@ -136,43 +127,63 @@
 
     </main>
 
-    <!-- FOOTER -->
-    <footer>
+    <!-- FOOTER (reutilizado do index) -->
+    <footer id="footer" class="footer">
 
-        <div>
-            <h3>ShowMe</h3>
-            <p>Democratizando o acesso à cultura desde 2026</p>
+        <div class="footer-line"></div>
 
-            <div class="social">
-                <i class="fab fa-instagram"></i>
-                <i class="fab fa-twitter"></i>
-                <i class="fab fa-facebook"></i>
+        <div class="container footer-top">
+            <div class="row gy-4">
+
+                <div class="col-lg-4 col-md-6 footer-about">
+                    <h4 class="logo-footer">
+                        <span class="verde">Show</span><span class="rosa">Me</span>
+                    </h4>
+                    <p>Democratizando o acesso à cultura desde 2026</p>
+                    <div class="social-links">
+                        <a href="#"><i class="bi bi-instagram"></i></a>
+                        <a href="#"><i class="bi bi-twitter-x"></i></a>
+                        <a href="#"><i class="bi bi-facebook"></i></a>
+                    </div>
+                </div>
+
+                <div class="col-lg-4 col-md-6">
+                    <h4>Entre em Contato</h4>
+                    <form class="footer-contact-form">
+                        <input type="email" placeholder="Seu e-mail">
+                        <textarea placeholder="Sua mensagem"></textarea>
+                        <button type="submit">
+                            <i class="bi bi-envelope"></i>
+                            Enviar
+                        </button>
+                    </form>
+                </div>
+
+                <div class="col-lg-4 col-md-12 footer-links">
+                    <h4>Informações</h4>
+                    <ul>
+                        <li><a href="#">Termos de Uso</a></li>
+                        <li><a href="#">Política de Privacidade</a></li>
+                    </ul>
+                    <p class="copyright-text">© 2026 ShowMe. Todos os direitos reservados.</p>
+                </div>
+
             </div>
-        </div>
-
-        <div>
-            <h3>Entre em contato</h3>
-
-            <input type="email" placeholder="Seu e-mail">
-
-            <textarea placeholder="Sua mensagem"></textarea>
-
-            <button>Enviar</button>
-        </div>
-
-        <div>
-            <h3>Informações</h3>
-
-            <p>Termos de Uso</p>
-
-            <p>Política de Privacidade</p>
-
-            <p>© 2026 ShowMe. Todos os direitos reservados.</p>
         </div>
 
     </footer>
 
-    <script src="js/perfil.js"></script>
+    <!-- Scroll Top -->
+    <a href="#" id="scroll-top" class="scroll-top d-flex align-items-center justify-content-center">
+        <i class="bi bi-arrow-up-short"></i>
+    </a>
+
+    <!-- Vendor JS (mesmo padrão do index) -->
+    <script src="assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script src="assets/vendor/aos/aos.js"></script>
+    <script src="assets/js/perfil.js"></script>
+
+    <script>AOS.init();</script>
 
 </body>
 </html>

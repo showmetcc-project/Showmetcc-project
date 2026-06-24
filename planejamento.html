@@ -5,90 +5,96 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Planejar Viagem | ShowMe</title>
 
-    <link rel="stylesheet" href="css/planejamento.css">
+    <!-- Favicons -->
+    <link href="assets/img/showme.png" rel="icon">
 
-    <link rel="stylesheet"
-    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <!-- Fonts (igual ao index) -->
+    <link href="https://fonts.googleapis.com" rel="preconnect">
+    <link href="https://fonts.gstatic.com" rel="preconnect" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800&family=Poppins:wght@300;400;500;600;700&family=Jost:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Vendor CSS (mesmo padrão do index) -->
+    <link href="assets/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <link href="assets/vendor/bootstrap-icons/bootstrap-icons.css" rel="stylesheet">
+    <link href="assets/vendor/aos/aos.css" rel="stylesheet">
+
+    <!-- CSS customizado — sempre por último -->
+    <link rel="stylesheet" href="assets/css/planejamento.css">
 </head>
 <body>
 
     <!-- TOPO -->
-
     <header class="topo-planejamento">
-
         <a href="#" class="btn-voltar">
-            <i class="fa-solid fa-arrow-left"></i>
+            <i class="bi bi-arrow-left"></i>
         </a>
-
         <div class="titulo-evento">
-
-            <h1>
-                Planejar
-                <span>Viagem</span>
-            </h1>
-
-            <p>
-                Harry Styles: Together, Together
-            </p>
-
+            <h1>Planejar <span>Viagem</span></h1>
+            <p>Harry Styles: Together, Together</p>
         </div>
-
     </header>
 
     <div class="barra-verde"></div>
 
     <!-- CONTEÚDO -->
-
     <main class="planejamento-container">
 
-        <!-- TIMELINE -->
-
+        <!-- TIMELINE / PROGRESSO -->
         <aside class="progresso">
-
             <h2>Progresso</h2>
-
             <div class="timeline">
 
-                <div class="step ativo">
-                    <div class="numero">1</div>
+                <div class="step ativo" id="step1">
+                    <div class="numero">
+                        <i class="bi bi-check-lg check-icon"></i>
+                        <span class="num-label">1</span>
+                    </div>
                     <div class="texto">Orçamento</div>
                 </div>
 
-                <div class="conector"></div>
+                <div class="conector" id="conector1"></div>
 
-                <div class="step">
-                    <div class="numero">2</div>
+                <div class="step" id="step2">
+                    <div class="numero">
+                        <i class="bi bi-check-lg check-icon"></i>
+                        <span class="num-label">2</span>
+                    </div>
                     <div class="texto">Transporte</div>
                 </div>
 
-                <div class="conector"></div>
+                <div class="conector" id="conector2"></div>
 
-                <div class="step">
-                    <div class="numero">3</div>
+                <div class="step" id="step3">
+                    <div class="numero">
+                        <i class="bi bi-check-lg check-icon"></i>
+                        <span class="num-label">3</span>
+                    </div>
                     <div class="texto">Hospedagem</div>
                 </div>
 
-                <div class="conector"></div>
+                <div class="conector" id="conector3"></div>
 
-                <div class="step">
-                    <div class="numero">4</div>
+                <div class="step" id="step4">
+                    <div class="numero">
+                        <i class="bi bi-check-lg check-icon"></i>
+                        <span class="num-label">4</span>
+                    </div>
                     <div class="texto">Resumo</div>
                 </div>
 
             </div>
-
         </aside>
 
         <!-- CARD PRINCIPAL -->
-
         <section class="card-planejamento">
 
-            <!-- ETAPA 1 -->
-
+            <!-- ═══════════════════════════
+                 ETAPA 1 — ORÇAMENTO
+            ════════════════════════════ -->
             <div class="etapa ativa" id="etapa1">
 
                 <div class="icone-topo">
-                    <i class="fa-solid fa-wallet"></i>
+                    <i class="bi bi-wallet2"></i>
                 </div>
 
                 <h2>Defina seu Orçamento</h2>
@@ -99,241 +105,287 @@
                 </p>
 
                 <div class="campo">
-
-                    <label>
-                        Valor total disponível (R$)
-                    </label>
-
-                    <input
-                        type="number"
-                        id="orcamento"
-                        placeholder="500">
-
+                    <label>Valor total disponível (R$)</label>
+                    <input type="number" id="orcamento" placeholder="500">
                 </div>
 
                 <div class="alerta">
-                    Custo mínimo estimado:
-                    <strong>R$ 265</strong>
-                    (Ingresso)
+                    Custo mínimo estimado: <strong>R$ 265</strong> (Ingresso)
                 </div>
 
-                <button
-                    class="btn-principal"
-                    onclick="proximaEtapa(2)">
+                <button class="btn-principal" onclick="proximaEtapa(2)">
                     Continuar
                 </button>
 
             </div>
 
-            <!-- ETAPA 2 -->
-
+            <!-- ═══════════════════════════
+                 ETAPA 2 — TRANSPORTE
+            ════════════════════════════ -->
             <div class="etapa" id="etapa2">
 
                 <div class="icone-topo">
-                    <i class="fa-solid fa-bus"></i>
+                    <i class="bi bi-bus-front"></i>
                 </div>
 
                 <h2>Transporte</h2>
 
+                <p class="descricao">
+                    Pesquise opções de transporte para São Paulo, SP e informe o valor escolhido.
+                </p>
+
                 <div class="orcamento-box">
-
                     <span>Seu orçamento</span>
-
-                    <strong id="valorOrcamento">
-                        R$ 500
-                    </strong>
-
+                    <strong id="valorOrcamento">R$ 500</strong>
                 </div>
 
-                <h3>
-                    Pesquise opções de transporte
-                </h3>
+                <h3 class="secao-titulo">Pesquise opções de transporte</h3>
 
-                <div class="opcoes">
+                <div class="opcoes-grid">
 
-                    <button class="opcao">
-                        CliqueBus
-                    </button>
+                    <a href="https://www.clickbus.com.br" target="_blank" class="opcao-card">
+                        <div class="opcao-icon">
+                            <i class="bi bi-bus-front"></i>
+                        </div>
+                        <div class="opcao-info">
+                            <strong>CliqueBus</strong>
+                            <span>Passagens de ônibus</span>
+                        </div>
+                    </a>
 
-                    <button class="opcao">
-                        BlaBlaCar
-                    </button>
+                    <a href="https://www.blablacar.com.br" target="_blank" class="opcao-card">
+                        <div class="opcao-icon">
+                            <i class="bi bi-car-front"></i>
+                        </div>
+                        <div class="opcao-info">
+                            <strong>BlaBlaCar</strong>
+                            <span>Caronas compartilhadas</span>
+                        </div>
+                    </a>
 
-                    <button class="opcao">
-                        Google Flights
-                    </button>
+                    <a href="https://www.google.com/flights" target="_blank" class="opcao-card">
+                        <div class="opcao-icon">
+                            <i class="bi bi-airplane"></i>
+                        </div>
+                        <div class="opcao-info">
+                            <strong>Google Flights</strong>
+                            <span>Passagens aéreas</span>
+                        </div>
+                    </a>
 
-                    <button class="opcao">
-                        Uber
-                    </button>
+                    <a href="https://www.uber.com" target="_blank" class="opcao-card">
+                        <div class="opcao-icon">
+                            <i class="bi bi-taxi-front"></i>
+                        </div>
+                        <div class="opcao-info">
+                            <strong>Uber</strong>
+                            <span>Viagens por aplicativo</span>
+                        </div>
+                    </a>
 
                 </div>
 
                 <div class="campo">
-
-                    <label>
-                        Valor escolhido (R$)
-                    </label>
-
-                    <input
-                        type="number"
-                        id="transporte"
-                        value="0">
-
+                    <label>Valor do transporte escolhido (R$)</label>
+                    <input type="number" id="transporte" value="0" placeholder="0,00">
+                    <small class="campo-hint">Digite 0 se não precisar de transporte adicional.</small>
                 </div>
 
                 <div class="botoes">
-
-                    <button
-                        class="btn-secundario"
-                        onclick="voltarEtapa(1)">
-                        Voltar
-                    </button>
-
-                    <button
-                        class="btn-principal"
-                        onclick="proximaEtapa(3)">
-                        Continuar
-                    </button>
-
+                    <button class="btn-secundario" onclick="voltarEtapa(1)">Voltar</button>
+                    <button class="btn-principal" onclick="proximaEtapa(3)">Continuar</button>
                 </div>
 
             </div>
 
-            <!-- ETAPA 3 -->
-
+            <!-- ═══════════════════════════
+                 ETAPA 3 — HOSPEDAGEM
+            ════════════════════════════ -->
             <div class="etapa" id="etapa3">
 
                 <div class="icone-topo">
-                    <i class="fa-solid fa-hotel"></i>
+                    <i class="bi bi-building"></i>
                 </div>
 
                 <h2>Hospedagem</h2>
 
-                <div class="orcamento-box">
+                <p class="descricao">
+                    Você precisa de hospedagem para este evento?
+                </p>
 
-                    <span>Orçamento restante</span>
+                <!-- Sub-etapa 3A: pergunta Sim/Não -->
+                <div id="hospedagem-escolha">
 
-                    <strong id="restante">
-                        R$ 235
-                    </strong>
+                    <div class="opcao-escolha" onclick="mostrarHospedagem(true)">
+                        <div class="opcao-escolha-icon">
+                            <i class="bi bi-building-check"></i>
+                        </div>
+                        <div>
+                            <strong>Sim, preciso de hospedagem</strong>
+                            <p>Ver opções de hotéis e pousadas</p>
+                        </div>
+                    </div>
 
-                </div>
+                    <div class="opcao-escolha" onclick="mostrarHospedagem(false)">
+                        <div class="opcao-escolha-icon">
+                            <i class="bi bi-house-check"></i>
+                        </div>
+                        <div>
+                            <strong>Não, já tenho onde ficar</strong>
+                            <p>Continuar sem buscar hospedagem</p>
+                        </div>
+                    </div>
 
-                <h3>
-                    Escolha uma plataforma
-                </h3>
-
-                <div class="opcoes">
-
-                    <button class="opcao">
-                        Booking
-                    </button>
-
-                    <button class="opcao">
-                        Airbnb
-                    </button>
-
-                    <button class="opcao">
-                        Hotels.com
-                    </button>
-
-                    <button class="opcao">
-                        HostelWorld
-                    </button>
-
-                </div>
-
-                <div class="campo">
-
-                    <label>
-                        Valor da hospedagem (R$)
-                    </label>
-
-                    <input
-                        type="number"
-                        id="hospedagem"
-                        value="0">
+                    <div class="botoes" style="margin-top: 2rem;">
+                        <button class="btn-secundario" onclick="voltarEtapa(2)">Voltar</button>
+                    </div>
 
                 </div>
 
-                <div class="botoes">
+                <!-- Sub-etapa 3B: plataformas -->
+                <div id="hospedagem-plataformas" style="display:none;">
 
-                    <button
-                        class="btn-secundario"
-                        onclick="voltarEtapa(2)">
-                        Voltar
-                    </button>
+                    <div class="orcamento-box">
+                        <span>Orçamento restante</span>
+                        <strong id="restante">R$ 235</strong>
+                    </div>
 
-                    <button
-                        class="btn-principal"
-                        onclick="proximaEtapa(4)">
-                        Continuar
-                    </button>
+                    <h3 class="secao-titulo">Pesquise opções de hospedagem</h3>
+
+                    <div class="opcoes-grid">
+
+                        <a href="https://www.booking.com" target="_blank" class="opcao-card">
+                            <div class="opcao-icon">
+                                <i class="bi bi-building"></i>
+                            </div>
+                            <div class="opcao-info">
+                                <strong>Booking.com</strong>
+                                <span>Hotéis e apartamentos</span>
+                            </div>
+                        </a>
+
+                        <a href="https://www.airbnb.com.br" target="_blank" class="opcao-card">
+                            <div class="opcao-icon">
+                                <i class="bi bi-house-heart"></i>
+                            </div>
+                            <div class="opcao-info">
+                                <strong>Airbnb</strong>
+                                <span>Casas e apartamentos</span>
+                            </div>
+                        </a>
+
+                        <a href="https://www.hotels.com" target="_blank" class="opcao-card">
+                            <div class="opcao-icon">
+                                <i class="bi bi-door-closed"></i>
+                            </div>
+                            <div class="opcao-info">
+                                <strong>Hotels.com</strong>
+                                <span>Acomodações variadas</span>
+                            </div>
+                        </a>
+
+                        <a href="https://www.hostelworld.com" target="_blank" class="opcao-card">
+                            <div class="opcao-icon">
+                                <i class="bi bi-people"></i>
+                            </div>
+                            <div class="opcao-info">
+                                <strong>HostelWorld</strong>
+                                <span>Hostels e albergues</span>
+                            </div>
+                        </a>
+
+                    </div>
+
+                    <div class="campo">
+                        <label>Valor da hospedagem escolhida (R$)</label>
+                        <input type="number" id="hospedagem" value="0" placeholder="0,00">
+                        <small class="campo-hint" id="hospedagem-hint"></small>
+                    </div>
+
+                    <div class="botoes">
+                        <button class="btn-secundario" onclick="voltarHospedagem()">Voltar</button>
+                        <button class="btn-principal" onclick="proximaEtapa(4)">Continuar</button>
+                    </div>
 
                 </div>
 
             </div>
 
-            <!-- ETAPA 4 -->
-
+            <!-- ═══════════════════════════
+                 ETAPA 4 — RESUMO
+            ════════════════════════════ -->
             <div class="etapa" id="etapa4">
 
                 <div class="icone-topo">
-                    <i class="fa-solid fa-check"></i>
+                    <i class="bi bi-check2-circle"></i>
                 </div>
 
                 <h2>Resumo do Planejamento</h2>
 
-                <div class="resumo-box">
-
-                    <div class="linha-resumo">
-                        <span>Ingresso</span>
-                        <span>R$ 265</span>
+                <!-- Bloco Custos -->
+                <div class="resumo-bloco">
+                    <h3 class="resumo-bloco-titulo">
+                        <i class="bi bi-receipt"></i> Custos
+                    </h3>
+                    <div class="resumo-box">
+                        <div class="linha-resumo">
+                            <span>Ingresso</span>
+                            <span>R$ 265</span>
+                        </div>
+                        <div class="linha-resumo">
+                            <span>Transporte <small id="resumoTransporteLabel" class="resumo-label"></small></span>
+                            <span id="resumoTransporte">R$ 0</span>
+                        </div>
+                        <div class="linha-resumo">
+                            <span>Hospedagem <small id="resumoHospedagemLabel" class="resumo-label"></small></span>
+                            <span id="resumoHospedagem">R$ 0</span>
+                        </div>
+                        <hr>
+                        <div class="linha-resumo total">
+                            <span>Total</span>
+                            <span id="totalFinal">R$ 265</span>
+                        </div>
                     </div>
+                </div>
 
-                    <div class="linha-resumo">
-                        <span>Transporte</span>
-
-                        <span id="resumoTransporte">
-                            R$ 0
-                        </span>
+                <!-- Bloco Orçamento -->
+                <div class="resumo-bloco" style="margin-top: 1rem;">
+                    <h3 class="resumo-bloco-titulo">
+                        <i class="bi bi-wallet2"></i> Orçamento
+                    </h3>
+                    <div class="resumo-box">
+                        <div class="linha-resumo">
+                            <span>Previsto</span>
+                            <span id="resumoOrcamentoPrevisto">R$ 500</span>
+                        </div>
+                        <div class="linha-resumo">
+                            <span>Total de gastos</span>
+                            <span id="resumoTotalGastos">R$ 0</span>
+                        </div>
+                        <hr>
+                        <div class="linha-resumo total">
+                            <span>Saldo</span>
+                            <span id="resumoSaldo">R$ 500</span>
+                        </div>
                     </div>
+                </div>
 
-                    <div class="linha-resumo">
-                        <span>Hospedagem</span>
-
-                        <span id="resumoHospedagem">
-                            R$ 0
-                        </span>
-                    </div>
-
-                    <hr>
-
-                    <div class="linha-resumo total">
-
-                        <span>Total</span>
-
-                        <span id="totalFinal">
-                            R$ 265
-                        </span>
-
-                    </div>
-
+                <!-- Dicas -->
+                <div class="dicas-box" style="margin-top: 1rem;">
+                    <h3 class="dicas-titulo">
+                        <i class="bi bi-lightbulb"></i> Dicas para sua viagem
+                    </h3>
+                    <ul class="dicas-lista">
+                        <li><i class="bi bi-check-circle-fill"></i> Leve medicamentos básicos e protetor solar</li>
+                        <li><i class="bi bi-check-circle-fill"></i> Preveja R$ 50–100 para alimentação no dia</li>
+                        <li><i class="bi bi-check-circle-fill"></i> Não se esqueça de imprimir seu ingresso ou salvar offline</li>
+                        <li><i class="bi bi-check-circle-fill"></i> Salve o aplicativo do evento para atualizações</li>
+                    </ul>
                 </div>
 
                 <div class="botoes">
-
-                    <button
-                        class="btn-secundario"
-                        onclick="voltarEtapa(3)">
-                        Voltar
-                    </button>
-
-                    <button class="btn-principal">
-                        Finalizar Planejamento
-                    </button>
-
+                    <button class="btn-secundario" onclick="voltarEtapa(3)">Voltar</button>
+                    <button class="btn-principal">Finalizar Planejamento</button>
                 </div>
 
             </div>
@@ -342,59 +394,86 @@
 
     </main>
 
-    <!-- FOOTER -->
+    <!-- FOOTER (reutilizado do index) -->
+    <footer id="footer" class="footer">
 
-    <footer>
+        <div class="footer-line"></div>
 
-        <div class="footer-col">
+        <div class="container footer-top">
+            <div class="row gy-4">
 
-            <h3>ShowMe</h3>
+                <div class="col-lg-4 col-md-6 footer-about">
+                    <h4 class="logo-footer">
+                        <span class="verde">Show</span><span class="rosa">Me</span>
+                    </h4>
+                    <p>Democratizando o acesso à cultura desde 2026</p>
+                    <div class="social-links">
+                        <a href="#"><i class="bi bi-instagram"></i></a>
+                        <a href="#"><i class="bi bi-twitter-x"></i></a>
+                        <a href="#"><i class="bi bi-facebook"></i></a>
+                    </div>
+                </div>
 
-            <p>
-                Democratizando o acesso à cultura
-                através da tecnologia.
-            </p>
+                <div class="col-lg-4 col-md-6">
+                    <h4>Entre em Contato</h4>
+                    <form class="footer-contact-form">
+                        <input type="email" placeholder="Seu e-mail">
+                        <textarea placeholder="Sua mensagem"></textarea>
+                        <button type="submit">
+                            <i class="bi bi-envelope"></i>
+                            Enviar
+                        </button>
+                    </form>
+                </div>
 
-        </div>
+                <div class="col-lg-4 col-md-12 footer-links">
+                    <h4>Informações</h4>
+                    <ul>
+                        <li><a href="#">Termos de Uso</a></li>
+                        <li><a href="#">Política de Privacidade</a></li>
+                    </ul>
+                    <p class="copyright-text">
+                        © 2026 ShowMe. Todos os direitos reservados.
+                    </p>
+                </div>
 
-        <div class="footer-col">
-
-            <h3>Contato</h3>
-
-            <input
-                type="email"
-                placeholder="Seu e-mail">
-
-            <textarea
-                placeholder="Sua mensagem"></textarea>
-
-            <button>
-                Enviar
-            </button>
-
-        </div>
-
-        <div class="footer-col">
-
-            <h3>Informações</h3>
-
-            <a href="#">
-                Termos de Uso
-            </a>
-
-            <a href="#">
-                Política de Privacidade
-            </a>
-
-            <p>
-                © 2026 ShowMe
-            </p>
-
+            </div>
         </div>
 
     </footer>
 
+    <!-- Scroll Top -->
+    <a href="#" id="scroll-top" class="scroll-top d-flex align-items-center justify-content-center">
+        <i class="bi bi-arrow-up-short"></i>
+    </a>
+
+    <!-- Vendor JS (mesmo padrão do index) -->
+    <script src="assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script src="assets/vendor/aos/aos.js"></script>
+
+    <!-- JS da página -->
     <script src="js/planejamento.js"></script>
+
+    <script>
+        // Inicializar AOS (igual ao index)
+        AOS.init();
+
+        // Controle da etapa de hospedagem
+        function mostrarHospedagem(precisaHospedar) {
+            document.getElementById('hospedagem-escolha').style.display = 'none';
+            if (precisaHospedar) {
+                document.getElementById('hospedagem-plataformas').style.display = 'block';
+            } else {
+                document.getElementById('hospedagem').value = 0;
+                proximaEtapa(4);
+            }
+        }
+
+        function voltarHospedagem() {
+            document.getElementById('hospedagem-plataformas').style.display = 'none';
+            document.getElementById('hospedagem-escolha').style.display = 'block';
+        }
+    </script>
 
 </body>
 </html>

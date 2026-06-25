@@ -1,125 +1,157 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <title>Cadastro de Evento - ShowMe</title>
 
+    <link href="assets/css/cadastro-evento.css" rel="stylesheet">
+
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet">
 
-    <link rel="stylesheet" href="css/cadastro-evento.css">
-
-    <link rel="stylesheet"
-    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
 </head>
+
 <body>
 
-<div class="container-fluid evento-container">
-
-    <div class="logo">
-        <span class="show">Show</span><span class="me">Me</span>
+    <div class="top-bar">
+        <a href="inicio.html" class="voltar">
+            <i class="fa-solid fa-arrow-left"></i>
+            Voltar
+        </a>
     </div>
 
-    <div class="evento-card">
+    <div class="linha-topo"></div>
 
-        <h2>Cadastro de Evento</h2>
+    <div class="container-fluid evento-container">
 
-        <form>
+        <div class="evento-card">
 
-            <div class="upload-area">
+            <h2>
+                <span class="titulo-verde">Cadastrar</span>
+                <span class="titulo-rosa">Evento</span>
+            </h2>
 
-                <i class="fa-solid fa-image"></i>
+            <p class="subtitulo">
+                Preencha as informações abaixo. Nossa equipe analisará e aprovará seu evento.
+            </p>
 
-                <p>Adicionar imagem do evento</p>
+            <form>
 
-                <input type="file">
+                <label class="form-label">Foto do evento</label>
 
-            </div>
+                <label class="upload-area">
 
-            <div class="mb-3">
-                <label class="form-label">Nome do Evento</label>
+                    <input type="file" id="imagemEvento" accept="image/*">
 
-                <input
-                    type="text"
-                    class="form-control"
-                    placeholder="Digite o nome do evento">
-            </div>
+                    <i class="fa-solid fa-arrow-up-from-bracket"></i>
 
-            <div class="mb-3">
-                <label class="form-label">Local</label>
+                    <p id="texto-upload">
+                        Clique para selecionar uma imagem<br>
+                        PNG, JPG, WEBP — máx. 10 MB
+                    </p>
 
-                <input
-                    type="text"
-                    class="form-control"
-                    placeholder="Cidade ou endereço">
-            </div>
+                </label>
 
-            <div class="row">
+                <div class="mb-3">
+                    <label class="form-label">Nome do evento</label>
 
-                <div class="col-md-6 mb-3">
-                    <label class="form-label">Data</label>
-
-                    <input
-                        type="date"
-                        class="form-control">
+                    <input type="text" class="form-control" placeholder="Ex: Festival de Jazz 2026">
                 </div>
 
-                <div class="col-md-6 mb-3">
-                    <label class="form-label">Horário</label>
+                <div class="mb-3">
+                    <label class="form-label">Local</label>
 
-                    <input
-                        type="time"
-                        class="form-control">
+                    <input type="text" class="form-control" placeholder="Ex: Parque Villa-Lobos, São Paulo - SP">
                 </div>
 
-            </div>
+                <div class="row">
 
-            <div class="mb-3">
-                <label class="form-label">Tipo de Evento</label>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Data</label>
 
-                <select class="form-select">
+                        <input type="date" class="form-control">
+                    </div>
 
-                    <option>Música</option>
-                    <option>Festival</option>
-                    <option>Teatro</option>
-                    <option>Dança</option>
-                    <option>Exposição</option>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Horário</label>
 
-                </select>
-            </div>
+                        <input type="time" class="form-control">
+                    </div>
 
-            <div class="mb-3">
-                <label class="form-label">Descrição</label>
+                </div>
 
-                <textarea
-                    class="form-control"
-                    rows="5"
-                    placeholder="Descreva o evento"></textarea>
-            </div>
+                <div class="mb-3">
 
-            <div class="mb-4">
-                <label class="form-label">Artistas/Atrações</label>
+                    <label class="form-label">
+                        Tipo de evento
+                    </label>
 
-                <textarea
-                    class="form-control"
-                    rows="3"
-                    placeholder="Informe artistas, bandas ou atrações"></textarea>
-            </div>
+                    <div class="tipo-ingresso">
 
-            <button
-                type="submit"
-                class="btn btn-enviar">
+                        <input type="radio" name="ingresso" id="gratuito" checked>
 
-                Enviar para análise
+                        <label for="gratuito" class="opcao">
+                            Gratuito
+                        </label>
 
-            </button>
+                        <input type="radio" name="ingresso" id="pago">
 
-        </form>
+                        <label for="pago" class="opcao">
+                            Pago
+                        </label>
+
+                    </div>
+
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">
+                        Descrição do evento
+                    </label>
+
+                    <textarea class="form-control descricao-grande"
+                        placeholder="Conte sobre o evento: programação, atrações, experiências..."></textarea>
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label">
+                        Descrição do artista / atração
+                    </label>
+
+                    <textarea class="form-control descricao-media"
+                        placeholder="Quem são os artistas ou atrações principais? Biografia, estilo, destaque..."></textarea>
+                </div>
+
+                <button type="submit" class="btn-enviar">
+                    Enviar para análise
+                </button>
+
+            </form>
+
+        </div>
 
     </div>
 
-</div>
+    <script>
 
+const inputImagem = document.getElementById("imagemEvento");
+const textoUpload = document.getElementById("texto-upload");
+
+inputImagem.addEventListener("change", function(){
+
+    if(this.files.length > 0){
+
+        textoUpload.innerHTML =
+            this.files[0].name;
+
+    }
+
+});
+
+</script>
 </body>
+
 </html>

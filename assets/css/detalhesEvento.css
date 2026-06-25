@@ -1,0 +1,592 @@
+/* ==========================
+   DETALHES EVENTO — SHOWME
+   Bootstrap Icons (bi bi-...)
+   Footer reutilizado do index
+========================== */
+
+*, *::before, *::after {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Open Sans', 'Segoe UI', sans-serif;
+}
+
+body {
+    background: #0a0a0a !important;
+    color: #fff !important;
+}
+
+/* ==========================
+   CORES
+========================== */
+
+.verde { color: #39ff14; }
+.rosa  { color: #ff4f9a; }
+
+/* ==========================
+   WRAPPER
+========================== */
+
+.pagina-wrapper {
+    min-height: 100vh;
+}
+
+/* ==========================
+   BOTÃO VOLTAR
+========================== */
+
+.btn-voltar {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 46px;
+    height: 46px;
+    margin: 20px 0 0 20px;
+    border: 2px solid #39ff14;
+    border-radius: 50%;
+    color: #39ff14;
+    font-size: 1.1rem;
+    text-decoration: none;
+    transition: .25s;
+}
+
+.btn-voltar:hover {
+    background: #39ff14;
+    color: #000;
+}
+
+/* ==========================
+   BANNER
+========================== */
+
+.banner-evento {
+    width: 100%;
+    height: 480px;
+    overflow: hidden;
+    margin: 15px 0 0;
+}
+
+.banner-evento img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+/* ==========================
+   CONTEÚDO PRINCIPAL
+========================== */
+
+.conteudo-principal {
+    padding-top: 28px;
+    padding-bottom: 60px;
+}
+
+/* Badge */
+.badge-evento {
+    display: inline-block;
+    background: #ff4f9a;
+    color: #000;
+    font-size: 0.82rem;
+    font-weight: 700;
+    padding: 5px 14px;
+    border-radius: 20px;
+    margin-bottom: 14px;
+}
+
+/* Título */
+.titulo-evento {
+    font-size: 2.6rem;
+    font-weight: 800;
+    line-height: 1.15;
+    margin-bottom: 14px;
+    color: #fff;
+}
+
+/* Infos rápidas */
+.infos-rapidas {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    font-size: 0.9rem;
+    color: #ccc;
+    margin-bottom: 10px;
+}
+
+.infos-rapidas span {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.infos-rapidas i {
+    color: #39ff14;
+    font-size: 1rem;
+}
+
+/* ==========================
+   SEÇÕES
+========================== */
+
+.secao {
+    margin-bottom: 28px;
+}
+
+.secao h2 {
+    color: #39ff14;
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin-bottom: 14px;
+}
+
+.secao > p {
+    color: #d8d8d8;
+    line-height: 1.8;
+    font-size: 0.95rem;
+}
+
+/* Card interno (artista, local) */
+.card-showme {
+    background: #141414;
+    border: 2px solid #39ff14;
+    border-radius: 18px;
+    padding: 22px 24px;
+}
+
+.card-showme h4 {
+    font-size: 1.05rem;
+    font-weight: 700;
+    margin-bottom: 10px;
+    color: #fff;
+}
+
+.card-showme p {
+    color: #ccc;
+    font-size: 0.9rem;
+    line-height: 1.7;
+    margin: 0;
+}
+
+/* Mapa placeholder */
+.mapa-placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    height: 170px;
+    margin-top: 18px;
+    border: 2px dashed #2a2a2a;
+    border-radius: 14px;
+    color: #39ff14;
+    font-size: 0.95rem;
+}
+
+.mapa-placeholder i { font-size: 1.4rem; }
+
+/* ==========================
+   AVALIAÇÕES
+========================== */
+
+.lista-avaliacoes {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.avaliacao-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    background: #141414;
+    border: 1px solid #222;
+    border-radius: 14px;
+    padding: 16px 20px;
+}
+
+.avaliacao-item strong {
+    display: block;
+    font-size: 0.95rem;
+    margin-bottom: 4px;
+}
+
+.avaliacao-item p {
+    color: #ccc;
+    font-size: 0.88rem;
+    margin: 0 0 4px;
+}
+
+.avaliacao-item small {
+    color: #666;
+    font-size: 0.78rem;
+}
+
+.estrelas-exibir {
+    color: #f7c948;
+    font-size: 1rem;
+    white-space: nowrap;
+    margin-left: 16px;
+    flex-shrink: 0;
+}
+
+/* ==========================
+   FORMULÁRIO DE AVALIAÇÃO
+========================== */
+
+.avaliar-card {
+    background: #141414;
+    border: 2px solid #39ff14;
+    border-radius: 20px;
+    padding: 28px;
+}
+
+.avaliar-card h2 {
+    color: #39ff14;
+    font-size: 1.15rem;
+    margin-bottom: 18px;
+}
+
+.avaliar-card label {
+    display: block;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #ddd;
+    margin-bottom: 8px;
+    margin-top: 14px;
+}
+
+.avaliar-card label:first-of-type {
+    margin-top: 0;
+}
+
+/* Estrelas clicáveis */
+.estrelas-input {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 6px;
+}
+
+.estrela {
+    font-size: 1.6rem;
+    color: #444;
+    cursor: pointer;
+    transition: color .15s, transform .15s;
+}
+
+.estrela:hover,
+.bi-star-fill.estrela {
+    color: #f7c948;
+}
+
+.estrela:hover {
+    transform: scale(1.15);
+}
+
+/* Textarea */
+.avaliar-card textarea {
+    width: 100%;
+    min-height: 110px;
+    background: #1a1a1a;
+    color: #fff;
+    border: 2px solid #2a2a2a;
+    border-radius: 14px;
+    padding: 14px;
+    font-size: 0.9rem;
+    resize: vertical;
+    transition: border-color .25s;
+}
+
+.avaliar-card textarea:focus {
+    outline: none;
+    border-color: #39ff14;
+}
+
+/* Área de upload */
+.upload-area {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 20px;
+    border: 2px dashed #333;
+    border-radius: 14px;
+    color: #888;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: .25s;
+    margin-top: 0;
+    font-weight: 400;
+}
+
+.upload-area i { font-size: 1.2rem; }
+
+.upload-area:hover {
+    border-color: #39ff14;
+    color: #39ff14;
+}
+
+/* Botão enviar */
+.btn-enviar {
+    display: block;
+    margin-top: 20px;
+    height: 50px;
+    padding: 0 30px;
+    border: none;
+    border-radius: 14px;
+    background: #39ff14;
+    color: #000;
+    font-weight: 700;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: .25s;
+}
+
+.btn-enviar:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(57, 255, 20, .3);
+}
+
+/* ==========================
+   COLUNA DIREITA — INGRESSOS
+========================== */
+
+.ingresso-card {
+    background: #0d0d0d;
+    border: 2px solid #ff4f9a;
+    border-radius: 20px;
+    padding: 24px;
+    margin-bottom: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.ingresso-card h3 {
+    color: #ff4f9a;
+    font-size: 1.2rem;
+    font-weight: 700;
+    margin: 0;
+}
+
+.ingresso-card p {
+    color: #bbb;
+    font-size: 0.88rem;
+    margin: 0;
+    line-height: 1.5;
+}
+
+.ingresso-card small {
+    color: #777;
+    font-size: 0.8rem;
+    text-align: center;
+}
+
+.btn-comprar {
+    width: 100%;
+    height: 48px;
+    border: none;
+    border-radius: 12px;
+    background: #ff4f9a;
+    color: #000;
+    font-weight: 700;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: .25s;
+}
+
+.btn-comprar:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(255, 79, 154, .35);
+}
+
+/* Botões Favoritar / Planejar */
+.btn-acao {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    width: 100%;
+    height: 50px;
+    margin-bottom: 12px;
+    border-radius: 14px;
+    font-weight: 700;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: .25s;
+}
+
+.btn-favoritar {
+    background: transparent;
+    border: 2px solid #39ff14;
+    color: #39ff14;
+}
+
+.btn-favoritar:hover {
+    background: #39ff14;
+    color: #000;
+}
+
+.btn-planejar {
+    background: #39ff14;
+    border: 2px solid #39ff14;
+    color: #000;
+}
+
+.btn-planejar:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(57, 255, 20, .3);
+}
+
+/* ==========================
+   FOOTER — mesmo padrão das outras páginas
+========================== */
+
+.footer {
+    background: #0a0a0a;
+    color: #aaa;
+}
+
+.footer-line {
+    width: 100%;
+    height: 2px;
+    background: #39ff14;
+}
+
+.footer-top { padding: 50px 0; }
+
+.footer h4,
+.footer .logo-footer {
+    color: #39ff14;
+    margin-bottom: 15px;
+    font-size: 1.1rem;
+    font-weight: 700;
+}
+
+.footer-about p,
+.footer-links .copyright-text { color: #aaa; }
+
+.social-links {
+    display: flex;
+    gap: 12px;
+    margin-top: 15px;
+}
+
+.social-links a {
+    width: 36px;
+    height: 36px;
+    border: 1px solid #333;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #aaa;
+    text-decoration: none;
+    transition: .25s;
+}
+
+.social-links a:hover {
+    border-color: #39ff14;
+    color: #39ff14;
+}
+
+.footer-contact-form {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.footer-contact-form input,
+.footer-contact-form textarea {
+    width: 100%;
+    background: #1f1f1f;
+    color: #fff;
+    border: 2px solid transparent;
+    border-radius: 12px;
+    padding: 14px;
+    font-size: 0.9rem;
+    transition: .3s;
+}
+
+.footer-contact-form input:focus,
+.footer-contact-form textarea:focus {
+    outline: none;
+    border-color: #39ff14;
+}
+
+.footer-contact-form textarea {
+    resize: none;
+    height: 110px;
+}
+
+.footer-contact-form button {
+    height: 48px;
+    border: none;
+    border-radius: 12px;
+    background: #39ff14;
+    color: #000;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: .3s;
+}
+
+.footer-contact-form button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(57, 255, 20, .25);
+}
+
+.footer-links ul {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 15px;
+}
+
+.footer-links ul li { margin-bottom: 8px; }
+
+.footer-links ul li a {
+    color: #aaa;
+    text-decoration: none;
+    transition: color .2s;
+}
+
+.footer-links ul li a:hover { color: #39ff14; }
+
+/* Scroll top */
+.scroll-top {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 40px;
+    height: 40px;
+    background: #39ff14;
+    color: #000;
+    border-radius: 50%;
+    text-decoration: none;
+    font-size: 1.3rem;
+    z-index: 999;
+    transition: .3s;
+}
+
+.scroll-top:hover {
+    transform: translateY(-3px);
+    color: #000;
+}
+
+/* ==========================
+   RESPONSIVO
+========================== */
+
+@media (max-width: 992px) {
+    /* Coluna direita sobe para cima do conteúdo */
+    .col-lg-4 { order: -1; }
+
+    .ingresso-card { margin-bottom: 12px; }
+}
+
+@media (max-width: 768px) {
+    .banner-evento { height: 260px; }
+    .titulo-evento  { font-size: 1.8rem; }
+    .infos-rapidas  { flex-direction: column; gap: 10px; }
+    .col-lg-4       { order: 0; }
+}

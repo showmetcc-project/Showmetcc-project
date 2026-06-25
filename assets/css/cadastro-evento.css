@@ -15,6 +15,9 @@ body {
     min-height: 100vh;
     display: flex;
     flex-direction: column;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow-x: hidden;
 }
 
 /* ==========================
@@ -50,13 +53,27 @@ body {
 
 /* ==========================
    CONTAINER PRINCIPAL
+   — zera padding do Bootstrap container-fluid
 ========================== */
 
 .evento-container {
     flex: 1;
-    padding: 0;
+    padding: 0 !important;
+    margin: 0 !important;
     display: flex;
     flex-direction: column;
+}
+
+/* ==========================
+   OVERRIDE BOOTSTRAP — remove padding lateral do container e row
+========================== */
+
+.container-fluid.evento-container,
+.container-fluid.evento-container > .row {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
 }
 
 /* ==========================

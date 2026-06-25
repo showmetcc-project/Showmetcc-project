@@ -77,6 +77,11 @@ body {
    CONTEÚDO PRINCIPAL
 ========================== */
 
+a {
+      text-decoration: none;
+      color: #000;
+}
+
 .conteudo-principal {
     padding-top: 28px;
     padding-bottom: 60px;

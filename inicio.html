@@ -1,0 +1,294 @@
+```html
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ShowMe</title>
+
+  <!-- Favicons -->
+  <link href="assets/img/showme.png" rel="icon">
+  <link href="assets/img/apple-touch-icon.png" rel="apple-touch-icon">
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+  <link href="https://fonts.googleapis.com/css2?family=Anton&family=Archivo+Black&family=Bodoni+Moda:wght@400;700&family=Libertinus+Serif+Display&family=Noto+Sans+JP:wght@100..900&family=Noto+Serif:wght@100..900&family=Open+Sans:wght@300..800&family=Poppins:wght@300;400;500;600;700&family=Roboto+Condensed:wght@100..900&family=Story+Script&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@200;300;400;500;600;700&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <!-- Vendor CSS -->
+  <link href="assets/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+  <link href="assets/vendor/bootstrap-icons/bootstrap-icons.css" rel="stylesheet">
+  <link href="assets/vendor/aos/aos.css" rel="stylesheet">
+  <link href="assets/vendor/glightbox/css/glightbox.min.css" rel="stylesheet">
+  <link href="assets/vendor/swiper/swiper-bundle.min.css" rel="stylesheet">
+
+  <!-- CSS Principal -->
+  <link href="assets/css/main.css" rel="stylesheet">
+</head>
+
+<body>
+
+  
+  <header class="topbar">
+
+    <div class="logo">
+      <img src="assets/img/showme.png" alt="ShowMe">
+    </div>
+
+    <div class="search-box">
+      <i class="bi bi-search"></i>
+      <input type="text" placeholder="Buscar eventos...">
+    </div>
+
+    <a href="cadastro-evento.html" class="btn-cadastrar">
+      <i class="bi bi-plus-circle"></i>
+      Cadastrar Evento
+    </a>
+
+    <nav class="menu-links">
+      <a href="favoritos.html">
+        <i class="bi bi-heart"></i>
+        Favoritos
+      </a>
+
+      <a href="sobre.html">
+        <i class="bi bi-info-circle"></i>
+        Sobre
+      </a>
+
+      <a href="#footer">
+        <i class="bi bi-telephone"></i>
+        Contato
+      </a>
+    </nav>
+      
+
+    <button class="btn-user">
+      <i class="bi bi-person-fill"></i>
+      <a class="preto" href="perfilusuario.html">Usuário</a>
+    </button>
+
+  </header>
+
+  <main class="inicio">
+
+  <section class="banner-section">
+
+    <h2 class="titulo-home">
+      Recomendamos para Você
+    </h2>
+
+    <div class="banner">
+      <img src="assets/img/banner_site_565x235px.png" alt="Banner Principal">
+    </div>
+
+  </section>
+
+  <section class="eventos">
+
+    <h3>Eventos Musicais</h3>
+
+    <div class="cards-grid">
+
+      <div class="card-evento">
+
+        <div class="badge-evento pago">
+          Pago
+        </div>
+
+        <img src="assets/img/rock.png" alt="Evento">
+
+        <div class="card-conteudo">
+
+          <h4>Rock in Rio</h4>
+
+          <div class="info-evento">
+
+            <span>
+              <i class="bi bi-geo-alt-fill"></i>
+              Rio de Janeiro - RJ
+            </span>
+
+            <span>
+              <i class="bi bi-calendar-event"></i>
+              De 4 a 13 de setembro de 2026
+            </span>
+
+          </div>
+
+        </div>
+
+      </div>
+
+      <div class="card-evento">
+
+        <div class="badge-evento gratuito">
+          Gratuito
+        </div>
+
+        <img src="assets/img/banner_site_565x235px.png" alt="Evento">
+
+        <div class="card-conteudo">
+
+          <h4>Show Cultural</h4>
+
+          <div class="info-evento">
+
+            <span>
+              <i class="bi bi-geo-alt-fill"></i>
+              São Paulo - SP
+            </span>
+
+            <span>
+              <i class="bi bi-calendar-event"></i>
+              23 e 24 de maio de 2026
+            </span>
+
+          </div>
+
+        </div>
+
+      </div>
+
+      <div class="card-evento">
+
+        <div class="badge-evento pago">
+          Pago
+        </div>
+
+        <img src="assets/img/shrek.png" alt="Evento">
+
+        <div class="card-conteudo">
+
+          <h4>Shrek: O Musical</h4>
+
+          <div class="info-evento">
+
+            <span>
+              <i class="bi bi-geo-alt-fill"></i>
+              São Paulo, SP
+            </span>
+
+            <span>
+              <i class="bi bi-calendar-event"></i>
+              15 de abril a 07 de junho de 2026
+            </span>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </section>
+
+  
+
+</main>
+
+  <!-- FOOTER -->
+  <footer id="footer" class="footer">
+
+    <div class="footer-line"></div>
+
+    <div class="container footer-top">
+
+      <div class="row gy-4">
+
+        <div class="col-lg-4 col-md-6 footer-about">
+
+          <h4 class="logo-footer">
+            <span class="verde">Show</span><span class="rosa">Me</span>
+          </h4>
+
+          <p>
+            Democratizando o acesso à cultura desde 2026.
+          </p>
+
+          <div class="social-links">
+
+            <a href="#">
+              <i class="bi bi-instagram"></i>
+            </a>
+
+            <a href="#">
+              <i class="bi bi-twitter-x"></i>
+            </a>
+
+            <a href="#">
+              <i class="bi bi-facebook"></i>
+            </a>
+
+          </div>
+
+        </div>
+
+        <div class="col-lg-4 col-md-6">
+
+          <h4>Entre em Contato</h4>
+
+          <form class="footer-contact-form">
+
+            <input type="email" placeholder="Seu e-mail">
+
+            <textarea placeholder="Sua mensagem"></textarea>
+
+            <button type="submit">
+              <i class="bi bi-envelope"></i>
+              Enviar
+            </button>
+
+          </form>
+
+        </div>
+
+        <div class="col-lg-4 col-md-12 footer-links">
+
+          <h4>Informações</h4>
+
+          <ul>
+            <li><a href="#">Termos de Uso</a></li>
+            <li><a href="#">Política de Privacidade</a></li>
+          </ul>
+
+          <p class="copyright-text">
+            © 2026 ShowMe. Todos os direitos reservados.
+          </p>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </footer>
+
+  <!-- Scroll Top -->
+  <a href="#" id="scroll-top" class="scroll-top d-flex align-items-center justify-content-center">
+    <i class="bi bi-arrow-up-short"></i>
+  </a>
+
+  <!-- Preloader -->
+  <div id="preloader"></div>
+
+  <!-- Vendor JS -->
+  <script src="assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+  <script src="assets/vendor/php-email-form/validate.js"></script>
+  <script src="assets/vendor/aos/aos.js"></script>
+  <script src="assets/vendor/glightbox/js/glightbox.min.js"></script>
+  <script src="assets/vendor/swiper/swiper-bundle.min.js"></script>
+  <script src="assets/vendor/waypoints/noframework.waypoints.js"></script>
+  <script src="assets/vendor/imagesloaded/imagesloaded.pkgd.min.js"></script>
+  <script src="assets/vendor/isotope-layout/isotope.pkgd.min.js"></script>
+
+  <!-- Main JS -->
+  <script src="assets/js/main.js"></script>
+
+</body>
+
+</html>
+```

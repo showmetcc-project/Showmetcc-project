@@ -1,226 +1,218 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Meus Eventos - ShowMe</title>
 
-    <link rel="stylesheet" href="css/favoritos.css">
+    <!-- Favicons -->
+    <link href="assets/img/showme.png" rel="icon">
 
-    <link rel="stylesheet"
-        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+    <!-- Fonts (igual ao index) -->
+    <link href="https://fonts.googleapis.com" rel="preconnect">
+    <link href="https://fonts.gstatic.com" rel="preconnect" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800&family=Poppins:wght@300;400;500;600;700&family=Jost:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Vendor CSS (mesmo padrão do index) -->
+    <link href="assets/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <link href="assets/vendor/bootstrap-icons/bootstrap-icons.css" rel="stylesheet">
+    <link href="assets/vendor/aos/aos.css" rel="stylesheet">
+
+    <!-- CSS customizado — sempre por último -->
+    <link rel="stylesheet" href="assets/css/favoritos.css">
 </head>
-
 <body>
 
-    <main class="container">
+    <main class="eventos-container">
 
-        <a href="index.html" class="voltar">
-            <i class="fa-solid fa-arrow-left"></i>
-            Meus <span>Eventos</span>
-        </a>
+        <!-- TOPO -->
+        <div class="topo">
+            <a href="index.html" class="voltar">
+                <i class="bi bi-arrow-left"></i>
+                Meus <span>Eventos</span>
+            </a>
+        </div>
 
-        <div class="linha"></div>
+        <div class="linha-verde"></div>
 
+        <!-- ABAS -->
         <div class="abas">
 
             <button class="aba ativa" data-tab="favoritos">
-                <i class="fa-regular fa-heart"></i>
+                <i class="bi bi-heart"></i>
                 Favoritos (3)
             </button>
 
             <button class="aba" data-tab="planejados">
-                <i class="fa-regular fa-calendar"></i>
+                <i class="bi bi-calendar-event"></i>
                 Planejados (2)
             </button>
 
         </div>
 
-        <!-- FAVORITOS -->
-
+        <!-- ══════════════════════════
+             FAVORITOS
+        ═══════════════════════════ -->
         <section id="favoritos" class="conteudo ativa">
 
+            <!-- Card 1 -->
             <div class="card-evento">
-
                 <img src="img/harry.jpg" alt="Harry Styles">
-
                 <div class="info">
-
                     <h3>Harry Styles: Together, Together</h3>
-
-                    <p>
-                        <i class="fa-solid fa-location-dot"></i>
-                        São Paulo, SP
-                    </p>
-
-                    <p>
-                        <i class="fa-regular fa-calendar"></i>
-                        15 Jun 2026
-                    </p>
-
-                    <button class="btn-detalhes">
-                        Ver detalhes
-                    </button>
-
+                    <p><i class="bi bi-geo-alt-fill"></i> São Paulo, SP</p>
+                    <p><i class="bi bi-calendar3"></i> 15 Jun 2026</p>
+                    <button class="btn-detalhes">Ver detalhes</button>
                 </div>
-
                 <div class="acoes">
-
-                    <span class="tag pago">
-                        Pago
-                    </span>
-
-                    <button class="btn-excluir">
-                        <i class="fa-solid fa-trash"></i>
+                    <span class="tag pago">Pago</span>
+                    <button class="btn-excluir" title="Remover">
+                        <i class="bi bi-trash3"></i>
                     </button>
-
                 </div>
-
             </div>
 
+            <!-- Card 2 -->
             <div class="card-evento">
-
                 <img src="img/virada.jpg" alt="Virada Cultural">
-
                 <div class="info">
-
                     <h3>Virada Cultural 2026</h3>
-
-                    <p>
-                        <i class="fa-solid fa-location-dot"></i>
-                        São Paulo, SP
-                    </p>
-
-                    <p>
-                        <i class="fa-regular fa-calendar"></i>
-                        22 Jul 2026
-                    </p>
-
-                    <button class="btn-detalhes">
-                        Ver detalhes
-                    </button>
-
+                    <p><i class="bi bi-geo-alt-fill"></i> São Paulo, SP</p>
+                    <p><i class="bi bi-calendar3"></i> 22 Jul 2026</p>
+                    <button class="btn-detalhes">Ver detalhes</button>
                 </div>
-
                 <div class="acoes">
-
-                    <span class="tag gratis">
-                        Grátis
-                    </span>
-
-                    <button class="btn-excluir">
-                        <i class="fa-solid fa-trash"></i>
+                    <span class="tag gratis">Grátis</span>
+                    <button class="btn-excluir" title="Remover">
+                        <i class="bi bi-trash3"></i>
                     </button>
-
                 </div>
+            </div>
 
+            <!-- Card 3 -->
+            <div class="card-evento">
+                <img src="img/rockinrio.jpg" alt="Rock in Rio">
+                <div class="info">
+                    <h3>Rock in Rio</h3>
+                    <p><i class="bi bi-geo-alt-fill"></i> Rio de Janeiro, RJ</p>
+                    <p><i class="bi bi-calendar3"></i> 15 Set 2026</p>
+                    <button class="btn-detalhes">Ver detalhes</button>
+                </div>
+                <div class="acoes">
+                    <span class="tag pago">Pago</span>
+                    <button class="btn-excluir" title="Remover">
+                        <i class="bi bi-trash3"></i>
+                    </button>
+                </div>
             </div>
 
         </section>
 
-        <!-- PLANEJADOS -->
-
+        <!-- ══════════════════════════
+             PLANEJADOS
+        ═══════════════════════════ -->
         <section id="planejados" class="conteudo">
 
+            <!-- Card 1 -->
             <div class="card-evento">
-
-                <img src="img/rockinrio.jpg" alt="Rock in Rio">
-
+                <img src="img/harry.jpg" alt="Harry Styles">
                 <div class="info">
-
-                    <h3>Rock in Rio</h3>
-
-                    <p>
-                        <i class="fa-solid fa-location-dot"></i>
-                        Rio de Janeiro, RJ
-                    </p>
-
-                    <p>
-                        <i class="fa-regular fa-calendar"></i>
-                        15 Set 2026
-                    </p>
-
-                    <div class="botoes">
-
-                        <button class="btn-detalhes">
-                            Ver detalhes
-                        </button>
-
-                        <button class="btn-planejamento">
-                            Ver planejamento
-                        </button>
-
+                    <h3>Harry Styles: Together, Together</h3>
+                    <p><i class="bi bi-geo-alt-fill"></i> São Paulo, SP</p>
+                    <p><i class="bi bi-calendar3"></i> 15 Jun 2026</p>
+                    <div class="botoes-duplos">
+                        <button class="btn-detalhes">Ver detalhes</button>
+                        <button class="btn-planejamento">Ver Planejamento</button>
                     </div>
-
                 </div>
-
                 <div class="acoes">
-
-                    <span class="tag pago">
-                        Pago
-                    </span>
-
-                    <button class="btn-excluir">
-                        <i class="fa-solid fa-trash"></i>
+                    <span class="tag pago">Pago</span>
+                    <button class="btn-excluir" title="Remover">
+                        <i class="bi bi-trash3"></i>
                     </button>
-
                 </div>
-
             </div>
 
+            <!-- Card 2 -->
             <div class="card-evento">
-
-                <img src="img/lollapalooza.jpg" alt="Lollapalooza">
-
+                <img src="img/virada.jpg" alt="Virada Cultural">
                 <div class="info">
-
-                    <h3>Lollapalooza Brasil</h3>
-
-                    <p>
-                        <i class="fa-solid fa-location-dot"></i>
-                        São Paulo, SP
-                    </p>
-
-                    <p>
-                        <i class="fa-regular fa-calendar"></i>
-                        25 Mar 2027
-                    </p>
-
-                    <div class="botoes">
-
-                        <button class="btn-detalhes">
-                            Ver detalhes
-                        </button>
-
-                        <button class="btn-planejamento">
-                            Ver planejamento
-                        </button>
-
+                    <h3>Virada Cultural 2026</h3>
+                    <p><i class="bi bi-geo-alt-fill"></i> São Paulo, SP</p>
+                    <p><i class="bi bi-calendar3"></i> 22 Jul 2026</p>
+                    <div class="botoes-duplos">
+                        <button class="btn-detalhes">Ver detalhes</button>
+                        <button class="btn-planejamento">Ver Planejamento</button>
                     </div>
-
                 </div>
-
                 <div class="acoes">
-
-                    <span class="tag pago">
-                        Pago
-                    </span>
-
-                    <button class="btn-excluir">
-                        <i class="fa-solid fa-trash"></i>
+                    <span class="tag gratis">Grátis</span>
+                    <button class="btn-excluir" title="Remover">
+                        <i class="bi bi-trash3"></i>
                     </button>
-
                 </div>
-
             </div>
 
         </section>
 
     </main>
 
-    <script src="js/meus-eventos.js"></script>
+    <!-- FOOTER (reutilizado do index) -->
+    <footer id="footer" class="footer">
+
+        <div class="footer-line"></div>
+
+        <div class="container footer-top">
+            <div class="row gy-4">
+
+                <div class="col-lg-4 col-md-6 footer-about">
+                    <h4 class="logo-footer">
+                        <span class="verde">Show</span><span class="rosa">Me</span>
+                    </h4>
+                    <p>Democratizando o acesso à cultura desde 2026</p>
+                    <div class="social-links">
+                        <a href="#"><i class="bi bi-instagram"></i></a>
+                        <a href="#"><i class="bi bi-twitter-x"></i></a>
+                        <a href="#"><i class="bi bi-facebook"></i></a>
+                    </div>
+                </div>
+
+                <div class="col-lg-4 col-md-6">
+                    <h4>Entre em Contato</h4>
+                    <form class="footer-contact-form">
+                        <input type="email" placeholder="Seu e-mail">
+                        <textarea placeholder="Sua mensagem"></textarea>
+                        <button type="submit">
+                            <i class="bi bi-envelope"></i>
+                            Enviar
+                        </button>
+                    </form>
+                </div>
+
+                <div class="col-lg-4 col-md-12 footer-links">
+                    <h4>Informações</h4>
+                    <ul>
+                        <li><a href="#">Termos de Uso</a></li>
+                        <li><a href="#">Política de Privacidade</a></li>
+                    </ul>
+                    <p class="copyright-text">© 2026 ShowMe. Todos os direitos reservados.</p>
+                </div>
+
+            </div>
+        </div>
+
+    </footer>
+
+    <!-- Scroll Top -->
+    <a href="#" id="scroll-top" class="scroll-top d-flex align-items-center justify-content-center">
+        <i class="bi bi-arrow-up-short"></i>
+    </a>
+
+    <!-- Vendor JS -->
+    <script src="assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script src="assets/vendor/aos/aos.js"></script>
+    <script src="js/favoritos.js"></script>
+    <script>AOS.init();</script>
 
 </body>
-
 </html>

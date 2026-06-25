@@ -8,6 +8,9 @@ https://www.figma.com/design/OfIRwYhogB1vUhzETBJfBr/Prot%C3%B3tipo-ShowMe?node-i
 https://docs.google.com/document/d/1eQmMmD_ZRE1Jcs-hp6PKNb1CXcPMcDlCV_TuUi69Axs/edit?usp=sharing
 <div align="center">
 
+## Link do site:
+https://showmetcc-project.github.io/Showmetcc-project/
+
 <img src="./assets/banner.png" width="100%">
 
 # SHOW ME

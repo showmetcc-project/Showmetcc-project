@@ -632,6 +632,12 @@ h1, h2, h3, h4, h5, h6 {
   background: #000;
   color: #fff;
   padding: 40px 0;
+  font-family: "Oswald", sans-serif;
+}
+
+.footer a {
+  color: #0aff16;
+  text-decoration: none;
 }
 
 .footer-line {

@@ -260,54 +260,65 @@ body {
 /* ==========================
    FOOTER — complementa main.css do index
 ========================== */
-
 .footer {
     margin-top: 60px;
-    background: #0a0a0a;
-    color: #aaa;
+    background: #000;
+    color: #fff;
+    padding: 40px 0;
+    font-family: "Oswald", sans-serif;
 }
 
 .footer-line {
     width: 100%;
-    height: 2px;
-    background: #39ff14;
+    height: 1px;
+    background: #0aff16;
+    margin-bottom: 35px;
 }
 
-.footer-top { padding: 50px 0; }
+.footer-top {
+    padding: 0;
+}
 
 .footer h4,
 .footer .logo-footer {
-    color: #39ff14;
-    margin-bottom: 15px;
-    font-size: 1.1rem;
+    font-family: "Oswald", sans-serif;
+    color: #0aff16;
+    letter-spacing: 1px;
+    font-size: 18px;
     font-weight: 700;
+    margin-bottom: 18px;
+}
+
+.logo-footer {
+    font-size: 26px;
 }
 
 .footer-about p,
-.footer-links .copyright-text { color: #aaa; }
+.footer-links .copyright-text {
+    font-family: "Oswald", sans-serif;
+    color: #fff;
+    font-size: 14px;
+    margin-top: 10px;
+}
 
 .social-links {
     display: flex;
-    gap: 12px;
+    gap: 15px;
     margin-top: 15px;
 }
 
 .social-links a {
-    width: 36px;
-    height: 36px;
-    border: 1px solid #333;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #aaa;
+    color: #ff00bf;
+    font-size: 22px;
+    border: none;
+    width: auto;
+    height: auto;
     text-decoration: none;
-    transition: .25s;
+    transition: .3s;
 }
 
 .social-links a:hover {
-    border-color: #39ff14;
-    color: #39ff14;
+    color: #0aff16;
 }
 
 .footer-contact-form {
@@ -319,34 +330,34 @@ body {
 .footer-contact-form input,
 .footer-contact-form textarea {
     width: 100%;
-    background: #1f1f1f;
+    background: #111;
+    border: 1px solid #0aff16;
     color: #fff;
-    border: 2px solid transparent;
-    border-radius: 12px;
-    padding: 14px;
-    font-size: 0.9rem;
+    padding: 12px;
+    border-radius: 5px;
+    font-family: "Oswald", sans-serif;
     transition: .3s;
+}
+
+.footer-contact-form textarea {
+    height: 90px;
+    resize: none;
 }
 
 .footer-contact-form input:focus,
 .footer-contact-form textarea:focus {
     outline: none;
-    border-color: #39ff14;
-}
-
-.footer-contact-form textarea {
-    resize: none;
-    height: 110px;
+    border-color: #0aff16;
+    box-shadow: 0 0 5px #0aff16;
 }
 
 .footer-contact-form button {
-    height: 48px;
-    border: none;
-    border-radius: 12px;
-    background: #39ff14;
+    background: #0aff16;
     color: #000;
-    font-weight: 700;
-    cursor: pointer;
+    border: none;
+    padding: 12px;
+    border-radius: 5px;
+    font-weight: 600;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -356,7 +367,7 @@ body {
 
 .footer-contact-form button:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 16px rgba(57, 255, 20, .25);
+    color: #2a5312;
 }
 
 .footer-links ul {
@@ -365,35 +376,44 @@ body {
     margin: 0 0 15px;
 }
 
-.footer-links ul li { margin-bottom: 8px; }
-
-.footer-links ul li a {
-    color: #aaa;
-    text-decoration: none;
-    transition: color .2s;
+.footer-links ul li {
+    padding: 4px 0;
 }
 
-.footer-links ul li a:hover { color: #39ff14; }
-
-/* Scroll top */
-.scroll-top {
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-    width: 40px;
-    height: 40px;
-    background: #39ff14;
-    color: #000;
-    border-radius: 50%;
+.footer-links ul li a {
+    color: #fff;
     text-decoration: none;
-    font-size: 1.3rem;
-    z-index: 999;
     transition: .3s;
 }
 
-.scroll-top:hover {
-    transform: translateY(-3px);
-    color: #000;
+.footer-links ul li a:hover {
+    color: #00ff66;
+}
+
+.copyright-text {
+    margin-top: 20px;
+    font-size: 13px;
+    color: #ddd;
+}
+
+.footer .copyright {
+    display: none;
+}
+
+@media (max-width: 768px) {
+
+    .footer-about,
+    .footer-links {
+        text-align: center;
+    }
+
+    .social-links {
+        justify-content: center;
+    }
+
+    .footer-contact-form {
+        margin-top: 10px;
+    }
 }
 
 /* ==========================

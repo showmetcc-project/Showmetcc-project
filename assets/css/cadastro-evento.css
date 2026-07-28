@@ -1,7 +1,7 @@
 :root{
-    --green:#00ff16;
+    --green:#0aff16;
     --pink:#ff00bf;
-    --card:#090909;
+    --card:#0d0d0d;
     --input:#1a1a1a;
     --border:#2c2c2c;
 }
@@ -39,6 +39,9 @@ body{
     text-decoration:none;
     font-size:13px;
     font-weight:600;
+    display:flex;
+    align-items:center;
+    gap:6px;
 }
 
 .voltar:hover{
@@ -52,31 +55,41 @@ body{
 }
 
 /* CONTAINER */
+/* No card/window here on purpose: the form should just be the page,
+   with only the top bar + green line separating it from the rest of
+   the site. On wide screens the fields are capped and centered so
+   they don't stretch edge-to-edge and look broken — but there's still
+   no border, shadow, or separate background, so it never reads as a
+   floating box. */
 
 .evento-container{
     min-height:calc(100vh - 44px);
+    width:100%;
     display:flex;
     justify-content:center;
-    padding:18px;
+    padding:0;
 }
 
 .evento-card{
     width:100%;
-    max-width:540px;
+    max-width:960px;
 
-    background:#090909;
+    background:#000;
 
-    border:1px solid #1d1d1d;
+    border:none;
+    border-radius:0;
+    box-shadow:none;
 
-    border-radius:12px;
-
-    padding:25px;
+    padding:36px 20px 50px;
 }
 
 .evento-card h2{
-    font-size:26px;
-    font-weight:800;
-    margin-bottom:5px;
+    font-family:"Anton", sans-serif;
+    font-size:46px;
+    font-weight:400;
+    letter-spacing:.5px;
+    text-transform:uppercase;
+    margin-bottom:14px;
 }
 
 .titulo-verde{
@@ -89,16 +102,22 @@ body{
 
 .subtitulo{
     color:#8a8a8a;
-    font-size:12px;
-    margin-bottom:20px;
+    font-family:"Oswald", sans-serif;
+    font-size:16px;
+    line-height:1.5;
+    margin-bottom:34px;
 }
 
 /* LABELS */
 
 .form-label{
+    display:block;
     color:#bfbfbf;
-    font-size:11px;
-    margin-bottom:6px;
+    font-family:"Oswald", sans-serif;
+    font-size:14px;
+    letter-spacing:.3px;
+    text-transform:uppercase;
+    margin-bottom:9px;
 }
 
 /* INPUTS */
@@ -108,8 +127,19 @@ body{
     background:var(--input) !important;
     border:1px solid #383838 !important;
     color:#fff !important;
-    height:42px;
-    border-radius:6px;
+    height:54px;
+    border-radius:8px;
+    font-family:"Oswald", sans-serif;
+    font-size:16px;
+    padding:0 16px;
+}
+
+.mb-3{
+    margin-bottom:22px !important;
+}
+
+.mb-4{
+    margin-bottom:28px !important;
 }
 
 .form-control::placeholder{
@@ -125,33 +155,38 @@ body{
 /* UPLOAD */
 
 .upload-area{
-    height:150px;
+    height:190px;
     border:2px dashed #2d2d2d;
-    border-radius:8px;
+    border-radius:10px;
 
     display:flex;
     flex-direction:column;
     justify-content:center;
     align-items:center;
 
-    margin-bottom:20px;
+    margin-bottom:26px;
+
+    cursor:pointer;
+
+    transition:.3s;
+}
+
+.upload-area:hover{
+    border-color:var(--green);
 }
 
 .upload-area i{
-    font-size:40px;
-    color:#333;
-    margin-bottom:10px;
+    font-size:42px;
+    color:#444;
+    margin-bottom:14px;
 }
 
 .upload-area p{
-    color:#9c9b9b;
-    font-size:5px;
+    color:#8a8a8a;
+    font-family:"Oswald", sans-serif;
+    font-size:15px;
     text-align:center;
-    line-height:1.4;
-}
-
-.upload-area{
-    cursor:pointer;
+    line-height:1.6;
 }
 
 .upload-area input{
@@ -188,7 +223,7 @@ body{
 
 .opcao{
     flex:1;
-    height:42px;
+    height:54px;
 
     display:flex;
     justify-content:center;
@@ -200,13 +235,17 @@ body{
 
     color:#666;
 
-    border-radius:6px;
+    border-radius:8px;
+
+    font-family:"Oswald", sans-serif;
+    font-size:16px;
 
     cursor:pointer;
 
     transition:.3s;
 }
 
+/* Gratuito -> green when checked */
 #gratuito:checked + .opcao{
     background:var(--green);
     border-color:var(--green);
@@ -214,9 +253,10 @@ body{
     font-weight:700;
 }
 
+/* Pago -> pink when checked */
 #pago:checked + .opcao{
-    background:var(--green);
-    border-color:var(--green);
+    background:var(--pink);
+    border-color:var(--pink);
     color:#000;
     font-weight:700;
 }
@@ -224,12 +264,14 @@ body{
 /* TEXTAREAS */
 
 .descricao-grande{
-    min-height:100px;
+    min-height:130px;
+    padding:14px 16px;
     resize:none;
 }
 
 .descricao-media{
-    min-height:80px;
+    min-height:100px;
+    padding:14px 16px;
     resize:none;
 }
 
@@ -237,16 +279,19 @@ body{
 
 button.btn-enviar{
     width:100%;
-    height:48px;
+    height:58px;
 
-       background:#00ff16 !important;
+    background:var(--green) !important;
     color:#000 !important;
 
     border:none !important;
 
-    border-radius:6px;
+    border-radius:8px;
 
+    font-family:"Oswald", sans-serif;
+    font-size:16px;
     font-weight:700;
+    letter-spacing:.3px;
 
     display:flex;
     justify-content:center;
@@ -256,23 +301,32 @@ button.btn-enviar{
 }
 
 .btn-enviar:hover{
-    background:#18ff2d !important;
+    background:#2bff3d !important;
+}
+
+/* FOOTER (kept dark to match the rest of the page) */
+
+.footer{
+    background:#000;
+    color:#bfbfbf;
+    font-family:"Oswald", sans-serif;
 }
 
 /* RESPONSIVO */
 
 @media(max-width:576px){
 
-    .evento-container{
-        padding:15px;
-    }
-
     .evento-card{
         max-width:100%;
+        padding:24px 18px 36px;
     }
 
     .evento-card h2{
-        font-size:24px;
+        font-size:32px;
+    }
+
+    .subtitulo{
+        font-size:14px;
     }
 
     .tipo-ingresso{
@@ -280,7 +334,7 @@ button.btn-enviar{
     }
 
     .opcao{
-        font-size:13px;
+        font-size:14px;
     }
 
     .col-md-6:first-child,
@@ -288,4 +342,154 @@ button.btn-enviar{
         padding-left:0;
         padding-right:0;
     }
+}
+
+
+
+
+/** */
+.footer {
+  background: #000;
+  color: #fff;
+  padding: 40px 0;
+  font-family: "Oswald", sans-serif;
+}
+
+.footer a {
+  color: #0aff16;
+  text-decoration: none;
+}
+
+.footer-line {
+  width: 100%;
+  height: 1px;
+  background: #0aff16;
+  margin-bottom: 35px;
+}
+
+.footer h4 {
+  font-family: "Oswald", sans-serif;
+  letter-spacing: 1px;
+  color: #0aff16;
+  font-size: 18px;
+  font-weight: 700;
+  margin-bottom: 18px;
+}
+
+.logo-footer {
+  font-size: 26px;
+}
+
+
+.footer-about p {
+  font-family: "Oswald", sans-serif;
+  margin-top: 10px;
+  color: #fff;
+  font-size: 14px;
+}
+
+.footer .social-links {
+  display: flex;
+  gap: 15px;
+  margin-top: 15px;
+}
+
+.footer .social-links a {
+  font-family: "Oswald", sans-serif;
+  color: #ff00bf;
+  font-size: 22px;
+  border: none;
+  width: auto;
+  height: auto;
+}
+
+.footer .social-links a:hover {
+  color: #0aff16;
+}
+
+.footer-contact-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.footer-contact-form input,
+.footer-contact-form textarea {
+  width: 100%;
+  background: #111;
+  border: 1px solid #0aff16;
+  color: white;
+  padding: 12px;
+  border-radius: 5px;
+}
+
+.footer-contact-form textarea {
+  height: 90px;
+  resize: none;
+}
+
+.footer-contact-form input:focus,
+.footer-contact-form textarea:focus {
+  outline: none;
+  box-shadow: 0 0 5px #0aff16;
+}
+
+.footer-contact-form button {
+  background: #0aff16;
+  color: #000;
+  border: none;
+  padding: 12px;
+  border-radius: 5px;
+  font-weight: 600;
+  transition: .3s;
+}
+
+.footer-contact-form button:hover {
+  transform: translateY(-2px);
+  color: #2a5312;
+}
+
+.footer-links ul {
+  list-style: none;
+  padding: 0;
+}
+
+.footer-links ul li {
+  padding: 4px 0;
+}
+
+.footer-links ul a {
+  color: #fff;
+  text-decoration: none;
+}
+
+.footer-links ul a:hover {
+  color: #00ff66;
+}
+
+.copyright-text {
+  margin-top: 20px;
+  font-size: 13px;
+  color: #ddd;
+}
+
+.footer .copyright {
+  display: none;
+}
+
+
+@media (max-width: 768px) {
+
+  .footer-about,
+  .footer-links {
+    text-align: center;
+  }
+
+  .footer .social-links {
+    justify-content: center;
+  }
+
+  .footer-contact-form {
+    margin-top: 10px;
+  }
 }

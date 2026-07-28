@@ -6,6 +6,10 @@ https://www.figma.com/design/OfIRwYhogB1vUhzETBJfBr/Prot%C3%B3tipo-ShowMe?node-i
 
 ## Diário de Bordo:
 https://docs.google.com/document/d/1eQmMmD_ZRE1Jcs-hp6PKNb1CXcPMcDlCV_TuUi69Axs/edit?usp=sharing
+
+## Link do site:
+https://showmetcc-project.github.io/Showmetcc-project/
+
 <div align="center">
 
 <img src="./assets/banner.png" width="100%">

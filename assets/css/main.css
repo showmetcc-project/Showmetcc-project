@@ -315,6 +315,10 @@ h1, h2, h3, h4, h5, h6 {
     align-items: center;
   }
 
+  .navmenu li {
+    font-family: "oswald", "sans-serif";
+  }
+
   .login-menu > a {
     background: var(--accent-color);
     color: var(--contrast-color) !important;

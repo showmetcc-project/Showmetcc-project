@@ -1,0 +1,548 @@
+/* ==========================
+   ADMIN — SHOWME
+   Bootstrap Icons (bi bi-...)
+   Footer reutilizado do index
+========================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
+:root {
+    --bg:     #080808;
+    --card:   #101010;
+    --green:  #39ff14;
+    --pink:   #ff4fa3;
+    --yellow: #ffd84f;
+    --text:   #f5f5f5;
+    --muted:  #bdbdbd;
+}
+
+*, *::before, *::after {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Poppins', 'Open Sans', sans-serif;
+}
+
+body {
+    background: var(--bg) !important;
+    color: var(--text) !important;
+    min-height: 100vh;
+}
+
+.verde { color: var(--green); }
+.rosa  { color: var(--pink);  }
+
+/* ==========================
+   TOPBAR
+========================== */
+
+.topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 0;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+
+.logo {
+    font-size: 2rem;
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.logo .show { color: var(--green); }
+.logo .me   { color: var(--pink);  }
+
+.admin-badge {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border: 2px solid var(--green);
+    color: var(--green);
+    padding: 9px 20px;
+    border-radius: 30px;
+    font-weight: 600;
+    font-size: 0.95rem;
+}
+
+.user-area {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.user-email {
+    color: #d4d4d4;
+    font-size: 0.9rem;
+}
+
+.btn-sair {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    background: none;
+    border: none;
+    color: var(--pink);
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    text-decoration: none;
+    transition: opacity .2s;
+}
+
+.btn-sair:hover { opacity: .75; color: var(--pink); }
+
+/* Divisor */
+.divider {
+    border-color: var(--green);
+    opacity: 1;
+    margin-bottom: 36px;
+}
+
+/* ==========================
+   CABEÇALHO
+========================== */
+
+.header-admin { margin-bottom: 36px; }
+
+.header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
+.header-admin h1 {
+    font-size: 2.4rem;
+    font-weight: 700;
+    margin-bottom: 8px;
+}
+
+.header-admin p {
+    color: var(--muted);
+    font-size: 0.95rem;
+}
+
+/* Busca */
+.busca {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: #111;
+    border: 1px solid #2a2a2a;
+    border-radius: 12px;
+    padding: 10px 16px;
+    min-width: 240px;
+}
+
+.busca i { color: #666; }
+
+.busca input {
+    background: none;
+    border: none;
+    outline: none;
+    color: #fff;
+    font-size: 0.9rem;
+    width: 100%;
+}
+
+.busca input::placeholder { color: #555; }
+
+/* ==========================
+   ESTATÍSTICAS / FILTROS
+========================== */
+
+.stats {
+    display: flex;
+    align-items: center;
+    gap: 28px;
+    margin-bottom: 40px;
+    flex-wrap: wrap;
+}
+
+/* Número destaque (círculo amarelo) */
+.total-destaque {
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    background: #f6f1cf;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 1.3rem;
+    color: #000;
+    flex-shrink: 0;
+}
+
+.status-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: none;
+    border: none;
+    color: #d8d8d8;
+    font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer;
+    padding: 0;
+    transition: color .2s;
+}
+
+.status-item:hover { color: #fff; }
+
+.status-item.ativo { color: #fff; }
+
+.badge-count {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: #1f1f1f;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.85rem;
+    color: #ccc;
+}
+
+.status-item.ativo .badge-count {
+    background: #f6f1cf;
+    color: #000;
+}
+
+/* Barra decorativa amarela */
+.stats-barra {
+    flex: 1;
+    height: 4px;
+    background: var(--yellow);
+    border-radius: 2px;
+    max-width: 200px;
+    margin-left: auto;
+}
+
+/* ==========================
+   CARD DE EVENTO
+========================== */
+
+.evento-card {
+    background: #111;
+    border: 2px solid #242424;
+    border-radius: 20px;
+    overflow: hidden;
+    margin-bottom: 20px;
+    transition: box-shadow .3s;
+}
+
+/* Card expandido: destaque azul no primeiro, verde nos demais */
+.evento-card.expandido {
+    border-color: #00d4ff;
+    box-shadow: 0 0 24px rgba(0, 212, 255, .15);
+}
+
+/* HEADER DO CARD */
+.evento-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 22px 24px;
+    cursor: pointer;
+    user-select: none;
+    gap: 16px;
+}
+
+.evento-header:hover { background: rgba(255,255,255,.02); }
+
+.evento-info {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+}
+
+.evento-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 14px;
+    background: #1b1b1b;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #d8c9a3;
+    font-size: 1.5rem;
+    flex-shrink: 0;
+}
+
+.evento-info h3 {
+    font-size: 1.35rem;
+    font-weight: 700;
+    margin-bottom: 3px;
+    color: #fff;
+}
+
+.evento-info small {
+    color: var(--muted);
+    font-size: 0.82rem;
+}
+
+/* Lado direito do header: badge + chevron */
+.header-direito {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex-shrink: 0;
+}
+
+.badge-pendente {
+    color: var(--yellow);
+    font-size: 1rem;
+    font-weight: 700;
+}
+
+.chevron {
+    font-size: 1.1rem;
+    color: #666;
+    transition: transform .25s;
+}
+
+/* CORPO DO CARD */
+.evento-body {
+    padding: 20px 24px 24px;
+    border-top: 1px solid #1e1e1e;
+    display: none; /* controlado por JS */
+}
+
+.evento-card.expandido .evento-body,
+.evento-card.expandido .evento-footer {
+    display: block;
+}
+
+.campo-info {
+    margin-bottom: 16px;
+}
+
+.campo-info label {
+    display: block;
+    font-size: 0.78rem;
+    color: #777;
+    margin-bottom: 3px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+}
+
+.campo-info p {
+    color: #d0d0d0;
+    font-size: 0.92rem;
+    line-height: 1.55;
+    margin: 0;
+}
+
+/* RODAPÉ DO CARD */
+.evento-footer {
+    padding: 16px 24px;
+    border-top: 1px solid #1e1e1e;
+    display: none; /* controlado por JS */
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.evento-card.expandido .evento-footer {
+    display: flex;
+}
+
+.btn-editar,
+.btn-aprovar,
+.btn-reprovar {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    border-radius: 12px;
+    padding: 10px 20px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: .25s;
+}
+
+.btn-editar {
+    background: #1e1e1e;
+    border: 2px solid #333;
+    color: #ddd;
+}
+
+.btn-editar:hover {
+    border-color: #555;
+    color: #fff;
+}
+
+.btn-aprovar {
+    background: transparent;
+    border: 2px solid var(--green);
+    color: var(--green);
+}
+
+.btn-aprovar:hover {
+    background: var(--green);
+    color: #000;
+}
+
+.btn-reprovar {
+    background: transparent;
+    border: 2px solid var(--pink);
+    color: var(--pink);
+}
+
+.btn-reprovar:hover {
+    background: var(--pink);
+    color: #fff;
+}
+
+/* ==========================
+   FOOTER — mesmo padrão das outras páginas
+========================== */
+
+.footer {
+    margin-top: 60px;
+    background: var(--bg);
+    color: #aaa;
+}
+
+.footer-line {
+    width: 100%;
+    height: 2px;
+    background: var(--green);
+}
+
+.footer-top { padding: 50px 0; }
+
+.footer h4,
+.footer .logo-footer {
+    color: var(--green);
+    margin-bottom: 15px;
+    font-size: 1.1rem;
+    font-weight: 700;
+}
+
+.footer-about p,
+.footer-links .copyright-text { color: #aaa; }
+
+.social-links {
+    display: flex;
+    gap: 12px;
+    margin-top: 15px;
+}
+
+.social-links a {
+    width: 36px;
+    height: 36px;
+    border: 1px solid #333;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #aaa;
+    text-decoration: none;
+    transition: .25s;
+}
+
+.social-links a:hover {
+    border-color: var(--green);
+    color: var(--green);
+}
+
+.footer-contact-form {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.footer-contact-form input,
+.footer-contact-form textarea {
+    width: 100%;
+    background: #1f1f1f;
+    color: #fff;
+    border: 2px solid transparent;
+    border-radius: 12px;
+    padding: 14px;
+    font-size: 0.9rem;
+    transition: .3s;
+}
+
+.footer-contact-form input:focus,
+.footer-contact-form textarea:focus {
+    outline: none;
+    border-color: var(--green);
+}
+
+.footer-contact-form textarea { resize: none; height: 110px; }
+
+.footer-contact-form button {
+    height: 48px;
+    border: none;
+    border-radius: 12px;
+    background: var(--green);
+    color: #000;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: .3s;
+}
+
+.footer-contact-form button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(57,255,20,.25);
+}
+
+.footer-links ul {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 15px;
+}
+
+.footer-links ul li { margin-bottom: 8px; }
+
+.footer-links ul li a {
+    color: #aaa;
+    text-decoration: none;
+    transition: color .2s;
+}
+
+.footer-links ul li a:hover { color: var(--green); }
+
+/* Scroll top */
+.scroll-top {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 40px;
+    height: 40px;
+    background: var(--green);
+    color: #000;
+    border-radius: 50%;
+    text-decoration: none;
+    font-size: 1.3rem;
+    z-index: 999;
+    transition: .3s;
+}
+
+.scroll-top:hover { transform: translateY(-3px); color: #000; }
+
+/* ==========================
+   RESPONSIVO
+========================== */
+
+@media (max-width: 768px) {
+    .topbar       { flex-direction: column; align-items: flex-start; }
+    .header-row   { flex-direction: column; align-items: flex-start; }
+    .busca        { width: 100%; }
+    .stats        { gap: 16px; }
+    .stats-barra  { display: none; }
+    .evento-header { flex-direction: column; align-items: flex-start; }
+    .header-direito { width: 100%; justify-content: space-between; }
+    .evento-footer { flex-direction: column; }
+    .btn-editar, .btn-aprovar, .btn-reprovar { width: 100%; justify-content: center; }
+}

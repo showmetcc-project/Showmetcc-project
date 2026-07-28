@@ -12,26 +12,27 @@
     box-sizing:border-box;
 }
 
-html,
-body{
-    background:#000 !important;
-    min-height:100vh;
-    font-family:"Oswald", sans-serif;
+body {
+    background-color: #0d0d0d;
+    color: #fff;
+    font-family: 'Segoe UI', sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow-x: hidden;
 }
 
-.container-fluid{
-    background:#000;
-}
+/* ==========================
+   TOP BAR
+========================== */
 
-/* TOPO */
-
-.top-bar{
-    width:100%;
-    height:42px;
-    display:flex;
-    align-items:center;
-    padding:0 20px;
-    background:#050505;
+.top-bar {
+    background-color: #111;
+    padding: 12px 20px;
+    display: flex;
+    align-items: center;
 }
 
 .voltar{
@@ -44,14 +45,14 @@ body{
     gap:6px;
 }
 
-.voltar:hover{
-    color:var(--green);
+.voltar:hover {
+    color: #1eff00;
 }
 
-.linha-topo{
-    height:2px;
-    width:100%;
-    background:var(--green);
+.linha-topo {
+    height: 3px;
+    background: linear-gradient(to right, #1eff00, #ff1493);
+    width: 100%;
 }
 
 /* CONTAINER */
@@ -92,12 +93,12 @@ body{
     margin-bottom:14px;
 }
 
-.titulo-verde{
-    color:var(--green);
+.titulo-verde {
+    color: #1eff00;
 }
 
-.titulo-rosa{
-    color:var(--pink);
+.titulo-rosa {
+    color: #ff1493;
 }
 
 .subtitulo{
@@ -108,7 +109,9 @@ body{
     margin-bottom:34px;
 }
 
-/* LABELS */
+/* ==========================
+   LABELS
+========================== */
 
 .form-label{
     display:block;
@@ -120,7 +123,9 @@ body{
     margin-bottom:9px;
 }
 
-/* INPUTS */
+/* ==========================
+   INPUTS
+========================== */
 
 .form-control,
 .form-select{
@@ -142,14 +147,14 @@ body{
     margin-bottom:28px !important;
 }
 
-.form-control::placeholder{
-    color:#666;
+.form-control::placeholder {
+    color: #555;
 }
 
-.form-control:focus,
-.form-select:focus{
-    border-color:var(--green) !important;
-    box-shadow:none !important;
+.form-control:focus {
+    outline: none;
+    border-color: #1eff00 !important;
+    box-shadow: 0 0 0 2px rgba(30, 255, 0, 0.15) !important;
 }
 
 /* UPLOAD */
@@ -189,36 +194,31 @@ body{
     line-height:1.6;
 }
 
-.upload-area input{
-    display:none;
+.upload-area input[type="file"] {
+    display: none;
 }
 
-/* DATA E HORA */
-
-.row{
-    margin-left:0;
-    margin-right:0;
+.upload-area i {
+    font-size: 28px;
+    color: #555;
 }
 
-.col-md-6:first-child{
-    padding-left:0;
-    padding-right:6px;
+.upload-area p {
+    margin: 0;
+    line-height: 1.5;
 }
 
-.col-md-6:last-child{
-    padding-left:6px;
-    padding-right:0;
+/* ==========================
+   TIPO DE INGRESSO (radio)
+========================== */
+
+.tipo-ingresso {
+    display: flex;
+    gap: 12px;
 }
 
-/* RADIO */
-
-.tipo-ingresso{
-    display:flex;
-    gap:10px;
-}
-
-.tipo-ingresso input{
-    display:none;
+.tipo-ingresso input[type="radio"] {
+    display: none;
 }
 
 .opcao{
@@ -261,7 +261,9 @@ body{
     font-weight:700;
 }
 
-/* TEXTAREAS */
+/* ==========================
+   TEXTAREAS
+========================== */
 
 .descricao-grande{
     min-height:130px;
@@ -275,7 +277,9 @@ body{
     resize:none;
 }
 
-/* BOTÃO */
+/* ==========================
+   BOTÃO ENVIAR
+========================== */
 
 button.btn-enviar{
     width:100%;

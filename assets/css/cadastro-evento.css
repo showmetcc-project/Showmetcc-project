@@ -16,7 +16,7 @@ html,
 body{
     background:#000 !important;
     min-height:100vh;
-    font-family:"Oswald", sans-serif;
+   
 }
 
 .container-fluid{
@@ -37,7 +37,7 @@ body{
 .voltar{
     color:var(--green);
     text-decoration:none;
-    font-size:13px;
+    font-size:20px;
     font-weight:600;
     display:flex;
     align-items:center;
@@ -84,11 +84,11 @@ body{
 }
 
 .evento-card h2{
+    
     font-family:"Anton", sans-serif;
     font-size:46px;
     font-weight:400;
     letter-spacing:.5px;
-    text-transform:uppercase;
     margin-bottom:14px;
 }
 
@@ -305,47 +305,6 @@ button.btn-enviar{
 }
 
 /* FOOTER (kept dark to match the rest of the page) */
-
-.footer{
-    background:#000;
-    color:#bfbfbf;
-    font-family:"Oswald", sans-serif;
-}
-
-/* RESPONSIVO */
-
-@media(max-width:576px){
-
-    .evento-card{
-        max-width:100%;
-        padding:24px 18px 36px;
-    }
-
-    .evento-card h2{
-        font-size:32px;
-    }
-
-    .subtitulo{
-        font-size:14px;
-    }
-
-    .tipo-ingresso{
-        gap:8px;
-    }
-
-    .opcao{
-        font-size:14px;
-    }
-
-    .col-md-6:first-child,
-    .col-md-6:last-child{
-        padding-left:0;
-        padding-right:0;
-    }
-}
-
-
-
 .footer {
   background: #000;
   color: #fff;

@@ -27,17 +27,19 @@ body{
 
 .top-bar{
     width:100%;
-    height:42px;
+    height: 50px; 
     display:flex;
     align-items:center;
     padding:0 20px;
     background:#050505;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
 }
-
 .voltar{
     color:var(--green);
     text-decoration:none;
-    font-size:13px;
+    font-size:22px;
     font-weight:600;
     display:flex;
     align-items:center;
@@ -52,6 +54,9 @@ body{
     height:2px;
     width:100%;
     background:var(--green);
+    position: sticky;
+    top: 50px; /* mesma altura do .top-bar */
+    z-index: 1000;
 }
 
 /* CONTAINER */
@@ -88,7 +93,6 @@ body{
     font-size:46px;
     font-weight:400;
     letter-spacing:.5px;
-    text-transform:uppercase;
     margin-bottom:14px;
 }
 
@@ -113,14 +117,16 @@ body{
 .form-label{
     display:block;
     color:#bfbfbf;
-    font-family:"Oswald", sans-serif;
+    font-family:"anton", sans-serif;
     font-size:14px;
     letter-spacing:.3px;
-    text-transform:uppercase;
+    
     margin-bottom:9px;
 }
 
 /* INPUTS */
+
+
 
 .form-control,
 .form-select{
@@ -136,10 +142,17 @@ body{
 
 .mb-3{
     margin-bottom:22px !important;
+    
 }
 
 .mb-4{
     margin-bottom:28px !important;
+}
+
+.mb-5{ 
+    margin-bottom:22px !important;
+     width: 900px !important;
+ 
 }
 
 .form-control::placeholder{
@@ -264,13 +277,13 @@ body{
 /* TEXTAREAS */
 
 .descricao-grande{
-    min-height:180px;
+    height:180px;      /* aumente este valor */
     padding:14px 16px;
     resize:none;
 }
 
 .descricao-media{
-    min-height:150px;
+    height:180px;      /* aumente este valor */
     padding:14px 16px;
     resize:none;
 }
@@ -345,7 +358,6 @@ button.btn-enviar{
 }
 
 
-
 .footer {
   background: #000;
   color: #fff;
@@ -372,6 +384,10 @@ button.btn-enviar{
   font-size: 18px;
   font-weight: 700;
   margin-bottom: 18px;
+}
+
+.rosa {
+    color: #ff00bf;
 }
 
 .logo-footer {

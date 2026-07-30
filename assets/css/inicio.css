@@ -1,0 +1,270 @@
+/* ============================================
+   INÍCIO - Header fixo, faixa rosa fixa,
+   carrossel e menu responsivo (hambúrguer)
+============================================ */
+
+:root{
+    --topbar-height: 90px;
+    --titulo-height: 54px;
+}
+
+.inicio,
+.inicio p,
+.inicio span,
+.card-conteudo,
+.info-evento span{
+    font-family:"Oswald", sans-serif;
+    text-decoration:none;
+}
+
+/* ---------- TOPBAR ---------- */
+
+.topbar{
+    height: var(--topbar-height);
+}
+
+.logo{
+    flex-shrink: 0;
+}
+
+.logo img{
+    height:56px;
+    width:auto;
+    max-width:170px;
+    object-fit:contain;
+    display:block;
+    margin-top:0;
+}
+
+/* Hambúrguer (some no desktop) */
+
+.hamburger-toggle{
+    display: none;
+    background: transparent;
+    border: none;
+    color: #1eff00;
+    font-size: 30px;
+    line-height: 0;
+    margin-left: auto;
+    cursor: pointer;
+}
+
+.hamburger-toggle:focus{
+    outline: none;
+}
+
+/* Wrapper com busca + cadastrar + menu + usuário,
+   tudo alinhado numa linha só no desktop */
+
+.topbar-nav{
+    display: flex;
+    align-items: center;
+    gap: 25px;
+    flex: 1;
+    margin-left: 25px;
+}
+
+.menu-links{
+    display: flex;
+    align-items: center;
+    gap: 22px;
+}
+
+/* fonte Anton no menu, igual aos títulos do site */
+
+.menu-links a,
+.btn-cadastrar,
+.btn-user{
+    font-family: "Anton", sans-serif;
+    font-weight: 400;
+    letter-spacing: .4px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    white-space: nowrap;
+}
+
+.menu-links a{
+    font-size: 16px;
+}
+
+.btn-user{
+    margin-left: auto;
+}
+
+/* ---------- FAIXA ROSA FIXA ---------- */
+
+.titulo-home{
+    position: sticky;
+    top: var(--topbar-height);
+    z-index: 998;
+    height: var(--titulo-height);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0;
+}
+
+/* compensa o header fixo pra não cobrir o conteúdo */
+
+
+
+
+/* ---------- CARROSSEL ---------- */
+
+.banner{
+    width: 100%;
+    height: calc(100vh - var(--topbar-height) - var(--titulo-height));
+    min-height: 320px;
+    position: relative;
+    margin: 0;
+}
+
+.banner::after{
+    content:"";
+    position:absolute;
+    left:0;
+    bottom:0;
+    width:100%;
+    height:180px;
+    background:linear-gradient(to bottom, rgba(0,0,0,0) 0%, #000 100%);
+    pointer-events:none;
+    z-index:5;
+}
+
+@media(max-width:576px){
+    .banner::after{
+        height:100px;
+    }
+}
+
+.banner.swiper,
+.banner .swiper-wrapper{
+    height: 100%;
+}
+
+.banner .swiper-slide img{
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.banner .swiper-pagination-bullet{
+    background: #fff;
+    opacity: .6;
+}
+
+.banner .swiper-pagination-bullet-active{
+    background: #1eff00;
+    opacity: 1;
+}
+
+.banner .swiper-button-prev,
+.banner .swiper-button-next{
+    color: #1eff00;
+}
+
+.banner .swiper-button-prev:after,
+.banner .swiper-button-next:after{
+    font-size: 22px;
+}
+
+/* ---------- RESPONSIVO ---------- */
+
+@media(max-width:991px){
+
+    .topbar{
+    padding:0 16px;
+    gap:12px;
+}
+
+.logo img{
+    height:42px;
+    max-width:130px;
+}
+
+.hamburger-toggle{
+    position:relative;
+    z-index:1001;
+    flex-shrink:0;
+}
+
+    .hamburger-toggle{
+        display: block;
+    }
+
+    .topbar-nav{
+        position: fixed;
+        top: var(--topbar-height);
+        left: 0;
+        width: 100%;
+        max-height: 0;
+        overflow: hidden;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0;
+        margin-left: 0;
+        background: #111;
+        border-bottom: 2px solid #1eff00;
+        transition: max-height .35s ease;
+        z-index: 997;
+    }
+
+    .topbar-nav.ativo{
+        max-height: 500px;
+    }
+
+    .search-box{
+        margin: 18px 20px 0;
+    }
+
+    .search-box input{
+        width: 100%;
+    }
+
+    .btn-cadastrar{
+        margin: 15px 20px 0;
+        justify-content: center;
+    }
+
+    .menu-links{
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0;
+        margin-top: 10px;
+    }
+
+    .menu-links a{
+        padding: 14px 20px;
+        border-top: 1px solid rgba(30,255,0,.15);
+    }
+
+    .btn-user{
+        margin: 15px 20px 20px;
+        justify-content: center;
+    }
+
+    :root{
+        --topbar-height: 70px;
+    }
+
+    .logo img{
+        height: 42px;
+    }
+
+    .titulo-home{
+        font-size: 20px;
+    }
+}
+
+@media(max-width:576px){
+
+    :root{
+        --titulo-height: 44px;
+    }
+
+    .titulo-home{
+        font-size: 16px;
+    }
+}

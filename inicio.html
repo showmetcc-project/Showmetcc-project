@@ -30,6 +30,7 @@
 
   <!-- Principal CSS File -->
   <link href="assets/css/main.css" rel="stylesheet">
+  <link href="assets/css/inicio.css" rel="stylesheet">
 
 
 
@@ -47,47 +48,53 @@
 
 <body>
 
-  
   <header class="topbar">
 
     <div class="logo">
-      <img src="assets/img/showme.png" alt="ShowMe">
+        <img src="assets/img/showme.png" alt="ShowMe">
     </div>
 
-    <div class="search-box">
-      <i class="bi bi-search"></i>
-      <input type="text" placeholder="Buscar eventos...">
-    </div>
-
-    <a href="cadastro-evento.html" class="btn-cadastrar">
-      <i class="bi bi-plus-circle"></i>
-      Cadastrar Evento
-    </a>
-
-    <nav class="menu-links">
-      <a href="favoritos.html">
-        <i class="bi bi-heart"></i>
-        Favoritos
-      </a>
-
-      <a href="sobre.html">
-        <i class="bi bi-info-circle"></i>
-        Sobre
-      </a>
-
-      <a href="#footer">
-        <i class="bi bi-telephone"></i>
-        Contato
-      </a>
-    </nav>
-      
-
-    <button class="btn-user">
-      <i class="bi bi-person-fill"></i>
-      <a class="preto" href="perfilusuario.html">Usuário</a>
+    <button class="hamburger-toggle" id="hamburgerToggle" aria-label="Abrir menu" aria-expanded="false">
+        <i class="bi bi-list"></i>
     </button>
 
-  </header>
+    <div class="topbar-nav" id="topbarNav">
+
+        <div class="search-box">
+            <i class="bi bi-search"></i>
+            <input type="text" placeholder="Buscar eventos...">
+        </div>
+
+        <a href="cadastro-evento.html" class="btn-cadastrar">
+            <i class="bi bi-plus-circle"></i>
+            Cadastrar Evento
+        </a>
+
+        <nav class="menu-links">
+            <a href="favoritos.html">
+                <i class="bi bi-heart"></i>
+                Favoritos
+            </a>
+
+            <a href="sobre.html">
+                <i class="bi bi-info-circle"></i>
+                Sobre
+            </a>
+
+            <a href="#footer">
+                <i class="bi bi-telephone"></i>
+                Contato
+            </a>
+        </nav>
+
+        <button class="btn-user">
+            <i class="bi bi-person-fill"></i>
+            <a class="preto" href="perfilusuario.html">Usuário</a>
+        </button>
+
+    </div>
+
+</header>
 
   <main class="inicio">
 
@@ -97,9 +104,27 @@
       Recomendamos para Você
     </h2>
 
-    <div class="banner">
-      <img src="assets/img/banner_site_565x235px.png" alt="Banner Principal">
+    <div class="banner swiper">
+    <div class="swiper-wrapper">
+
+        <div class="swiper-slide">
+            <img src="assets/img/banner_site_565x235px.png" alt="Banner Principal">
+        </div>
+
+        <div class="swiper-slide"> <!--fotos aq-->
+            <img src="assets/img/banner.png" alt="Rock in Rio">
+        </div>
+
+        <div class="swiper-slide">
+            <img src="assets/img/shrek.png" alt="Shrek: O Musical">
+        </div>
+
     </div>
+
+    <div class="swiper-pagination"></div>
+    <div class="swiper-button-prev"></div>
+    <div class="swiper-button-next"></div>
+</div>
 
   </section>
 
@@ -304,6 +329,50 @@
 
   <!-- Main JS -->
   <script src="assets/js/main.js"></script>
+
+  <script>
+
+    // Menu hambúrguer
+    const hamburgerToggle = document.getElementById('hamburgerToggle');
+    const topbarNav = document.getElementById('topbarNav');
+
+    hamburgerToggle.addEventListener('click', function () {
+
+        const aberto = topbarNav.classList.toggle('ativo');
+
+        this.setAttribute('aria-expanded', aberto);
+        this.innerHTML = aberto
+            ? '<i class="bi bi-x-lg"></i>'
+            : '<i class="bi bi-list"></i>';
+    });
+
+    // Fecha o menu ao clicar em um link (mobile)
+    topbarNav.querySelectorAll('a').forEach(function (link) {
+        link.addEventListener('click', function () {
+            topbarNav.classList.remove('ativo');
+            hamburgerToggle.innerHTML = '<i class="bi bi-list"></i>';
+            hamburgerToggle.setAttribute('aria-expanded', 'false');
+        });
+    });
+
+    // Carrossel do banner
+    const bannerSwiper = new Swiper('.banner.swiper', {
+        loop: true,
+        autoplay: {
+            delay: 4500,
+            disableOnInteraction: false,
+        },
+        pagination: {
+            el: '.swiper-pagination',
+            clickable: true,
+        },
+        navigation: {
+            nextEl: '.swiper-button-next',
+            prevEl: '.swiper-button-prev',
+        },
+    });
+
+</script>
 
 </body>
 

@@ -16,7 +16,7 @@ html,
 body{
     background:#000 !important;
     min-height:100vh;
-    font-family:"Oswald", sans-serif;
+   
 }
 
 .container-fluid{
@@ -89,6 +89,7 @@ body{
 }
 
 .evento-card h2{
+    
     font-family:"Anton", sans-serif;
     font-size:46px;
     font-weight:400;

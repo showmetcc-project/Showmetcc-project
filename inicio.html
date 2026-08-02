@@ -1,4 +1,3 @@
-```html
 <!DOCTYPE html>
 <html lang="pt-br">
 
@@ -29,7 +28,6 @@
 
 
   <!-- Principal CSS File -->
-  <link href="assets/css/main.css" rel="stylesheet">
   <link href="assets/css/inicio.css" rel="stylesheet">
 
 
@@ -50,13 +48,15 @@
 
   <header class="topbar">
 
-    <div class="logo">
-        <img src="assets/img/showme.png" alt="ShowMe">
-    </div>
-
     <button class="hamburger-toggle" id="hamburgerToggle" aria-label="Abrir menu" aria-expanded="false">
         <i class="bi bi-list"></i>
     </button>
+
+    <div class="logo">
+        <a href="sobre.html">
+            <img src="assets/img/showme.png" alt="ShowMe">
+        </a>
+    </div>
 
     <div class="topbar-nav" id="topbarNav">
 
@@ -65,32 +65,37 @@
             <input type="text" placeholder="Buscar eventos...">
         </div>
 
-        <a href="cadastro-evento.html" class="btn-cadastrar">
-            <i class="bi bi-plus-circle"></i>
-            Cadastrar Evento
-        </a>
+        <div class="topbar-actions">
 
-        <nav class="menu-links">
-            <a href="favoritos.html">
-                <i class="bi bi-heart"></i>
-                Favoritos
+            <a href="cadastro-evento.html" class="btn-cadastrar">
+                <i class="bi bi-plus-circle"></i>
+                Cadastrar Evento
             </a>
 
-            <a href="sobre.html">
-                <i class="bi bi-info-circle"></i>
-                Sobre
-            </a>
+            <nav class="menu-links">
+                <a href="favoritos.html" class="link-favoritos">
+                    <i class="bi bi-heart heart-outline"></i>
+                    <i class="bi bi-heart-fill heart-filled"></i>
+                    Favoritos
+                </a>
 
-            <a href="#footer">
-                <i class="bi bi-telephone"></i>
-                Contato
-            </a>
-        </nav>
+                <a href="sobre.html">
+                    <i class="bi bi-info-circle"></i>
+                    Sobre
+                </a>
 
-        <button class="btn-user">
-            <i class="bi bi-person-fill"></i>
-            <a class="preto" href="perfilusuario.html">Usuário</a>
-        </button>
+                <a href="#footer">
+                    <i class="bi bi-telephone"></i>
+                    Contato
+                </a>
+            </nav>
+
+            <button class="btn-user">
+                <i class="bi bi-person-fill"></i>
+                <a class="preto" href="perfilusuario.html">Usuário</a>
+            </button>
+
+        </div>
 
     </div>
 
@@ -372,9 +377,24 @@
         },
     });
 
+    // Nav semi-transparente que escurece conforme o scroll desce
+    const topbarEl = document.querySelector('.topbar');
+    const DISTANCIA_MAX = 250; // px de scroll até atingir o escuro máximo
+    const OPACIDADE_MIN = 0.55;
+    const OPACIDADE_MAX = 0.97;
+
+    function atualizaTopbar() {
+        const distancia = Math.min(window.scrollY, DISTANCIA_MAX);
+        const progresso = distancia / DISTANCIA_MAX;
+        const opacidade = OPACIDADE_MIN + progresso * (OPACIDADE_MAX - OPACIDADE_MIN);
+        topbarEl.style.background = `rgba(17, 17, 17, ${opacidade.toFixed(2)})`;
+    }
+
+    window.addEventListener('scroll', atualizaTopbar);
+    atualizaTopbar();
+
 </script>
 
 </body>
 
 </html>
-

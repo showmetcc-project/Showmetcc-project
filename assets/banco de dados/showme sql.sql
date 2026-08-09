@@ -1,103 +1,162 @@
--- Geração de Modelo físico
--- Sql ANSI 2003 - brModelo.
-
-
-
 CREATE TABLE usuario (
-nome_user varchar(100),
-sobrenome varchar(100),
-spotify_id int,
-email_user varchar(50),
-senha_user varchar(50),
-id_user int PRIMARY KEY,
-datanasc_user date,
-localizacao_user varchar(255)
-)
+    id_user INT PRIMARY KEY,
+    nome_user VARCHAR(100),
+    sobrenome VARCHAR(100),
+    email_user VARCHAR(100),
+    senha_user VARCHAR(255)
+);
 
-CREATE TABLE evento (
-id_evento int PRIMARY KEY,
-num_evento int,
-cidade_evento varchar(100),
-rua_evento varcahar(100),
-nome_evento varchar(100),
-local_evento varchar(100),
-descricao_evento Text,
-latitude_evento decimal(10,8),
-data_evento date,
-longitude_evento decimal(10,8),
-categoria_evento varchar(100),
-uf char(2),
-link_ofcial varchar(255)
-)
+
+CREATE TABLE spotify (
+    id_spotify INT PRIMARY KEY,
+    id_user INT NOT NULL,
+    spotify_id VARCHAR(100),
+    artistas_mais_tocados VARCHAR(255),
+    generos_preferidos VARCHAR(255),
+
+    FOREIGN KEY (id_user)
+        REFERENCES usuario(id_user)
+);
+
 
 CREATE TABLE artista (
-id_artista int PRIMARY KEY,
-genero_artista varchar(50),
-nome_artista varchar(100),
-id_user int,
-FOREIGN KEY(id_user) REFERENCES usuario (id_user)
-)
+    id_artista INT PRIMARY KEY,
+    nome_artista VARCHAR(150),
+    genero_artista VARCHAR(100),
+    imagem_artista VARCHAR(255)
+);
 
-CREATE TABLE rota (
-id_rota int PRIMARY KEY,
-meio_transporte varchar(30),
-tempo_estimado datetime,
-distancia_km decimal(10,4),
-id_evento int,
-FOREIGN KEY(id_evento) REFERENCES evento (id_evento)
-)
 
-CREATE TABLE clima (
-id_clima int PRIMARY KEY,
-condicao_clima varchar(255),
-temp_clima decimal(10,2)
-)
+CREATE TABLE evento (
+    id_evento INT PRIMARY KEY,
+    num_evento INT,
+    nome_evento VARCHAR(100),
+    local_evento VARCHAR(100),
+    rua_evento VARCHAR(100),
+    cidade_evento VARCHAR(100),
+    uf CHAR(2),
+    descricao_evento VARCHAR(1000),
+    data_evento DATE,
+    categoria_evento VARCHAR(100),
+    link_oficial VARCHAR(255),
+    latitude_evento DECIMAL(10,7),
+    longitude_evento DECIMAL(10,7)
+);
 
-CREATE TABLE recomendacao (
-id_rec int PRIMARY KEY,
-descrição_rec Texto
-)
-
-CREATE TABLE video (
-id_video int PRIMARY KEY,
-status varchar(10),
-titulo_video varchar(255),
-descricao_video texto,
-url_video varchar(255)
-)
-
-CREATE TABLE user_rota (
-id_user int,
-id_rota int,
-FOREIGN KEY(id_user) REFERENCES usuario (id_user),
-FOREIGN KEY(id_rota) REFERENCES rota (id_rota)
-)
-
-CREATE TABLE evento_rec (
-id_rec int,
-id_evento int,
-FOREIGN KEY(id_rec) REFERENCES recomendacao (id_rec),
-FOREIGN KEY(id_evento) REFERENCES evento (id_evento)
-)
-
-CREATE TABLE clima_evento (
-id_evento int,
-id_clima int,
-FOREIGN KEY(id_evento) REFERENCES evento (id_evento),
-FOREIGN KEY(id_clima) REFERENCES clima (id_clima)
-)
-
-CREATE TABLE user_video (
-id_video int,
-id_user int,
-FOREIGN KEY(id_video) REFERENCES video (id_video),
-FOREIGN KEY(id_user) REFERENCES usuario (id_user)
-)
 
 CREATE TABLE artista_evento (
-id_evento int,
-id_artista int,
-FOREIGN KEY(id_evento) REFERENCES evento (id_evento),
-FOREIGN KEY(id_artista) REFERENCES artista (id_artista)
-)
+    id_artista INT,
+    id_evento INT,
 
+    PRIMARY KEY (id_artista, id_evento),
+
+    FOREIGN KEY (id_artista)
+        REFERENCES artista(id_artista),
+
+    FOREIGN KEY (id_evento)
+        REFERENCES evento(id_evento)
+);
+
+
+CREATE TABLE preferencias (
+    id_preferencia INT PRIMARY KEY,
+    id_user INT NOT NULL,
+    genero_preferido VARCHAR(100),
+
+    FOREIGN KEY (id_user)
+        REFERENCES usuario(id_user)
+);
+
+
+CREATE TABLE favoritos (
+    id_favorito INT PRIMARY KEY,
+    id_user INT NOT NULL,
+    id_evento INT NOT NULL,
+
+    FOREIGN KEY (id_user)
+        REFERENCES usuario(id_user),
+
+    FOREIGN KEY (id_evento)
+        REFERENCES evento(id_evento)
+);
+
+
+CREATE TABLE rota (
+    id_rota INT PRIMARY KEY,
+    id_user INT NOT NULL,
+    id_evento INT NOT NULL,
+    meio_transporte VARCHAR(30),
+    distancia_km DECIMAL(10,2),
+    tempo_estimado INT,
+
+    FOREIGN KEY (id_user)
+        REFERENCES usuario(id_user),
+
+    FOREIGN KEY (id_evento)
+        REFERENCES evento(id_evento)
+);
+
+
+CREATE TABLE avaliacao (
+    id_avaliacao INT PRIMARY KEY,
+    id_user INT NOT NULL,
+    id_evento INT NOT NULL,
+    nota INT,
+    comentario VARCHAR(1000),
+    data_avaliacao DATE,
+
+    FOREIGN KEY (id_user)
+        REFERENCES usuario(id_user),
+
+    FOREIGN KEY (id_evento)
+        REFERENCES evento(id_evento)
+);
+
+
+CREATE TABLE midia_avaliacao (
+    id_midia INT PRIMARY KEY,
+    id_avaliacao INT NOT NULL,
+    tipo_midia VARCHAR(20),
+    url_midia VARCHAR(255),
+
+    FOREIGN KEY (id_avaliacao)
+        REFERENCES avaliacao(id_avaliacao)
+);
+
+
+CREATE TABLE solicitacao (
+    id_solicitacao INT PRIMARY KEY,
+    id_user INT NOT NULL,
+    nome_evento VARCHAR(100),
+    status VARCHAR(20),
+    foto VARCHAR(255),
+    horario_evento TIMESTAMP,
+    data_evento DATE,
+    local_evento VARCHAR(255),
+    gratuidade BOOLEAN,
+    descricao_evento VARCHAR(1000),
+    descricao_artista VARCHAR(1000),
+
+    FOREIGN KEY (id_user)
+        REFERENCES usuario(id_user)
+);
+
+
+CREATE TABLE recomendacao (
+    id_rec INT PRIMARY KEY,
+    descricao_rec VARCHAR(1000)
+);
+
+
+CREATE TABLE evento_recomendacao (
+    id_evento INT,
+    id_rec INT,
+
+    PRIMARY KEY (id_evento, id_rec),
+
+    FOREIGN KEY (id_evento)
+        REFERENCES evento(id_evento),
+
+    FOREIGN KEY (id_rec)
+        REFERENCES recomendacao(id_rec)
+);

@@ -16,12 +16,10 @@ body {
     color: #fff !important;
 }
 
-/* ==========================
-   CORES DO PROJETO
-========================== */
+ 
 
 .verde { color: #39ff14; }
-.rosa  { color: #ff4f9a; }
+.rosa  { color: #E9009B;}
 
 /* ==========================
    CONTAINER
@@ -29,21 +27,24 @@ body {
 
 .perfil-container {
     max-width: 1200px;
-    margin: 40px auto;
-    padding: 20px;
-}
-
-/* ==========================
-   TOPO
-========================== */
+    margin: 0 auto 40px;
+    padding: 0 50px 20px;
+} 
 
 .topo {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 1000;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 30px;
-    padding-bottom: 15px;
+    margin-bottom: 0;
+    padding: 14px 40px;
+    background: #0a0a0a;
     border-bottom: 2px solid #39ff14;
+    box-sizing: border-box;
 }
 
 .voltar,
@@ -57,32 +58,38 @@ body {
     transition: .3s;
 }
 
-.voltar { color: #39ff14; }
-.sair   { color: #ff4f9a; }
+.voltar {
+    font-size: 1.5rem;
+    font-weight: 700;
+}
+
+.sair { color: #E9009B; }
 
 .voltar:hover,
 .sair:hover { opacity: .75; }
 
+.voltar i {
+    color: #39ff14;
+}
+
+
 /* ==========================
-   CARD PRINCIPAL
+   BANNER (full-bleed, sem card/borda)
 ========================== */
 
-.perfil-card {
-    background: #111;
-    border: 2px solid #39ff14;
-    border-radius: 25px;
-    overflow: hidden;
+.banner-wrap {
     position: relative;
+    width: 100%;
+    margin-top: 54px; /* compensa a altura do nav fixo */
 }
 
-/* BANNER */
-
-.banner {
-    height: 220px;
-    background: linear-gradient(90deg, #39ff14, #f7d046, #ff4f9a);
+.banner {  /*cor do banner*/
+    width: 100%;
+    height: 200px;
+    background: linear-gradient(90deg, #39ff14 0%, #f3c728 42%, #ff8c42 68%,#E9009B 100%);
 }
 
-/* AVATAR */
+ 
 
 .avatar {
     width: 170px;
@@ -96,9 +103,8 @@ body {
     font-size: 80px;
     color: #39ff14;
     position: absolute;
-    top: 130px;
+    bottom: -70px;
     left: 50px;
-    /* Bootstrap Icons alinham melhor com line-height */
     line-height: 1;
 }
 
@@ -107,8 +113,8 @@ body {
 ========================== */
 
 .perfil-header {
-    margin-top: 90px;
-    padding: 0 50px 40px;
+    margin-top: 110px;
+    padding: 0 0 40px;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -123,9 +129,9 @@ body {
     border: none;
     background: #39ff14;
     color: #000;
-    padding: 15px 30px;
-    border-radius: 12px;
-    font-size: 18px;
+    padding: 12px 24px;
+    border-radius: 10px;
+    font-size: 16px;
     font-weight: 700;
     cursor: pointer;
     display: flex;
@@ -139,15 +145,13 @@ body {
     box-shadow: 0 6px 20px rgba(57, 255, 20, .3);
 }
 
-/* ==========================
-   FORMULÁRIO
-========================== */
+
 
 .perfil-form {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 25px;
-    padding: 0 50px 50px;
+    padding: 0 0 50px;
 }
 
 .grupo {
@@ -199,12 +203,12 @@ body {
 ========================== */
 
 .estatisticas {
-    border-top: 2px solid rgba(255, 255, 255, .08);
-    padding: 50px;
+   
+    padding: 50px 0;
 }
 
 .estatisticas h2 {
-    color: #ff4f9a;
+    color: #E9009B;;
     font-size: 38px;
     margin-bottom: 30px;
 }
@@ -226,7 +230,7 @@ body {
 
 .stat-card:hover {
     transform: translateY(-5px);
-    border-color: rgba(57, 255, 20, .2);
+    
 }
 
 .stat-icon {
@@ -239,7 +243,7 @@ body {
 .stat-card:nth-child(1) h3 { color: #39ff14; }
 
 .stat-card:nth-child(2) .stat-icon,
-.stat-card:nth-child(2) h3 { color: #ff4f9a; }
+.stat-card:nth-child(2) h3 { color: #E9009B; }
 
 .stat-card:nth-child(3) .stat-icon,
 .stat-card:nth-child(3) h3 { color: #39ff14; }
@@ -257,12 +261,10 @@ body {
     margin: 0;
 }
 
-/* ==========================
-   FOOTER — complementa main.css do index
-========================== */
+ 
 .footer {
     margin-top: 60px;
-    background: #000;
+    background:#0a0a0a !important;
     color: #fff;
     padding: 40px 0;
     font-family: "Oswald", sans-serif;
@@ -422,34 +424,42 @@ body {
 
 @media (max-width: 900px) {
 
+    .topo {
+        padding: 12px 25px;
+    }
+
+    .perfil-container {
+        padding: 0 25px 20px;
+    }
+
     .perfil-header {
         flex-direction: column;
         gap: 20px;
         align-items: flex-start;
-        margin-top: 110px;
+        margin-top: 90px;
     }
 
     .perfil-form {
         grid-template-columns: 1fr;
-        padding: 0 25px 40px;
     }
 
     .full { grid-column: auto; }
 
     .stats-grid { grid-template-columns: 1fr; }
 
-    .estatisticas { padding: 30px 25px; }
+    .estatisticas { padding: 30px 0; }
 
     .avatar {
         width: 130px;
         height: 130px;
         font-size: 56px;
-        top: 150px;
+        bottom: -55px;
         left: 25px;
     }
 }
 
 @media (max-width: 576px) {
+    .voltar { font-size: 1.2rem; }
     .email-principal { font-size: 20px; }
     .btn-editar { font-size: 15px; padding: 12px 20px; }
     .stat-card h3 { font-size: 48px; }

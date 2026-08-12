@@ -42,28 +42,26 @@
 
         <h1>Criar Conta</h1>
 
-        <form>
+        <form action="assets/php/Upload.php" method="POST" enctype="multipart/form-data">
 
           <div class="row">
 
             <div class="col-md-6 mb-3">
 
-              <label>Nome</label>
+              <label for="nome">Nome</label>
 
               <div class="cadastro-input-box">
                 <i class="bi bi-person"></i>
 
-                <input
-                  type="text"
-                  class="form-control cadastro-input"
-                  placeholder="Digite seu nome">
-              </div>
+                <input type="text" class="form-control cadastro-input" placeholder="Digite seu nome" name="nome" id="nome">
+              
+                </div>
 
             </div>
 
             <div class="col-md-6 mb-3">
 
-              <label>Sobrenome</label>
+              <label for="sobrenome">Sobrenome</label>
 
               <div class="cadastro-input-box">
                 <i class="bi bi-person"></i>
@@ -71,7 +69,9 @@
                 <input
                   type="text"
                   class="form-control cadastro-input"
-                  placeholder="Digite seu sobrenome">
+                  placeholder="Digite seu sobrenome"
+                  name="sobrenome"
+                  id="sobrenome">
               </div>
 
             </div>
@@ -80,7 +80,7 @@
 
           <div class="mb-3">
 
-            <label>Apelido</label>
+            <label for="apelido">Apelido</label>
 
             <div class="cadastro-input-box">
               <i class="bi bi-person-circle"></i>
@@ -88,14 +88,16 @@
               <input
                 type="text"
                 class="form-control cadastro-input"
-                placeholder="Como deseja ser chamado?">
+                placeholder="Como deseja ser chamado?"
+                name="apelido"
+                id="apelido">
             </div>
 
           </div>
 
           <div class="mb-3">
 
-            <label>E-mail</label>
+            <label for="email">E-mail</label>
 
             <div class="cadastro-input-box">
               <i class="bi bi-envelope"></i>
@@ -103,14 +105,16 @@
               <input
                 type="email"
                 class="form-control cadastro-input"
-                placeholder="seuemail@gmail.com">
+                placeholder="seuemail@gmail.com"
+                name="email"
+                id="email">
             </div>
 
           </div>
 
           <div class="mb-4">
 
-            <label>Senha</label>
+            <label for="senha">Senha</label>
 
             <div class="cadastro-input-box">
               <i class="bi bi-lock"></i>
@@ -118,7 +122,10 @@
               <input
                 type="password"
                 class="form-control cadastro-input"
-                placeholder="Mínimo 6 caracteres">
+                placeholder="Mínimo 6 caracteres"
+                name="senha"
+                id="senha"
+                minlength="6">
             </div>
 
           </div>

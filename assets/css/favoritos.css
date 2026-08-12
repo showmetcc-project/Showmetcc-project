@@ -25,8 +25,8 @@ body {
    CORES DO PROJETO
 ========================== */
 
-.verde { color: #D9FF00; }
-.rosa  { color: #FF3CAC; }
+.verde { color: #2FFF00; }
+.rosa  { color: #E9009B; }
 
 /* ==========================
    NAV FIXO (topo + linha verde)
@@ -42,9 +42,11 @@ body {
 }
 
 .topo {
-    max-width: 1100px;
-    margin: 0 auto;
-    padding: 22px 20px 20px;
+    width: 100%;
+    padding: 22px 30px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
 }
 
 .voltar {
@@ -52,9 +54,9 @@ body {
     align-items: center;
     gap: 10px;
     text-decoration: none;
-    font-size: 1.65rem;
+    font-size: 1.5rem;
     font-weight: 700;
-    color: #D9FF00;
+    color: #2FFF00;
     transition: opacity .2s;
 }
 
@@ -67,18 +69,18 @@ body {
 }
 
 .voltar span {
-    color: #FF3CAC;
+    color: #E9009B;
 }
 
 .voltar:hover {
     opacity: .75;
-    color: #D9FF00;
+    color: #2FFF00;
 }
 
 .linha-verde {
     width: 100%;
     height: 2px;
-    background: #D9FF00;
+    background: #2FFF00;
 }
 
 /* ==========================
@@ -106,9 +108,9 @@ body {
 .aba {
     height: 58px;
     border-radius: 14px;
-    border: 2px solid #D9FF00;
+    border: 2px solid #2FFF00;
     background: transparent;
-    color: #D9FF00;
+    color: #2FFF00;
     font-size: 1rem;
     font-weight: 700;
     cursor: pointer;
@@ -120,31 +122,31 @@ body {
 }
 
 .aba:hover {
-    background: rgba(217, 255, 0, .08);
+    background: rgba(47, 255, 0, .08);
 }
 
 /* Aba ativa: Favoritos → verde sólido */
 .aba.ativa[data-tab="favoritos"] {
-    background: #D9FF00;
+    background: #2FFF00;
     color: #000;
-    border-color: #D9FF00;
+    border-color: #2FFF00;
 }
 
 /* Aba ativa: Planejados → pink sólido */
 .aba.ativa[data-tab="planejados"] {
-    background: #FF3CAC;
+    background: #E9009B;
     color: #000;
-    border-color: #FF3CAC;
+    border-color: #E9009B;
 }
 
 /* Aba inativa de planejados tem borda pink */
 .aba[data-tab="planejados"]:not(.ativa) {
-    border-color: #FF3CAC;
-    color: #FF3CAC;
+    border-color: #E9009B;
+    color: #E9009B;
 }
 
 .aba[data-tab="planejados"]:not(.ativa):hover {
-    background: rgba(255, 60, 172, .08);
+    background: rgba(233, 0, 155, .08);
 }
 
 /* ==========================
@@ -163,7 +165,7 @@ body {
     grid-template-columns: 200px 1fr auto;
     align-items: center;
     background: #141414;
-    border: 2px solid #D9FF00;
+    border: 2px solid #2FFF00;
     border-radius: 18px;
     overflow: hidden;
     transition: transform .25s, box-shadow .25s;
@@ -171,10 +173,13 @@ body {
 
 .card-evento:hover {
     transform: translateY(-3px);
-    box-shadow: 0 8px 30px rgba(217, 255, 0, .12);
+    border-color: #E9009B;
+    box-shadow:
+        0 0 15px 2px rgba(233, 0, 155, .55),
+        0 0 35px 10px rgba(255, 110, 220, .35),
+        0 8px 30px rgba(233, 0, 155, .25);
 }
 
-/* Imagem do card */
 .card-evento img {
     width: 200px;
     height: 140px;
@@ -183,7 +188,6 @@ body {
     flex-shrink: 0;
 }
 
-/* Info central */
 .info {
     padding: 20px 24px;
     display: flex;
@@ -208,18 +212,22 @@ body {
 }
 
 .info p i {
-    color: #D9FF00;
+    color: #888;
     font-size: 0.9rem;
 }
 
-/* Botão Ver detalhes */
+#planejados .info p i {
+    color:  #888;
+}
+
+
 .btn-detalhes {
     margin-top: 10px;
     height: 40px;
     padding: 0 22px;
     border: none;
     border-radius: 10px;
-    background: #D9FF00;
+    background: #2FFF00;
     color: #000;
     font-weight: 700;
     font-size: 0.9rem;
@@ -235,15 +243,26 @@ body {
 
 .btn-detalhes:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 14px rgba(217, 255, 0, .3);
+    box-shadow: 0 0px 10px rgba(47, 255, 0, .3);
 }
 
-/* Botões duplos (aba Planejados) */
+/* Botões duplos (aba Planejados) — alinhados lado a lado, mesma largura */
 .botoes-duplos {
     display: flex;
+    align-items: stretch;
     gap: 10px;
     margin-top: 10px;
     flex-wrap: wrap;
+}
+
+.botoes-duplos .btn-detalhes,
+.botoes-duplos .btn-planejamento {
+    flex: 1 1 140px;
+    margin-top: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
 }
 
 .btn-planejamento {
@@ -251,7 +270,7 @@ body {
     padding: 0 22px;
     border: none;
     border-radius: 10px;
-    background: #FF3CAC;
+    background: #E9009B;
     color: #000;
     font-weight: 700;
     font-size: 0.9rem;
@@ -262,7 +281,7 @@ body {
 
 .btn-planejamento:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 14px rgba(255, 60, 172, .35);
+    box-shadow: 0 0px 10px rgba(233, 0, 155, .35);
 }
 
 /* Coluna de ações (tag + lixeira) */
@@ -288,15 +307,15 @@ body {
 }
 
 .tag.pago {
-    background: rgba(255, 60, 172, .15);
-    color: #FF3CAC;
-    border: 1px solid #FF3CAC;
+    background: rgba(233, 0, 155, .15);
+    color: #E9009B;
+    border: 1px solid #E9009B;
 }
 
 .tag.gratis {
-    background: rgba(217, 255, 0, .12);
-    color: #D9FF00;
-    border: 1px solid #D9FF00;
+    background: rgba(47, 255, 0, .12);
+    color: #2FFF00;
+    border: 1px solid #2FFF00;
 }
 
 /* Botão lixeira */
@@ -316,9 +335,9 @@ body {
 }
 
 .btn-excluir:hover {
-    border-color: #FF3CAC;
-    color: #FF3CAC;
-    background: rgba(255, 60, 172, .08);
+    border-color: #E9009B;
+    color: #E9009B;
+    background: rgba(233, 0, 155, .08);
 }
 
 /* ==========================
@@ -334,14 +353,14 @@ body {
 .footer-line {
     width: 100%;
     height: 2px;
-    background: #D9FF00;
+    background: #2FFF00;
 }
 
 .footer-top { padding: 50px 0; }
 
 .footer h4,
 .footer .logo-footer {
-    color: #D9FF00;
+    color: #2FFF00;
     margin-bottom: 15px;
     font-size: 1.1rem;
     font-weight: 700;
@@ -370,8 +389,8 @@ body {
 }
 
 .social-links a:hover {
-    border-color: #D9FF00;
-    color: #D9FF00;
+    border-color: #2FFF00;
+    color: #2FFF00;
 }
 
 .footer-contact-form {
@@ -395,7 +414,7 @@ body {
 .footer-contact-form input:focus,
 .footer-contact-form textarea:focus {
     outline: none;
-    border-color: #D9FF00;
+    border-color: #2FFF00;
 }
 
 .footer-contact-form textarea {
@@ -407,7 +426,7 @@ body {
     height: 48px;
     border: none;
     border-radius: 12px;
-    background: #D9FF00;
+    background: #2FFF00;
     color: #000;
     font-weight: 700;
     cursor: pointer;
@@ -420,7 +439,7 @@ body {
 
 .footer-contact-form button:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 16px rgba(217, 255, 0, .25);
+    box-shadow: 0 4px 16px rgba(47, 255, 0, .25);
 }
 
 .footer-links ul {
@@ -437,7 +456,7 @@ body {
     transition: color .2s;
 }
 
-.footer-links ul li a:hover { color: #D9FF00; }
+.footer-links ul li a:hover { color: #2FFF00; }
 
 /* Scroll top */
 .scroll-top {
@@ -446,7 +465,7 @@ body {
     right: 20px;
     width: 40px;
     height: 40px;
-    background: #D9FF00;
+    background: #2FFF00;
     color: #000;
     border-radius: 50%;
     text-decoration: none;
@@ -471,7 +490,7 @@ body {
     }
 
     .voltar {
-        font-size: 1.4rem;
+        font-size: 1.6rem;
     }
 
     .eventos-container {

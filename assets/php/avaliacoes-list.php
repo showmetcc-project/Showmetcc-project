@@ -2,7 +2,7 @@
 
 header("Content-Type: application/json; charset=UTF-8");
 
-require_once "conexao.php";
+require_once('../config/conexao.php');
 
 if ($_SERVER["REQUEST_METHOD"] !== "GET") {
     http_response_code(405);

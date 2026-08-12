@@ -2,7 +2,7 @@
 
 header("Content-Type: application/json; charset=UTF-8");
 
-require_once "php/conexao.php";
+require_once('../config/conexao.php');
 
 if ($_SERVER["REQUEST_METHOD"] !== "POST") {
     http_response_code(405);
@@ -114,70 +114,3 @@ $id_avaliacao = $conn->insert_id;
 | Upload de fotos
 
 */
-
-$arquivosSalvos = [];
-
-if (isset($_FILES["arquivos"])) {
-
-    $pasta = "../uploads/avaliacoes/";
-
-    if (!is_dir($pasta)) {
-        mkdir($pasta, 0777, true);
-    }
-
-    $quantidade = count($_FILES["arquivos"]["name"]);
-
-    for ($i = 0; $i < $quantidade; $i++) {
-
-        if ($_FILES["arquivos"]["error"][$i] !== UPLOAD_ERR_OK) {
-            continue;
-        }
-
-        $nomeOriginal = $_FILES["arquivos"]["name"][$i];
-        $temporario = $_FILES["arquivos"]["tmp_name"][$i];
-
-        $extensao = strtolower(
-            pathinfo($nomeOriginal, PATHINFO_EXTENSION)
-        );
-
-        $extensoesPermitidas = [
-            "jpg",
-            "jpeg",
-            "png",
-            "webp",
-            "mp4",
-            "webm"
-        ];
-
-        if (!in_array($extensao, $extensoesPermitidas)) {
-            continue;
-        }
-
-        $novoNome =
-            uniqid("avaliacao_", true)
-            . "."
-            . $extensao;
-
-        $destino = $pasta . $novoNome;
-
-        if (move_uploaded_file($temporario, $destino)) {
-
-            $arquivosSalvos[] = $novoNome;
-
-        
-        }
-    }
-}
-
-
-echo json_encode([
-    "sucesso" => true,
-    "mensagem" => "Avaliação enviada com sucesso.",
-    "id_avaliacao" => $id_avaliacao,
-    "arquivos" => $arquivosSalvos
-], JSON_UNESCAPED_UNICODE);
-
-$stmt->close();
-$conn->close();
-
-?>

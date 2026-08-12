@@ -1,16 +1,14 @@
 <?php
-$host = 'localhost';
-$dbname = 'showme';
-$user = 'root';
-$pass = '';
 
-try {
-    $pdo = new PDO("mysql:host=$host;dbname=$dbname;charset=utf8", $user, $pass);
+$host = "localhost";
+$usuario = "root";
+$senha = "";
+$banco = "showme";
 
-    // Habilita modo de erro
-    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+$conn = new mysqli($host, $usuario, $senha, $banco);
 
-} catch (PDOException $e) {
-    die("Erro na conexão: " . $e->getMessage());
+if ($conn->connect_error) {
+    die("Erro na conexão: " . $conn->connect_error);
 }
-?>
+
+$conn->set_charset("utf8mb4");

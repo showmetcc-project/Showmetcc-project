@@ -38,9 +38,8 @@ CREATE TABLE evento (
     descricao_evento VARCHAR(1000),
     data_evento DATE,
     categoria_evento VARCHAR(100),
-    link_oficial VARCHAR(255),
-    latitude_evento DECIMAL(10,7),
-    longitude_evento DECIMAL(10,7)
+    link_oficial VARCHAR(255)
+  
 );
 
 

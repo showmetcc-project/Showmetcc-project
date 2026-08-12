@@ -130,34 +130,162 @@
                     </div>
                 </section>
 
-                <!-- Formulário de avaliação -->
-                <section class="secao avaliar-card">
+<!-- Formulário de avaliação -->
+            <section class="secao avaliar-card">
+
+                <form
+                    action="./php/avaliacoes.php"
+                    method="POST"
+                    enctype="multipart/form-data"
+                    id="formAvaliacao"
+                >
 
                     <h2>Avaliar este evento/local</h2>
 
+                    <!-- IDs necessários para o PHP -->
+                    <input type="hidden" name="id_user" value="1">
+                    <input type="hidden" name="id_evento" value="1">
+
+                    <!-- Nota -->
                     <label>Sua nota:</label>
+
                     <div class="estrelas-input" id="estrelasInput">
-                        <i class="bi bi-star estrela" data-valor="1"></i>
-                        <i class="bi bi-star estrela" data-valor="2"></i>
-                        <i class="bi bi-star estrela" data-valor="3"></i>
-                        <i class="bi bi-star estrela" data-valor="4"></i>
-                        <i class="bi bi-star estrela" data-valor="5"></i>
+
+                        <i
+                            class="bi bi-star estrela"
+                            data-valor="1"
+                        ></i>
+
+                        <i
+                            class="bi bi-star estrela"
+                            data-valor="2"
+                        ></i>
+
+                        <i
+                            class="bi bi-star estrela"
+                            data-valor="3"
+                        ></i>
+
+                        <i
+                            class="bi bi-star estrela"
+                            data-valor="4"
+                        ></i>
+
+                        <i
+                            class="bi bi-star estrela"
+                            data-valor="5"
+                        ></i>
+
                     </div>
 
-                    <label>Seu comentário:</label>
-                    <textarea placeholder="Conte a sua experiência aqui..."></textarea>
+                    <!-- Campo que será enviado para o PHP -->
+                    <input
+                        type="hidden"
+                        name="nota"
+                        id="nota"
+                        value=""
+                    >
 
+
+                    <!-- Comentário -->
+                    <label>Seu comentário:</label>
+
+                    <textarea
+                        name="comentario"
+                        id="comentario"
+                        placeholder="Conte a sua experiência aqui..."
+                    ></textarea>
+
+
+                    <!-- Fotos e vídeos -->
                     <label>Suas fotos e vídeos:</label>
-                    <label class="upload-area" for="uploadFotos">
+
+                    <label
+                        class="upload-area"
+                        for="uploadFotos"
+                    >
+
                         <i class="bi bi-image"></i>
-                        <span>Adicionar fotos</span>
-                        <input type="file" id="uploadFotos" accept="image/*" multiple hidden>
+
+                        <span>Adicionar fotos e vídeos</span>
+
+                        <input
+                            type="file"
+                            id="uploadFotos"
+                            name="arquivos[]"
+                            accept="image/*,video/*"
+                            multiple
+                            hidden
+                        >
+
                     </label>
 
-                    <button class="btn-enviar">Enviar avaliação</button>
 
-                </section>
+                    <!-- Enviar -->
+                    <button
+                        type="submit"
+                        class="btn-enviar"
+                    >
+                        Enviar avaliação
+                    </button>
 
+                </form>
+
+            </section>
+                        <script>
+
+            let notaAtual = 0;
+
+            const estrelas =
+                document.querySelectorAll(".estrela");
+
+            const campoNota =
+                document.getElementById("nota");
+
+
+            estrelas.forEach(estrela => {
+
+                estrela.addEventListener("click", function() {
+
+                    notaAtual =
+                        parseInt(this.dataset.valor);
+
+                    campoNota.value = notaAtual;
+
+                    estrelas.forEach(item => {
+
+                        const valor =
+                            parseInt(item.dataset.valor);
+
+                        if (valor <= notaAtual) {
+
+                            item.classList.remove(
+                                "bi-star"
+                            );
+
+                            item.classList.add(
+                                "bi-star-fill"
+                            );
+
+                        } else {
+
+                            item.classList.remove(
+                                "bi-star-fill"
+                            );
+
+                            item.classList.add(
+                                "bi-star"
+                            );
+
+                        }
+
+                    });
+
+                });
+
+            });
+
+            </script>
             </div>
 
             <!-- COLUNA DIREITA -->
@@ -277,6 +405,7 @@
 <script src="assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
 <script src="assets/vendor/aos/aos.js"></script>
 <script>
+    
     AOS.init();
 
     // Estrelas clicáveis

@@ -1,301 +1,811 @@
-<!DOCTYPE html>
+<?php
+
+require "php/conexao.php";
+
+$id_evento = $_GET["id_evento"] ?? 1;
+
+$sql = "SELECT * FROM evento WHERE id_evento = ?";
+$stmt = $conn->prepare($sql);
+$stmt->bind_param("i", $id_evento);
+$stmt->execute();
+
+$evento = $stmt->get_result()->fetch_assoc();
+
+if (!$evento) {
+    die("Evento não encontrado.");
+}
+
+?>
+<!doctype html>
 <html lang="pt-BR">
+
 <head>
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <title>Detalhes Evento - ShowMe</title>
 
-    <!-- Favicons -->
+    <!-- Favicon -->
     <link href="assets/img/showme.png" rel="icon">
 
     <!-- Fonts -->
     <link href="https://fonts.googleapis.com" rel="preconnect">
     <link href="https://fonts.gstatic.com" rel="preconnect" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800&family=Poppins:wght@300;400;500;600;700&family=Jost:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
-    <!-- Vendor CSS -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800&family=Poppins:wght@300;400;500;600;700&family=Jost:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+
+    <!-- Leaflet -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css">
+
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+    <!-- Bootstrap -->
     <link href="assets/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+
     <link href="assets/vendor/bootstrap-icons/bootstrap-icons.css" rel="stylesheet">
+
     <link href="assets/vendor/aos/aos.css" rel="stylesheet">
 
-    <!-- CSS customizado -->
+    <!-- CSS -->
     <link rel="stylesheet" href="assets/css/detalhesEvento.css">
+
 </head>
+
+
 <body>
 
-<div class="pagina-wrapper">
+    <div class="pagina-wrapper">
 
-    <!-- BOTÃO VOLTAR -->
-    <div class="container-fluid px-0">
-        <a href="inicio.html" class="btn-voltar">
-            <i class="bi bi-arrow-left"></i>
-        </a>
-    </div>
 
-    <!-- BANNER -->
-    <div class="banner-evento">
-        <img src="img/harry-banner.jpg" alt="Harry Styles: Together, Together">
-    </div>
+        <!-- =====================================================
+         BOTÃO VOLTAR
+    ====================================================== -->
 
-    <div class="container conteudo-principal">
+        <div class="container-fluid px-0">
 
-        <!-- BADGE + TÍTULO + INFOS -->
-        <span class="badge-evento">Show Internacional</span>
+            <a href="inicio.html" class="btn-voltar">
 
-        <h1 class="titulo-evento">Harry Styles: Together, Together</h1>
+                <i class="bi bi-arrow-left"></i>
 
-        <div class="infos-rapidas">
-            <span><i class="bi bi-calendar3"></i> 17, 18, 21 e 24 de julho de 2026</span>
-            <span><i class="bi bi-geo-alt-fill"></i> São Paulo, SP</span>
-            <span><i class="bi bi-currency-dollar"></i> R$265 – R$1.410</span>
+            </a>
+
         </div>
 
-        <!-- CONTEÚDO EM DUAS COLUNAS -->
-        <div class="row mt-4 g-4">
 
-            <!-- COLUNA ESQUERDA -->
-            <div class="col-lg-8">
 
-                <!-- Sobre o evento -->
-                <section class="secao">
-                    <h2>Sobre o evento</h2>
-                    <p>
-                        Together, Together é a terceira turnê do cantor e compositor
-                        inglês Harry Styles, em apoio ao seu quarto álbum de estúdio,
-                        Kiss All the Time. Disco, Occasionally. (2026)
-                    </p>
-                </section>
+        <!-- =====================================================
+         BANNER
+    ====================================================== -->
 
-                <!-- Artista -->
-                <section class="secao">
-                    <h2>Artista</h2>
-                    <div class="card-showme">
-                        <h4>Harry Styles</h4>
-                        <p>
-                            O cantor, compositor e ator britânico Harry Styles,
-                            ex-integrante do One Direction, se consolidou como um artista
-                            solo de destaque, misturando pop, rock e soul com uma
-                            estética visual nostálgica e uma performance enérgica.
-                        </p>
-                    </div>
-                </section>
+        <div class="banner-evento">
 
-                <!-- Local -->
-                <section class="secao">
-                    <h2>Local</h2>
-                    <div class="card-showme">
-                        <h4>Estádio MorumBis</h4>
-                        <p>Praça Roberto Gomes Pedrosa, nº 1, no bairro do Morumbi,<br>
-                           São Paulo – SP (CEP: 05653-070)</p>
-                        <div class="mapa-placeholder">
-                            <i class="bi bi-geo-alt-fill"></i>
-                            <span>Mapa interativo do local</span>
-                        </div>
-                    </div>
-                </section>
+            <img src="img/harry-banner.jpg" alt="Harry Styles: Together, Together">
 
-                <!-- Avaliações -->
-                <section class="secao" id="avaliacoes">
-                    <h2>Avaliações</h2>
+        </div>
 
-                    <div class="lista-avaliacoes">
 
-                        <div class="avaliacao-item">
-                            <div>
-                                <strong>Maria Silva</strong>
-                                <p>Estádio sensacional!</p>
-                                <small>19/06/2025</small>
-                            </div>
-                            <div class="estrelas-exibir">★★★★★</div>
-                        </div>
 
-                        <div class="avaliacao-item">
-                            <div>
-                                <strong>João Santos</strong>
-                                <p>Estádio sensacional!</p>
-                                <small>19/06/2025</small>
-                            </div>
-                            <div class="estrelas-exibir">★★★★★</div>
-                        </div>
+        <!-- =====================================================
+         CONTEÚDO PRINCIPAL
+    ====================================================== -->
+<div class="container conteudo-principal">
 
-                        <div class="avaliacao-item">
-                            <div>
-                                <strong>Ana Costa</strong>
-                                <p>Estádio sensacional!</p>
-                                <small>19/06/2025</small>
-                            </div>
-                            <div class="estrelas-exibir">★★★★★</div>
-                        </div>
 
-                    </div>
-                </section>
+            <!-- BADGE -->
 
-                <!-- Formulário de avaliação -->
-                <section class="secao avaliar-card">
+            <span class="badge-evento">
+                Show Internacional
+            </span>
 
-                    <h2>Avaliar este evento/local</h2>
 
-                    <label>Sua nota:</label>
-                    <div class="estrelas-input" id="estrelasInput">
-                        <i class="bi bi-star estrela" data-valor="1"></i>
-                        <i class="bi bi-star estrela" data-valor="2"></i>
-                        <i class="bi bi-star estrela" data-valor="3"></i>
-                        <i class="bi bi-star estrela" data-valor="4"></i>
-                        <i class="bi bi-star estrela" data-valor="5"></i>
-                    </div>
+            <!-- TÍTULO -->
 
-                    <label>Seu comentário:</label>
-                    <textarea placeholder="Conte a sua experiência aqui..."></textarea>
+            <h1 class="titulo-evento">
+                <?= htmlspecialchars($evento["nome_evento"]) ?>
+            </h1>
 
-                    <label>Suas fotos e vídeos:</label>
-                    <label class="upload-area" for="uploadFotos">
-                        <i class="bi bi-image"></i>
-                        <span>Adicionar fotos</span>
-                        <input type="file" id="uploadFotos" accept="image/*" multiple hidden>
-                    </label>
 
-                    <button class="btn-enviar">Enviar avaliação</button>
+            <!-- INFORMAÇÕES RÁPIDAS -->
 
-                </section>
+            <div class="infos-rapidas">
+
+                <span>
+
+                    <i class="bi bi-calendar3"></i>
+
+                    <?= htmlspecialchars($evento["data_evento"]) ?>
+
+                </span>
+
+
+                <span>
+
+                    <i class="bi bi-geo-alt-fill"></i>
+
+                    <?= htmlspecialchars($evento["cidade_evento"]) ?>,
+                    <?= htmlspecialchars($evento["uf"]) ?>
+
+                </span>
+
+
+                <?php if (!empty($evento["categoria_evento"])): ?>
+
+                <span>
+
+                    <i class="bi bi-tag-fill"></i>
+
+                    <?= htmlspecialchars($evento["categoria_evento"]) ?>
+
+                </span>
+
+                <?php endif; ?>
 
             </div>
 
-            <!-- COLUNA DIREITA -->
-            <div class="col-lg-4">
 
-                <!-- Card ingressos -->
-                <div class="ingresso-card">
-                    <h3>Ingressos</h3>
-                    <p>Adquira seus ingressos através dos canais oficiais:</p>
-                    <button class="btn-comprar"><a href="https://www.ticketmaster.com.br/event/harry-styles?gad_source=1&gad_campaignid=23894416223&gbraid=0AAAABChae0JbVCKbNnCGBGW42_pBXOK5Y&gclid=Cj0KCQjwo_PRBhDNARIsAEcVALUHCXldQnXoXo69REfg9QM3CDE_RfUpjXHWxPnef4YrXh-SYquKFcQaAm1QEALw_wcB" target="_blank">Comprar Ingressos</a></button>
-                    <small>Valores entre R$265 e R$1.410</small>
+
+            <!-- =====================================================
+             DUAS COLUNAS
+        ====================================================== -->
+
+            <div class="row mt-4 g-4">
+
+
+                <!-- =================================================
+                 COLUNA ESQUERDA
+            ================================================== -->
+
+                <div class="col-lg-8">
+
+
+                    <!-- SOBRE O EVENTO -->
+
+                    <section class="secao">
+
+                        <h2>
+                            Sobre o evento
+                        </h2>
+
+                        <p>
+                            <?= nl2br(
+                            htmlspecialchars(
+                                $evento["descricao_evento"] ?? ""
+                            )
+                        ) ?>
+                        </p>
+
+                    </section>
+
+
+
+                    <!-- =================================================
+                     ARTISTA
+                ================================================== -->
+
+                    <section class="secao">
+
+                        <h2>
+                            Artista
+                        </h2>
+
+                        <div class="card-showme">
+
+                            <h4>
+                                <?= htmlspecialchars(
+                                $evento["artista"] ?? "Artista não informado"
+                            ) ?>
+                            </h4>
+
+                        </div>
+
+                    </section>
+
+
+
+                    <!-- =================================================
+                     LOCAL
+                ================================================== -->
+
+                    <section class="secao">
+
+                        <h2>
+                            Local
+                        </h2>
+
+
+                        <div class="card-showme">
+
+
+                            <h4>
+                                <?= htmlspecialchars(
+                                $evento["local_evento"]
+                            ) ?>
+                            </h4>
+
+
+                            <p>
+
+                                <?= htmlspecialchars(
+                                $evento["rua_evento"]
+                            ) ?>
+
+                                <br>
+
+                                <?= htmlspecialchars(
+                                $evento["cidade_evento"]
+                            ) ?>
+
+                                -
+
+                                <?= htmlspecialchars(
+                                $evento["uf"]
+                            ) ?>
+
+                            </p>
+
+
+                            <!-- MAPA -->
+
+                            <div id="mapaEvento"></div>
+
+
+                            <button class="btn-rota" onclick="abrirGoogleMaps()">
+
+                                <i class="bi bi-sign-turn-right-fill"></i>
+
+                                Como chegar
+
+                            </button>
+
+
+                        </div>
+
+                    </section>
+
+
+
+                    <!-- =================================================
+                     AVALIAÇÕES
+                ================================================== -->
+
+                    <section class="secao" id="avaliacoes">
+
+                        <h2>
+                            Avaliações
+                        </h2>
+
+
+                        <div class="lista-avaliacoes">
+
+
+                            <?php
+
+                        $sqlAvaliacoes = "
+
+                            SELECT
+
+                                a.id_avaliacao,
+                                a.nota,
+                                a.comentario,
+                                a.data_avaliacao,
+
+                                u.nome_user,
+                                u.sobrenome
+
+                            FROM avaliacao a
+
+                            INNER JOIN usuario u
+
+                                ON a.id_user = u.id_user
+
+                            WHERE a.id_evento = ?
+
+                            ORDER BY a.data_avaliacao DESC
+
+                        ";
+
+
+                        $stmtAvaliacoes =
+                            $conn->prepare($sqlAvaliacoes);
+
+
+                        $stmtAvaliacoes->bind_param(
+                            "i",
+                            $id_evento
+                        );
+
+
+                        $stmtAvaliacoes->execute();
+
+
+                        $resultAvaliacoes =
+                            $stmtAvaliacoes->get_result();
+
+
+                        ?>
+
+
+                            <?php if (
+                            $resultAvaliacoes->num_rows > 0
+                        ): ?>
+
+
+                            <?php while (
+                                $avaliacao =
+                                $resultAvaliacoes->fetch_assoc()
+                            ): ?>
+
+
+                            <?php
+
+                                $nomeCompleto =
+                                    $avaliacao["nome_user"]
+                                    . " "
+                                    . $avaliacao["sobrenome"];
+
+
+                                $data = date(
+                                    "d/m/Y",
+                                    strtotime(
+                                        $avaliacao["data_avaliacao"]
+                                    )
+                                );
+
+                                ?>
+
+
+                            <div class="avaliacao-item">
+
+
+                                <div>
+
+
+                                    <strong>
+
+                                        <?= htmlspecialchars(
+                                                $nomeCompleto
+                                            ) ?>
+
+                                    </strong>
+
+
+                                    <p>
+
+                                        <?= htmlspecialchars(
+                                                $avaliacao["comentario"]
+                                            ) ?>
+
+                                    </p>
+
+
+                                    <small>
+
+                                        <?= $data ?>
+
+                                    </small>
+
+
+                                </div>
+
+
+                                <!-- ESTRELAS -->
+
+                                <div class="estrelas-exibir">
+
+
+                                    <?php
+
+                                        for (
+                                            $i = 1;
+                                            $i <= 5;
+                                            $i++
+                                        ) {
+
+                                            if (
+                                                $i <=
+                                                $avaliacao["nota"]
+                                            ) {
+
+                                                echo "★";
+
+                                            } else {
+
+                                                echo "☆";
+
+                                            }
+
+                                        }
+
+                                        ?>
+
+
+                                </div>
+
+
+                            </div>
+
+
+                            <?php endwhile; ?>
+
+
+                            <?php else: ?>
+
+
+                            <p>
+
+                                Ainda não existem avaliações
+                                para este evento.
+
+                            </p>
+
+
+                            <?php endif; ?>
+
+
+                        </div>
+
+                    </section>
+
+
+
+                    <!-- =================================================
+                     FORMULÁRIO DE AVALIAÇÃO
+                ================================================== -->
+
+                    <section class="secao avaliar-card">
+
+
+                        <form action="php/avaliacao.php" method="POST" enctype="multipart/form-data">
+
+
+                            <h2>
+                                Avaliar este evento/local
+                            </h2>
+
+
+                            <!-- ID DO USUÁRIO -->
+
+                            <input type="hidden" name="id_user" value="<?= $_SESSION['id_user'] ?? '' ?>">
+
+
+                            <!-- ID DO EVENTO -->
+
+                            <input type="hidden" name="id_evento" value="<?= $id_evento ?>">
+
+
+                            <!-- NOTA -->
+
+
+
+                            <div class="estrelas-input" id="estrelasInput">
+                                <i class="bi bi-star estrela" data-valor="1"></i>
+                                <i class="bi bi-star estrela" data-valor="2"></i>
+                                <i class="bi bi-star estrela" data-valor="3"></i>
+                                <i class="bi bi-star estrela" data-valor="4"></i>
+                                <i class="bi bi-star estrela" data-valor="5"></i>
+                            </div>
+
+                            <input type="hidden" name="nota" id="nota" value="">
+
+
+
+
+
+                            <!-- COMENTÁRIO -->
+
+                            <label>
+                                Seu comentário:
+                            </label>
+
+
+                            <textarea name="comentario" placeholder="Conte a sua experiência aqui..."></textarea>
+
+
+                            <!-- UPLOAD -->
+
+                            <label>
+                                Suas fotos e vídeos:
+                            </label>
+
+
+                            <label class="upload-area" for="uploadFotos">
+
+
+                                <i class="bi bi-image"></i>
+
+
+                                <span>
+                                    Adicionar fotos
+                                </span>
+
+
+                                <input type="file" id="uploadFotos" name="arquivos[]"
+                                    accept="image/*,video/mp4,video/webm" multiple hidden>
+
+
+                            </label>
+
+
+                            <!-- ENVIAR -->
+
+                            <button type="submit" class="btn-enviar">
+
+                                Enviar avaliação
+
+                            </button>
+
+
+                        </form>
+
+
+                    </section>
+
+
                 </div>
 
-                <!-- Botões de ação -->
-                <button class="btn-acao btn-favoritar">
-                    <i class="bi bi-heart"></i>
-                    Favoritar
-                </button>
 
-                <button class="btn-acao btn-planejar">
-                    <i class="bi bi-briefcase"></i><a href="planejamento.html">
-                    Planejar viagem</a>
-                </button>
 
-            </div>
+                <!-- =====================================================
+                 COLUNA DIREITA
+            ====================================================== -->
 
-        </div>
+                <div class="col-lg-4">
 
-    </div>
+
+                    <!-- =================================================
+                     CARD DE INGRESSOS
+                ================================================== -->
+
+                    <div class="ingresso-card">
+
+
+                        <h3>
+                            Ingressos
+                        </h3>
+
+
+                        <p>
+                            Adquira seus ingressos através
+                            dos canais oficiais:
+                        </p>
+
+
+                        <button class="btn-comprar">
+
+
+                            <a href="<?= htmlspecialchars(
+                                $evento[" link_ofcial"] ?? "#" ) ?>" target="_blank" rel="noopener noreferrer">
+
+                                Comprar Ingressos
+
+                            </a>
+
+
+                        </button>
+
+
+                    </div>
+
+
+
+                    <!-- =================================================
+                     FAVORITAR
+                ================================================== -->
+
+                    <button class="btn-acao btn-favoritar" type="button">
+
+                        <i class="bi bi-heart"></i>
+
+                        Favoritar
+
+                    </button>
+
+
+
+                    <!-- =================================================
+                     PLANEJAR VIAGEM
+                ================================================== -->
+
+                    <button class="btn-acao btn-planejar" type="button">
+
+                        <i class="bi bi-briefcase">Planejar viagem</i>
+
+
+                        <a href="planejamento.html?id_evento=<?php echo $evento['id_evento']; ?>
+                            
+
+                        </a>
+
+                     </button>
 
 </div>
 
-<!-- FOOTER (reutilizado do index) -->
- <footer id="footer" class="footer">
 
-    <div class="footer-line"></div>
+                            <!-- =====================================================
+         SCROLL TOP
+    ====================================================== -->
 
-    <div class="container footer-top">
+                            <a href="#" id="scroll-top"
+                                class="scroll-top d-flex align-items-center justify-content-center">
 
-      <div class="row gy-4">
+                                <i class="bi bi-arrow-up-short"></i>
 
-        <div class="col-lg-4 col-md-6 footer-about">
-
-          <h4 class="logo-footer">
-            <span class="verde">Show</span><span class="rosa">Me</span>
-          </h4>
-
-          <p>
-            Democratizando o acesso à cultura desde 2026.
-          </p>
-
-          <div class="social-links">
-
-            <a href="https://www.instagram.com/showmetcc/">
-              <i class="bi bi-instagram"></i>
-            </a>
-
-            <a href="#">
-              <i class="bi bi-twitter-x"></i>
-            </a>
-
-            <a href="#">
-              <i class="bi bi-facebook"></i>
-            </a>
-
-          </div>
-
-        </div>
-
-        <div class="col-lg-4 col-md-6">
-
-          <h4>Entre em Contato</h4>
-
-          <form class="footer-contact-form">
-
-            <input type="email" placeholder="Seu e-mail">
-
-            <textarea placeholder="Sua mensagem"></textarea>
-
-            <button type="submit">
-              <i class="bi bi-envelope"></i>
-              Enviar
-            </button>
-
-          </form>
-
-        </div>
-
-        <div class="col-lg-4 col-md-12 footer-links">
-
-          <h4>Informações</h4>
-
-          <ul>
-            <li><a href="#">Termos de Uso</a></li>
-            <li><a href="#">Política de Privacidade</a></li>
-          </ul>
-
-          <p class="copyright-text">
-            © 2026 ShowMe. Todos os direitos reservados.
-          </p>
-
-        </div>
-
-      </div>
-
-    </div>
-
-  </footer>
+                            </a>
 
 
-<!-- Scroll Top -->
-<a href="#" id="scroll-top" class="scroll-top d-flex align-items-center justify-content-center">
-    <i class="bi bi-arrow-up-short"></i>
-</a>
+                </div>
 
-<!-- Vendor JS -->
-<script src="assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
-<script src="assets/vendor/aos/aos.js"></script>
-<script>
-    AOS.init();
 
-    // Estrelas clicáveis
-    const estrelas = document.querySelectorAll('.estrela');
-    estrelas.forEach(estrela => {
-        estrela.addEventListener('mouseover', () => iluminar(+estrela.dataset.valor));
-        estrela.addEventListener('mouseout',  () => iluminar(notaAtual));
-        estrela.addEventListener('click',     () => { notaAtual = +estrela.dataset.valor; iluminar(notaAtual); });
-    });
 
-    let notaAtual = 0;
-    function iluminar(n) {
-        estrelas.forEach(e => {
-            const v = +e.dataset.valor;
-            e.classList.toggle('bi-star-fill', v <= n);
-            e.classList.toggle('bi-star',      v >  n);
-        });
-    }
-</script>
+                <!-- =====================================================
+     JAVASCRIPT
+====================================================== -->
+
+                <script src="assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+
+                <script src="assets/vendor/aos/aos.js"></script>
+
+
+                <script>
+                AOS.init();
+
+
+                /* =====================================================
+                   ESTRELAS DAS AVALIAÇÕES
+                ===================================================== */
+
+                let notaAtual = 0;
+
+                const estrelas =
+                    document.querySelectorAll(".estrela");
+
+
+                estrelas.forEach((estrela) => {
+
+
+                    estrela.addEventListener(
+                        "mouseover",
+                        () => {
+
+                            iluminar(
+                                Number(
+                                    estrela.dataset.valor
+                                )
+                            );
+
+                        }
+                    );
+
+
+                    estrela.addEventListener(
+                        "mouseout",
+                        () => {
+
+                            iluminar(notaAtual);
+
+                        }
+                    );
+
+
+                    estrela.addEventListener(
+                        "click",
+                        () => {
+
+                            notaAtual =
+                                Number(
+                                    estrela.dataset.valor
+                                );
+
+
+                            document.getElementById(
+                                "nota"
+                            ).value = notaAtual;
+
+
+                            iluminar(notaAtual);
+
+                        }
+                    );
+
+                });
+
+
+                function iluminar(n) {
+
+
+                    estrelas.forEach((estrela) => {
+
+
+                        const valor =
+                            Number(
+                                estrela.dataset.valor
+                            );
+
+
+                        estrela.classList.toggle(
+                            "bi-star-fill",
+                            valor <= n
+                        );
+
+
+                        estrela.classList.toggle(
+                            "bi-star",
+                            valor > n
+                        );
+
+
+                    });
+
+                }
+
+
+
+
+
+                /* =====================================================
+                   GOOGLE MAPS
+                ===================================================== */
+
+                function abrirGoogleMaps() {
+
+
+                    const parametros = new URLSearchParams(window.location.search);
+
+                    const idEvento = parametros.get("id_evento");
+
+                    let eventoAtual = null;
+
+                    let custoIngresso = 265;
+
+                    let destinoEvento = {
+                        lat: null,
+                        lng: null,
+                        nome: "",
+                        endereco: ""
+                    };
+
+                    let origem = null;
+
+                    let origemTexto = "Não definida";
+
+                    let transporteSelecionado = "";
+
+                    let hospedagemSelecionada = false;
+
+                    let hospedagemNome = "";
+
+                    let mapa = null;
+
+                    let marcadorOrigem = null;
+
+                    let marcadorDestino = null;
+
+                    let rotaLayer = null;
+
+
+                    const url =
+
+                        "https://www.google.com/maps/dir/?api=1" +
+
+                        "&destination=" +
+
+                        encodeURIComponent(
+                            latitude + "," + longitude
+                        );
+
+
+                    window.open(
+                        url,
+                        "_blank"
+                    );
+
+                }
+                </script>
+
 
 </body>
+
 </html>

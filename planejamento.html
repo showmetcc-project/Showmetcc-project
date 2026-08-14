@@ -1418,10 +1418,6 @@
   </head>
 
   <body>
-    <!-- =========================================
-     HEADER
-========================================= -->
-
     <header>
       <div class="header-planejamento">
         <a href="javascript:history.back()" class="voltar-header">
@@ -1439,14 +1435,10 @@
       </div>
     </header>
 
-    <!-- =========================================
-     CONTEÚDO PRINCIPAL
-========================================= -->
-
     <main class="planejamento-container">
-      <!-- =====================================
+      <!-- 
          PROGRESSO
-    ====================================== -->
+    -->
 
       <aside class="progresso">
         <h3>Progresso</h3>
@@ -2008,22 +2000,14 @@
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
     <script>
-      /* =====================================================
+      /* =========================================================
    CONFIGURAÇÕES DO EVENTO
-===================================================== */
+========================================================= */
 
       const custoIngresso = 265;
-
-      /*
-    Coordenadas do Estádio MorumBis
-
-    Latitude:
-    -23.6000
-
-    Longitude:
-    -46.7200
-*/
 
       const destinoEvento = {
         lat: -23.6,
@@ -2031,20 +2015,13 @@
         nome: "Estádio MorumBis",
       };
 
-      /*
-    Localização inicial padrão.
+      /* =========================================================
+   VARIÁVEIS
+========================================================= */
 
-    Caso o usuário não permita
-    acesso à localização, utilizamos
-    São Paulo como origem.
-*/
+      let origem = null;
 
-      let origem = {
-        lat: -23.5505,
-        lng: -46.6333,
-      };
-
-      let transporteSelecionado = "Carro";
+      let transporteSelecionado = "";
 
       let hospedagemSelecionada = false;
 
@@ -2058,52 +2035,93 @@
 
       let rotaLayer = null;
 
-      /* =====================================================
+      /* =========================================================
    TROCA DE ETAPAS
-===================================================== */
+========================================================= */
 
       function proximaEtapa(numero) {
-        atualizarResumo();
+        /* -----------------------------------------
+       ETAPA 1
+    ----------------------------------------- */
+
+        if (numero === 2) {
+          const orcamento =
+            Number(document.getElementById("orcamento").value) || 0;
+
+          if (orcamento <= 0) {
+            alert("Informe um orçamento válido antes de continuar.");
+
+            document.getElementById("orcamento").focus();
+
+            return;
+          }
+
+          atualizarResumo();
+        }
+
+        /* -----------------------------------------
+       ETAPA 2
+    ----------------------------------------- */
+
+        if (numero === 3) {
+          atualizarResumo();
+
+          setTimeout(() => {
+            iniciarMapa();
+
+            if (mapa) {
+              mapa.invalidateSize();
+            }
+          }, 200);
+        }
+
+        /* -----------------------------------------
+       ETAPA 3
+    ----------------------------------------- */
+
+        if (numero === 4) {
+          atualizarResumo();
+        }
+
+        /* -----------------------------------------
+       ETAPA 4
+    ----------------------------------------- */
+
+        if (numero === 5) {
+          atualizarResumo();
+        }
+
+        /* -----------------------------------------
+       TROCA VISUAL
+    ----------------------------------------- */
 
         document.querySelectorAll(".etapa").forEach((etapa) => {
           etapa.classList.remove("ativa");
         });
 
-        document.getElementById(`etapa${numero}`).classList.add("ativa");
+        const etapa = document.getElementById(`etapa${numero}`);
+
+        if (etapa) {
+          etapa.classList.add("ativa");
+        }
 
         atualizarTimeline(numero);
-
-        /*
-        Quando chegar na etapa 3,
-        inicializa o mapa.
-    */
-
-        if (numero === 3) {
-          setTimeout(() => {
-            iniciarMapa();
-          }, 100);
-        }
-
-        /*
-        Quando chegar no resumo,
-        atualiza todos os dados.
-    */
-
-        if (numero === 5) {
-          atualizarResumo();
-        }
       }
 
-      /* =====================================================
+      /* =========================================================
    VOLTAR ETAPA
-===================================================== */
+========================================================= */
 
       function voltarEtapa(numero) {
         document.querySelectorAll(".etapa").forEach((etapa) => {
           etapa.classList.remove("ativa");
         });
 
-        document.getElementById(`etapa${numero}`).classList.add("ativa");
+        const etapa = document.getElementById(`etapa${numero}`);
+
+        if (etapa) {
+          etapa.classList.add("ativa");
+        }
 
         atualizarTimeline(numero);
 
@@ -2114,13 +2132,13 @@
             } else {
               iniciarMapa();
             }
-          }, 100);
+          }, 200);
         }
       }
 
-      /* =====================================================
+      /* =========================================================
    TIMELINE
-===================================================== */
+========================================================= */
 
       function atualizarTimeline(etapaAtual) {
         document.querySelectorAll(".passo").forEach((passo, index) => {
@@ -2139,9 +2157,9 @@
         });
       }
 
-      /* =====================================================
+      /* =========================================================
    TRANSPORTE
-===================================================== */
+========================================================= */
 
       function selecionarTransporte(tipo) {
         transporteSelecionado = tipo;
@@ -2149,15 +2167,30 @@
         document.getElementById("transporteSelecionado").textContent =
           `Transporte selecionado: ${tipo}`;
 
-        const tipoRota = document.getElementById("tipoTransporteRota");
-        if (tipoRota) {
-          tipoRota.textContent = tipo;
-        }
+        /*
+       Destaca o botão selecionado
+    */
+
+        document.querySelectorAll("#etapa2 .opcao").forEach((botao) => {
+          botao.style.borderColor = "rgba(255,255,255,.1)";
+          botao.style.background = "rgba(255,255,255,.025)";
+        });
+
+        const botoes = document.querySelectorAll("#etapa2 .opcao");
+
+        botoes.forEach((botao) => {
+          if (botao.textContent.includes(tipo)) {
+            botao.style.borderColor = "var(--verde)";
+            botao.style.background = "rgba(168,255,0,.08)";
+          }
+        });
+
+        atualizarResumo();
       }
 
-      /* =====================================================
+      /* =========================================================
    HOSPEDAGEM
-===================================================== */
+========================================================= */
 
       function mostrarHospedagem() {
         hospedagemSelecionada = true;
@@ -2189,35 +2222,77 @@
 
         document.getElementById("hospedagemSelecionada").textContent =
           `Hospedagem selecionada: ${nome}`;
+
+        /*
+       Destaca o botão selecionado
+    */
+
+        document
+          .querySelectorAll("#opcoesHospedagem .opcao")
+          .forEach((botao) => {
+            botao.style.borderColor = "rgba(255,255,255,.1)";
+            botao.style.background = "rgba(255,255,255,.025)";
+          });
+
+        document
+          .querySelectorAll("#opcoesHospedagem .opcao")
+          .forEach((botao) => {
+            if (botao.textContent.includes(nome)) {
+              botao.style.borderColor = "var(--verde)";
+              botao.style.background = "rgba(168,255,0,.08)";
+            }
+          });
       }
 
-      /* =====================================================
-   INICIALIZAÇÃO DO MAPA
-===================================================== */
+      /* =========================================================
+   ÍCONE DO EVENTO
+========================================================= */
+
       const iconeEvento = L.divIcon({
         className: "pin-evento",
+
         html: `
         <div class="pin-neon">
             <i class="fa-solid fa-location-dot"></i>
         </div>
     `,
+
         iconSize: [40, 40],
+
         iconAnchor: [20, 40],
+
         popupAnchor: [0, -40],
       });
+
+      /* =========================================================
+   INICIAR MAPA
+========================================================= */
+
       function iniciarMapa() {
+        /*
+       Se o mapa já existe,
+       apenas atualiza o tamanho.
+    */
+
         if (mapa !== null) {
           mapa.invalidateSize();
+
           return;
         }
 
         mapa = L.map("mapaRota").setView(
           [destinoEvento.lat, destinoEvento.lng],
+
           14,
         );
 
+        /* -----------------------------------------
+       MAPA ESCURO
+    ----------------------------------------- */
+
         L.tileLayer(
           "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",
+
           {
             attribution: "&copy; OpenStreetMap &copy; CARTO",
 
@@ -2226,110 +2301,160 @@
             maxZoom: 20,
           },
         ).addTo(mapa);
-        marcadorDestino = L.marker([destinoEvento.lat, destinoEvento.lng])
-          .addTo(mapa)
-          .bindPopup(`<strong>${destinoEvento.nome}</strong><br>São Paulo - SP`)
-          .openPopup();
 
-        /*
-          Neste momento mostramos apenas o local do evento.
-          A rota só será criada depois que o usuário informar a origem.
-        */
+        /* -----------------------------------------
+       MARCADOR DO EVENTO
+    ----------------------------------------- */
+
+        marcadorDestino = L.marker(
+          [destinoEvento.lat, destinoEvento.lng],
+
+          {
+            icon: iconeEvento,
+          },
+        )
+          .addTo(mapa)
+
+          .bindPopup(
+            `
+        <strong>${destinoEvento.nome}</strong>
+        <br>
+        São Paulo - SP
+    `,
+          )
+
+          .openPopup();
       }
 
-      /* =====================================================
+      /* =========================================================
    CENTRALIZAR EVENTO
-===================================================== */
+========================================================= */
+
       function centralizarEvento() {
         iniciarMapa();
-        mapa.setView([destinoEvento.lat, destinoEvento.lng], 16);
-        marcadorDestino.openPopup();
+
+        mapa.setView(
+          [destinoEvento.lat, destinoEvento.lng],
+
+          16,
+        );
+
+        if (marcadorDestino) {
+          marcadorDestino.openPopup();
+        }
       }
 
-      /* =====================================================
-   USAR LOCALIZAÇÃO DO USUÁRIO
-===================================================== */
+      /* =========================================================
+   LOCALIZAÇÃO DO USUÁRIO
+========================================================= */
+
       function usarMinhaLocalizacao() {
         const mensagem = document.getElementById("mensagemRota");
 
         if (!navigator.geolocation) {
           mensagem.textContent =
             "Seu navegador não oferece suporte à localização.";
+
           mensagem.classList.add("erro-rota");
+
           return;
         }
 
         mensagem.textContent = "Solicitando sua localização...";
+
         mensagem.classList.remove("erro-rota");
 
         navigator.geolocation.getCurrentPosition(
           function (position) {
             origem = {
               lat: position.coords.latitude,
+
               lng: position.coords.longitude,
             };
 
-            origemTexto = "Sua localização atual";
+            document.getElementById("origemTexto").textContent =
+              "Sua localização atual";
 
-            document.getElementById("origemTexto").textContent = origemTexto;
-            document.getElementById("resumoOrigem").textContent = origemTexto;
+            document.getElementById("resumoOrigem").textContent =
+              "Sua localização atual";
 
             iniciarMapa();
+
+            /* -----------------------------------------
+               MARCADOR DA ORIGEM
+            ----------------------------------------- */
 
             if (marcadorOrigem) {
               marcadorOrigem.setLatLng([origem.lat, origem.lng]);
             } else {
               marcadorOrigem = L.marker([origem.lat, origem.lng])
                 .addTo(mapa)
+
                 .bindPopup("<strong>Você está aqui</strong>");
             }
 
             calcularRota();
           },
+
           function (error) {
-            let texto =
-              "Não foi possível obter sua localização. Você pode informar um ponto de partida manualmente.";
+            let texto = "Não foi possível obter sua localização.";
 
             if (error.code === 1) {
               texto =
-                "Permissão de localização negada. Informe um ponto de partida manualmente ou permita o acesso à localização.";
+                "Permissão de localização negada. Informe um ponto de partida manualmente.";
             }
 
             mensagem.textContent = texto;
+
             mensagem.classList.add("erro-rota");
           },
+
           {
             enableHighAccuracy: true,
+
             timeout: 10000,
+
             maximumAge: 0,
           },
         );
       }
 
-      /* =====================================================
-   ORIGEM MANUAL
-===================================================== */
+      /* =========================================================
+   LOCALIZAÇÃO MANUAL
+========================================================= */
+
       async function calcularRotaManual() {
         const campo = document.getElementById("origemManual");
+
         const mensagem = document.getElementById("mensagemRota");
+
         const endereco = campo.value.trim();
 
         if (!endereco) {
           mensagem.textContent = "Informe um ponto de partida.";
+
           mensagem.classList.add("erro-rota");
+
           return;
         }
 
         mensagem.textContent = "Localizando o ponto de partida...";
+
         mensagem.classList.remove("erro-rota");
 
         try {
           const url =
-            "https://nominatim.openstreetmap.org/search?format=json&limit=1&countrycodes=br&q=" +
+            "https://nominatim.openstreetmap.org/search" +
+            "?format=json" +
+            "&limit=1" +
+            "&countrycodes=br" +
+            "&q=" +
             encodeURIComponent(endereco);
 
           const resposta = await fetch(url, {
-            headers: { Accept: "application/json" },
+            headers: {
+              Accept: "application/json",
+            },
           });
 
           const locais = await resposta.json();
@@ -2340,43 +2465,53 @@
 
           origem = {
             lat: Number(locais[0].lat),
+
             lng: Number(locais[0].lon),
           };
 
-          origemTexto = locais[0].display_name;
-
           document.getElementById("origemTexto").textContent = endereco;
+
           document.getElementById("resumoOrigem").textContent = endereco;
 
           iniciarMapa();
+
+          /* -----------------------------------------
+           MARCADOR
+        ----------------------------------------- */
 
           if (marcadorOrigem) {
             marcadorOrigem.setLatLng([origem.lat, origem.lng]);
           } else {
             marcadorOrigem = L.marker([origem.lat, origem.lng])
               .addTo(mapa)
+
               .bindPopup("<strong>Origem</strong>");
           }
 
           calcularRota();
         } catch (erro) {
           console.error(erro);
+
           mensagem.textContent =
             "Não encontramos esse local. Tente informar uma cidade, endereço ou ponto de referência.";
+
           mensagem.classList.add("erro-rota");
         }
       }
 
-      /* =====================================================
+      /* =========================================================
    CALCULAR ROTA
-===================================================== */
+========================================================= */
+
       async function calcularRota() {
         if (!mapa || !origem) {
           return;
         }
 
         const mensagem = document.getElementById("mensagemRota");
+
         mensagem.textContent = "Calculando rota...";
+
         mensagem.classList.remove("erro-rota");
 
         const url =
@@ -2387,6 +2522,7 @@
 
         try {
           const resposta = await fetch(url);
+
           const dados = await resposta.json();
 
           if (!dados.routes || dados.routes.length === 0) {
@@ -2395,61 +2531,110 @@
 
           const rota = dados.routes[0];
 
+          /* -----------------------------------------
+           REMOVE ROTA ANTERIOR
+        ----------------------------------------- */
+
           if (rotaLayer) {
             mapa.removeLayer(rotaLayer);
           }
 
-          rotaLayer = L.geoJSON(rota.geometry, {
-            style: {
-              color: "#a8ff00",
-              weight: 5,
-              opacity: 0.9,
-            },
-          }).addTo(mapa);
+          /* -----------------------------------------
+           DESENHA ROTA
+        ----------------------------------------- */
 
-          mapa.fitBounds(rotaLayer.getBounds(), {
-            padding: [30, 30],
-          });
+          rotaLayer = L.geoJSON(
+            rota.geometry,
+
+            {
+              style: {
+                color: "#a8ff00",
+
+                weight: 5,
+
+                opacity: 0.9,
+              },
+            },
+          ).addTo(mapa);
+
+          /* -----------------------------------------
+           ENQUADRA A ROTA
+        ----------------------------------------- */
+
+          mapa.fitBounds(
+            rotaLayer.getBounds(),
+
+            {
+              padding: [30, 30],
+            },
+          );
+
+          /* -----------------------------------------
+           DISTÂNCIA
+        ----------------------------------------- */
 
           const distanciaKm = rota.distance / 1000;
 
-          document.getElementById("distanciaRota").textContent =
-            `${distanciaKm.toFixed(1)} km`;
+          const distanciaTexto = `${distanciaKm.toFixed(1)} km`;
+
+          document.getElementById("distanciaRota").textContent = distanciaTexto;
+
           document.getElementById("resumoDistancia").textContent =
-            `${distanciaKm.toFixed(1)} km`;
+            distanciaTexto;
+
+          /* -----------------------------------------
+           TEMPO
+        ----------------------------------------- */
 
           const minutos = Math.round(rota.duration / 60);
+
           let tempoTexto;
 
           if (minutos >= 60) {
             const horas = Math.floor(minutos / 60);
+
             const minutosRestantes = minutos % 60;
+
             tempoTexto = `${horas}h ${minutosRestantes}min`;
           } else {
             tempoTexto = `${minutos} min`;
           }
 
           document.getElementById("tempoRota").textContent = tempoTexto;
+
           document.getElementById("resumoTempo").textContent = tempoTexto;
 
+          /* -----------------------------------------
+           MOSTRA INFORMAÇÕES
+        ----------------------------------------- */
+
           document.getElementById("informacoesRota").style.display = "grid";
+
           document.getElementById("navegacaoBox").style.display = "block";
 
           mensagem.textContent = "Rota calculada com sucesso.";
         } catch (erro) {
           console.error(erro);
+
           mensagem.textContent = "Não foi possível calcular a rota no momento.";
+
           mensagem.classList.add("erro-rota");
         }
       }
 
+      /* =========================================================
+   GOOGLE MAPS
+========================================================= */
+
       function abrirGoogleMaps() {
         if (!origem) {
           alert("Calcule uma rota primeiro.");
+
           return;
         }
 
         const origemMaps = `${origem.lat},${origem.lng}`;
+
         const destinoMaps = `${destinoEvento.lat},${destinoEvento.lng}`;
 
         const url =
@@ -2461,22 +2646,28 @@
         window.open(url, "_blank");
       }
 
+      /* =========================================================
+   WAZE
+========================================================= */
+
       function abrirWaze() {
         if (!origem) {
           alert("Calcule uma rota primeiro.");
+
           return;
         }
 
         const url =
-          `https://www.waze.com/ul?ll=${destinoEvento.lat},${destinoEvento.lng}` +
+          `https://www.waze.com/ul` +
+          `?ll=${destinoEvento.lat},${destinoEvento.lng}` +
           `&navigate=yes`;
 
         window.open(url, "_blank");
       }
 
-      /* =====================================================
+      /* =========================================================
    ATUALIZAR RESUMO
-===================================================== */
+========================================================= */
 
       function atualizarResumo() {
         const orcamento =
@@ -2492,43 +2683,42 @@
 
         const saldo = orcamento - total;
 
-        /*
-        Orçamento
-    */
+        /* -----------------------------------------
+       ORÇAMENTO
+    ----------------------------------------- */
 
         document.getElementById("valorOrcamento").textContent =
           `R$ ${orcamento.toFixed(2)}`;
 
-        document.getElementById("restante").textContent = `R$ ${(
-          orcamento -
-          custoIngresso -
-          transporte
-        ).toFixed(2)}`;
+        const restante = orcamento - custoIngresso - transporte;
 
-        /*
-        Transporte
-    */
+        document.getElementById("restante").textContent =
+          `R$ ${restante.toFixed(2)}`;
+
+        /* -----------------------------------------
+       TRANSPORTE
+    ----------------------------------------- */
 
         document.getElementById("resumoTransporte").textContent =
           `R$ ${transporte.toFixed(2)}`;
 
-        /*
-        Hospedagem
-    */
+        /* -----------------------------------------
+       HOSPEDAGEM
+    ----------------------------------------- */
 
         document.getElementById("resumoHospedagem").textContent =
           `R$ ${hospedagem.toFixed(2)}`;
 
-        /*
-        Total
-    */
+        /* -----------------------------------------
+       TOTAL
+    ----------------------------------------- */
 
         document.getElementById("totalFinal").textContent =
           `R$ ${total.toFixed(2)}`;
 
-        /*
-        Orçamento final
-    */
+        /* -----------------------------------------
+       ORÇAMENTO FINAL
+    ----------------------------------------- */
 
         document.getElementById("orcamentoFinal").textContent =
           `R$ ${orcamento.toFixed(2)}`;
@@ -2540,19 +2730,28 @@
           `R$ ${saldo.toFixed(2)}`;
       }
 
-      /* =====================================================
-   FINALIZAR
-===================================================== */
+      /* =========================================================
+   FINALIZAR PLANEJAMENTO
+========================================================= */
 
       function finalizarPlanejamento() {
         atualizarResumo();
 
+        const orcamento =
+          Number(document.getElementById("orcamento").value) || 0;
+
+        if (orcamento <= 0) {
+          alert("Informe seu orçamento antes de finalizar.");
+
+          return;
+        }
+
         alert("Planejamento finalizado com sucesso!");
       }
 
-      /* =====================================================
-   ATUALIZAÇÃO AUTOMÁTICA DOS VALORES
-===================================================== */
+      /* =========================================================
+   EVENTOS DOS INPUTS
+========================================================= */
 
       document
         .getElementById("orcamento")
@@ -2566,9 +2765,9 @@
         .getElementById("hospedagem")
         .addEventListener("input", atualizarResumo);
 
-      /*
-    Estado inicial
-*/
+      /* =========================================================
+   ESTADO INICIAL
+========================================================= */
 
       atualizarResumo();
 

@@ -1,6 +1,6 @@
 <?php
 
-require_once('../config/conexao.php');
+require_once('../assets/config/conexao.php');
 /*usuario */
 
 $nome = $_POST["nome"];

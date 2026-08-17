@@ -1,2578 +1,3747 @@
-<!doctype html>
-<html lang="pt-BR">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<?php
+/*
+=========================================================
+ SHOWME - PLANEJAMENTO DE VIAGEM
+=========================================================
+
+Este arquivo:
+- Busca o evento no banco pelo id_evento
+- NÃO utiliza latitude/longitude armazenadas no banco
+- Usa o endereço do evento para localizar o destino
+- Calcula rotas
+- Estima custos de transporte
+- Pesquisa hospedagens próximas
+- Controla as 5 etapas do planejamento
+
+URL esperada:
 
-    <title>Planejar Viagem - ShowMe</title>
+planejamento.php?id_evento=15
 
-    <!-- CSS do projeto -->
-    <link rel="stylesheet" href="css/planejamento.css" />
+=========================================================
+*/
 
-    <!-- Bootstrap Icons -->
-    <link
-      rel="stylesheet"
-      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
-    />
+// -------------------------------------------------------
+// CONEXÃO COM O BANCO
+// -------------------------------------------------------
 
-    <!-- Font Awesome -->
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
-    />
+require_once __DIR__ . 'assets/config/conexao.php';
 
-    <!-- Leaflet - mapa -->
-    <link
-      rel="stylesheet"
-      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-    />
+$idEvento = filter_input(
+    INPUT_GET,
+    'id_evento',
+    FILTER_VALIDATE_INT
+);
 
-    <style>
-            /* =========================================================
-               SHOWME - PLANEJAMENTO DE VIAGEM
-               ========================================================= */
+if (!$idEvento) {
+    die("Evento não informado.");
+}
 
-            @import url('https://fonts.googleapis.com/css2?family=Jost:wght@300;400;500;600;700&family=Poppins:wght@300;400;500;600;700&display=swap');
+// Verifica conexão PDO
+if (!isset($pdo) || !($pdo instanceof PDO)) {
+    die("A conexão com o banco não foi encontrada.");
+}
 
+// -------------------------------------------------------
+// BUSCAR EVENTO
+// -------------------------------------------------------
 
-            /* =========================================================
-               VARIÁVEIS
-               ========================================================= */
+$sql = "
+    SELECT
+        id_evento,
+        nome_evento,
+        cidade_evento,
+        uf,
+        rua_evento,
+        local_evento,
+        data_evento
+    FROM evento
+    WHERE id_evento = ?
+    LIMIT 1
+";
 
-            :root {
-                --verde: #a8ff00;
-                --rosa: #ff4da6;
-                --roxo: #8b5cf6;
+$stmt = $pdo->prepare($sql);
+$stmt->execute([$idEvento]);
 
-                --fundo: #080808;
-                --fundo-card: #111111;
-                --fundo-card-2: #161616;
+$evento = $stmt->fetch(PDO::FETCH_ASSOC);
 
-                --texto: #ffffff;
-                --texto-secundario: #b8b8b8;
+if (!$evento) {
+    die("Evento não encontrado.");
+}
 
-                --borda: rgba(168, 255, 0, 0.25);
-            }
+// -------------------------------------------------------
+// MONTAR ENDEREÇO
+// -------------------------------------------------------
 
+$rua = trim($evento['rua_evento'] ?? '');
+$cidade = trim($evento['cidade_evento'] ?? '');
+$uf = trim($evento['uf'] ?? '');
+$local = trim($evento['local_evento'] ?? '');
 
-            /* =========================================================
-               RESET
-               ========================================================= */
+$enderecoEvento = trim(
+    $rua .
+    ($cidade ? ', ' . $cidade : '') .
+    ($uf ? ' - ' . $uf : '')
+);
 
-            * {
-                margin: 0;
-                padding: 0;
-                box-sizing: border-box;
-            }
+if ($local !== '') {
+    $enderecoCompleto =
+        $local . ' - ' . $enderecoEvento;
+} else {
+    $enderecoCompleto =
+        $enderecoEvento;
+}
 
+?>
+    <!doctype html>
 
-            html {
-                scroll-behavior: smooth;
-            }
+    <html lang="pt-BR">
 
+    <head>
 
-            body {
-                min-height: 100vh;
+        <meta charset="UTF-8">
 
-                background:
-                    radial-gradient(
-                        circle at 15% 10%,
-                        rgba(168, 255, 0, 0.06),
-                        transparent 30%
-                    ),
-                    radial-gradient(
-                        circle at 85% 30%,
-                        rgba(255, 77, 166, 0.05),
-                        transparent 30%
-                    ),
-                    var(--fundo);
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-                color: var(--texto);
+        <title>
+            Planejar Viagem - ShowMe
+        </title>
 
-                font-family: 'Poppins', sans-serif;
-            }
+        <!-- CSS DO PROJETO -->
 
+        <link rel="stylesheet" href="./assets/css/planejamento.css">
 
-            /* =========================================================
-               HEADER
-               ========================================================= */
+        <!-- BOOTSTRAP ICONS -->
 
-            header {
-                width: 100%;
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 
-                padding: 30px 6%;
+        <!-- FONT AWESOME -->
 
-                border-bottom: 1px solid rgba(255,255,255,0.08);
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
 
-                background: rgba(8,8,8,0.95);
-            }
+        <!-- LEAFLET -->
 
+        <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 
-            .header-planejamento {
-                max-width: 1200px;
+    </head>
 
-                margin: auto;
 
-                display: flex;
+    <body>
 
-                align-items: center;
-
-                gap: 20px;
-            }
-
-
-            .voltar-header {
-                width: 45px;
-                height: 45px;
-
-                border: 1px solid var(--verde);
-
-                border-radius: 50%;
-
-                display: flex;
-
-                justify-content: center;
-
-                align-items: center;
-
-                color: var(--verde);
-
-                text-decoration: none;
-
-                font-size: 20px;
-
-                transition: .3s;
-            }
-
-
-            .voltar-header:hover {
-                background: var(--verde);
-
-                color: #000;
-
-                box-shadow:
-                    0 0 15px rgba(168,255,0,.5);
-            }
-
-
-            .header-planejamento h1 {
-                font-size: 28px;
-
-                font-weight: 600;
-
-                margin-bottom: 3px;
-            }
-
-
-            .header-planejamento h1 span {
-                color: var(--verde);
-            }
-
-
-            .header-planejamento h1 strong {
-                color: var(--rosa);
-            }
-
-
-            .header-planejamento p {
-                color: var(--texto-secundario);
-
-                font-size: 13px;
-            }
-
-
-            /* =========================================================
-               CONTAINER PRINCIPAL
-               ========================================================= */
-
-            .planejamento-container {
-                width: min(1150px, 92%);
-
-                margin: 55px auto 80px;
-
-                display: grid;
-
-                grid-template-columns: 220px 1fr;
-
-                gap: 55px;
-
-                align-items: start;
-            }
-
-
-            /* =========================================================
-               PROGRESSO
-               ========================================================= */
-
-            .progresso {
-                position: sticky;
-
-                top: 30px;
-            }
-
-
-            .progresso h3 {
-                font-size: 15px;
-
-                color: var(--texto);
-
-                margin-bottom: 28px;
-
-                text-transform: uppercase;
-
-                letter-spacing: 1px;
-            }
-
-
-            /* Timeline */
-
-            .timeline {
-                position: relative;
-
-                display: flex;
-
-                flex-direction: column;
-
-                gap: 0;
-            }
-
-
-            /* Linha vertical */
-
-            .timeline::before {
-                content: "";
-
-                position: absolute;
-
-                left: 17px;
-
-                top: 18px;
-
-                bottom: 18px;
-
-                width: 2px;
-
-                background: rgba(255,255,255,.12);
-            }
-
-
-            /* Passos */
-
-            .passo {
-                position: relative;
-
-                min-height: 75px;
-
-                display: flex;
-
-                align-items: flex-start;
-
-                gap: 15px;
-
-                color: #666;
-
-                z-index: 2;
-
-                transition: .3s;
-            }
-
-
-            .passo .numero {
-                width: 36px;
-                height: 36px;
-
-                flex-shrink: 0;
-
-                border-radius: 50%;
-
-                border: 1px solid #444;
-
-                background: #101010;
-
-                display: flex;
-
-                justify-content: center;
-
-                align-items: center;
-
-                font-size: 14px;
-
-                font-weight: 600;
-
-                transition: .3s;
-            }
-
-
-            .passo span {
-                padding-top: 8px;
-
-                font-size: 13px;
-
-                transition: .3s;
-            }
-
-
-            /* Passo ativo */
-
-            .passo.ativo {
-                color: var(--verde);
-            }
-
-
-            .passo.ativo .numero {
-                border-color: var(--verde);
-
-                background: var(--verde);
-
-                color: #000;
-
-                box-shadow:
-                    0 0 15px rgba(168,255,0,.4);
-            }
-
-
-            /* Passo concluído */
-
-            .passo.concluido {
-                color: var(--rosa);
-            }
-
-
-            .passo.concluido .numero {
-                border-color: var(--rosa);
-
-                color: var(--rosa);
-            }
-
-
-            /* =========================================================
-               CARD PRINCIPAL
-               ========================================================= */
-
-            .card-planejamento {
-                width: 100%;
-
-                min-height: 620px;
-
-                padding: 45px;
-
-                border-radius: 18px;
-
-                background:
-                    linear-gradient(
-                        145deg,
-                        rgba(255,255,255,.035),
-                        rgba(255,255,255,.015)
-                    );
-
-                border: 1px solid rgba(255,255,255,.09);
-
-                box-shadow:
-                    0 25px 70px rgba(0,0,0,.35);
-            }
-
-
-            /* =========================================================
-               ETAPAS
-               ========================================================= */
-
-            .etapa {
-                display: none;
-
-                animation: aparecer .35s ease;
-            }
-
-
-            .etapa.ativa {
-                display: block;
-            }
-
-
-            @keyframes aparecer {
-
-                from {
-                    opacity: 0;
-
-                    transform: translateY(10px);
-                }
-
-                to {
-                    opacity: 1;
-
-                    transform: translateY(0);
-                }
-
-            }
-
-
-            /* =========================================================
-               TÍTULO DO CARD
-               ========================================================= */
-
-            .titulo-card {
-                display: flex;
-
-                align-items: center;
-
-                gap: 14px;
-
-                margin-bottom: 20px;
-            }
-
-
-            .titulo-card i {
-                width: 45px;
-                height: 45px;
-
-                border-radius: 10px;
-
-                display: flex;
-
-                justify-content: center;
-
-                align-items: center;
-
-                background: rgba(168,255,0,.08);
-
-                border: 1px solid rgba(168,255,0,.3);
-
-                color: var(--verde);
-
-                font-size: 21px;
-            }
-
-
-            .titulo-card h2 {
-                font-size: 25px;
-
-                font-weight: 600;
-            }
-
-
-            /* =========================================================
-               TEXTOS
-               ========================================================= */
-
-            .etapa > p {
-                color: var(--texto-secundario);
-
-                font-size: 14px;
-
-                line-height: 1.7;
-
-                margin-bottom: 30px;
-            }
-
-
-            .etapa h3 {
-                font-size: 15px;
-
-                margin: 25px 0 15px;
-            }
-
-
-            /* =========================================================
-               LABEL
-               ========================================================= */
-
-            label {
-                display: block;
-
-                color: #ddd;
-
-                font-size: 13px;
-
-                margin-bottom: 8px;
-            }
-
-
-            /* =========================================================
-               INPUTS
-               ========================================================= */
-
-            input,
-            textarea {
-                width: 100%;
-
-                background: #0b0b0b;
-
-                border: 1px solid rgba(255,255,255,.13);
-
-                border-radius: 9px;
-
-                padding: 15px;
-
-                color: #fff;
-
-                outline: none;
-
-                font-family: inherit;
-
-                transition: .25s;
-            }
-
-
-            input:focus,
-            textarea:focus {
-                border-color: var(--verde);
-
-                box-shadow:
-                    0 0 0 3px rgba(168,255,0,.07);
-            }
-
-
-            input::placeholder,
-            textarea::placeholder {
-                color: #666;
-            }
-
-
-            /* =========================================================
-               ALERTA
-               ========================================================= */
-
-            .alerta {
-                margin: 18px 0 25px;
-
-                padding: 14px 16px;
-
-                border-left: 3px solid var(--rosa);
-
-                background: rgba(255,77,166,.06);
-
-                color: #ddd;
-
-                font-size: 13px;
-
-                border-radius: 5px;
-            }
-
-
-            /* =========================================================
-               ORÇAMENTO RESTANTE
-               ========================================================= */
-
-            .orcamento-restante {
-                padding: 17px;
-
-                margin: 20px 0;
-
-                border-radius: 10px;
-
-                border: 1px solid rgba(168,255,0,.2);
-
-                background: rgba(168,255,0,.04);
-
-                display: flex;
-
-                flex-direction: column;
-
-                gap: 4px;
-
-                color: var(--texto-secundario);
-
-                font-size: 13px;
-            }
-
-
-            .orcamento-restante strong {
-                color: var(--verde);
-
-                font-size: 20px;
-            }
-
-
-            .orcamento-restante small {
-                color: #888;
-            }
-
-
-            /* =========================================================
-               BOTÕES DE OPÇÕES
-               ========================================================= */
-
-            .opcoes {
-                display: grid;
-
-                grid-template-columns: repeat(2, 1fr);
-
-                gap: 12px;
-
-                margin-bottom: 25px;
-            }
-
-
-            .opcao {
-                min-height: 85px;
-
-                padding: 15px;
-
-                border: 1px solid rgba(255,255,255,.1);
-
-                border-radius: 10px;
-
-                background: rgba(255,255,255,.025);
-
-                color: #fff;
-
-                font-family: inherit;
-
-                text-align: left;
-
-                cursor: pointer;
-
-                transition: .25s;
-
-                display: flex;
-
-                flex-direction: column;
-
-                gap: 4px;
-            }
-
-
-            .opcao:hover {
-                border-color: var(--verde);
-
-                background: rgba(168,255,0,.05);
-
-                transform: translateY(-2px);
-
-                box-shadow:
-                    0 5px 20px rgba(168,255,0,.08);
-            }
-
-
-            .opcao strong {
-                font-size: 14px;
-            }
-
-
-            .opcao small {
-                color: #888;
-
-                font-size: 11px;
-            }
-
-
-            /* =========================================================
-               TEXTO DE SELEÇÃO
-               ========================================================= */
-
-            #transporteSelecionado,
-            #hospedagemSelecionada {
-                color: var(--verde);
-
-                font-size: 13px;
-
-                margin: -10px 0 20px;
-            }
-
-
-            /* =========================================================
-               BOTÕES PRINCIPAIS
-               ========================================================= */
-
-            button {
-                font-family: inherit;
-            }
-
-
-            .etapa > button,
-            .botoes button:last-child,
-            #etapa1 > button {
-                border: none;
-
-                padding: 13px 28px;
-
-                border-radius: 8px;
-
-                background: var(--verde);
-
-                color: #000;
-
-                font-weight: 600;
-
-                cursor: pointer;
-
-                transition: .25s;
-            }
-
-
-            .etapa > button:hover,
-            .botoes button:last-child:hover,
-            #etapa1 > button:hover {
-                transform: translateY(-2px);
-
-                box-shadow:
-                    0 0 20px rgba(168,255,0,.3);
-            }
-
-
-            .botoes {
-                display: flex;
-
-                justify-content: space-between;
-
-                align-items: center;
-
-                gap: 15px;
-
-                margin-top: 35px;
-            }
-
-
-            .botoes button:first-child {
-                padding: 13px 25px;
-
-                border-radius: 8px;
-
-                border: 1px solid rgba(255,255,255,.2);
-
-                background: transparent;
-
-                color: #fff;
-
-                cursor: pointer;
-
-                transition: .25s;
-            }
-
-
-            .botoes button:first-child:hover {
-                border-color: var(--rosa);
-
-                color: var(--rosa);
-            }
-
-
-            /* =========================================================
-               MAPA / ETAPA ROTA
-               ========================================================= */
-            .pin-neon {
-          width: 40px;
-          height: 40px;
-
-          display: flex;
-          align-items: center;
-          justify-content: center;
-
-          color: #b026ff;
-          font-size: 30px;
-
-          filter:
-              drop-shadow(0 0 5px #b026ff)
-              drop-shadow(0 0 12px #b026ff);
-      }
-            .localizacao-box {
-                margin: 20px 0;
-
-                padding: 17px;
-
-                border-radius: 10px;
-
-                border: 1px solid rgba(255,77,166,.25);
-
-                background: rgba(255,77,166,.035);
-            }
-
-
-            .localizacao-box strong {
-                display: block;
-
-                color: #fff;
-
-                font-size: 14px;
-
-                margin-bottom: 8px;
-            }
-
-
-            .localizacao-box strong i {
-                color: var(--rosa);
-
-                margin-right: 7px;
-            }
-
-
-            .localizacao-box p {
-                color: var(--texto-secundario);
-
-                font-size: 13px;
-
-                margin-bottom: 10px;
-            }
-
-
-            .localizacao-box button {
-                border: 1px solid var(--rosa);
-
-                background: transparent;
-
-                color: var(--rosa);
-
-                border-radius: 7px;
-
-                padding: 9px 14px;
-
-                cursor: pointer;
-
-                font-family: inherit;
-
-                font-size: 12px;
-
-                transition: .25s;
-            }
-
-
-            .localizacao-box button:hover {
-                background: var(--rosa);
-
-                color: #000;
-            }
-
-
-            /* MAPA */
-
-            #mapaRota {
-                width: 100%;
-
-                height: 350px;
-
-                margin: 20px 0;
-
-                border-radius: 12px;
-
-                overflow: hidden;
-
-                border: 1px solid rgba(168,255,0,.35);
-
-                box-shadow:
-                    0 0 25px rgba(168,255,0,.06);
-            }
-
-
-            /* Leaflet */
-
-            .leaflet-container {
-                background: #111;
-
-                font-family: 'Poppins', sans-serif;
-            }
-
-
-            .leaflet-popup-content-wrapper,
-            .leaflet-popup-tip {
-                background: #111;
-
-                color: #fff;
-            }
-
-
-            .leaflet-popup-content {
-                font-size: 12px;
-            }
-
-
-            .leaflet-control-zoom a {
-                background: #111 !important;
-
-                color: var(--verde) !important;
-
-                border-color: #333 !important;
-            }
-
-
-            /* =========================================================
-               INFORMAÇÕES DA ROTA
-               ========================================================= */
-
-            .informacoes-rota {
-                display: grid;
-
-                grid-template-columns: repeat(2, 1fr);
-
-                gap: 12px;
-
-                margin-top: 15px;
-            }
-
-
-            .info-rota {
-                padding: 15px;
-
-                border-radius: 10px;
-
-                background: rgba(255,255,255,.025);
-
-                border: 1px solid rgba(255,255,255,.08);
-            }
-
-
-            .info-rota i {
-                color: var(--verde);
-
-                font-size: 19px;
-
-                margin-right: 7px;
-            }
-
-
-            .info-rota span {
-                display: block;
-
-                color: #888;
-
-                font-size: 11px;
-
-                margin-top: 7px;
-            }
-
-
-            .info-rota strong {
-                display: block;
-
-                color: #fff;
-
-                font-size: 15px;
-
-                margin-top: 3px;
-            }
-
-
-            /* =========================================================
-               MENSAGEM ROTA
-               ========================================================= */
-
-            .mensagem-rota {
-                font-size: 12px !important;
-
-                color: var(--verde) !important;
-
-                margin: 15px 0 !important;
-            }
-
-
-            .mensagem-rota.erro-rota {
-                color: var(--rosa) !important;
-            }
-
-
-            /* =========================================================
-               RESUMO
-               ========================================================= */
-
-            .resumo-box {
-                padding: 22px;
-
-                margin-bottom: 18px;
-
-                border-radius: 12px;
-
-                background: rgba(255,255,255,.025);
-
-                border: 1px solid rgba(255,255,255,.08);
-            }
-
-
-            .resumo-box h3 {
-                margin: 0 0 18px;
-
-                font-size: 15px;
-
-                color: #fff;
-            }
-
-
-            .resumo-box h3 i {
-                color: var(--verde);
-
-                margin-right: 7px;
-            }
-
-
-            .linha-resumo {
-                display: flex;
-
-                justify-content: space-between;
-
-                align-items: center;
-
-                gap: 20px;
-
-                padding: 10px 0;
-
-                color: #aaa;
-
-                font-size: 13px;
-            }
-
-
-            .linha-resumo span:last-child {
-                color: #fff;
-
-                font-weight: 500;
-            }
-
-
-            .linha-resumo.total {
-                padding-top: 17px;
-
-                font-size: 16px;
-
-                font-weight: 600;
-            }
-
-
-            .linha-resumo.total span:last-child {
-                color: var(--verde);
-
-                font-size: 20px;
-            }
-
-
-            .resumo-box hr {
-                border: none;
-
-                border-top: 1px solid rgba(255,255,255,.08);
-
-                margin: 8px 0;
-            }
-
-
-            /* =========================================================
-               DICAS
-               ========================================================= */
-
-            .dicas {
-                margin-top: 20px;
-
-                padding: 20px;
-
-                border-radius: 12px;
-
-                border: 1px solid rgba(168,255,0,.15);
-
-                background: rgba(168,255,0,.025);
-            }
-
-
-            .dicas h3 {
-                margin: 0 0 15px;
-
-                font-size: 14px;
-            }
-
-
-            .dicas h3 i {
-                color: var(--verde);
-
-                margin-right: 6px;
-            }
-
-
-            .dicas p {
-                color: #aaa;
-
-                font-size: 12px;
-
-                margin: 8px 0;
-            }
-
-
-            /* =========================================================
-               FOOTER
-               ========================================================= */
-
-            footer {
-                border-top: 1px solid rgba(255,255,255,.08);
-
-                padding: 50px 6%;
-
-                background: #050505;
-            }
-
-
-            .footer-container {
-                width: min(1150px, 92%);
-
-                margin: auto;
-
-                display: grid;
-
-                grid-template-columns: repeat(3, 1fr);
-
-                gap: 50px;
-            }
-
-
-            footer h3 {
-                font-size: 16px;
-
-                margin-bottom: 15px;
-            }
-
-
-            footer h3 span {
-                color: var(--verde);
-            }
-
-
-            footer h3 strong {
-                color: var(--rosa);
-            }
-
-
-            footer p {
-                color: #777;
-
-                font-size: 12px;
-
-                line-height: 1.7;
-            }
-
-
-            .social-links {
-                display: flex;
-
-                gap: 12px;
-
-                margin-top: 15px;
-            }
-
-
-            .social-links i {
-                color: #aaa;
-
-                cursor: pointer;
-
-                transition: .25s;
-            }
-
-
-            .social-links i:hover {
-                color: var(--verde);
-            }
-
-
-            footer input,
-            footer textarea {
-                margin-bottom: 10px;
-
-                background: #0d0d0d;
-            }
-
-
-            footer textarea {
-                height: 90px;
-
-                resize: none;
-            }
-
-
-
-            .origem-rota {
-                margin-top: 25px;
-                padding: 20px;
-                border-radius: 12px;
-                background: rgba(255,255,255,.025);
-                border: 1px solid rgba(255,255,255,.08);
-            }
-
-            .origem-atual {
-                color: #999 !important;
-                font-size: 12px !important;
-                margin: -10px 0 18px !important;
-            }
-
-            .origem-atual strong {
-                color: var(--verde);
-                font-weight: 500;
-            }
-
-            .descricao-rota {
-                color: var(--texto-secundario);
-                font-size: 13px;
-                line-height: 1.6;
-                margin-bottom: 15px;
-            }
-
-            .botao-localizacao,
-            .botao-origem,
-            .botoes-navegacao button {
-                border: none;
-                border-radius: 8px;
-                padding: 12px 16px;
-                font-family: inherit;
-                font-weight: 600;
-                cursor: pointer;
-                transition: .25s;
-            }
-
-            .botao-localizacao,
-            .botao-origem {
-                background: var(--verde);
-                color: #000;
-            }
-
-            .botao-localizacao:hover,
-            .botao-origem:hover {
-                transform: translateY(-2px);
-                box-shadow: 0 0 18px rgba(168,255,0,.25);
-            }
-
-            .separador-rota {
-                display: flex;
-                align-items: center;
-                gap: 10px;
-                margin: 18px 0;
-                color: #666;
-                font-size: 12px;
-            }
-
-            .separador-rota::before,
-            .separador-rota::after {
-                content: "";
-                height: 1px;
-                flex: 1;
-                background: rgba(255,255,255,.08);
-            }
-
-            .botao-origem {
-                margin-top: 12px;
-            }
-
-            .botoes-navegacao {
-                display: grid;
-                grid-template-columns: 1fr 1fr;
-                gap: 12px;
-                margin-top: 15px;
-            }
-
-            .botoes-navegacao button:first-child {
-                background: var(--verde);
-                color: #000;
-            }
-
-            .botoes-navegacao button:last-child {
-                background: transparent;
-                color: var(--rosa);
-                border: 1px solid var(--rosa);
-            }
-
-            .botoes-navegacao button:hover {
-                transform: translateY(-2px);
-            }
-
-            .navegacao-box {
-                margin-top: 20px;
-                padding: 18px;
-                border: 1px solid rgba(168,255,0,.18);
-                border-radius: 12px;
-                background: rgba(168,255,0,.025);
-            }
-
-            .navegacao-box h3 {
-                margin-top: 0;
-            }
-
-            .navegacao-box p {
-                color: var(--texto-secundario);
-                font-size: 12px;
-                line-height: 1.6;
-            }
-
-            /* =========================================================
-               RESPONSIVIDADE
-               ========================================================= */
-
-            @media (max-width: 900px) {
-
-                .planejamento-container {
-                    grid-template-columns: 1fr;
-
-                    gap: 30px;
-                }
-
-
-                .progresso {
-                    position: relative;
-
-                    top: 0;
-                }
-
-
-                .timeline {
-                    flex-direction: row;
-
-                    justify-content: space-between;
-                }
-
-
-                .timeline::before {
-                    left: 5%;
-
-                    right: 5%;
-
-                    top: 18px;
-
-                    bottom: auto;
-
-                    width: 90%;
-
-                    height: 2px;
-                }
-
-
-                .passo {
-                    min-height: auto;
-
-                    flex-direction: column;
-
-                    align-items: center;
-
-                    gap: 8px;
-                }
-
-
-                .passo span {
-                    padding: 0;
-
-                    font-size: 10px;
-
-                    text-align: center;
-                }
-
-
-                .card-planejamento {
-                    padding: 30px;
-                }
-
-            }
-
-
-            @media (max-width: 600px) {
-
-                header {
-                    padding: 20px;
-                }
-
-
-                .header-planejamento h1 {
-                    font-size: 22px;
-                }
-
-
-                .planejamento-container {
-                    width: 94%;
-
-                    margin-top: 30px;
-                }
-
-
-                .card-planejamento {
-                    padding: 22px;
-
-                    border-radius: 13px;
-                }
-
-
-                .titulo-card h2 {
-                    font-size: 20px;
-                }
-
-
-                .opcoes {
-                    grid-template-columns: 1fr;
-                }
-
-
-                .informacoes-rota {
-                    grid-template-columns: 1fr;
-                }
-
-
-                #mapaRota {
-                    height: 280px;
-                }
-
-
-                .botoes {
-                    flex-direction: column-reverse;
-
-                    align-items: stretch;
-                }
-
-
-                .botoes button {
-                    width: 100%;
-                }
-
-
-                .footer-container {
-                    grid-template-columns: 1fr;
-
-                    gap: 30px;
-                }
-    </style>
-  </head>
-
-  <body>
-    <!-- =========================================
-     HEADER
-========================================= -->
-
-    <header>
-      <div class="header-planejamento">
-        <a href="javascript:history.back()" class="voltar-header">
-          <i class="bi bi-arrow-left"></i>
-        </a>
-
-        <div>
-          <h1>
-            <span>Planejar</span>
-            <strong>Viagem</strong>
-          </h1>
-
-          <p>Harry Styles: Together, Together</p>
-        </div>
-      </div>
-    </header>
-
-    <!-- =========================================
-     CONTEÚDO PRINCIPAL
-========================================= -->
-
-    <main class="planejamento-container">
-      <!-- =====================================
-         PROGRESSO
-    ====================================== -->
-
-      <aside class="progresso">
-        <h3>Progresso</h3>
-
-        <div class="timeline">
-          <!-- ETAPA 1 -->
-
-          <div class="passo ativo" id="passo1">
-            <div class="numero">1</div>
-
-            <span> Orçamento </span>
-          </div>
-
-          <!-- ETAPA 2 -->
-
-          <div class="passo" id="passo2">
-            <div class="numero">2</div>
-
-            <span> Transporte </span>
-          </div>
-
-          <!-- ETAPA 3 -->
-
-          <div class="passo" id="passo3">
-            <div class="numero">3</div>
-
-            <span> Rota </span>
-          </div>
-
-          <!-- ETAPA 4 -->
-
-          <div class="passo" id="passo4">
-            <div class="numero">4</div>
-
-            <span> Hospedagem </span>
-          </div>
-
-          <!-- ETAPA 5 -->
-
-          <div class="passo" id="passo5">
-            <div class="numero">5</div>
-
-            <span> Resumo </span>
-          </div>
-        </div>
-      </aside>
-
-      <!-- =====================================
-         CARD DINÂMICO
-    ====================================== -->
-
-      <section class="card-planejamento">
-        <!-- =================================
-             ETAPA 1 - ORÇAMENTO
-        ================================== -->
-
-        <div class="etapa ativa" id="etapa1">
-          <div class="titulo-card">
-            <i class="bi bi-currency-dollar"></i>
-
-            <h2>Defina seu Orçamento</h2>
-          </div>
-
-          <p>Quanto você pretende gastar para ir a este evento?</p>
-
-          <label> Valor total disponível (R$) </label>
-
-          <input type="number" id="orcamento" placeholder="500" min="0" />
-
-          <div class="alerta">Custo mínimo estimado: R$ 265 (Ingresso)</div>
-
-          <button onclick="proximaEtapa(2)">Continuar</button>
-        </div>
-
-        <!-- =================================
-             ETAPA 2 - TRANSPORTE
-        ================================== -->
-
-        <div class="etapa" id="etapa2">
-          <div class="titulo-card">
-            <i class="bi bi-bus-front"></i>
-
-            <h2>Transporte</h2>
-          </div>
-
-          <p>
-            Pesquise opções de transporte para São Paulo, SP e informe o valor
-            escolhido.
-          </p>
-
-          <div class="orcamento-restante">
-            Seu orçamento
-
-            <strong id="valorOrcamento"> R$ 500 </strong>
-          </div>
-
-          <h3>Pesquise opções de transporte:</h3>
-
-          <div class="opcoes">
-            <button class="opcao" onclick="selecionarTransporte('Ônibus')">
-              🚌
-
-              <strong> ClickBus </strong>
-
-              <small> Passagens de ônibus </small>
-            </button>
-
-            <button class="opcao" onclick="selecionarTransporte('Carro')">
-              🚗
-
-              <strong> BlaBlaCar </strong>
-
-              <small> Caronas compartilhadas </small>
-            </button>
-
-            <button class="opcao" onclick="selecionarTransporte('Avião')">
-              ✈️
-
-              <strong> Google Flights </strong>
-
-              <small> Passagens aéreas </small>
-            </button>
-
-            <button class="opcao" onclick="selecionarTransporte('Uber')">
-              🚕
-
-              <strong> Uber </strong>
-
-              <small> Viagens de carro </small>
-            </button>
-          </div>
-
-          <label> Valor do transporte escolhido (R$) </label>
-
-          <input type="number" id="transporte" value="0" min="0" />
-
-          <p id="transporteSelecionado">Nenhum transporte selecionado.</p>
-
-          <div class="botoes">
-            <button onclick="voltarEtapa(1)">Voltar</button>
-
-            <button onclick="proximaEtapa(3)">Continuar</button>
-          </div>
-        </div>
 
         <!-- =====================================================
-     ETAPA 3 — ROTA
+     HEADER
 ===================================================== -->
 
-        <div class="etapa" id="etapa3">
-          <div class="titulo-card">
-            <i class="fa-solid fa-location-dot"></i>
-            <h2>Planeje sua rota</h2>
-          </div>
+        <header>
 
-          <p>
-            Veja a localização do evento e calcule a melhor rota a partir do seu
-            ponto de partida.
-          </p>
+            <div class="header-planejamento">
 
-          <!-- LOCAL DO EVENTO -->
+                <a href="javascript:history.back()" class="voltar-header">
 
-          <div class="localizacao-box">
-            <strong>
-              <i class="fa-solid fa-location-dot"></i>
-              Local do evento
-            </strong>
+                    <i class="bi bi-arrow-left"></i>
 
-            <p id="enderecoEvento">
-              MorumBIS - Praça Roberto Gomes Pedrosa, 1 - São Paulo - SP
-            </p>
+                </a>
 
-            <button type="button" onclick="centralizarEvento()">
-              <i class="fa-solid fa-map"></i>
-              Ver localização
+
+                <div>
+
+                    <h1>
+
+                        <span>
+                    Planejar
+                </span>
+
+                        <strong>
+                    Viagem
+                </strong>
+
+                    </h1>
+
+
+                    <p id="tituloEvento">
+
+                        <?= htmlspecialchars(
+                    $evento['nome_evento'] ?? 'Evento'
+                ) ?>
+
+                    </p>
+
+                </div>
+
+            </div>
+
+        </header>
+
+
+
+        <!-- =====================================================
+     CONTEÚDO PRINCIPAL
+===================================================== -->
+
+        <main class="planejamento-container">
+
+
+            <!-- =================================================
+         PROGRESSO
+    ================================================== -->
+
+            <aside class="progresso">
+
+                <h3>
+                    Progresso
+                </h3>
+
+
+                <div class="timeline">
+
+
+                    <!-- ETAPA 1 -->
+
+                    <div class="passo ativo" id="passo1">
+
+                        <div class="numero">
+                            1
+                        </div>
+
+                        <span>
+                    Orçamento
+                </span>
+
+                    </div>
+
+
+                    <!-- ETAPA 2 -->
+
+                    <div class="passo" id="passo2">
+
+                        <div class="numero">
+                            2
+                        </div>
+
+                        <span>
+                    Transporte
+                </span>
+
+                    </div>
+
+
+                    <!-- ETAPA 3 -->
+
+                    <div class="passo" id="passo3">
+
+                        <div class="numero">
+                            3
+                        </div>
+
+                        <span>
+                    Rota
+                </span>
+
+                    </div>
+
+
+                    <!-- ETAPA 4 -->
+
+                    <div class="passo" id="passo4">
+
+                        <div class="numero">
+                            4
+                        </div>
+
+                        <span>
+                    Hospedagem
+                </span>
+
+                    </div>
+
+
+                    <!-- ETAPA 5 -->
+
+                    <div class="passo" id="passo5">
+
+                        <div class="numero">
+                            5
+                        </div>
+
+                        <span>
+                    Resumo
+                </span>
+
+                    </div>
+
+
+                </div>
+
+            </aside>
+
+
+
+            <!-- =================================================
+         CARD
+    ================================================== -->
+
+            <section class="card-planejamento">
+
+
+                <!-- =================================================
+             ETAPA 1 - ORÇAMENTO
+        ================================================== -->
+
+                <div class="etapa ativa" id="etapa1">
+
+                    <div class="titulo-card">
+
+                        <i class="bi bi-currency-dollar"></i>
+
+                        <h2>
+                            Defina seu Orçamento
+                        </h2>
+
+                    </div>
+
+
+                    <p>
+                        Quanto você pretende gastar para ir a este evento?
+                    </p>
+
+
+                    <label>
+                Valor total disponível (R$)
+            </label>
+
+
+                    <input type="number" id="orcamento" placeholder="500" min="0" required>
+
+
+                    <div class="alerta">
+
+                        Custo mínimo estimado: R$ 265 (Ingresso)
+
+                    </div>
+
+
+                    <button onclick="proximaEtapa(2)">
+
+                Continuar
+
             </button>
-          </div>
 
-          <!-- MAPA -->
+                </div>
 
-          <div id="mapaRota"></div>
 
-          <!-- ORIGEM -->
 
-          <div class="origem-rota">
-            <h3>
-              <i class="fa-solid fa-route"></i>
-              De onde você vai sair?
-            </h3>
+                <!-- =================================================
+             ETAPA 2 - TRANSPORTE
+        ================================================== -->
 
-            <p class="origem-atual">
-              Origem: <strong id="origemTexto">Não definida</strong>
-            </p>
+                <div class="etapa" id="etapa2">
 
-            <p class="descricao-rota">
-              Para calcular a rota até o evento, precisamos saber sua
-              localização.
-            </p>
+                    <div class="titulo-card">
 
-            <button
-              type="button"
-              class="botao-localizacao"
-              onclick="usarMinhaLocalizacao()"
-            >
-              <i class="fa-solid fa-location-crosshairs"></i>
-              Usar minha localização
-            </button>
+                        <i class="bi bi-bus-front"></i>
 
-            <div class="separador-rota">
-              <span>ou</span>
-            </div>
+                        <h2>
+                            Transporte
+                        </h2>
 
-            <label for="origemManual"> Informe um ponto de partida </label>
+                    </div>
 
-            <input
-              type="text"
-              id="origemManual"
-              placeholder="Ex: São Paulo - SP"
-            />
 
-            <button
-              type="button"
-              class="botao-origem"
-              onclick="calcularRotaManual()"
-            >
-              Calcular rota
-            </button>
-          </div>
+                    <p id="textoDestinoTransporte">
 
-          <!-- STATUS DA ROTA -->
+                        Pesquise opções de transporte para
+                        <?= htmlspecialchars($cidade) ?>,
+                            <?= htmlspecialchars($uf) ?> e informe o valor escolhido.
 
-          <p id="mensagemRota" class="mensagem-rota"></p>
+                    </p>
 
-          <!-- INFORMAÇÕES DA ROTA -->
 
-          <div
-            class="informacoes-rota"
-            id="informacoesRota"
-            style="display: none"
-          >
-            <div class="info-rota">
-              <i class="fa-solid fa-road"></i>
+                    <div class="orcamento-restante">
 
-              <span>Distância</span>
+                        Seu orçamento
 
-              <strong id="distanciaRota"> -- </strong>
-            </div>
+                        <strong id="valorOrcamento">
+                    R$ 0,00
+                </strong>
 
-            <div class="info-rota">
-              <i class="fa-solid fa-clock"></i>
+                    </div>
 
-              <span>Tempo estimado</span>
 
-              <strong id="tempoRota"> -- </strong>
-            </div>
-          </div>
+                    <h3>
+                        Pesquise opções de transporte:
+                    </h3>
 
-          <!-- NAVEGAÇÃO EXTERNA -->
 
-          <div class="navegacao-box" id="navegacaoBox" style="display: none">
-            <h3>
-              <i class="fa-solid fa-compass"></i>
-              Continuar navegação
-            </h3>
+                    <div class="opcoes">
 
-            <p>
-              Você pode continuar sua rota utilizando um aplicativo de
-              navegação.
-            </p>
 
-            <div class="botoes-navegacao">
-              <button type="button" onclick="abrirGoogleMaps()">
-                <i class="fa-solid fa-map-location-dot"></i>
-                Google Maps
-              </button>
+                        <button class="opcao" onclick="selecionarTransporte('Ônibus')">
 
-              <button type="button" onclick="abrirWaze()">
-                <i class="fa-solid fa-car"></i>
-                Waze
-              </button>
-            </div>
-          </div>
+                    🚌
 
-          <!-- BOTÕES -->
+                    <strong>
+                        Ônibus
+                    </strong>
 
-          <div class="botoes">
-            <button onclick="voltarEtapa(2)">Voltar</button>
+                    <small>
+                        Passagens rodoviárias
+                    </small>
 
-            <button onclick="proximaEtapa(4)">Continuar</button>
-          </div>
-        </div>
+                </button>
 
-        <!-- =================================
+
+
+                        <button class="opcao" onclick="selecionarTransporte('Carro')">
+
+                    🚗
+
+                    <strong>
+                        Carro
+                    </strong>
+
+                    <small>
+                        Viagem de carro
+                    </small>
+
+                </button>
+
+
+
+                        <button class="opcao" onclick="selecionarTransporte('Avião')">
+
+                    ✈️
+
+                    <strong>
+                        Avião
+                    </strong>
+
+                    <small>
+                        Passagens aéreas
+                    </small>
+
+                </button>
+
+
+
+                        <button class="opcao" onclick="selecionarTransporte('Uber')">
+
+                    🚕
+
+
+                    <strong>
+                        Uber
+                    </strong>
+
+
+                    <small>
+                        Viagem de carro
+                    </small>
+
+                </button>
+
+
+                    </div>
+
+
+                    <!-- ESTIMATIVA -->
+
+                    <div id="estimativaTransporte" style="display:none">
+                    </div>
+
+
+                    <label>
+                Valor do transporte escolhido (R$)
+            </label>
+
+
+                    <input type="number" id="transporte" value="0" min="0">
+
+
+                    <p id="transporteSelecionado">
+
+                        Nenhum transporte selecionado.
+
+                    </p>
+
+
+                    <div class="botoes">
+
+                        <button onclick="voltarEtapa(1)">
+                    Voltar
+                </button>
+
+
+                        <button onclick="proximaEtapa(3)">
+                    Continuar
+                </button>
+
+                    </div>
+
+
+                </div>
+
+
+
+                <!-- =================================================
+             ETAPA 3 - ROTA
+        ================================================== -->
+
+                <div class="etapa" id="etapa3">
+
+                    <div class="titulo-card">
+
+                        <i class="fa-solid fa-location-dot"></i>
+
+                        <h2>
+                            Planeje sua rota
+                        </h2>
+
+                    </div>
+
+
+                    <p>
+
+                        Veja a localização do evento e calcule a melhor rota a partir do seu ponto de partida.
+
+                    </p>
+
+
+                    <!-- LOCAL -->
+
+                    <div class="localizacao-box">
+
+                        <strong>
+
+                    <i class="fa-solid fa-location-dot"></i>
+
+                    Local do evento
+
+                </strong>
+
+
+                        <p id="enderecoEvento">
+
+                            <?= htmlspecialchars(
+                        $enderecoCompleto
+                    ) ?>
+
+                        </p>
+
+
+                        <button type="button" onclick="centralizarEvento()">
+
+                    <i class="fa-solid fa-map"></i>
+
+                    Ver localização
+
+                </button>
+
+                    </div>
+
+
+                    <!-- MAPA -->
+
+                    <div id="mapaRota"></div>
+
+
+                    <!-- ORIGEM -->
+
+                    <div class="origem-rota">
+
+                        <h3>
+
+                            <i class="fa-solid fa-route"></i> De onde você vai sair?
+
+                        </h3>
+
+
+                        <p class="origem-atual">
+
+                            Origem:
+
+                            <strong id="origemTexto">
+                        Não definida
+                    </strong>
+
+                        </p>
+
+
+                        <p class="descricao-rota">
+
+                            Para calcular a rota até o evento, precisamos saber sua localização.
+
+                        </p>
+
+
+                        <button type="button" class="botao-localizacao" onclick="usarMinhaLocalizacao()">
+
+                    <i class="fa-solid fa-location-crosshairs"></i>
+
+                    Usar minha localização
+
+                </button>
+
+
+                        <div class="separador-rota">
+
+                            <span>
+                        ou
+                    </span>
+
+                        </div>
+
+
+                        <label for="origemManual">
+
+                    Informe um ponto de partida
+
+                </label>
+
+
+                        <input type="text" id="origemManual" placeholder="Ex: São Paulo - SP">
+
+
+                        <button type="button" class="botao-origem" onclick="calcularRotaManual()">
+
+                    Calcular rota
+
+                </button>
+
+                    </div>
+
+
+                    <!-- STATUS -->
+
+                    <p id="mensagemRota" class="mensagem-rota">
+                    </p>
+
+
+                    <!-- INFORMAÇÕES -->
+
+                    <div class="informacoes-rota" id="informacoesRota" style="display:none">
+
+                        <div class="info-rota">
+
+                            <i class="fa-solid fa-road"></i>
+
+                            <span>
+                        Distância
+                    </span>
+
+                            <strong id="distanciaRota">
+                        --
+                    </strong>
+
+                        </div>
+
+
+                        <div class="info-rota">
+
+                            <i class="fa-solid fa-clock"></i>
+
+                            <span>
+                        Tempo estimado
+                    </span>
+
+                            <strong id="tempoRota">
+                        --
+                    </strong>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- NAVEGAÇÃO -->
+
+                    <div class="navegacao-box" id="navegacaoBox" style="display:none">
+
+                        <h3>
+
+                            <i class="fa-solid fa-compass"></i> Continuar navegação
+
+                        </h3>
+
+
+                        <p>
+
+                            Você pode continuar sua rota utilizando um aplicativo de navegação.
+
+                        </p>
+
+
+                        <div class="botoes-navegacao">
+
+
+                            <button type="button" onclick="abrirGoogleMaps()">
+
+                        <i class="fa-solid fa-map-location-dot"></i>
+
+                        Google Maps
+
+                    </button>
+
+
+                            <button type="button" onclick="abrirWaze()">
+
+                        <i class="fa-solid fa-car"></i>
+
+                        Waze
+
+                    </button>
+
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- BOTÕES -->
+
+                    <div class="botoes">
+
+                        <button onclick="voltarEtapa(2)">
+
+                    Voltar
+
+                </button>
+
+
+                        <button onclick="proximaEtapa(4)">
+
+                    Continuar
+
+                </button>
+
+                    </div>
+
+                </div>
+
+
+
+                <!-- =================================================
              ETAPA 4 - HOSPEDAGEM
-        ================================== -->
+        ================================================== -->
 
-        <div class="etapa" id="etapa4">
-          <div class="titulo-card">
-            <i class="bi bi-house"></i>
+                <div class="etapa" id="etapa4">
 
-            <h2>Hospedagem</h2>
-          </div>
+                    <div class="titulo-card">
 
-          <p>Você precisa de hospedagem para este evento?</p>
+                        <i class="bi bi-house"></i>
 
-          <div class="opcoes hospedagem-escolha">
-            <button class="opcao" onclick="mostrarHospedagem()">
-              🏨
+                        <h2>
+                            Hospedagem
+                        </h2>
 
-              <strong> Sim, preciso de hospedagem </strong>
+                    </div>
 
-              <small> Ver opções de hotéis e pousadas </small>
-            </button>
 
-            <button class="opcao" onclick="semHospedagem()">
-              🏠
+                    <p>
+                        Você precisa de hospedagem para este evento?
+                    </p>
 
-              <strong> Não, já tenho onde ficar </strong>
 
-              <small> Continuar sem hospedagem </small>
-            </button>
-          </div>
+                    <div class="opcoes hospedagem-escolha">
 
-          <!-- OPÇÕES DE HOSPEDAGEM -->
 
-          <div id="opcoesHospedagem" style="display: none">
-            <div class="orcamento-restante">
-              Orçamento restante
+                        <button class="opcao" onclick="mostrarHospedagem()">
 
-              <strong id="restante"> R$ 0 </strong>
-            </div>
+                    🏨
 
-            <h3>Pesquise opções de hospedagem:</h3>
+                    <strong>
+                        Sim, preciso de hospedagem
+                    </strong>
 
-            <div class="opcoes">
-              <button
-                class="opcao"
-                onclick="selecionarHospedagem('Booking.com')"
-              >
-                🏨
+                    <small>
+                        Ver opções próximas ao evento
+                    </small>
 
-                <strong> Booking.com </strong>
+                </button>
 
-                <small> Hotéis e pousadas </small>
-              </button>
 
-              <button class="opcao" onclick="selecionarHospedagem('Airbnb')">
-                🏠
+                        <button class="opcao" onclick="semHospedagem()">
 
-                <strong> Airbnb </strong>
+                    🏠
 
-                <small> Casas e apartamentos </small>
-              </button>
+                    <strong>
+                        Não, já tenho onde ficar
+                    </strong>
 
-              <button
-                class="opcao"
-                onclick="selecionarHospedagem('Hotels.com')"
-              >
-                🛏️
+                    <small>
+                        Continuar sem hospedagem
+                    </small>
 
-                <strong> Hotels.com </strong>
+                </button>
 
-                <small> Acomodações </small>
-              </button>
 
-              <button
-                class="opcao"
-                onclick="selecionarHospedagem('HostelWorld')"
-              >
-                🏠
+                    </div>
 
-                <strong> HostelWorld </strong>
 
-                <small> Hostels e albergues </small>
-              </button>
-            </div>
+                    <!-- OPÇÕES -->
 
-            <label> Valor da hospedagem (R$) </label>
+                    <div id="opcoesHospedagem" style="display:none">
 
-            <input type="number" id="hospedagem" value="0" min="0" />
 
-            <p id="hospedagemSelecionada">Nenhuma hospedagem selecionada.</p>
-          </div>
+                        <div class="orcamento-restante">
 
-          <div class="botoes">
-            <button onclick="voltarEtapa(3)">Voltar</button>
+                            Orçamento restante
 
-            <button onclick="proximaEtapa(5)">Continuar</button>
-          </div>
-        </div>
+                            <strong id="restante">
+                        R$ 0,00
+                    </strong>
 
-        <!-- =================================
+                        </div>
+
+
+                        <h3>
+                            Hospedagens próximas ao evento:
+                        </h3>
+
+
+                        <div id="resultadoHospedagem">
+
+                            <p>
+                                Pesquisando opções...
+                            </p>
+
+                        </div>
+
+
+                        <div class="opcoes">
+
+
+                            <button class="opcao" onclick="selecionarHospedagem('Booking.com')">
+
+                        🏨
+
+                        <strong>
+                            Booking.com
+                        </strong>
+
+                        <small>
+                            Hotéis e pousadas
+                        </small>
+
+                    </button>
+
+
+                            <button class="opcao" onclick="selecionarHospedagem('Airbnb')">
+
+                        🏠
+
+                        <strong>
+                            Airbnb
+                        </strong>
+
+                        <small>
+                            Casas e apartamentos
+                        </small>
+
+                    </button>
+
+
+                            <button class="opcao" onclick="selecionarHospedagem('Hotels.com')">
+
+                        🛏️
+
+                        <strong>
+                            Hotels.com
+                        </strong>
+
+                        <small>
+                            Acomodações
+                        </small>
+
+                    </button>
+
+
+                            <button class="opcao" onclick="selecionarHospedagem('HostelWorld')">
+
+                        🏠
+
+                        <strong>
+                            HostelWorld
+                        </strong>
+
+                        <small>
+                            Hostels e albergues
+                        </small>
+
+                    </button>
+
+
+                        </div>
+
+
+                        <label>
+                    Valor da hospedagem (R$)
+                </label>
+
+
+                        <input type="number" id="hospedagem" value="0" min="0">
+
+
+                        <p id="hospedagemSelecionada">
+
+                            Nenhuma hospedagem selecionada.
+
+                        </p>
+
+
+                    </div>
+
+
+                    <div class="botoes">
+
+
+                        <button onclick="voltarEtapa(3)">
+                    Voltar
+                </button>
+
+
+                        <button onclick="proximaEtapa(5)">
+                    Continuar
+                </button>
+
+
+                    </div>
+
+                </div>
+
+
+
+                <!-- =================================================
              ETAPA 5 - RESUMO
-        ================================== -->
+        ================================================== -->
 
-        <div class="etapa" id="etapa5">
-          <div class="titulo-card">
-            <i class="bi bi-check-circle"></i>
+                <div class="etapa" id="etapa5">
 
-            <h2>Resumo do Planejamento</h2>
-          </div>
+                    <div class="titulo-card">
 
-          <!-- CUSTOS -->
+                        <i class="bi bi-check-circle"></i>
 
-          <div class="resumo-box">
-            <h3>Custos</h3>
+                        <h2>
+                            Resumo do Planejamento
+                        </h2>
 
-            <div class="linha-resumo">
-              <span> Ingresso </span>
+                    </div>
 
-              <span> R$ 265 </span>
-            </div>
 
-            <div class="linha-resumo">
-              <span> Transporte </span>
+                    <!-- CUSTOS -->
 
-              <span id="resumoTransporte"> R$ 0 </span>
-            </div>
+                    <div class="resumo-box">
 
-            <div class="linha-resumo">
-              <span> Hospedagem </span>
+                        <h3>
+                            Custos
+                        </h3>
 
-              <span id="resumoHospedagem"> R$ 0 </span>
-            </div>
 
-            <hr />
+                        <div class="linha-resumo">
 
-            <div class="linha-resumo total">
-              <span> Total </span>
+                            <span>
+                        Ingresso
+                    </span>
 
-              <span id="totalFinal"> R$ 265 </span>
-            </div>
-          </div>
+                            <span>
+                        R$ 265,00
+                    </span>
 
-          <!-- ORÇAMENTO -->
+                        </div>
 
-          <div class="resumo-box">
-            <h3>Orçamento</h3>
 
-            <div class="linha-resumo">
-              <span> Planejado </span>
+                        <div class="linha-resumo">
 
-              <span id="orcamentoFinal"> R$ 0 </span>
-            </div>
+                            <span>
+                        Transporte
+                    </span>
 
-            <div class="linha-resumo">
-              <span> Total de gastos </span>
+                            <span id="resumoTransporte">
+                        R$ 0,00
+                    </span>
 
-              <span id="gastosFinal"> R$ 265 </span>
-            </div>
+                        </div>
 
-            <div class="linha-resumo total">
-              <span> Saldo </span>
 
-              <span id="saldoFinal"> R$ 0 </span>
-            </div>
-          </div>
+                        <div class="linha-resumo">
 
-          <!-- ROTA RESUMIDA -->
+                            <span>
+                        Hospedagem
+                    </span>
 
-          <div class="resumo-box rota-resumo">
-            <h3>
-              <i class="bi bi-map"></i>
-              Rota da viagem
-            </h3>
+                            <span id="resumoHospedagem">
+                        R$ 0,00
+                    </span>
 
-            <div class="linha-resumo">
-              <span> Origem </span>
+                        </div>
 
-              <span id="resumoOrigem"> São Paulo, SP </span>
-            </div>
 
-            <div class="linha-resumo">
-              <span> Destino </span>
+                        <hr>
 
-              <span> Estádio MorumBis </span>
-            </div>
 
-            <div class="linha-resumo">
-              <span> Distância </span>
+                        <div class="linha-resumo total">
 
-              <span id="resumoDistancia"> — </span>
-            </div>
+                            <span>
+                        Total
+                    </span>
 
-            <div class="linha-resumo">
-              <span> Tempo estimado </span>
+                            <span id="totalFinal">
+                        R$ 265,00
+                    </span>
 
-              <span id="resumoTempo"> — </span>
-            </div>
-          </div>
+                        </div>
 
-          <!-- DICAS -->
+                    </div>
 
-          <div class="dicas">
-            <h3>
-              <i class="bi bi-info-circle"></i>
-              Dicas para sua viagem
-            </h3>
 
-            <p>💊 Leve medicamentos básicos e seu plano de saúde.</p>
+                    <!-- ORÇAMENTO -->
 
-            <p>☀️ Confira a previsão do tempo e leve roupas adequadas.</p>
+                    <div class="resumo-box">
 
-            <p>🎫 Não esqueça de adquirir seus ingressos com antecedência.</p>
+                        <h3>
+                            Orçamento
+                        </h3>
 
-            <p>📱 Baixe o aplicativo do evento para atualizações.</p>
-          </div>
 
-          <div class="botoes">
-            <button onclick="voltarEtapa(4)">Voltar</button>
+                        <div class="linha-resumo">
 
-            <button onclick="finalizarPlanejamento()">
-              Finalizar planejamento
-            </button>
-          </div>
-        </div>
-      </section>
-    </main>
+                            <span>
+                        Planejado
+                    </span>
 
-    <!-- =========================================
+                            <span id="orcamentoFinal">
+                        R$ 0,00
+                    </span>
+
+                        </div>
+
+
+                        <div class="linha-resumo">
+
+                            <span>
+                        Total de gastos
+                    </span>
+
+                            <span id="gastosFinal">
+                        R$ 265,00
+                    </span>
+
+                        </div>
+
+
+                        <div class="linha-resumo total">
+
+                            <span>
+                        Saldo
+                    </span>
+
+                            <span id="saldoFinal">
+                        R$ 0,00
+                    </span>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- ROTA -->
+
+                    <div class="resumo-box rota-resumo">
+
+                        <h3>
+
+                            <i class="bi bi-map"></i> Rota da viagem
+
+                        </h3>
+
+
+                        <div class="linha-resumo">
+
+                            <span>
+                        Origem
+                    </span>
+
+                            <span id="resumoOrigem">
+                        —
+                    </span>
+
+                        </div>
+
+
+                        <div class="linha-resumo">
+
+                            <span>
+                        Destino
+                    </span>
+
+                            <span id="resumoDestino">
+
+                        <?= htmlspecialchars(
+                            $local ?: $evento['nome_evento']
+                        ) ?>
+
+                    </span>
+
+                        </div>
+
+
+                        <div class="linha-resumo">
+
+                            <span>
+                        Transporte
+                    </span>
+
+                            <span id="resumoMeioTransporte">
+                        —
+                    </span>
+
+                        </div>
+
+
+                        <div class="linha-resumo">
+
+                            <span>
+                        Distância
+                    </span>
+
+                            <span id="resumoDistancia">
+                        —
+                    </span>
+
+                        </div>
+
+
+                        <div class="linha-resumo">
+
+                            <span>
+                        Tempo estimado
+                    </span>
+
+                            <span id="resumoTempo">
+                        —
+                    </span>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- DICAS -->
+
+                    <div class="dicas">
+
+                        <h3>
+
+                            <i class="bi bi-info-circle"></i> Dicas para sua viagem
+
+                        </h3>
+
+
+                        <p>
+                            💊 Leve medicamentos básicos e seu plano de saúde.
+                        </p>
+
+                        <p>
+                            ☀️ Confira a previsão do tempo e leve roupas adequadas.
+                        </p>
+
+                        <p>
+                            🎫 Não esqueça de adquirir seus ingressos com antecedência.
+                        </p>
+
+                        <p>
+                            📱 Baixe o aplicativo do evento para atualizações.
+                        </p>
+
+                    </div>
+
+
+                    <div class="botoes">
+
+                        <button onclick="voltarEtapa(4)">
+                    Voltar
+                </button>
+
+
+                        <button onclick="finalizarPlanejamento()">
+                    Finalizar planejamento
+                </button>
+
+                    </div>
+
+
+                </div>
+
+            </section>
+
+        </main>
+
+
+
+        <!-- =====================================================
      FOOTER
-========================================= -->
+===================================================== -->
 
-    <footer>
-      <div class="footer-container">
-        <div>
-          <h3><span>Show</span><strong>Me</strong></h3>
+        <footer>
 
-          <p>Democratizando o acesso à cultura desde 2026.</p>
+            <div class="footer-container">
 
-          <div class="social-links">
-            <i class="bi bi-instagram"></i>
-            <i class="bi bi-twitter-x"></i>
-            <i class="bi bi-facebook"></i>
-          </div>
-        </div>
 
-        <div>
-          <h3>Entre em contato</h3>
+                <div>
 
-          <input type="email" placeholder="Seu e-mail" />
+                    <h3>
 
-          <textarea placeholder="Sua mensagem"></textarea>
-        </div>
+                        <span>
+                    Show
+                </span>
 
-        <div>
-          <h3>Informações</h3>
+                        <strong>
+                    Me
+                </strong>
 
-          <p>Termos de Uso</p>
+                    </h3>
 
-          <p>Política de Privacidade</p>
-        </div>
-      </div>
-    </footer>
 
-    <!-- =========================================
-     LEAFLET JS
-========================================= -->
+                    <p>
+                        Democratizando o acesso à cultura desde 2026.
+                    </p>
 
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
-    <script>
-      /* =====================================================
-   CONFIGURAÇÕES DO EVENTO
-===================================================== */
+                    <div class="social-links">
 
-      const custoIngresso = 265;
+                        <i class="bi bi-instagram"></i>
 
-      /*
-    Coordenadas do Estádio MorumBis
+                        <i class="bi bi-twitter-x"></i>
 
-    Latitude:
-    -23.6000
+                        <i class="bi bi-facebook"></i>
 
-    Longitude:
-    -46.7200
-*/
+                    </div>
 
-      const destinoEvento = {
-        lat: -23.6,
-        lng: -46.72,
-        nome: "Estádio MorumBis",
-      };
+                </div>
 
-      /*
-    Localização inicial padrão.
 
-    Caso o usuário não permita
-    acesso à localização, utilizamos
-    São Paulo como origem.
-*/
+                <div>
 
-      let origem = {
-        lat: -23.5505,
-        lng: -46.6333,
-      };
+                    <h3>
+                        Entre em contato
+                    </h3>
 
-      let transporteSelecionado = "Carro";
 
-      let hospedagemSelecionada = false;
+                    <input type="email" placeholder="Seu e-mail">
 
-      let hospedagemNome = "";
 
-      let mapa = null;
+                    <textarea placeholder="Sua mensagem"></textarea>
 
-      let marcadorOrigem = null;
+                </div>
 
-      let marcadorDestino = null;
 
-      let rotaLayer = null;
+                <div>
 
-      /* =====================================================
-   TROCA DE ETAPAS
-===================================================== */
+                    <h3>
+                        Informações
+                    </h3>
 
-      function proximaEtapa(numero) {
-        atualizarResumo();
 
-        document.querySelectorAll(".etapa").forEach((etapa) => {
-          etapa.classList.remove("ativa");
-        });
+                    <p>
+                        Termos de Uso
+                    </p>
 
-        document.getElementById(`etapa${numero}`).classList.add("ativa");
 
-        atualizarTimeline(numero);
+                    <p>
+                        Política de Privacidade
+                    </p>
 
-        /*
-        Quando chegar na etapa 3,
-        inicializa o mapa.
-    */
+                </div>
 
-        if (numero === 3) {
-          setTimeout(() => {
-            iniciarMapa();
-          }, 100);
-        }
 
-        /*
-        Quando chegar no resumo,
-        atualiza todos os dados.
-    */
+            </div>
 
-        if (numero === 5) {
-          atualizarResumo();
-        }
-      }
+        </footer>
 
-      /* =====================================================
-   VOLTAR ETAPA
-===================================================== */
 
-      function voltarEtapa(numero) {
-        document.querySelectorAll(".etapa").forEach((etapa) => {
-          etapa.classList.remove("ativa");
-        });
 
-        document.getElementById(`etapa${numero}`).classList.add("ativa");
+        <!-- =====================================================
+     LEAFLET
+===================================================== -->
 
-        atualizarTimeline(numero);
-
-        if (numero === 3) {
-          setTimeout(() => {
-            if (mapa) {
-              mapa.invalidateSize();
-            } else {
-              iniciarMapa();
-            }
-          }, 100);
-        }
-      }
-
-      /* =====================================================
-   TIMELINE
-===================================================== */
-
-      function atualizarTimeline(etapaAtual) {
-        document.querySelectorAll(".passo").forEach((passo, index) => {
-          const numero = index + 1;
-
-          passo.classList.remove("ativo");
-          passo.classList.remove("concluido");
-
-          if (numero < etapaAtual) {
-            passo.classList.add("concluido");
-          }
-
-          if (numero === etapaAtual) {
-            passo.classList.add("ativo");
-          }
-        });
-      }
-
-      /* =====================================================
-   TRANSPORTE
-===================================================== */
-
-      function selecionarTransporte(tipo) {
-        transporteSelecionado = tipo;
-
-        document.getElementById("transporteSelecionado").textContent =
-          `Transporte selecionado: ${tipo}`;
-
-        const tipoRota = document.getElementById("tipoTransporteRota");
-        if (tipoRota) {
-          tipoRota.textContent = tipo;
-        }
-      }
-
-      /* =====================================================
-   HOSPEDAGEM
-===================================================== */
-
-      function mostrarHospedagem() {
-        hospedagemSelecionada = true;
-
-        document.getElementById("opcoesHospedagem").style.display = "block";
-
-        atualizarResumo();
-      }
-
-      function semHospedagem() {
-        hospedagemSelecionada = false;
-
-        hospedagemNome = "";
-
-        document.getElementById("opcoesHospedagem").style.display = "none";
-
-        document.getElementById("hospedagem").value = 0;
-
-        document.getElementById("hospedagemSelecionada").textContent =
-          "Você escolheu continuar sem hospedagem.";
-
-        atualizarResumo();
-      }
-
-      function selecionarHospedagem(nome) {
-        hospedagemNome = nome;
-
-        hospedagemSelecionada = true;
-
-        document.getElementById("hospedagemSelecionada").textContent =
-          `Hospedagem selecionada: ${nome}`;
-      }
-
-      /* =====================================================
-   INICIALIZAÇÃO DO MAPA
-===================================================== */
-      const iconeEvento = L.divIcon({
-        className: "pin-evento",
-        html: `
-        <div class="pin-neon">
-            <i class="fa-solid fa-location-dot"></i>
-        </div>
-    `,
-        iconSize: [40, 40],
-        iconAnchor: [20, 40],
-        popupAnchor: [0, -40],
-      });
-      function iniciarMapa() {
-        if (mapa !== null) {
-          mapa.invalidateSize();
-          return;
-        }
-
-        mapa = L.map("mapaRota").setView(
-          [destinoEvento.lat, destinoEvento.lng],
-          14,
-        );
-
-        L.tileLayer(
-          "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",
-          {
-            attribution: "&copy; OpenStreetMap &copy; CARTO",
-
-            subdomains: "abcd",
-
-            maxZoom: 20,
-          },
-        ).addTo(mapa);
-        marcadorDestino = L.marker([destinoEvento.lat, destinoEvento.lng])
-          .addTo(mapa)
-          .bindPopup(`<strong>${destinoEvento.nome}</strong><br>São Paulo - SP`)
-          .openPopup();
-
-        /*
-          Neste momento mostramos apenas o local do evento.
-          A rota só será criada depois que o usuário informar a origem.
-        */
-      }
-
-      /* =====================================================
-   CENTRALIZAR EVENTO
-===================================================== */
-      function centralizarEvento() {
-        iniciarMapa();
-        mapa.setView([destinoEvento.lat, destinoEvento.lng], 16);
-        marcadorDestino.openPopup();
-      }
-
-      /* =====================================================
-   USAR LOCALIZAÇÃO DO USUÁRIO
-===================================================== */
-      function usarMinhaLocalizacao() {
-        const mensagem = document.getElementById("mensagemRota");
-
-        if (!navigator.geolocation) {
-          mensagem.textContent =
-            "Seu navegador não oferece suporte à localização.";
-          mensagem.classList.add("erro-rota");
-          return;
-        }
-
-        mensagem.textContent = "Solicitando sua localização...";
-        mensagem.classList.remove("erro-rota");
-
-        navigator.geolocation.getCurrentPosition(
-          function (position) {
-            origem = {
-              lat: position.coords.latitude,
-              lng: position.coords.longitude,
+        <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js">
+        </script>
+
+
+
+        <script>
+            /* =========================================================
+                                                                                                                                                   EVENTO VINDO DO BANCO
+                                                                                                                                                ========================================================= */
+
+            const evento = <?= json_encode(
+    [
+        'id' => $evento['id_evento'],
+        'nome' => $evento['nome_evento'],
+        'cidade' => $evento['cidade_evento'],
+        'uf' => $evento['uf'],
+        'rua' => $evento['rua_evento'],
+        'local' => $evento['local_evento'],
+        'data' => $evento['data_evento'],
+        'endereco' => $enderecoCompleto
+    ],
+    JSON_UNESCAPED_UNICODE |
+    JSON_UNESCAPED_SLASHES
+) ?>;
+
+
+            /* =========================================================
+               CONFIGURAÇÕES
+            ========================================================= */
+
+            const custoIngresso = 265;
+
+
+            /* =========================================================
+               ESTADO
+            ========================================================= */
+
+            let origem = null;
+
+            let destino = null;
+
+            let mapa = null;
+
+            let marcadorOrigem = null;
+
+            let marcadorDestino = null;
+
+            let rotaLayer = null;
+
+            let transporteSelecionado = "";
+
+            let hospedagemSelecionada = false;
+
+            let hospedagemDecidida = false;
+
+            let hospedagemNome = "";
+
+            let rotaCalculada = false;
+
+
+            /*
+                Controle para impedir
+                que alguma etapa seja pulada.
+            */
+
+            let etapaConcluida = {
+
+                1: true,
+
+                2: false,
+
+                3: false,
+
+                4: false
+
             };
 
-            origemTexto = "Sua localização atual";
 
-            document.getElementById("origemTexto").textContent = origemTexto;
-            document.getElementById("resumoOrigem").textContent = origemTexto;
+            /* =========================================================
+               FORMATAÇÃO DE MOEDA
+            ========================================================= */
 
-            iniciarMapa();
+            function moeda(valor) {
 
-            if (marcadorOrigem) {
-              marcadorOrigem.setLatLng([origem.lat, origem.lng]);
-            } else {
-              marcadorOrigem = L.marker([origem.lat, origem.lng])
-                .addTo(mapa)
-                .bindPopup("<strong>Você está aqui</strong>");
+                return Number(valor || 0)
+                    .toLocaleString(
+                        "pt-BR", {
+                            style: "currency",
+                            currency: "BRL"
+                        }
+                    );
+
             }
 
-            calcularRota();
-          },
-          function (error) {
-            let texto =
-              "Não foi possível obter sua localização. Você pode informar um ponto de partida manualmente.";
 
-            if (error.code === 1) {
-              texto =
-                "Permissão de localização negada. Informe um ponto de partida manualmente ou permita o acesso à localização.";
+            /* =========================================================
+               MENSAGEM DA ROTA
+            ========================================================= */
+
+            function mostrarMensagem(
+                texto,
+                erro = false
+            ) {
+
+                const mensagem =
+                    document.getElementById(
+                        "mensagemRota"
+                    );
+
+
+                mensagem.textContent = texto;
+
+
+                if (erro) {
+
+                    mensagem.classList.add(
+                        "erro-rota"
+                    );
+
+                } else {
+
+                    mensagem.classList.remove(
+                        "erro-rota"
+                    );
+
+                }
+
             }
 
-            mensagem.textContent = texto;
-            mensagem.classList.add("erro-rota");
-          },
-          {
-            enableHighAccuracy: true,
-            timeout: 10000,
-            maximumAge: 0,
-          },
+
+            /* =========================================================
+               LOCALIZAR EVENTO PELO ENDEREÇO
+            =========================================================
+
+               IMPORTANTE:
+
+               O banco não precisa possuir latitude
+               nem longitude.
+
+               O endereço é usado para descobrir
+               a posição somente quando necessário.
+
+            ========================================================= */
+
+            async function localizarEvento() {
+
+                try {
+
+                    const endereco =
+                        `${evento.rua || ""}, ` +
+                        `${evento.cidade || ""} - ` +
+                        `${evento.uf || ""}, Brasil`;
+
+
+                    const url =
+                        "https://nominatim.openstreetmap.org/search" +
+                        "?format=json" +
+                        "&limit=1" +
+                        "&countrycodes=br" +
+                        "&q=" +
+                        encodeURIComponent(
+                            endereco
+                        );
+
+
+                    const resposta =
+                        await fetch(
+                            url, {
+                                headers: {
+                                    Accept: "application/json"
+                                }
+                            }
+                        );
+
+
+                    const locais =
+                        await resposta.json();
+
+
+                    if (!locais.length) {
+
+                        throw new Error(
+                            "Evento não localizado."
+                        );
+
+                    }
+
+
+                    destino = {
+
+                        lat: Number(
+                            locais[0].lat
+                        ),
+
+                        lng: Number(
+                            locais[0].lon
+                        )
+
+                    };
+
+
+                    return true;
+
+
+                } catch (erro) {
+
+                    console.error(erro);
+
+
+                    mostrarMensagem(
+                        "Não foi possível localizar automaticamente o endereço do evento.",
+                        true
+                    );
+
+
+                    return false;
+
+                }
+
+            }
+
+
+            /* =========================================================
+               TROCA DE ETAPAS
+            ========================================================= */
+
+            function proximaEtapa(numero) {
+
+                /* =====================================================
+                   DESCOBRIR ETAPA ATUAL
+                ===================================================== */
+
+                const etapaAtualElemento =
+                    document.querySelector(".etapa.ativa");
+
+                if (!etapaAtualElemento) {
+                    return;
+                }
+
+                const etapaAtual =
+                    Number(
+                        etapaAtualElemento.id.replace("etapa", "")
+                    );
+
+
+                /* =====================================================
+                   PROTEÇÃO CONTRA PULAR ETAPA
+                ===================================================== */
+
+                if (numero !== etapaAtual + 1) {
+
+                    if (numero > etapaAtual + 1) {
+
+                        alert(
+                            "Conclua as etapas anteriores antes de continuar."
+                        );
+
+                    }
+
+                    return;
+                }
+
+
+                /* =====================================================
+                   ETAPA 1 - ORÇAMENTO
+                ===================================================== */
+
+                if (etapaAtual === 1) {
+
+                    const campoOrcamento =
+                        document.getElementById("orcamento");
+
+                    const orcamento =
+                        Number(campoOrcamento.value);
+
+                    if (!orcamento || orcamento <= 0) {
+
+                        alert(
+                            "Informe seu orçamento antes de continuar."
+                        );
+
+                        campoOrcamento.focus();
+
+                        return;
+                    }
+
+                    if (orcamento < custoIngresso) {
+
+                        alert(
+                            `O orçamento precisa ser de pelo menos R$ ${custoIngresso.toFixed(2)}.`
+                        );
+
+                        campoOrcamento.focus();
+
+                        return;
+                    }
+
+                    /* Marca etapa 1 como concluída */
+                    etapaConcluida[1] = true;
+                }
+
+
+                /* =====================================================
+                   ETAPA 2 - TRANSPORTE
+                ===================================================== */
+
+                if (etapaAtual === 2) {
+
+                    const campoTransporte =
+                        document.getElementById("transporte");
+
+                    const transporte =
+                        Number(campoTransporte.value);
+
+                    if (!transporteSelecionado) {
+
+                        alert(
+                            "Escolha um meio de transporte antes de continuar."
+                        );
+
+                        return;
+                    }
+
+                    if (!transporte || transporte <= 0) {
+
+                        alert(
+                            "Informe o valor do transporte antes de continuar."
+                        );
+
+                        campoTransporte.focus();
+
+                        return;
+                    }
+
+                    const orcamento =
+                        Number(
+                            document.getElementById("orcamento").value
+                        ) || 0;
+
+                    if (custoIngresso + transporte > orcamento) {
+
+                        alert(
+                            "O valor do ingresso + transporte ultrapassa seu orçamento."
+                        );
+
+                        return;
+                    }
+
+                    /* Marca etapa 2 como concluída */
+                    etapaConcluida[2] = true;
+                }
+
+
+                /* =====================================================
+                   ETAPA 3 - ROTA
+                ===================================================== */
+
+                if (etapaAtual === 3) {
+
+                    const mensagem =
+                        document.getElementById("mensagemRota");
+
+                    if (!origem) {
+
+                        alert(
+                            "Defina seu ponto de partida para calcular a rota."
+                        );
+
+                        return;
+                    }
+
+                    if (!rotaCalculada) {
+
+                        alert(
+                            "Calcule a rota antes de continuar."
+                        );
+
+                        if (mensagem) {
+
+                            mensagem.textContent =
+                                "Você precisa calcular a rota antes de continuar.";
+
+                            mensagem.classList.add("erro-rota");
+
+                        }
+
+                        return;
+                    }
+
+                    /* Marca etapa 3 como concluída */
+                    etapaConcluida[3] = true;
+                }
+
+
+                /* =====================================================
+                   ETAPA 4 - HOSPEDAGEM
+                ===================================================== */
+
+                if (etapaAtual === 4) {
+
+                    /*
+                     * O usuário precisa ter decidido:
+                     *
+                     * SIM → hospedagem selecionada
+                     * NÃO → sem hospedagem
+                     */
+
+                    if (!hospedagemDecidida) {
+
+                        alert(
+                            "Escolha se deseja hospedagem antes de continuar."
+                        );
+
+                        return;
+                    }
+
+
+                    /*
+                     * Se escolheu hospedagem,
+                     * precisa informar o valor.
+                     */
+
+                    if (hospedagemSelecionada === true) {
+
+                        const campoHospedagem =
+                            document.getElementById("hospedagem");
+
+                        const hospedagem =
+                            Number(campoHospedagem.value);
+
+                        if (!hospedagem || hospedagem <= 0) {
+
+                            alert(
+                                "Informe o valor da hospedagem antes de continuar."
+                            );
+
+                            campoHospedagem.focus();
+
+                            return;
+                        }
+                    }
+
+
+                    /* Marca etapa 4 como concluída */
+                    etapaConcluida[4] = true;
+                }
+
+
+                /* =====================================================
+                   ATUALIZA RESUMO
+                ===================================================== */
+
+                atualizarResumo();
+
+
+                /* =====================================================
+                   ESCONDE TODAS AS ETAPAS
+                ===================================================== */
+
+                document
+                    .querySelectorAll(".etapa")
+                    .forEach(etapa => {
+
+                        etapa.classList.remove("ativa");
+
+                    });
+
+
+                /* =====================================================
+                   MOSTRA PRÓXIMA ETAPA
+                ===================================================== */
+
+                const proxima =
+                    document.getElementById(
+                        `etapa${numero}`
+                    );
+
+                if (!proxima) {
+
+                    console.error(
+                        `Etapa ${numero} não encontrada.`
+                    );
+
+                    return;
+                }
+
+                proxima.classList.add("ativa");
+
+
+                /* =====================================================
+                   ATUALIZA TIMELINE
+                ===================================================== */
+
+                atualizarTimeline(numero);
+
+
+                /* =====================================================
+                   ETAPA 3 - MAPA
+                ===================================================== */
+
+                if (numero === 3) {
+
+                    setTimeout(
+                        async() => {
+
+                            if (!destino) {
+
+                                await localizarEvento();
+
+                            }
+
+                            if (destino) {
+
+                                await iniciarMapa();
+
+                            }
+
+                        },
+                        150
+                    );
+                }
+
+
+                /* =====================================================
+                   ETAPA 4 - HOSPEDAGEM
+                ===================================================== */
+
+                if (numero === 4) {
+
+                    atualizarHospedagem();
+
+                }
+
+
+                /* =====================================================
+                   ETAPA 5 - RESUMO FINAL
+                ===================================================== */
+
+                if (numero === 5) {
+
+                    atualizarResumo();
+
+                }
+
+            }
+            /* =====================================================
+               PROTEÇÃO CONTRA PULAR ETAPA
+            ===================================================== */
+
+            if (
+                numero !==
+                numeroAtual + 1
+            ) {
+
+
+                if (
+                    numero >
+                    numeroAtual + 1
+                ) {
+
+                    alert(
+                        "Conclua as etapas anteriores antes de continuar."
+                    );
+
+                }
+
+
+                return;
+
+            }
+
+
+            atualizarResumo();
+
+
+            document
+                .querySelectorAll(".etapa")
+                .forEach(
+                    etapa =>
+                    etapa.classList.remove(
+                        "ativa"
+                    )
+                );
+
+
+            document
+                .getElementById(
+                    `etapa${numero}`
+                )
+                .classList.add(
+                    "ativa"
+                );
+
+
+            atualizarTimeline(
+                numero
+            );
+
+
+            /* ETAPA 3 */
+
+            if (numero === 3) {
+
+                setTimeout(
+                    async() => {
+
+                        if (!destino) {
+
+                            await localizarEvento();
+
+                        }
+
+
+                        iniciarMapa();
+
+                    },
+                    150
+                );
+
+            }
+
+
+            /* ETAPA 4 */
+
+            if (numero === 4) {
+
+                atualizarHospedagem();
+
+            }
+
+
+            /* ETAPA 5 */
+
+            if (numero === 5) {
+
+                atualizarResumo();
+
+            }
+
+            }
+
+
+            /* =========================================================
+               VOLTAR
+            ========================================================= */
+
+            function voltarEtapa(numero) {
+
+
+                const atual =
+                    document.querySelector(
+                        ".etapa.ativa"
+                    );
+
+
+                if (!atual) {
+
+                    return;
+
+                }
+
+
+                const numeroAtual =
+                    Number(
+                        atual.id.replace(
+                            "etapa",
+                            ""
+                        )
+                    );
+
+
+                if (
+                    numero !==
+                    numeroAtual - 1
+                ) {
+
+                    return;
+
+                }
+
+
+                document
+                    .querySelectorAll(".etapa")
+                    .forEach(
+                        etapa =>
+                        etapa.classList.remove(
+                            "ativa"
+                        )
+                    );
+
+
+                document
+                    .getElementById(
+                        `etapa${numero}`
+                    )
+                    .classList.add(
+                        "ativa"
+                    );
+
+
+                atualizarTimeline(
+                    numero
+                );
+
+
+                if (
+                    numero === 3 &&
+                    mapa
+                ) {
+
+                    setTimeout(
+                        () =>
+                        mapa.invalidateSize(),
+                        100
+                    );
+
+                }
+
+            }
+
+
+            /* =========================================================
+               TIMELINE
+            ========================================================= */
+
+            function atualizarTimeline(
+                etapaAtual
+            ) {
+
+
+                document
+                    .querySelectorAll(".passo")
+                    .forEach(
+                        (passo, index) => {
+
+
+                            const numero =
+                                index + 1;
+
+
+                            passo.classList.remove(
+                                "ativo"
+                            );
+
+
+                            passo.classList.remove(
+                                "concluido"
+                            );
+
+
+                            if (
+                                numero <
+                                etapaAtual
+                            ) {
+
+                                passo.classList.add(
+                                    "concluido"
+                                );
+
+                            }
+
+
+                            if (
+                                numero ===
+                                etapaAtual
+                            ) {
+
+                                passo.classList.add(
+                                    "ativo"
+                                );
+
+                            }
+
+                        }
+                    );
+
+            }
+
+
+            /* =========================================================
+               TRANSPORTE
+            ========================================================= */
+
+            function selecionarTransporte(
+                tipo
+            ) {
+
+
+                transporteSelecionado =
+                    tipo;
+
+
+                document.getElementById(
+                        "transporteSelecionado"
+                    ).textContent =
+                    `Transporte selecionado: ${tipo}`;
+
+
+                calcularEstimativaTransporte();
+
+            }
+
+
+            /* =========================================================
+               ESTIMATIVA DE TRANSPORTE
+            ========================================================= */
+
+            function calcularEstimativaTransporte() {
+
+
+                const box =
+                    document.getElementById(
+                        "estimativaTransporte"
+                    );
+
+
+                if (!transporteSelecionado) {
+
+                    box.style.display =
+                        "none";
+
+
+                    return;
+
+                }
+
+
+                let minimo = 0;
+
+                let maximo = 0;
+
+                let texto = "";
+
+
+                switch (
+                    transporteSelecionado
+                ) {
+
+
+                    case "Ônibus":
+
+                        minimo = 35;
+
+                        maximo = 80;
+
+                        texto =
+                            "Estimativa de passagem rodoviária. O valor real depende da origem, data e empresa.";
+
+                        break;
+
+
+                    case "Carro":
+
+                        minimo = 30;
+
+                        maximo = 100;
+
+                        texto =
+                            "Estimativa de combustível e pedágios. O valor real depende da distância e do veículo.";
+
+                        break;
+
+
+                    case "Uber":
+
+                        minimo = 25;
+
+                        maximo = 100;
+
+                        texto =
+                            "Estimativa de viagem. O preço real varia conforme distância, horário e demanda.";
+
+                        break;
+
+
+                    case "Avião":
+
+                        minimo = 300;
+
+                        maximo = 1200;
+
+                        texto =
+                            "Estimativa de passagem aérea. O valor varia conforme origem, data e antecedência.";
+
+                        break;
+
+                }
+
+
+                box.innerHTML = `
+
+        <strong>
+            Estimativa de ${transporteSelecionado}
+        </strong>
+
+        <br>
+
+        Faixa estimada:
+        ${moeda(minimo)}
+        –
+        ${moeda(maximo)}
+
+        <br>
+
+        <small>
+            ${texto}
+        </small>
+
+    `;
+
+
+                box.style.display =
+                    "block";
+
+
+                /*
+                    Coloca a média automaticamente
+                    no campo.
+
+                    O usuário ainda pode alterar.
+                */
+
+                const media =
+                    (
+                        minimo +
+                        maximo
+                    ) / 2;
+
+
+                const campo =
+                    document.getElementById(
+                        "transporte"
+                    );
+
+
+                if (!campo.value ||
+                    Number(campo.value) === 0
+                ) {
+
+                    campo.value =
+                        media.toFixed(2);
+
+                }
+
+
+                atualizarResumo();
+
+            }
+
+
+            /* =========================================================
+               HOSPEDAGEM
+            ========================================================= */
+
+            function mostrarHospedagem() {
+
+
+                hospedagemDecidida =
+                    true;
+
+
+                hospedagemSelecionada =
+                    true;
+
+
+                document.getElementById(
+                        "opcoesHospedagem"
+                    ).style.display =
+                    "block";
+
+
+                atualizarHospedagem();
+
+            }
+
+
+            function semHospedagem() {
+
+
+                hospedagemDecidida =
+                    true;
+
+
+                hospedagemSelecionada =
+                    false;
+
+
+                hospedagemNome =
+                    "";
+
+
+                document.getElementById(
+                        "opcoesHospedagem"
+                    ).style.display =
+                    "none";
+
+
+                document.getElementById(
+                        "hospedagem"
+                    ).value =
+                    0;
+
+
+                document.getElementById(
+                        "hospedagemSelecionada"
+                    ).textContent =
+                    "Você escolheu continuar sem hospedagem.";
+
+
+                atualizarResumo();
+
+            }
+
+
+            function selecionarHospedagem(
+                nome
+            ) {
+
+
+                hospedagemNome =
+                    nome;
+
+
+                hospedagemSelecionada =
+                    true;
+
+
+                document.getElementById(
+                        "hospedagemSelecionada"
+                    ).textContent =
+                    `Hospedagem selecionada: ${nome}`;
+
+
+                atualizarResumo();
+
+            }
+
+
+            /* =========================================================
+               BUSCAR HOSPEDAGENS
+            =========================================================
+
+               Aqui usamos OpenStreetMap/Overpass para descobrir
+               hospedagens próximas.
+
+               O OpenStreetMap NÃO fornece preços de reserva.
+
+               Por isso o sistema apresenta uma faixa de preço
+               estimada, deixando claro que é uma estimativa.
+
+            ========================================================= */
+
+            async function atualizarHospedagem() {
+
+
+                const resultado =
+                    document.getElementById(
+                        "resultadoHospedagem"
+                    );
+
+
+                resultado.innerHTML =
+                    "<p>Buscando hospedagens próximas ao evento...</p>";
+
+
+                if (!destino) {
+
+                    const localizado =
+                        await localizarEvento();
+
+
+                    if (!localizado) {
+
+                        resultado.innerHTML =
+                            "<p>Não foi possível localizar o evento para pesquisar hospedagens.</p>";
+
+
+                        return;
+
+                    }
+
+                }
+
+
+                try {
+
+
+                    const query = `
+
+            [out:json];
+
+            (
+
+                nwr[
+                    "tourism"="hotel"
+                ](
+                    around:5000,
+                    ${destino.lat},
+                    ${destino.lng}
+                );
+
+                nwr[
+                    "tourism"="hostel"
+                ](
+                    around:5000,
+                    ${destino.lat},
+                    ${destino.lng}
+                );
+
+                nwr[
+                    "tourism"="guest_house"
+                ](
+                    around:5000,
+                    ${destino.lat},
+                    ${destino.lng}
+                );
+
+            );
+
+            out center tags;
+
+        `;
+
+
+                    const resposta =
+                        await fetch(
+                            "https://overpass-api.de/api/interpreter", {
+                                method: "POST",
+
+                                body: query
+                            }
+                        );
+
+
+                    const dados =
+                        await resposta.json();
+
+
+                    const locais =
+                        (
+                            dados.elements || []
+                        )
+                        .filter(
+                            item =>
+                            item.tags &&
+                            item.tags.name
+                        )
+                        .slice(
+                            0,
+                            6
+                        );
+
+
+                    if (!locais.length) {
+
+
+                        resultado.innerHTML = `
+
+                <p>
+
+                    Nenhuma hospedagem foi
+                    encontrada automaticamente
+                    na região do evento.
+
+                </p>
+
+            `;
+
+
+                        return;
+
+                    }
+
+
+                    resultado.innerHTML =
+                        locais.map(
+                            item => {
+
+
+                                const nome =
+                                    item.tags.name;
+
+
+                                const estimativa =
+                                    item.tags.tourism ===
+                                    "hostel"
+
+                                ?
+                                "R$ 80 – R$ 180/noite"
+
+                                :
+                                "R$ 180 – R$ 450/noite";
+
+
+                                return `
+
+                        <div
+                            class="resultado-hospedagem"
+                        >
+
+                            <strong>
+                                ${escapeHtml(nome)}
+                            </strong>
+
+                            <small>
+                                ${
+                                    item.tags.tourism ===
+                                    "hostel"
+                                        ? "Hostel"
+                                        : "Hospedagem"
+                                }
+                            </small>
+
+                            <span>
+                                Estimativa:
+                                ${estimativa}
+                            </span>
+
+                        </div>
+
+                    `;
+
+                            }
+                        )
+                        .join("");
+
+
+                    /*
+                        Média usada inicialmente no orçamento.
+
+                        O usuário pode alterar.
+                    */
+
+                    const media =
+                        locais.some(
+                            item =>
+                            item.tags.tourism ===
+                            "hostel"
+                        ) ?
+                        220 :
+                        315;
+
+
+                    const campo =
+                        document.getElementById(
+                            "hospedagem"
+                        );
+
+
+                    if (!campo.value ||
+                        Number(campo.value) === 0
+                    ) {
+
+                        campo.value =
+                            media.toFixed(2);
+
+                    }
+
+
+                    atualizarResumo();
+
+
+                } catch (erro) {
+
+
+                    console.error(
+                        erro
+                    );
+
+
+                    resultado.innerHTML = `
+
+            <p>
+
+                Não foi possível buscar
+                hospedagens neste momento.
+
+            </p>
+
+        `;
+
+                }
+
+            }
+
+
+            /* =========================================================
+               ÍCONE DO EVENTO
+            ========================================================= */
+
+            const iconeEvento =
+                L.divIcon({
+
+                    className: "pin-evento",
+
+                    html: `
+
+            <div class="pin-neon">
+
+                <i
+                    class="fa-solid fa-location-dot"
+                ></i>
+
+            </div>
+
+        `,
+
+                    iconSize: [40, 40],
+
+                    iconAnchor: [20, 40],
+
+                    popupAnchor: [0, -40]
+
+                });
+
+
+            /* =========================================================
+               INICIAR MAPA
+            ========================================================= */
+
+            async function iniciarMapa() {
+
+
+                if (!destino) {
+
+
+                    const localizado =
+                        await localizarEvento();
+
+
+                    if (!localizado) {
+
+                        return;
+
+                    }
+
+                }
+
+
+                if (
+                    mapa !== null
+                ) {
+
+                    mapa.invalidateSize();
+
+                    return;
+
+                }
+
+
+                mapa =
+                    L.map(
+                        "mapaRota"
+                    )
+                    .setView(
+                        [
+                            destino.lat,
+                            destino.lng
+                        ],
+                        14
+                    );
+
+
+                L.tileLayer(
+
+                    "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",
+
+                    {
+
+                        attribution: "&copy; OpenStreetMap &copy; CARTO",
+
+                        subdomains: "abcd",
+
+                        maxZoom: 20
+
+                    }
+
+                ).addTo(
+                    mapa
+                );
+
+
+                marcadorDestino =
+                    L.marker(
+
+                        [
+                            destino.lat,
+                            destino.lng
+                        ],
+
+                        {
+                            icon: iconeEvento
+                        }
+
+                    )
+                    .addTo(
+                        mapa
+                    )
+                    .bindPopup(
+
+                        `
+
+                <strong>
+                    ${escapeHtml(
+                        evento.local ||
+                        evento.nome
+                    )}
+                </strong>
+
+                <br>
+
+                ${escapeHtml(
+                    evento.cidade ||
+                    ""
+                )}
+                -
+                ${escapeHtml(
+                    evento.uf ||
+                    ""
+                )}
+
+            `
+
+                    )
+                    .openPopup();
+
+            }
+
+
+            /* =========================================================
+               CENTRALIZAR EVENTO
+            ========================================================= */
+
+            async function centralizarEvento() {
+
+
+                if (!destino) {
+
+                    await localizarEvento();
+
+                }
+
+
+                if (!destino) {
+
+                    return;
+
+                }
+
+
+                await iniciarMapa();
+
+
+                mapa.setView(
+
+                    [
+                        destino.lat,
+                        destino.lng
+                    ],
+
+                    16
+
+                );
+
+
+                if (
+                    marcadorDestino
+                ) {
+
+                    marcadorDestino.openPopup();
+
+                }
+
+            }
+
+
+            /* =========================================================
+               LOCALIZAÇÃO DO USUÁRIO
+            ========================================================= */
+
+            function usarMinhaLocalizacao() {
+
+
+                if (!navigator.geolocation) {
+
+
+                    mostrarMensagem(
+
+                        "Seu navegador não oferece suporte à localização.",
+
+                        true
+
+                    );
+
+
+                    return;
+
+                }
+
+
+                mostrarMensagem(
+                    "Solicitando sua localização..."
+                );
+
+
+                navigator.geolocation.getCurrentPosition(
+
+                    async function(position) {
+
+
+                        origem = {
+
+                            lat: position.coords.latitude,
+
+                            lng: position.coords.longitude
+
+                        };
+
+
+                        document.getElementById(
+                                "origemTexto"
+                            ).textContent =
+                            "Sua localização atual";
+
+
+                        document.getElementById(
+                                "resumoOrigem"
+                            ).textContent =
+                            "Sua localização atual";
+
+
+                        await iniciarMapa();
+
+
+                        if (
+                            marcadorOrigem
+                        ) {
+
+
+                            marcadorOrigem.setLatLng(
+
+                                [
+                                    origem.lat,
+                                    origem.lng
+                                ]
+
+                            );
+
+
+                        } else {
+
+
+                            marcadorOrigem =
+                                L.marker(
+
+                                    [
+                                        origem.lat,
+                                        origem.lng
+                                    ]
+
+                                )
+                                .addTo(
+                                    mapa
+                                )
+                                .bindPopup(
+                                    "<strong>Você está aqui</strong>"
+                                );
+
+                        }
+
+
+                        calcularRota();
+
+
+                    },
+
+
+                    function(error) {
+
+
+                        let texto =
+                            "Não foi possível obter sua localização. Informe um ponto de partida manualmente.";
+
+
+                        if (
+                            error.code === 1
+                        ) {
+
+                            texto =
+                                "Permissão de localização negada. Informe um ponto de partida manualmente ou permita o acesso à localização.";
+
+                        }
+
+
+                        mostrarMensagem(
+                            texto,
+                            true
+                        );
+
+                    },
+
+
+                    {
+
+                        enableHighAccuracy: true,
+
+                        timeout: 10000,
+
+                        maximumAge: 0
+
+                    }
+
+                );
+
+            }
+
+
+            /* =========================================================
+               ORIGEM MANUAL
+            ========================================================= */
+
+            async function calcularRotaManual() {
+
+
+                const campo =
+                    document.getElementById(
+                        "origemManual"
+                    );
+
+
+                const endereco =
+                    campo.value.trim();
+
+
+                if (!endereco) {
+
+
+                    mostrarMensagem(
+
+                        "Informe um ponto de partida.",
+
+                        true
+
+                    );
+
+
+                    campo.focus();
+
+
+                    return;
+
+                }
+
+
+                mostrarMensagem(
+                    "Localizando o ponto de partida..."
+                );
+
+
+                try {
+
+
+                    const url =
+                        "https://nominatim.openstreetmap.org/search" +
+                        "?format=json" +
+                        "&limit=1" +
+                        "&countrycodes=br" +
+                        "&q=" +
+                        encodeURIComponent(
+                            endereco
+                        );
+
+
+                    const resposta =
+                        await fetch(
+
+                            url,
+
+                            {
+
+                                headers: {
+
+                                    Accept: "application/json"
+
+                                }
+
+                            }
+
+                        );
+
+
+                    const locais =
+                        await resposta.json();
+
+
+                    if (!locais.length) {
+
+                        throw new Error(
+                            "Local não encontrado"
+                        );
+
+                    }
+
+
+                    origem = {
+
+                        lat: Number(
+                            locais[0].lat
+                        ),
+
+                        lng: Number(
+                            locais[0].lon
+                        )
+
+                    };
+
+
+                    document.getElementById(
+                            "origemTexto"
+                        ).textContent =
+                        endereco;
+
+
+                    document.getElementById(
+                            "resumoOrigem"
+                        ).textContent =
+                        endereco;
+
+
+                    await iniciarMapa();
+
+
+                    if (
+                        marcadorOrigem
+                    ) {
+
+
+                        marcadorOrigem.setLatLng(
+
+                            [
+                                origem.lat,
+                                origem.lng
+                            ]
+
+                        );
+
+
+                    } else {
+
+
+                        marcadorOrigem =
+                            L.marker(
+
+                                [
+                                    origem.lat,
+                                    origem.lng
+                                ]
+
+                            )
+                            .addTo(
+                                mapa
+                            )
+                            .bindPopup(
+                                "<strong>Origem</strong>"
+                            );
+
+                    }
+
+
+                    calcularRota();
+
+
+                } catch (erro) {
+
+
+                    console.error(
+                        erro
+                    );
+
+
+                    mostrarMensagem(
+
+                        "Não encontramos esse local. Tente informar uma cidade, endereço ou ponto de referência.",
+
+                        true
+
+                    );
+
+                }
+
+            }
+
+
+            /* =========================================================
+               CALCULAR ROTA
+            ========================================================= */
+
+            async function calcularRota() {
+
+
+                if (!origem) {
+
+                    return;
+
+                }
+
+
+                if (!destino) {
+
+
+                    const localizado =
+                        await localizarEvento();
+
+
+                    if (!localizado) {
+
+                        return;
+
+                    }
+
+                }
+
+
+                /*
+                    Carro e Uber:
+                    rota rodoviária detalhada.
+
+                    Ônibus e avião:
+                    o Google Maps será utilizado
+                    para a rota correspondente.
+                */
+
+                const usaRotaRodoviaria =
+
+                    transporteSelecionado ===
+                    "Carro" ||
+
+                    transporteSelecionado ===
+                    "Uber" ||
+
+                    transporteSelecionado ===
+                    "";
+
+
+                if (!usaRotaRodoviaria) {
+
+
+                    rotaCalculada =
+                        true;
+
+
+                    etapaConcluida[3] =
+                        true;
+
+
+                    document.getElementById(
+                            "informacoesRota"
+                        ).style.display =
+                        "grid";
+
+
+                    document.getElementById(
+                            "navegacaoBox"
+                        ).style.display =
+                        "block";
+
+
+                    document.getElementById(
+                            "distanciaRota"
+                        ).textContent =
+                        "Ver no mapa";
+
+
+                    document.getElementById(
+                            "tempoRota"
+                        ).textContent =
+                        "Consultar";
+
+
+                    document.getElementById(
+                            "resumoDistancia"
+                        ).textContent =
+                        "Ver no mapa";
+
+
+                    document.getElementById(
+                            "resumoTempo"
+                        ).textContent =
+                        "Consultar";
+
+
+                    mostrarMensagem(
+
+                        `Para ${transporteSelecionado}, a rota detalhada será aberta no aplicativo de navegação.`
+
+                    );
+
+
+                    return;
+
+                }
+
+
+                mostrarMensagem(
+                    "Calculando rota..."
+                );
+
+
+                const url =
+
+                    `https://router.project-osrm.org/route/v1/driving/` +
+
+                    `${origem.lng},${origem.lat};` +
+
+                    `${destino.lng},${destino.lat}` +
+
+                    `?overview=full&geometries=geojson`;
+
+
+                try {
+
+
+                    const resposta =
+                        await fetch(
+                            url
+                        );
+
+
+                    const dados =
+                        await resposta.json();
+
+
+                    if (!dados.routes ||
+                        !dados.routes.length
+                    ) {
+
+                        throw new Error(
+                            "Rota não encontrada"
+                        );
+
+                    }
+
+
+                    const rota =
+                        dados.routes[0];
+
+
+                    if (
+                        rotaLayer
+                    ) {
+
+                        mapa.removeLayer(
+                            rotaLayer
+                        );
+
+                    }
+
+
+                    rotaLayer =
+                        L.geoJSON(
+
+                            rota.geometry,
+
+                            {
+
+                                style: {
+
+                                    color: "#a8ff00",
+
+                                    weight: 5,
+
+                                    opacity: 0.9
+
+                                }
+
+                            }
+
+                        ).addTo(
+                            mapa
+                        );
+
+
+                    mapa.fitBounds(
+
+                        rotaLayer.getBounds(),
+
+                        {
+
+                            padding: [30, 30]
+
+                        }
+
+                    );
+
+
+                    const distanciaKm =
+                        rota.distance /
+                        1000;
+
+
+                    document.getElementById(
+                            "distanciaRota"
+                        ).textContent =
+                        `${distanciaKm.toFixed(1)} km`;
+
+
+                    document.getElementById(
+                            "resumoDistancia"
+                        ).textContent =
+                        `${distanciaKm.toFixed(1)} km`;
+
+
+                    const minutos =
+                        Math.round(
+                            rota.duration /
+                            60
+                        );
+
+
+                    let tempoTexto;
+
+
+                    if (
+                        minutos >= 60
+                    ) {
+
+
+                        const horas =
+                            Math.floor(
+                                minutos / 60
+                            );
+
+
+                        const minutosRestantes =
+                            minutos % 60;
+
+
+                        tempoTexto =
+                            `${horas}h ${minutosRestantes}min`;
+
+
+                    } else {
+
+
+                        tempoTexto =
+                            `${minutos} min`;
+
+                    }
+
+
+                    document.getElementById(
+                            "tempoRota"
+                        ).textContent =
+                        tempoTexto;
+
+
+                    document.getElementById(
+                            "resumoTempo"
+                        ).textContent =
+                        tempoTexto;
+
+
+                    document.getElementById(
+                            "informacoesRota"
+                        ).style.display =
+                        "grid";
+
+
+                    document.getElementById(
+                            "navegacaoBox"
+                        ).style.display =
+                        "block";
+
+
+                    rotaCalculada =
+                        true;
+
+
+                    etapaConcluida[3] =
+                        true;
+
+
+                    mostrarMensagem(
+                        "Rota calculada com sucesso."
+                    );
+
+
+                } catch (erro) {
+
+
+                    console.error(
+                        erro
+                    );
+
+
+                    mostrarMensagem(
+
+                        "Não foi possível calcular a rota no momento.",
+
+                        true
+
+                    );
+
+                }
+
+            }
+
+
+            /* =========================================================
+               GOOGLE MAPS
+            ========================================================= */
+
+            function abrirGoogleMaps() {
+
+
+                if (!origem ||
+                    !destino
+                ) {
+
+                    alert(
+                        "Calcule uma rota primeiro."
+                    );
+
+
+                    return;
+
+                }
+
+
+                let modo =
+                    "driving";
+
+
+                if (
+                    transporteSelecionado ===
+                    "Ônibus"
+                ) {
+
+                    modo =
+                        "transit";
+
+                }
+
+
+                if (
+                    transporteSelecionado ===
+                    "Avião"
+                ) {
+
+                    modo =
+                        "transit";
+
+                }
+
+
+                const url =
+
+                    `https://www.google.com/maps/dir/?api=1` +
+
+                    `&origin=${encodeURIComponent(
+            `${origem.lat},${origem.lng}`
+        )}` +
+
+        `&destination=${encodeURIComponent(
+            `${destino.lat},${destino.lng}`
+        )}` +
+
+        `&travelmode=${modo}`;
+
+
+    window.open(
+        url,
+        "_blank"
+    );
+
+}
+
+
+/* =========================================================
+   WAZE
+========================================================= */
+
+function abrirWaze() {
+
+
+    if (
+        !destino
+    ) {
+
+        alert(
+            "Calcule uma rota primeiro."
         );
-      }
 
-      /* =====================================================
-   ORIGEM MANUAL
-===================================================== */
-      async function calcularRotaManual() {
-        const campo = document.getElementById("origemManual");
-        const mensagem = document.getElementById("mensagemRota");
-        const endereco = campo.value.trim();
 
-        if (!endereco) {
-          mensagem.textContent = "Informe um ponto de partida.";
-          mensagem.classList.add("erro-rota");
-          return;
-        }
+        return;
 
-        mensagem.textContent = "Localizando o ponto de partida...";
-        mensagem.classList.remove("erro-rota");
+    }
 
-        try {
-          const url =
-            "https://nominatim.openstreetmap.org/search?format=json&limit=1&countrycodes=br&q=" +
-            encodeURIComponent(endereco);
 
-          const resposta = await fetch(url, {
-            headers: { Accept: "application/json" },
-          });
+    const url =
 
-          const locais = await resposta.json();
+        `https://www.waze.com/ul` +
 
-          if (!locais.length) {
-            throw new Error("Local não encontrado");
-          }
+        `?ll=${destino.lat},${destino.lng}` +
 
-          origem = {
-            lat: Number(locais[0].lat),
-            lng: Number(locais[0].lon),
-          };
+        `&navigate=yes`;
 
-          origemTexto = locais[0].display_name;
 
-          document.getElementById("origemTexto").textContent = endereco;
-          document.getElementById("resumoOrigem").textContent = endereco;
+    window.open(
+        url,
+        "_blank"
+    );
 
-          iniciarMapa();
+}
 
-          if (marcadorOrigem) {
-            marcadorOrigem.setLatLng([origem.lat, origem.lng]);
-          } else {
-            marcadorOrigem = L.marker([origem.lat, origem.lng])
-              .addTo(mapa)
-              .bindPopup("<strong>Origem</strong>");
-          }
 
-          calcularRota();
-        } catch (erro) {
-          console.error(erro);
-          mensagem.textContent =
-            "Não encontramos esse local. Tente informar uma cidade, endereço ou ponto de referência.";
-          mensagem.classList.add("erro-rota");
-        }
-      }
-
-      /* =====================================================
-   CALCULAR ROTA
-===================================================== */
-      async function calcularRota() {
-        if (!mapa || !origem) {
-          return;
-        }
-
-        const mensagem = document.getElementById("mensagemRota");
-        mensagem.textContent = "Calculando rota...";
-        mensagem.classList.remove("erro-rota");
-
-        const url =
-          `https://router.project-osrm.org/route/v1/driving/` +
-          `${origem.lng},${origem.lat};` +
-          `${destinoEvento.lng},${destinoEvento.lat}` +
-          `?overview=full&geometries=geojson`;
-
-        try {
-          const resposta = await fetch(url);
-          const dados = await resposta.json();
-
-          if (!dados.routes || dados.routes.length === 0) {
-            throw new Error("Rota não encontrada");
-          }
-
-          const rota = dados.routes[0];
-
-          if (rotaLayer) {
-            mapa.removeLayer(rotaLayer);
-          }
-
-          rotaLayer = L.geoJSON(rota.geometry, {
-            style: {
-              color: "#a8ff00",
-              weight: 5,
-              opacity: 0.9,
-            },
-          }).addTo(mapa);
-
-          mapa.fitBounds(rotaLayer.getBounds(), {
-            padding: [30, 30],
-          });
-
-          const distanciaKm = rota.distance / 1000;
-
-          document.getElementById("distanciaRota").textContent =
-            `${distanciaKm.toFixed(1)} km`;
-          document.getElementById("resumoDistancia").textContent =
-            `${distanciaKm.toFixed(1)} km`;
-
-          const minutos = Math.round(rota.duration / 60);
-          let tempoTexto;
-
-          if (minutos >= 60) {
-            const horas = Math.floor(minutos / 60);
-            const minutosRestantes = minutos % 60;
-            tempoTexto = `${horas}h ${minutosRestantes}min`;
-          } else {
-            tempoTexto = `${minutos} min`;
-          }
-
-          document.getElementById("tempoRota").textContent = tempoTexto;
-          document.getElementById("resumoTempo").textContent = tempoTexto;
-
-          document.getElementById("informacoesRota").style.display = "grid";
-          document.getElementById("navegacaoBox").style.display = "block";
-
-          mensagem.textContent = "Rota calculada com sucesso.";
-        } catch (erro) {
-          console.error(erro);
-          mensagem.textContent = "Não foi possível calcular a rota no momento.";
-          mensagem.classList.add("erro-rota");
-        }
-      }
-
-      function abrirGoogleMaps() {
-        if (!origem) {
-          alert("Calcule uma rota primeiro.");
-          return;
-        }
-
-        const origemMaps = `${origem.lat},${origem.lng}`;
-        const destinoMaps = `${destinoEvento.lat},${destinoEvento.lng}`;
-
-        const url =
-          `https://www.google.com/maps/dir/?api=1` +
-          `&origin=${encodeURIComponent(origemMaps)}` +
-          `&destination=${encodeURIComponent(destinoMaps)}` +
-          `&travelmode=driving`;
-
-        window.open(url, "_blank");
-      }
-
-      function abrirWaze() {
-        if (!origem) {
-          alert("Calcule uma rota primeiro.");
-          return;
-        }
-
-        const url =
-          `https://www.waze.com/ul?ll=${destinoEvento.lat},${destinoEvento.lng}` +
-          `&navigate=yes`;
-
-        window.open(url, "_blank");
-      }
-
-      /* =====================================================
+/* =========================================================
    ATUALIZAR RESUMO
-===================================================== */
+========================================================= */
 
-      function atualizarResumo() {
-        const orcamento =
-          Number(document.getElementById("orcamento").value) || 0;
+function atualizarResumo() {
 
-        const transporte =
-          Number(document.getElementById("transporte").value) || 0;
 
-        const hospedagem =
-          Number(document.getElementById("hospedagem").value) || 0;
+    const orcamento =
+        Number(
+            document.getElementById(
+                "orcamento"
+            ).value
+        ) || 0;
 
-        const total = custoIngresso + transporte + hospedagem;
 
-        const saldo = orcamento - total;
+    const transporte =
+        Number(
+            document.getElementById(
+                "transporte"
+            ).value
+        ) || 0;
 
-        /*
-        Orçamento
-    */
 
-        document.getElementById("valorOrcamento").textContent =
-          `R$ ${orcamento.toFixed(2)}`;
+    const hospedagem =
+        Number(
+            document.getElementById(
+                "hospedagem"
+            ).value
+        ) || 0;
 
-        document.getElementById("restante").textContent = `R$ ${(
-          orcamento -
-          custoIngresso -
-          transporte
-        ).toFixed(2)}`;
 
-        /*
-        Transporte
-    */
+    const total =
+        custoIngresso +
+        transporte +
+        hospedagem;
 
-        document.getElementById("resumoTransporte").textContent =
-          `R$ ${transporte.toFixed(2)}`;
 
-        /*
-        Hospedagem
-    */
+    const saldo =
+        orcamento -
+        total;
 
-        document.getElementById("resumoHospedagem").textContent =
-          `R$ ${hospedagem.toFixed(2)}`;
 
-        /*
-        Total
-    */
+    document.getElementById(
+        "valorOrcamento"
+    ).textContent =
+        moeda(
+            orcamento
+        );
 
-        document.getElementById("totalFinal").textContent =
-          `R$ ${total.toFixed(2)}`;
 
-        /*
-        Orçamento final
-    */
+    document.getElementById(
+        "restante"
+    ).textContent =
+        moeda(
 
-        document.getElementById("orcamentoFinal").textContent =
-          `R$ ${orcamento.toFixed(2)}`;
+            orcamento -
+            custoIngresso -
+            transporte
 
-        document.getElementById("gastosFinal").textContent =
-          `R$ ${total.toFixed(2)}`;
+        );
 
-        document.getElementById("saldoFinal").textContent =
-          `R$ ${saldo.toFixed(2)}`;
-      }
 
-      /* =====================================================
+    document.getElementById(
+        "resumoTransporte"
+    ).textContent =
+        moeda(
+            transporte
+        );
+
+
+    document.getElementById(
+        "resumoHospedagem"
+    ).textContent =
+        moeda(
+            hospedagem
+        );
+
+
+    document.getElementById(
+        "totalFinal"
+    ).textContent =
+        moeda(
+            total
+        );
+
+
+    document.getElementById(
+        "orcamentoFinal"
+    ).textContent =
+        moeda(
+            orcamento
+        );
+
+
+    document.getElementById(
+        "gastosFinal"
+    ).textContent =
+        moeda(
+            total
+        );
+
+
+    document.getElementById(
+        "saldoFinal"
+    ).textContent =
+        moeda(
+            saldo
+        );
+
+
+    document.getElementById(
+        "resumoMeioTransporte"
+    ).textContent =
+
+        transporteSelecionado ||
+        "—";
+
+}
+
+
+/* =========================================================
    FINALIZAR
-===================================================== */
+========================================================= */
 
-      function finalizarPlanejamento() {
-        atualizarResumo();
+function finalizarPlanejamento() {
 
-        alert("Planejamento finalizado com sucesso!");
-      }
 
-      /* =====================================================
-   ATUALIZAÇÃO AUTOMÁTICA DOS VALORES
-===================================================== */
+    if (
 
-      document
-        .getElementById("orcamento")
-        .addEventListener("input", atualizarResumo);
+        !etapaConcluida[1] ||
 
-      document
-        .getElementById("transporte")
-        .addEventListener("input", atualizarResumo);
+        !etapaConcluida[2] ||
 
-      document
-        .getElementById("hospedagem")
-        .addEventListener("input", atualizarResumo);
+        !etapaConcluida[3] ||
 
-      /*
-    Estado inicial
-*/
+        !etapaConcluida[4]
 
-      atualizarResumo();
+    ) {
 
-      atualizarTimeline(1);
-    </script>
-  </body>
-</html>
+
+        alert(
+
+            "Conclua todas as etapas antes de finalizar."
+
+        );
+
+
+        return;
+
+    }
+
+
+    atualizarResumo();
+
+
+    alert(
+        "Planejamento finalizado com sucesso!"
+    );
+
+}
+
+
+/* =========================================================
+   ESCAPAR HTML
+========================================================= */
+
+function escapeHtml(
+    texto
+) {
+
+    return String(
+        texto ?? ""
+    )
+
+        .replaceAll(
+            "&",
+            "&amp;"
+        )
+
+        .replaceAll(
+            "<",
+            "&lt;"
+        )
+
+        .replaceAll(
+            ">",
+            "&gt;"
+        )
+
+        .replaceAll(
+            '"',
+            "&quot;"
+        )
+
+        .replaceAll(
+            "'",
+            "&#039;"
+        );
+
+}
+
+
+/* =========================================================
+   EVENTOS DE INPUT
+========================================================= */
+
+document
+    .getElementById(
+        "orcamento"
+    )
+    .addEventListener(
+        "input",
+        atualizarResumo
+    );
+
+
+document
+    .getElementById(
+        "transporte"
+    )
+    .addEventListener(
+        "input",
+        atualizarResumo
+    );
+
+
+document
+    .getElementById(
+        "hospedagem"
+    )
+    .addEventListener(
+        "input",
+        atualizarResumo
+    );
+
+
+/* =========================================================
+   INICIALIZAÇÃO
+========================================================= */
+
+document.getElementById(
+    "tituloEvento"
+).textContent =
+    evento.nome ||
+    "Evento";
+
+
+document.getElementById(
+    "textoDestinoTransporte"
+).textContent =
+
+    `Pesquise opções de transporte para ${
+        evento.cidade || "o evento"
+    }, ${
+        evento.uf || ""
+    } e informe o valor escolhido.`;
+
+
+atualizarResumo();
+
+atualizarTimeline(1);
+        </script>
+
+    </body>
+
+    </html>

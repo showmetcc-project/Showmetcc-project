@@ -2,7 +2,7 @@
 
 session_start();
 
-require_once __DIR__ . '/php/conexao.php';
+require './assets/config/conexao.php';
 
 
 // Verifica login

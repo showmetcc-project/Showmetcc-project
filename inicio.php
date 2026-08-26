@@ -1,28 +1,5 @@
 <?php
-
-/* =========================================================
-   CONEXÃO COM O BANCO
-========================================================= */
-
-$host = "localhost";
-$usuario = "root";
-$senha = "";
-$banco = "showme";
-
-$conn = new mysqli(
-    $host,
-    $usuario,
-    $senha,
-    $banco
-);
-
-if ($conn->connect_error) {
-    die("Erro ao conectar ao banco: " . $conn->connect_error);
-}
-
-$conn->set_charset("utf8mb4");
-
-
+require './assets/config/conexao.php';
 /* =========================================================
    BUSCAR EVENTOS
 ========================================================= */
@@ -36,16 +13,90 @@ $sql = "
         uf,
         data_evento,
         gratuidade,
-        imagem_evento
+        imagem_evento,
+        categoria_evento
     FROM evento
     ORDER BY data_evento ASC
 ";
 
 $result = $conn->query($sql);
 
-
 if (!$result) {
     die("Erro ao buscar eventos: " . $conn->error);
+}
+
+
+/* =========================================================
+   TRANSFORMAR EVENTOS EM ARRAY
+========================================================= */
+
+$eventos = [];
+
+while ($evento = $result->fetch_assoc()) {
+    $eventos[] = $evento;
+}
+
+
+/* =========================================================
+   RECOMENDAÇÕES
+========================================================= */
+
+/*
+    Por enquanto vamos usar as preferências cadastradas
+    no banco para encontrar eventos relacionados.
+
+    Se ainda não houver preferências para o usuário,
+    simplesmente não mostraremos recomendações.
+*/
+
+$recomendados = [];
+
+if (isset($_SESSION['id_user'])) {
+
+    $id_user = (int) $_SESSION['id_user'];
+
+    $sqlRec = "
+        SELECT DISTINCT
+            e.id_evento,
+            e.nome_evento,
+            e.local_evento,
+            e.cidade_evento,
+            e.uf,
+            e.data_evento,
+            e.gratuidade,
+            e.imagem_evento,
+            e.categoria_evento
+
+        FROM preferencias p
+
+        INNER JOIN evento e
+            ON LOWER(e.categoria_evento)
+            LIKE CONCAT('%', LOWER(p.genero_preferido), '%')
+
+        WHERE p.id_user = ?
+
+        ORDER BY e.data_evento ASC
+    ";
+
+    $stmtRec = $conn->prepare($sqlRec);
+
+    if ($stmtRec) {
+
+        $stmtRec->bind_param(
+            "i",
+            $id_user
+        );
+
+        $stmtRec->execute();
+
+        $resultadoRec = $stmtRec->get_result();
+
+        while ($evento = $resultadoRec->fetch_assoc()) {
+            $recomendados[] = $evento;
+        }
+
+        $stmtRec->close();
+    }
 }
 
 
@@ -61,6 +112,42 @@ function e($texto)
         "UTF-8"
     );
 }
+
+
+/* =========================================================
+   FUNÇÃO PARA CORRIGIR CAMINHO DA IMAGEM
+========================================================= */
+
+function imagemEvento($imagem)
+{
+    if (empty($imagem)) {
+        return 'assets/img/banner_site_565x235px.png';
+    }
+
+    /*
+        Se o banco já tiver "assets/img/..."
+        usamos diretamente.
+    */
+
+    if (
+        str_starts_with($imagem, 'assets/')
+        ||
+        str_starts_with($imagem, 'http://')
+        ||
+        str_starts_with($imagem, 'https://')
+    ) {
+        return $imagem;
+    }
+
+    /*
+        Se o banco tiver somente "rock.png",
+        adicionamos automaticamente:
+        assets/img/
+    */
+
+    return 'assets/img/' . ltrim($imagem, '/');
+}
+
 
 ?>
     <!doctype html>

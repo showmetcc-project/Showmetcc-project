@@ -1,12 +1,12 @@
 <?php
 
-define('SPOTIFY_CLIENT_ID', '82dc7bf8652c410686843739b0a38fbd');
+define('SPOTIFY_CLIENT_ID', '7ecad5a8f2e645f0a718974a0060f5e1');
 
-define('SPOTIFY_CLIENT_SECRET', '02d9bea5b90b4267ac84daf425c3b04c');
+define('SPOTIFY_CLIENT_SECRET', 'a75480b0547848e4bfa00ebdf6c81894');
 
 define(
     'SPOTIFY_REDIRECT_URI',
-   'https://vigilant-happiness-4jq7x7jgqqgwfjr46-8000.app.github.dev/api_spotify/spotify_callback.php');
+   'http://127.0.0.1:8000/api_spotify/spotify_callback.php');
 
 define(
     'SPOTIFY_SCOPES',

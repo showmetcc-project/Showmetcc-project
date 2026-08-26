@@ -1,7 +1,5 @@
 <?php
 
-session_start();
-
 /* =========================================================
    CONEXÃO COM O BANCO
 ========================================================= */
@@ -40,55 +38,34 @@ function e($texto)
 
 
 /* =========================================================
-   FUNÇÃO DA IMAGEM
+   FUNÇÃO PARA DEFINIR A IMAGEM
 ========================================================= */
 
 function imagemEvento($imagem)
 {
-    $imagem = trim($imagem ?? "");
-
-    /*
-     * Se não tiver imagem no banco
-     */
-    if ($imagem === "") {
+    if (empty($imagem)) {
         return "assets/img/banner_site_565x235px.png";
     }
 
     /*
-     * Se for uma URL
-     */
-    if (
-        str_starts_with($imagem, "http://") ||
-        str_starts_with($imagem, "https://")
-    ) {
-        return $imagem;
-    }
-
-    /*
-     * Se já tiver o caminho assets/
-     */
-    if (str_starts_with($imagem, "assets/")) {
-        return $imagem;
-    }
-
-    /*
-     * Se estiver salvo somente como:
+     * Se no banco estiver salvo apenas o nome:
      *
+     * exemplo:
      * rock.png
      *
-     * transforma em:
-     *
-     * assets/img/rock.png
+     * procura dentro de assets/img/
      */
-    return "assets/img/" . ltrim($imagem, "/");
+
+    if (
+        strpos($imagem, "/") === false &&
+        strpos($imagem, "\\") === false &&
+        strpos($imagem, "http") !== 0
+    ) {
+        return "assets/img/" . $imagem;
+    }
+
+    return $imagem;
 }
-
-
-/* =========================================================
-   USUÁRIO LOGADO
-========================================================= */
-
-$idUser = $_SESSION['id_user'] ?? 1;
 
 
 /* =========================================================
@@ -98,18 +75,14 @@ $idUser = $_SESSION['id_user'] ?? 1;
 $sql = "
     SELECT
         id_evento,
-        num_evento,
         nome_evento,
         local_evento,
-        rua_evento,
         cidade_evento,
         uf,
-        descricao_evento,
         data_evento,
         gratuidade,
-        categoria_evento,
-        link_oficial,
-        imagem_evento
+        imagem_evento,
+        categoria_evento
     FROM evento
     ORDER BY data_evento ASC
 ";
@@ -122,142 +95,81 @@ if (!$result) {
 
 
 /* =========================================================
-   TRANSFORMAR EVENTOS EM ARRAY
+   TRANSFORMAR RESULTADO EM ARRAY
 ========================================================= */
 
 $eventos = [];
 
 while ($evento = $result->fetch_assoc()) {
-
     $eventos[] = $evento;
-
 }
 
 
 /* =========================================================
-   BUSCAR RECOMENDAÇÕES
+   RECOMENDAÇÕES
+=========================================================
+
+   Aqui estamos simulando a recomendação usando:
+   - categoria do evento
+   - gênero
+   - artistas
+
+   Depois podemos ligar isso diretamente à tabela
+   spotify + artista + artista_evento.
 ========================================================= */
 
 $recomendados = [];
 
+
 /*
- * Busca eventos relacionados:
+ * Por enquanto, pegamos os primeiros eventos.
+ * Isso mantém a página funcionando mesmo sem Spotify.
  *
- * 1. Aos gêneros da tabela preferencias
+ * Depois substituímos por uma consulta que compara:
  *
- * 2. Aos gêneros salvos no Spotify
+ * spotify.generos_preferidos
+ * spotify.artistas_mais_tocados
  *
- * 3. Aos artistas mais tocados no Spotify
+ * com:
+ *
+ * artista.nome_artista
+ * artista.genero_artista
  */
 
-$sqlRec = "
+foreach ($eventos as $evento) {
 
-    SELECT DISTINCT
-
-        e.id_evento,
-        e.num_evento,
-        e.nome_evento,
-        e.local_evento,
-        e.rua_evento,
-        e.cidade_evento,
-        e.uf,
-        e.descricao_evento,
-        e.data_evento,
-        e.gratuidade,
-        e.categoria_evento,
-        e.link_oficial,
-        e.imagem_evento
-
-    FROM evento e
-
-    LEFT JOIN artista_evento ae
-        ON e.id_evento = ae.id_evento
-
-    LEFT JOIN artista a
-        ON ae.id_artista = a.id_artista
-
-    LEFT JOIN preferencias p
-        ON p.id_user = ?
-
-    LEFT JOIN spotify s
-        ON s.id_user = ?
-
-    WHERE
-
-        (
-            p.genero_preferido IS NOT NULL
-
-            AND p.genero_preferido <> ''
-
-            AND LOWER(e.categoria_evento)
-            LIKE CONCAT(
-                '%',
-                LOWER(p.genero_preferido),
-                '%'
-            )
-        )
-
-        OR
-
-        (
-            s.generos_preferidos IS NOT NULL
-
-            AND s.generos_preferidos <> ''
-
-            AND LOWER(e.categoria_evento)
-            LIKE CONCAT(
-                '%',
-                LOWER(s.generos_preferidos),
-                '%'
-            )
-        )
-
-        OR
-
-        (
-            s.artistas_mais_tocados IS NOT NULL
-
-            AND s.artistas_mais_tocados <> ''
-
-            AND LOWER(a.nome_artista)
-            LIKE CONCAT(
-                '%',
-                LOWER(s.artistas_mais_tocados),
-                '%'
-            )
-        )
-
-    ORDER BY e.data_evento ASC
-";
-
-
-$stmtRec = $conn->prepare($sqlRec);
-
-
-if ($stmtRec) {
-
-    $stmtRec->bind_param(
-        "ii",
-        $idUser,
-        $idUser
-    );
-
-    $stmtRec->execute();
-
-    $resultadoRec =
-        $stmtRec->get_result();
-
-
-    while (
-        $evento =
-        $resultadoRec->fetch_assoc()
-    ) {
-
-        $recomendados[] = $evento;
-
+    if (count($recomendados) >= 5) {
+        break;
     }
 
-    $stmtRec->close();
+    $recomendados[] = $evento;
+}
+
+
+/* =========================================================
+   SEPARAR OUTROS EVENTOS
+========================================================= */
+
+$outrosEventos = [];
+
+foreach ($eventos as $evento) {
+
+    $jaRecomendado = false;
+
+    foreach ($recomendados as $rec) {
+
+        if (
+            $rec['id_evento'] ==
+            $evento['id_evento']
+        ) {
+            $jaRecomendado = true;
+            break;
+        }
+    }
+
+    if (!$jaRecomendado) {
+        $outrosEventos[] = $evento;
+    }
 }
 
 ?>
@@ -279,37 +191,12 @@ if ($stmtRec) {
 
 
     <!-- =====================================================
-         FAVICONS
+         FAVICON
     ====================================================== -->
 
     <link
         href="assets/img/showme.png"
         rel="icon"
-    >
-
-    <link
-        href="assets/img/apple-touch-icon.png"
-        rel="apple-touch-icon"
-    >
-
-
-    <!-- =====================================================
-         FONTS
-    ====================================================== -->
-
-    <link
-        href="https://fonts.googleapis.com"
-        rel="preconnect"
-    >
-
-    <link
-        href="https://fonts.gstatic.com"
-        rel="preconnect"
-    >
-
-    <link
-        href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;500;600;700;800&family=Poppins:wght@300;400;500;600;700;800&family=Jost:wght@300;400;500;600;700;800&display=swap"
-        rel="stylesheet"
     >
 
 
@@ -327,15 +214,10 @@ if ($stmtRec) {
         rel="stylesheet"
     >
 
-    <link
-        href="assets/vendor/aos/aos.css"
-        rel="stylesheet"
-    >
 
-    <link
-        href="assets/vendor/glightbox/css/glightbox.min.css"
-        rel="stylesheet"
-    >
+    <!-- =====================================================
+         SWIPER
+    ====================================================== -->
 
     <link
         href="assets/vendor/swiper/swiper-bundle.min.css"
@@ -344,11 +226,22 @@ if ($stmtRec) {
 
 
     <!-- =====================================================
-         GOOGLE FONTS
+         FONTES
     ====================================================== -->
 
     <link
-        href="https://fonts.googleapis.com/css2?family=Anton&family=Archivo+Black&family=Bodoni+Moda:ital,opsz,wght@0,6..96,400..900;1,6..96,400..900&family=Libertinus+Serif+Display&family=Noto+Sans+JP:wght@100..900&family=Noto+Serif:ital,wght@0,100..900;1,100..900&family=Open+Sans:wght@300..800&family=Roboto+Condensed:wght@100..900&family=Story+Script&family=Vend+Sans:wght@300..700&display=swap"
+        href="https://fonts.googleapis.com"
+        rel="preconnect"
+    >
+
+    <link
+        href="https://fonts.gstatic.com"
+        rel="preconnect"
+        crossorigin
+    >
+
+    <link
+        href="https://fonts.googleapis.com/css2?family=Anton&family=Archivo+Black&family=Open+Sans:wght@300;400;500;600;700;800&family=Poppins:wght@300;400;500;600;700;800&family=Jost:wght@300;400;500;600;700;800&display=swap"
         rel="stylesheet"
     >
 
@@ -364,56 +257,52 @@ if ($stmtRec) {
 
 
     <!-- =====================================================
-         CSS DOS CARDS / CARROSSEL
+         CSS DOS CARDS
     ====================================================== -->
 
     <style>
 
         /* =====================================================
-           CARROSSEL
-        ===================================================== */
+           ÁREA DOS EVENTOS
+        ====================================================== */
 
-        .area-carrossel {
-
-            position: relative;
-
+        .eventos {
             width: 100%;
-
+            padding: 40px 0;
         }
 
 
-        .eventos-carrossel {
+        .eventos h3 {
+            margin-left: 5%;
+            margin-bottom: 25px;
+        }
 
-            width: 95%;
 
-            margin: 0 auto 50px auto;
+        /* =====================================================
+           CARROSSEL
+        ====================================================== */
 
+        .carrossel-eventos {
+            width: 90%;
+            margin: auto;
+            position: relative;
+            overflow: hidden;
+            padding: 10px 45px 20px;
+        }
+
+
+        .carrossel-wrapper {
             display: flex;
-
             gap: 20px;
-
             overflow-x: auto;
-
             scroll-behavior: smooth;
-
-            padding: 10px 5px 25px 5px;
-
-            scrollbar-width: thin;
-
+            scrollbar-width: none;
+            padding-bottom: 10px;
         }
 
 
-        .eventos-carrossel::-webkit-scrollbar {
-
-            height: 8px;
-
-        }
-
-
-        .eventos-carrossel::-webkit-scrollbar-thumb {
-
-            border-radius: 10px;
-
+        .carrossel-wrapper::-webkit-scrollbar {
+            display: none;
         }
 
 
@@ -421,36 +310,40 @@ if ($stmtRec) {
            CARD
         ====================================================== */
 
-        .eventos-carrossel .card-evento {
-
+        .card-evento {
             flex: 0 0 300px;
-
             width: 300px;
+            min-width: 300px;
 
-            margin: 0;
+            background: #ffffff;
 
+            border-radius: 15px;
+
+            overflow: hidden;
+
+            position: relative;
+
+            box-shadow:
+                0 5px 20px rgba(0,0,0,0.12);
+
+            transition:
+                transform 0.3s ease,
+                box-shadow 0.3s ease;
         }
 
 
-        .eventos-carrossel .card-evento img {
+        .card-evento:hover {
+            transform: translateY(-6px);
 
-            width: 100%;
-
-            height: 180px;
-
-            object-fit: cover;
-
-            display: block;
-
+            box-shadow:
+                0 10px 30px rgba(0,0,0,0.18);
         }
 
 
-        .eventos-carrossel .card-evento a {
-
-            display: block;
-
+        .card-evento a {
             text-decoration: none;
-
+            color: inherit;
+            display: block;
         }
 
 
@@ -458,46 +351,132 @@ if ($stmtRec) {
            IMAGEM
         ====================================================== */
 
-        .imagem-evento {
-
+        .card-evento img {
             width: 100%;
-
             height: 180px;
 
             object-fit: cover;
 
-            border-radius: 10px 10px 0 0;
+            display: block;
 
+            background: #eeeeee;
         }
 
 
         /* =====================================================
-           BOTÕES
+           CONTEÚDO
         ====================================================== */
 
-        .botao-carrossel {
+        .card-conteudo {
+            padding: 18px;
+        }
 
+
+        .card-conteudo h4 {
+            font-size: 20px;
+
+            font-weight: 700;
+
+            margin-bottom: 15px;
+
+            color: #222;
+
+            white-space: nowrap;
+
+            overflow: hidden;
+
+            text-overflow: ellipsis;
+        }
+
+
+        /* =====================================================
+           INFORMAÇÕES
+        ====================================================== */
+
+        .info-evento {
+            display: flex;
+
+            flex-direction: column;
+
+            gap: 8px;
+        }
+
+
+        .info-evento span {
+            font-size: 14px;
+
+            color: #555;
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 7px;
+        }
+
+
+        .info-evento i {
+            font-size: 15px;
+        }
+
+
+        /* =====================================================
+           BADGES
+        ====================================================== */
+
+        .badge-evento {
             position: absolute;
 
-            top: 42%;
+            top: 12px;
+            left: 12px;
+
+            z-index: 5;
+
+            padding: 6px 12px;
+
+            border-radius: 20px;
+
+            font-size: 12px;
+
+            font-weight: 700;
+
+            color: white;
+        }
+
+
+        .badge-evento.gratuito {
+            background: #8ee000;
+        }
+
+
+        .badge-evento.pago {
+            background: #e83e8c;
+        }
+
+
+        /* =====================================================
+           BOTÕES DO CARROSSEL
+        ====================================================== */
+
+        .btn-carrossel {
+            position: absolute;
+
+            top: 50%;
 
             transform: translateY(-50%);
 
-            z-index: 20;
-
-            width: 45px;
-
-            height: 45px;
+            width: 42px;
+            height: 42px;
 
             border: none;
 
             border-radius: 50%;
 
-            background: rgba(20, 20, 20, 0.90);
+            background: #111;
 
             color: white;
 
-            cursor: pointer;
+            z-index: 10;
 
             display: flex;
 
@@ -505,31 +484,53 @@ if ($stmtRec) {
 
             justify-content: center;
 
-            font-size: 22px;
+            cursor: pointer;
 
+            transition: 0.2s;
         }
 
 
-        .botao-carrossel:hover {
-
+        .btn-carrossel:hover {
             transform:
                 translateY(-50%)
                 scale(1.08);
-
         }
 
 
-        .botao-esquerda {
-
-            left: 1%;
-
+        .btn-carrossel i {
+            font-size: 20px;
         }
 
 
-        .botao-direita {
+        .btn-carrossel.esquerda {
+            left: 0;
+        }
 
-            right: 1%;
 
+        .btn-carrossel.direita {
+            right: 0;
+        }
+
+
+        /* =====================================================
+           QUANDO NÃO HÁ EVENTOS
+        ====================================================== */
+
+        .sem-eventos {
+            text-align: center;
+
+            padding: 50px;
+
+            color: #777;
+        }
+
+
+        .sem-eventos i {
+            font-size: 45px;
+
+            display: block;
+
+            margin-bottom: 10px;
         }
 
 
@@ -539,19 +540,25 @@ if ($stmtRec) {
 
         @media (max-width: 768px) {
 
-            .eventos-carrossel .card-evento {
+            .carrossel-eventos {
+                width: 100%;
 
-                flex: 0 0 260px;
-
-                width: 260px;
-
+                padding-left: 20px;
+                padding-right: 20px;
             }
 
 
-            .botao-carrossel {
+            .card-evento {
+                flex: 0 0 270px;
 
+                min-width: 270px;
+
+                width: 270px;
+            }
+
+
+            .btn-carrossel {
                 display: none;
-
             }
 
         }
@@ -565,7 +572,7 @@ if ($stmtRec) {
 
 
 <!-- =========================================================
-     HEADER
+     TOPBAR
 ========================================================= -->
 
 <header class="topbar">
@@ -602,7 +609,6 @@ if ($stmtRec) {
         id="topbarNav"
     >
 
-
         <div class="search-box">
 
             <i class="bi bi-search"></i>
@@ -619,7 +625,7 @@ if ($stmtRec) {
 
 
             <a
-                href="cadastro-evento.php"
+                href="cadastro-evento.html"
                 class="btn-cadastrar"
             >
 
@@ -676,9 +682,7 @@ if ($stmtRec) {
                     class="preto"
                     href="perfilusuario.html"
                 >
-
                     Usuário
-
                 </a>
 
             </button>
@@ -766,211 +770,197 @@ if ($stmtRec) {
 
 
     <!-- =====================================================
-         EVENTOS
+         RECOMENDADOS
     ====================================================== -->
 
-    <section class="eventos">
+    <?php if (!empty($recomendados)): ?>
 
 
-        <!-- =================================================
-             RECOMENDADOS
-        ================================================== -->
+    <section class="eventos recomendados">
 
-        <?php if (count($recomendados) > 0): ?>
 
+        <h3>
 
-            <h3>
+            Recomendados para Você
 
-                Recomendados para Você
+        </h3>
 
-            </h3>
 
+        <div class="carrossel-eventos">
 
-            <div class="area-carrossel">
 
+            <button
+                class="btn-carrossel esquerda"
+                onclick="moverCarrossel('recomendados', -1)"
+            >
 
-                <!-- BOTÃO ESQUERDA -->
+                <i class="bi bi-chevron-left"></i>
 
-                <button
-                    class="botao-carrossel botao-esquerda"
-                    onclick="moverCarrossel('recomendados', -1)"
-                >
+            </button>
 
-                    <i class="bi bi-chevron-left"></i>
 
-                </button>
+            <div
+                class="carrossel-wrapper"
+                id="recomendados"
+            >
 
 
-                <!-- CARDS -->
+                <?php foreach ($recomendados as $evento): ?>
 
-                <div
-                    class="eventos-carrossel"
-                    id="recomendados"
-                >
 
+                <?php
 
-                    <?php foreach (
-                        $recomendados
-                        as $evento
-                    ): ?>
+                $imagem =
+                    imagemEvento(
+                        $evento['imagem_evento']
+                    );
 
 
-                        <?php
+                $data =
+                    !empty(
+                        $evento['data_evento']
+                    )
+                    ?
+                    date(
+                        'd/m/Y',
+                        strtotime(
+                            $evento['data_evento']
+                        )
+                    )
+                    :
+                    'Data não informada';
 
-                        $imagem =
-                            imagemEvento(
-                                $evento['imagem_evento']
-                            );
 
+                $gratuito =
+                    (bool)
+                    $evento['gratuidade'];
 
-                        $data =
-                            !empty(
-                                $evento['data_evento']
-                            )
-                            ?
-                            date(
-                                'd/m/Y',
-                                strtotime(
-                                    $evento['data_evento']
-                                )
-                            )
-                            :
-                            'Data não informada';
+                ?>
 
 
-                        $gratuito =
-                            (bool)
-                            $evento['gratuidade'];
+                <div class="card-evento">
 
-                        ?>
 
+                    <a
+                        href="detalhesEvento.php?id=<?= (int)$evento['id_evento'] ?>"
+                    >
 
-                        <div class="card-evento">
 
+                        <?php if ($gratuito): ?>
 
-                            <a
-                                href="detalhesEvento.php?id=<?= (int)$evento['id_evento'] ?>"
-                            >
 
+                        <div class="badge-evento gratuito">
 
-                                <!-- PAGO / GRATUITO -->
+                            Gratuito
 
-                                <?php if ($gratuito): ?>
+                        </div>
 
-                                    <div
-                                        class="badge-evento gratuito"
-                                    >
 
-                                        Gratuito
+                        <?php else: ?>
 
-                                    </div>
 
-                                <?php else: ?>
+                        <div class="badge-evento pago">
 
-                                    <div
-                                        class="badge-evento pago"
-                                    >
+                            Pago
 
-                                        Pago
+                        </div>
 
-                                    </div>
 
-                                <?php endif; ?>
+                        <?php endif; ?>
 
 
-                                <!-- IMAGEM -->
+                        <img
+                            src="<?= e($imagem) ?>"
+                            alt="<?= e($evento['nome_evento']) ?>"
+                            onerror="this.src='assets/img/banner_site_565x235px.png';"
+                        >
 
-                                <img
-                                    src="<?= e($imagem) ?>"
-                                    class="imagem-evento"
-                                    alt="<?= e($evento['nome_evento']) ?>"
-                                    onerror="this.onerror=null;this.src='assets/img/banner_site_565x235px.png';"
-                                >
 
+                        <div class="card-conteudo">
 
-                                <!-- CONTEÚDO -->
 
-                                <div class="card-conteudo">
+                            <h4>
 
+                                <?= e(
+                                    $evento['nome_evento']
+                                ) ?>
 
-                                    <h4>
+                            </h4>
 
-                                        <?= e(
-                                            $evento['nome_evento']
-                                        ) ?>
 
-                                    </h4>
+                            <div class="info-evento">
 
 
-                                    <div class="info-evento">
+                                <span>
 
+                                    <i class="bi bi-geo-alt-fill"></i>
 
-                                        <span>
+                                    <?= e(
+                                        $evento['cidade_evento']
+                                    ) ?>
 
-                                            <i class="bi bi-geo-alt-fill"></i>
+                                    -
 
-                                            <?= e(
-                                                $evento['cidade_evento']
-                                            ) ?>
+                                    <?= e(
+                                        $evento['uf']
+                                    ) ?>
 
-                                            -
+                                </span>
 
-                                            <?= e(
-                                                $evento['uf']
-                                            ) ?>
 
-                                        </span>
+                                <span>
 
+                                    <i class="bi bi-calendar-event"></i>
 
-                                        <span>
+                                    <?= $data ?>
 
-                                            <i class="bi bi-calendar-event"></i>
+                                </span>
 
-                                            <?= $data ?>
 
-                                        </span>
-
-
-                                    </div>
-
-
-                                </div>
-
-
-                            </a>
+                            </div>
 
 
                         </div>
 
 
-                    <?php endforeach; ?>
+                    </a>
 
 
                 </div>
 
 
-                <!-- BOTÃO DIREITA -->
-
-                <button
-                    class="botao-carrossel botao-direita"
-                    onclick="moverCarrossel('recomendados', 1)"
-                >
-
-                    <i class="bi bi-chevron-right"></i>
-
-                </button>
+                <?php endforeach; ?>
 
 
             </div>
 
 
-        <?php endif; ?>
+            <button
+                class="btn-carrossel direita"
+                onclick="moverCarrossel('recomendados', 1)"
+            >
+
+                <i class="bi bi-chevron-right"></i>
+
+            </button>
+
+
+        </div>
+
+
+    </section>
+
+
+    <?php endif; ?>
 
 
 
-        <!-- =================================================
-             TODOS OS EVENTOS
-        ================================================== -->
+    <!-- =====================================================
+         OUTROS EVENTOS
+    ====================================================== -->
+
+    <section class="eventos">
+
 
         <h3>
 
@@ -979,204 +969,184 @@ if ($stmtRec) {
         </h3>
 
 
-        <?php if (count($eventos) > 0): ?>
+        <?php if (!empty($outrosEventos)): ?>
 
 
-            <div class="area-carrossel">
+        <div class="carrossel-eventos">
 
 
-                <!-- BOTÃO ESQUERDA -->
+            <button
+                class="btn-carrossel esquerda"
+                onclick="moverCarrossel('outrosEventos', -1)"
+            >
 
-                <button
-                    class="botao-carrossel botao-esquerda"
-                    onclick="moverCarrossel('todos-eventos', -1)"
-                >
+                <i class="bi bi-chevron-left"></i>
 
-                    <i class="bi bi-chevron-left"></i>
+            </button>
 
-                </button>
 
+            <div
+                class="carrossel-wrapper"
+                id="outrosEventos"
+            >
 
-                <!-- CARDS -->
 
-                <div
-                    class="eventos-carrossel"
-                    id="todos-eventos"
-                >
+                <?php foreach ($outrosEventos as $evento): ?>
 
 
-                    <?php foreach (
-                        $eventos
-                        as $evento
-                    ): ?>
+                <?php
 
+                $imagem =
+                    imagemEvento(
+                        $evento['imagem_evento']
+                    );
 
-                        <?php
 
-                        $imagem =
-                            imagemEvento(
-                                $evento['imagem_evento']
-                            );
+                $data =
+                    !empty(
+                        $evento['data_evento']
+                    )
+                    ?
+                    date(
+                        'd/m/Y',
+                        strtotime(
+                            $evento['data_evento']
+                        )
+                    )
+                    :
+                    'Data não informada';
 
 
-                        $data =
-                            !empty(
-                                $evento['data_evento']
-                            )
-                            ?
-                            date(
-                                'd/m/Y',
-                                strtotime(
-                                    $evento['data_evento']
-                                )
-                            )
-                            :
-                            'Data não informada';
+                $gratuito =
+                    (bool)
+                    $evento['gratuidade'];
 
+                ?>
 
-                        $gratuito =
-                            (bool)
-                            $evento['gratuidade'];
 
-                        ?>
+                <div class="card-evento">
 
 
-                        <div class="card-evento">
+                    <a
+                     href="detalhesEvento.php?id_evento=<?= (int)$evento['id_evento'] ?>">
 
 
-                            <a
-                                href="detalhesEvento.php?id=<?= (int)$evento['id_evento'] ?>"
-                            >
+                        <?php if ($gratuito): ?>
 
 
-                                <!-- PAGO / GRATUITO -->
+                        <div class="badge-evento gratuito">
 
-                                <?php if ($gratuito): ?>
+                            Gratuito
 
-                                    <div
-                                        class="badge-evento gratuito"
-                                    >
+                        </div>
 
-                                        Gratuito
 
-                                    </div>
+                        <?php else: ?>
 
-                                <?php else: ?>
 
-                                    <div
-                                        class="badge-evento pago"
-                                    >
+                        <div class="badge-evento pago">
 
-                                        Pago
+                            Pago
 
-                                    </div>
+                        </div>
 
-                                <?php endif; ?>
 
+                        <?php endif; ?>
 
-                                <!-- IMAGEM -->
 
-                                <img
-                                    src="<?= e($imagem) ?>"
-                                    class="imagem-evento"
-                                    alt="<?= e($evento['nome_evento']) ?>"
-                                    onerror="this.onerror=null;this.src='assets/img/banner_site_565x235px.png';"
-                                >
+                        <img
+                            src="<?= e($imagem) ?>"
+                            alt="<?= e($evento['nome_evento']) ?>"
+                            onerror="this.src='assets/img/banner_site_565x235px.png';"
+                        >
 
 
-                                <!-- CONTEÚDO -->
+                        <div class="card-conteudo">
 
-                                <div class="card-conteudo">
 
+                            <h4>
 
-                                    <h4>
+                                <?= e(
+                                    $evento['nome_evento']
+                                ) ?>
 
-                                        <?= e(
-                                            $evento['nome_evento']
-                                        ) ?>
+                            </h4>
 
-                                    </h4>
 
+                            <div class="info-evento">
 
-                                    <div class="info-evento">
 
+                                <span>
 
-                                        <span>
+                                    <i class="bi bi-geo-alt-fill"></i>
 
-                                            <i class="bi bi-geo-alt-fill"></i>
+                                    <?= e(
+                                        $evento['cidade_evento']
+                                    ) ?>
 
-                                            <?= e(
-                                                $evento['cidade_evento']
-                                            ) ?>
+                                    -
 
-                                            -
+                                    <?= e(
+                                        $evento['uf']
+                                    ) ?>
 
-                                            <?= e(
-                                                $evento['uf']
-                                            ) ?>
+                                </span>
 
-                                        </span>
 
+                                <span>
 
-                                        <span>
+                                    <i class="bi bi-calendar-event"></i>
 
-                                            <i class="bi bi-calendar-event"></i>
+                                    <?= $data ?>
 
-                                            <?= $data ?>
+                                </span>
 
-                                        </span>
 
-
-                                    </div>
-
-
-                                </div>
-
-
-                            </a>
+                            </div>
 
 
                         </div>
 
 
-                    <?php endforeach; ?>
+                    </a>
 
 
                 </div>
 
 
-                <!-- BOTÃO DIREITA -->
-
-                <button
-                    class="botao-carrossel botao-direita"
-                    onclick="moverCarrossel('todos-eventos', 1)"
-                >
-
-                    <i class="bi bi-chevron-right"></i>
-
-                </button>
+                <?php endforeach; ?>
 
 
             </div>
+
+
+            <button
+                class="btn-carrossel direita"
+                onclick="moverCarrossel('outrosEventos', 1)"
+            >
+
+                <i class="bi bi-chevron-right"></i>
+
+            </button>
+
+
+        </div>
 
 
         <?php else: ?>
 
 
-            <div class="sem-eventos">
+        <div class="sem-eventos">
 
+            <i class="bi bi-calendar-x"></i>
 
-                <i class="bi bi-calendar-x"></i>
+            <p>
 
+                Nenhum outro evento cadastrado no momento.
 
-                <p>
+            </p>
 
-                    Nenhum evento cadastrado no momento.
-
-                </p>
-
-
-            </div>
+        </div>
 
 
         <?php endif; ?>
@@ -1238,9 +1208,7 @@ if ($stmtRec) {
                 <div class="social-links">
 
 
-                    <a
-                        href="https://www.instagram.com/showmetcc/"
-                    >
+                    <a href="https://www.instagram.com/showmetcc/">
 
                         <i class="bi bi-instagram"></i>
 
@@ -1278,9 +1246,7 @@ if ($stmtRec) {
                 </h4>
 
 
-                <form
-                    class="footer-contact-form"
-                >
+                <form class="footer-contact-form">
 
 
                     <input
@@ -1303,9 +1269,7 @@ if ($stmtRec) {
 
 
 
-            <div
-                class="col-lg-4 col-md-12 footer-links"
-            >
+            <div class="col-lg-4 col-md-12 footer-links">
 
 
                 <h4>
@@ -1364,57 +1328,18 @@ if ($stmtRec) {
 
 
 <!-- =========================================================
-     SCROLL TOP
-========================================================= -->
-
-<a
-    href="#"
-    id="scroll-top"
-    class="scroll-top d-flex align-items-center justify-content-center"
->
-
-    <i class="bi bi-arrow-up-short"></i>
-
-</a>
-
-
-
-<!-- =========================================================
-     PRELOADER
-========================================================= -->
-
-<div id="preloader"></div>
-
-
-
-<!-- =========================================================
-     JAVASCRIPT VENDOR
+     SCRIPTS
 ========================================================= -->
 
 <script src="assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
 
-<script src="assets/vendor/aos/aos.js"></script>
-
-<script src="assets/vendor/glightbox/js/glightbox.min.js"></script>
-
 <script src="assets/vendor/swiper/swiper-bundle.min.js"></script>
-
-<script src="assets/vendor/waypoints/noframework.waypoints.js"></script>
-
-<script src="assets/vendor/imagesloaded/imagesloaded.pkgd.min.js"></script>
-
-<script src="assets/vendor/isotope-layout/isotope.pkgd.min.js"></script>
 
 <script src="assets/js/main.js"></script>
 
 
 
-<!-- =========================================================
-     JAVASCRIPT
-========================================================= -->
-
 <script>
-
 
 /* =========================================================
    MENU HAMBÚRGUER
@@ -1441,7 +1366,6 @@ if (
         "click",
         function() {
 
-
             const aberto =
                 topbarNav.classList.toggle(
                     "ativo"
@@ -1458,11 +1382,9 @@ if (
                 aberto
 
                 ?
-
                 '<i class="bi bi-x-lg"></i>'
 
                 :
-
                 '<i class="bi bi-list"></i>';
 
         }
@@ -1474,11 +1396,9 @@ if (
         .forEach(
             function(link) {
 
-
                 link.addEventListener(
                     "click",
                     function() {
-
 
                         topbarNav.classList.remove(
                             "ativo"
@@ -1503,55 +1423,45 @@ if (
 }
 
 
-
 /* =========================================================
-   CARROSSEL DO BANNER
+   BANNER
 ========================================================= */
 
-if (
-    typeof Swiper !== "undefined"
-) {
+const bannerSwiper =
+    new Swiper(
+        ".banner.swiper",
+        {
 
-    const bannerSwiper =
-        new Swiper(
-            ".banner.swiper",
-            {
+            loop: true,
 
-                loop: true,
+            autoplay: {
 
-                autoplay: {
+                delay: 4500,
 
-                    delay: 4500,
+                disableOnInteraction: false
 
-                    disableOnInteraction: false
+            },
 
-                },
+            pagination: {
 
-                pagination: {
+                el: ".swiper-pagination"
 
-                    el: ".swiper-pagination"
+            },
 
-                },
+            navigation: {
 
-                navigation: {
+                nextEl: ".swiper-button-next",
 
-                    nextEl:
-                        ".swiper-button-next",
-
-                    prevEl:
-                        ".swiper-button-prev"
-
-                }
+                prevEl: ".swiper-button-prev"
 
             }
-        );
 
-}
-
+        }
+    );
 
 
 /* =========================================================
-   CARROSSEL DOS EVENTOS
+   CARROSSEL DE EVENTOS
 ========================================================= */
 
 function moverCarrossel(
@@ -1564,19 +1474,19 @@ function moverCarrossel(
 
 
     if (!carrossel) {
-
         return;
-
     }
 
 
-    const distancia = 330;
+    const distancia =
+        330;
 
 
     carrossel.scrollBy({
 
         left:
-            distancia * direcao,
+            distancia *
+            direcao,
 
         behavior:
             "smooth"
@@ -1586,9 +1496,8 @@ function moverCarrossel(
 }
 
 
-
 /* =========================================================
-   TOPBAR NO SCROLL
+   TOPBAR AO ROLAR
 ========================================================= */
 
 const topbarEl =
@@ -1606,11 +1515,8 @@ const OPACIDADE_MAX = 0.97;
 
 function atualizaTopbar() {
 
-
     if (!topbarEl) {
-
         return;
-
     }
 
 
@@ -1636,7 +1542,7 @@ function atualizaTopbar() {
 
 
     topbarEl.style.background =
-        `rgba(17, 17, 17, ${opacidade.toFixed(2)})`;
+        `rgba(17,17,17,${opacidade.toFixed(2)})`;
 
 }
 
@@ -1649,14 +1555,12 @@ window.addEventListener(
 
 atualizaTopbar();
 
-
 </script>
 
 
 </body>
 
 </html>
-
 
 <?php
 

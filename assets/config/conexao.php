@@ -1,19 +1,21 @@
 <?php
 
 $host = "localhost";
-$dbname = "showme";
-$user = "root";
-$password = "";
+$usuario = "root";
+$senha = "";
+$banco = "showme";
 
-try {
-    $pdo = new PDO(
-        "mysql:host=$host;dbname=$dbname;charset=utf8",
-        $user,
-        $password
-    );
+$conn = new mysqli(
+    $host,
+    $usuario,
+    $senha,
+    $banco
+);
 
-    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-
-} catch (PDOException $e) {
-    die("Erro na conexão: " . $e->getMessage());
+if ($conn->connect_error) {
+    die("Erro ao conectar ao banco: " . $conn->connect_error);
 }
+
+$conn->set_charset("utf8mb4");
+
+?>

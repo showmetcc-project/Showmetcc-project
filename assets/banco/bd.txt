@@ -1,0 +1,448 @@
+-- =========================================================
+-- DADOS DO BANCO SHOWME
+-- =========================================================
+
+
+-- =========================================================
+-- 1. USUARIO
+-- =========================================================
+
+INSERT INTO usuario
+(nome_user, sobrenome, email_user, senha_user)
+VALUES
+('Ana', 'Silva', 'ana.silva@email.com', '123456'),
+('Lucas', 'Oliveira', 'lucas.oliveira@email.com', '123456'),
+('Mariana', 'Santos', 'mariana.santos@email.com', '123456'),
+('Gabriel', 'Souza', 'gabriel.souza@email.com', '123456'),
+('Beatriz', 'Costa', 'beatriz.costa@email.com', '123456'),
+('Rafael', 'Lima', 'rafael.lima@email.com', '123456'),
+('Julia', 'Almeida', 'julia.almeida@email.com', '123456'),
+('Pedro', 'Ferreira', 'pedro.ferreira@email.com', '123456');
+
+
+-- =========================================================
+-- 2. SPOTIFY
+-- =========================================================
+
+INSERT INTO spotify
+(id_user, spotify_id, artistas_mais_tocados, generos_preferidos)
+VALUES
+(1, 1001, 'Taylor Swift, The Weeknd, Billie Eilish', 'Pop, Indie Pop'),
+(2, 1002, 'Jorge & Mateus, Henrique & Juliano', 'Sertanejo'),
+(3, 1003, 'Billie Eilish, Lana Del Rey, Arctic Monkeys', 'Indie, Pop, Rock'),
+(4, 1004, 'Matuê, Veigh, MC Ryan SP', 'Rap, Trap'),
+(5, 1005, 'Bruno Mars, Dua Lipa, Rihanna', 'Pop, R&B'),
+(6, 1006, 'Legião Urbana, Charlie Brown Jr., O Rappa', 'Rock Nacional'),
+(7, 1007, 'Anitta, Ludmilla, Gloria Groove', 'Pop, Funk'),
+(8, 1008, 'Metallica, Iron Maiden, Slipknot', 'Rock, Metal');
+
+
+-- =========================================================
+-- 3. ARTISTA
+-- =========================================================
+
+INSERT INTO artista
+(nome_artista, genero_artista, imagem_artista)
+VALUES
+('Taylor Swift', 'Pop', 'taylor-swift.jpg'),
+('The Weeknd', 'R&B / Pop', 'the-weeknd.jpg'),
+('Billie Eilish', 'Pop', 'billie-eilish.jpg'),
+('Lana Del Rey', 'Indie Pop', 'lana-del-rey.jpg'),
+('Arctic Monkeys', 'Rock', 'arctic-monkeys.jpg'),
+('Jorge & Mateus', 'Sertanejo', 'jorge-mateus.jpg'),
+('Henrique & Juliano', 'Sertanejo', 'henrique-juliano.jpg'),
+('Matuê', 'Trap', 'matue.jpg'),
+('Veigh', 'Trap', 'veigh.jpg'),
+('Anitta', 'Pop / Funk', 'anitta.jpg'),
+('Ludmilla', 'Funk / Pop', 'ludmilla.jpg'),
+('Gloria Groove', 'Pop / Funk', 'gloria-groove.jpg'),
+('Bruno Mars', 'Pop / R&B', 'bruno-mars.jpg'),
+('Dua Lipa', 'Pop', 'dua-lipa.jpg'),
+('Charlie Brown Jr.', 'Rock Nacional', 'charlie-brown-jr.jpg'),
+('Legião Urbana', 'Rock Nacional', 'legiao-urbana.jpg'),
+('Metallica', 'Metal', 'metallica.jpg'),
+('Iron Maiden', 'Heavy Metal', 'iron-maiden.jpg');
+
+
+-- =========================================================
+-- 4. EVENTO
+-- =========================================================
+
+INSERT INTO evento
+(
+    num_evento,
+    nome_evento,
+    local_evento,
+    rua_evento,
+    cidade_evento,
+    uf,
+    descricao_evento,
+    data_evento,
+    gratuidade,
+    categoria_evento,
+    link_oficial,
+    imagem_evento
+)
+VALUES
+
+(
+    1001,
+    'Festival Pop Brasil',
+    'Allianz Parque',
+    'Av. Francisco Matarazzo, 1705',
+    'São Paulo',
+    'SP',
+    'Festival com grandes nomes da música pop nacional e internacional.',
+    '2026-09-12',
+    FALSE,
+    'Música',
+    'https://exemplo.com/festival-pop',
+    'festival-pop.jpg'
+),
+
+(
+    1002,
+    'Festival Sertanejo SP',
+    'Villa Country',
+    'Av. Francisco Matarazzo, 774',
+    'São Paulo',
+    'SP',
+    'Evento dedicado aos principais artistas do sertanejo brasileiro.',
+    '2026-09-20',
+    FALSE,
+    'Música',
+    'https://exemplo.com/festival-sertanejo',
+    'festival-sertanejo.jpg'
+),
+
+(
+    1003,
+    'Show Billie Eilish',
+    'Estádio do Morumbi',
+    'Praça Roberto Gomes Pedrosa, 1',
+    'São Paulo',
+    'SP',
+    'Apresentação especial da cantora Billie Eilish.',
+    '2026-10-05',
+    FALSE,
+    'Música',
+    'https://exemplo.com/billie-show',
+    'billie-eilish.jpg'
+),
+
+(
+    1004,
+    'Festival de Rock Independente',
+    'Espaço das Américas',
+    'Rua Tagipuru, 795',
+    'São Paulo',
+    'SP',
+    'Festival reunindo bandas independentes e artistas do cenário alternativo.',
+    '2026-09-27',
+    FALSE,
+    'Rock',
+    'https://exemplo.com/rock-independente',
+    'rock-independente.jpg'
+),
+
+(
+    1005,
+    'Festival Cultural de Ribeirão Pires',
+    'Centro de Ribeirão Pires',
+    'Rua Miguel Prisco, 286',
+    'Ribeirão Pires',
+    'SP',
+    'Evento cultural gratuito com música, artesanato, gastronomia e apresentações artísticas.',
+    '2026-09-06',
+    TRUE,
+    'Cultura',
+    'https://exemplo.com/ribeirao-pires',
+    'ribeirao-pires.jpg'
+),
+
+(
+    1006,
+    'Festival Trap Nacional',
+    'Audio',
+    'Av. Francisco Matarazzo, 694',
+    'São Paulo',
+    'SP',
+    'Festival reunindo grandes nomes do trap brasileiro.',
+    '2026-10-18',
+    FALSE,
+    'Rap / Trap',
+    'https://exemplo.com/trap',
+    'festival-trap.jpg'
+),
+
+(
+    1007,
+    'Virada Cultural',
+    'Centro Histórico',
+    'Praça da Sé',
+    'São Paulo',
+    'SP',
+    'Programação cultural com shows, teatro, dança e diversas atividades gratuitas.',
+    '2026-11-15',
+    TRUE,
+    'Cultura',
+    'https://exemplo.com/virada-cultural',
+    'virada-cultural.jpg'
+),
+
+(
+    1008,
+    'Festival Rock Nacional',
+    'Espaço Unimed',
+    'Rua Tagipuru, 795',
+    'São Paulo',
+    'SP',
+    'Festival dedicado ao rock brasileiro.',
+    '2026-10-25',
+    FALSE,
+    'Rock',
+    'https://exemplo.com/rock-nacional',
+    'rock-nacional.jpg'
+);
+
+
+-- =========================================================
+-- 5. ARTISTA_EVENTO
+-- =========================================================
+
+INSERT INTO artista_evento
+(id_artista, id_evento)
+VALUES
+
+-- Festival Pop Brasil
+(1, 1),
+(2, 1),
+(13, 1),
+
+-- Festival Sertanejo SP
+(6, 2),
+(7, 2),
+
+-- Show Billie Eilish
+(3, 3),
+
+-- Festival de Rock Independente
+(5, 4),
+(15, 4),
+
+-- Festival Cultural de Ribeirão Pires
+(10, 5),
+(11, 5),
+(12, 5),
+
+-- Festival Trap Nacional
+(8, 6),
+(9, 6),
+
+-- Virada Cultural
+(10, 7),
+(11, 7),
+(12, 7),
+
+-- Festival Rock Nacional
+(15, 8),
+(16, 8),
+(17, 8);
+
+
+-- =========================================================
+-- 6. PREFERENCIAS
+-- =========================================================
+
+INSERT INTO preferencias
+(id_user, genero_preferido)
+VALUES
+(1, 'Pop'),
+(1, 'Indie'),
+
+(2, 'Sertanejo'),
+
+(3, 'Indie'),
+(3, 'Rock'),
+
+(4, 'Trap'),
+(4, 'Rap'),
+
+(5, 'Pop'),
+(5, 'R&B'),
+
+(6, 'Rock Nacional'),
+
+(7, 'Funk'),
+(7, 'Pop'),
+
+(8, 'Rock'),
+(8, 'Metal');
+
+
+-- =========================================================
+-- 7. FAVORITOS
+-- =========================================================
+
+INSERT INTO favoritos
+(id_user, id_evento)
+VALUES
+(1, 1),
+(1, 3),
+
+(2, 2),
+
+(3, 3),
+(3, 4),
+
+(4, 6),
+
+(5, 1),
+(5, 7),
+
+(6, 8),
+
+(7, 5),
+(7, 7),
+
+(8, 8);
+
+
+-- =========================================================
+-- 8. ROTA
+-- =========================================================
+
+INSERT INTO rota
+(
+    id_user,
+    id_evento,
+    meio_transporte,
+    distancia_km,
+    tempo_estimado
+)
+VALUES
+(1, 1, 'Carro', 18.50, 35),
+(1, 3, 'Metrô', 14.20, 42),
+
+(2, 2, 'Carro', 12.80, 28),
+
+(3, 3, 'Transporte público', 15.60, 48),
+(3, 4, 'Metrô', 16.30, 45),
+
+(4, 6, 'Carro', 21.30, 40),
+
+(5, 1, 'Metrô', 10.50, 30),
+(5, 7, 'Metrô', 8.70, 25),
+
+(6, 8, 'Ônibus', 17.80, 55),
+
+(7, 5, 'Carro', 34.20, 50),
+(7, 7, 'Transporte público', 29.40, 65),
+
+(8, 8, 'Metrô', 16.40, 45);
+
+
+-- =========================================================
+-- 9. AVALIACAO
+-- =========================================================
+
+INSERT INTO avaliacao
+(
+    id_user,
+    id_evento,
+    nota,
+    comentario,
+    data_avaliacao
+)
+VALUES
+(1, 1, 5, 'Evento muito organizado e com ótimas atrações.', '2026-09-13'),
+
+(2, 2, 4, 'Gostei bastante dos shows e da estrutura.', '2026-09-21'),
+
+(3, 3, 5, 'Excelente apresentação e ótima experiência.', '2026-10-06'),
+
+(3, 4, 4, 'Boas bandas e ambiente agradável.', '2026-09-28'),
+
+(4, 6, 5, 'Ótimo festival de trap, gostei bastante.', '2026-10-19'),
+
+(5, 1, 4, 'Gostei bastante, mas estava um pouco cheio.', '2026-09-13'),
+
+(6, 8, 5, 'Muito bom para quem gosta de rock nacional.', '2026-10-26'),
+
+(7, 5, 5, 'Evento gratuito muito interessante.', '2026-09-07'),
+
+(7, 7, 4, 'Boa variedade de atrações culturais.', '2026-11-16'),
+
+(8, 8, 5, 'Excelente evento para quem gosta de rock.', '2026-10-26');
+
+
+-- =========================================================
+-- 10. SOLICITACAO
+-- =========================================================
+
+INSERT INTO solicitacao
+(
+    id_user,
+    nome_evento,
+    status_solicitacao,
+    foto,
+    horario_evento,
+    data_evento,
+    local_evento,
+    gratuidade,
+    descricao_evento,
+    descricao_artista
+)
+VALUES
+
+(
+    1,
+    'Festival de Música de Santo André',
+    'pendente',
+    'festival-santo-andre.jpg',
+    '2026-10-10 18:00:00',
+    '2026-10-10',
+    'Paço Municipal de Santo André',
+    TRUE,
+    'Festival gratuito com apresentações de artistas locais.',
+    'Artistas independentes da região do ABC Paulista.'
+),
+
+(
+    2,
+    'Encontro Cultural do ABC',
+    'aprovado',
+    'encontro-cultural.jpg',
+    '2026-09-19 14:00:00',
+    '2026-09-19',
+    'Centro Cultural de São Caetano',
+    TRUE,
+    'Evento com música, dança, teatro e exposições.',
+    'Artistas e grupos culturais da região.'
+),
+
+(
+    4,
+    'Show de Trap ABC',
+    'pendente',
+    'trap-abc.jpg',
+    '2026-11-07 20:00:00',
+    '2026-11-07',
+    'Clube Atlético Aramaçan',
+    FALSE,
+    'Show com artistas do cenário nacional de trap.',
+    'Artistas de trap e rap nacional.'
+),
+
+(
+    6,
+    'Festival Rock da Região',
+    'recusado',
+    'rock-regiao.jpg',
+    '2026-10-31 16:00:00',
+    '2026-10-31',
+    'Parque Municipal',
+    TRUE,
+    'Festival de bandas de rock da região.',
+    'Bandas independentes de rock.'
+);

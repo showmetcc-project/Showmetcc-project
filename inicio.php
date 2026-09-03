@@ -1,5 +1,9 @@
 <?php
 
+if (session_status() !== PHP_SESSION_ACTIVE) {
+    session_start();
+}
+
 /* =========================================================
    CONEXÃO COM O BANCO
 ========================================================= */
@@ -592,7 +596,7 @@ foreach ($eventos as $evento) {
 
     <div class="logo">
 
-        <a href="sobre.html">
+        <a href="sobre.php">
 
             <img
                 src="assets/img/showme.png"
@@ -625,7 +629,7 @@ foreach ($eventos as $evento) {
 
 
             <a
-                href="cadastro-evento.html"
+                href="cadastro-evento.php"
                 class="btn-cadastrar"
             >
 
@@ -640,7 +644,7 @@ foreach ($eventos as $evento) {
 
 
                 <a
-                    href="favoritos.html"
+                    href="favoritos.php"
                     class="link-favoritos"
                 >
 
@@ -653,7 +657,7 @@ foreach ($eventos as $evento) {
                 </a>
 
 
-                <a href="sobre.html">
+                <a href="sobre.php">
 
                     <i class="bi bi-info-circle"></i>
 
@@ -674,18 +678,19 @@ foreach ($eventos as $evento) {
             </nav>
 
 
-            <button class="btn-user">
-
-                <i class="bi bi-person-fill"></i>
-
-                <a
-                    class="preto"
-                    href="perfilusuario.html"
-                >
-                    Usuário
+            <?php if (isset($_SESSION['id_user'])): ?>
+                <a class="btn-user preto" href="perfilusuario.php">
+                    <i class="bi bi-person-fill"></i>
+                    <?= htmlspecialchars($_SESSION['nome_user'], ENT_QUOTES, 'UTF-8') ?>
                 </a>
-
-            </button>
+                <a href="logout.php">Sair</a>
+            <?php else: ?>
+                <a class="btn-user preto" href="login.php">
+                    <i class="bi bi-person-fill"></i>
+                    Login
+                </a>
+                <a href="cadastro.php">Cadastro</a>
+            <?php endif; ?>
 
 
         </div>
@@ -1163,167 +1168,7 @@ foreach ($eventos as $evento) {
      FOOTER
 ========================================================= -->
 
-<footer
-    id="footer"
-    class="footer"
->
-
-
-    <div class="footer-line"></div>
-
-
-    <div class="container footer-top">
-
-
-        <div class="row gy-4">
-
-
-            <div class="col-lg-4 col-md-6 footer-about">
-
-
-                <h4 class="logo-footer">
-
-                    <span class="verde">
-
-                        Show
-
-                    </span>
-
-                    <span class="rosa">
-
-                        Me
-
-                    </span>
-
-                </h4>
-
-
-                <p>
-
-                    Democratizando o acesso à cultura desde 2026.
-
-                </p>
-
-
-                <div class="social-links">
-
-
-                    <a href="https://www.instagram.com/showmetcc/">
-
-                        <i class="bi bi-instagram"></i>
-
-                    </a>
-
-
-                    <a href="#">
-
-                        <i class="bi bi-twitter-x"></i>
-
-                    </a>
-
-
-                    <a href="#">
-
-                        <i class="bi bi-facebook"></i>
-
-                    </a>
-
-
-                </div>
-
-
-            </div>
-
-
-
-            <div class="col-lg-4 col-md-6">
-
-
-                <h4>
-
-                    Entre em Contato
-
-                </h4>
-
-
-                <form class="footer-contact-form">
-
-
-                    <input
-                        type="email"
-                        placeholder="Seu e-mail"
-                    >
-
-
-                    <button type="submit">
-
-                        <i class="bi bi-envelope"></i>
-
-                    </button>
-
-
-                </form>
-
-
-            </div>
-
-
-
-            <div class="col-lg-4 col-md-12 footer-links">
-
-
-                <h4>
-
-                    Informações
-
-                </h4>
-
-
-                <ul>
-
-
-                    <li>
-
-                        <a href="#">
-
-                            Termos de Uso
-
-                        </a>
-
-                    </li>
-
-
-                    <li>
-
-                        <a href="#">
-
-                            Política de Privacidade
-
-                        </a>
-
-                    </li>
-
-
-                </ul>
-
-
-                <p class="copyright-text">
-
-                    © 2026 ShowMe. Todos os direitos reservados.
-
-                </p>
-
-
-            </div>
-
-
-        </div>
-
-
-    </div>
-
-
-</footer>
+<?php require __DIR__ . '/rodape.php'; ?>
 
 
 

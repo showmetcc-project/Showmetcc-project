@@ -1,3 +1,47 @@
+<?php
+
+session_start();
+require_once __DIR__ . '/assets/config/conexao.php';
+
+$erro = '';
+$cadastroConcluido = isset($_GET['sucesso']);
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $email = trim($_POST['email'] ?? '');
+    $senhaInformada = $_POST['senha'] ?? '';
+
+    if (!filter_var($email, FILTER_VALIDATE_EMAIL) || $senhaInformada === '') {
+        $erro = 'Informe um e-mail válido e a senha.';
+    } else {
+        $stmt = $conn->prepare(
+            'SELECT id_user, nome_user, senha_user FROM usuario WHERE email_user = ? LIMIT 1'
+        );
+
+        if (!$stmt) {
+            $erro = 'Não foi possível processar o login agora.';
+        } else {
+            $stmt->bind_param('s', $email);
+            $stmt->execute();
+            $stmt->bind_result($idUser, $nomeUser, $senhaHash);
+
+            if ($stmt->fetch() && password_verify($senhaInformada, (string) $senhaHash)) {
+                $stmt->close();
+                $conn->close();
+
+                session_regenerate_id(true);
+                $_SESSION['id_user'] = $idUser;
+                $_SESSION['nome_user'] = $nomeUser;
+
+                header('Location: inicio.php');
+                exit;
+            }
+
+            $stmt->close();
+            $erro = 'E-mail ou senha incorretos.';
+        }
+    }
+}
+?>
 <!DOCTYPE html>
 <html lang="pt-br">
 
@@ -65,7 +109,19 @@
                     <span>ou</span>
                 </div>
 
-                <form>
+                <?php if ($cadastroConcluido): ?>
+                    <div class="alert alert-success" role="alert">
+                        Cadastro realizado. Agora você já pode entrar.
+                    </div>
+                <?php endif; ?>
+
+                <?php if ($erro !== ''): ?>
+                    <div class="alert alert-danger" role="alert">
+                        <?= htmlspecialchars($erro, ENT_QUOTES, 'UTF-8') ?>
+                    </div>
+                <?php endif; ?>
+
+                <form action="login.php" method="POST">
 
                     <div class="mb-3">
                         <label>E-mail</label>
@@ -76,7 +132,8 @@
                             <i class="bi bi-envelope-fill"></i>
                         </span>
 
-                            <input type="email" class="form-control" placeholder="seu@gmail.com">
+                            <input type="email" class="form-control" name="email" placeholder="seu@gmail.com" required
+                                value="<?= htmlspecialchars($_POST['email'] ?? '', ENT_QUOTES, 'UTF-8') ?>">
                         </div>
 
                     </div>
@@ -90,24 +147,22 @@
                             <i class="bi bi-lock-fill"></i>
                         </span>
 
-                            <input type="password" class="form-control" placeholder="••••••••">
+                            <input type="password" class="form-control" name="senha" placeholder="••••••••" required>
                         </div>
 
                     </div>
 
-                    <button type="submit" class="btn-login">
-                         <a href="inicio.html">Entrar</a>
-                </button>
+                    <button type="submit" class="btn-login">Entrar</button>
 
                 </form>
 
                 <div class="admin-link">
                     Procurando pela
-                    <a href="loginAdm.html">área administrativa?</a>
+                    <a href="loginAdm.php">área administrativa?</a>
                 </div>
 
                 <div class="register-link">
-                    <a href="cadastro.html">Não tenho Cadastro</a>
+                    <a href="cadastro.php">Não tenho Cadastro</a>
                 </div>
 
             </div>
@@ -115,73 +170,7 @@
         </div>
 
     </main>
-    <footer id="footer" class="footer">
-
-        <div class="footer-line"></div>
-
-        <div class="container footer-top">
-
-            <div class="row gy-4">
-
-
-                <div class="col-lg-4 col-md-6 footer-about">
-
-                    <h4 class="logo-footer">
-                        <span class="verde">Show</span><span class="rosa">Me</span>
-                    </h4>
-
-                    <p>Democratizando o acesso à cultura desde 2026</p>
-                    <p>
-                        <a href="index.html">Voltar</a> para o início
-                    </p>
-
-                    <div class="social-links">
-                        <a href="https://www.instagram.com/showmetcc/"><i class="bi bi-instagram"></i></a>
-                        <a href="#"><i class="bi bi-twitter-x"></i></a>
-                        <a href="#"><i class="bi bi-facebook"></i></a>
-                    </div>
-
-                </div>
-
-
-                <div class="col-lg-4 col-md-6">
-
-                    <h4>Entre em Contato</h4>
-
-                    <form class="footer-contact-form">
-
-                        <input type="email" placeholder="Seu e-mail">
-
-                        <textarea placeholder="Sua mensagem"></textarea>
-
-                        <button type="submit">
-              <i class="bi bi-envelope"></i>
-              Enviar
-            </button>
-
-                    </form>
-
-                </div>
-
-                <div class="col-lg-4 col-md-12 footer-links">
-
-                    <h4>Informações</h4>
-
-                    <ul>
-                        <li><a href="#">Termos de Uso</a></li>
-                        <li><a href="#">Política de Privacidade</a></li>
-                    </ul>
-
-                    <p class="copyright-text">
-                        © 2026 ShowMe. Todos os direitos reservados.
-                    </p>
-
-                </div>
-
-            </div>
-
-        </div>
-
-    </footer>
+    <?php require __DIR__ . '/rodape.php'; ?>
 
 </body>
+</html>

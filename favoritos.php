@@ -1,3 +1,4 @@
+<?php require_once __DIR__ . '/config/verifica_login.php'; ?>
 <!DOCTYPE html>
 <html lang="pt-BR">
 
@@ -67,7 +68,7 @@
     <!-- NAV FIXO: fica preso no topo ao rolar a página -->
     <header class="nav-fixo">
         <div class="topo">
-            <a href="inicio.html" class="voltar">
+            <a href="inicio.php" class="voltar">
                 <i class="bi bi-arrow-left"></i>
                 Meus <span>Eventos</span>
             </a>
@@ -104,7 +105,7 @@
                     <h3>Harry Styles: Together, Together</h3>
                     <p><i class="bi bi-geo-alt-fill"></i> São Paulo, SP</p>
                     <p><i class="bi bi-calendar3"></i> 15 Jun 2026</p>
-                    <button class="btn-detalhes"><a href="detalhesEvento.html">Ver detalhes</a></button>
+                    <button class="btn-detalhes"><a href="detalhesEvento.php">Ver detalhes</a></button>
                 </div>
                 <div class="acoes">
                     <span class="tag pago">Pago</span>
@@ -163,7 +164,7 @@
                     <p><i class="bi bi-geo-alt-fill"></i> São Paulo, SP</p>
                     <p><i class="bi bi-calendar3"></i> 15 Jun 2026</p>
                     <div class="botoes-duplos">
-                        <button class="btn-detalhes"><a href="detalhesEvento.html">Ver detalhes</a></button>
+                        <button class="btn-detalhes"><a href="detalhesEvento.php">Ver detalhes</a></button>
                         <button class="btn-planejamento">Ver Planejamento</button>
                     </div>
                 </div>
@@ -201,101 +202,7 @@
 
     
 
-<footer id="footer" class="footer">
-
-
-    <div class="footer-line"></div>
-
-
-    <div class="container footer-top">
-
-
-      <div class="row gy-4">
-
-
-
-
-        <div class="col-lg-4 col-md-6 footer-about">
-
-
-          <h4 class="logo-footer">
-            <span class="verde">Show</span><span class="rosa">Me</span>
-          </h4>
-
-
-          <p>Democratizando o acesso à cultura desde 2026</p>
-            <p> 
-          <a href="inicio.html">Voltar</a> 
-          para o início
-           </p>
-
-
-          <div class="social-links">
-            <a href="https://www.instagram.com/showmetcc/"><i class="bi bi-instagram"></i></a>
-            <a href="#"><i class="bi bi-twitter-x"></i></a>
-            <a href="#"><i class="bi bi-facebook"></i></a>
-          </div>
-
-
-        </div>
-
-
-
-
-        <div class="col-lg-4 col-md-6">
-
-
-          <h4>Entre em Contato</h4>
-
-
-          <form class="footer-contact-form">
-
-
-            <input type="email" placeholder="Seu e-mail">
-
-
-            <textarea placeholder="Sua mensagem"></textarea>
-
-
-            <button type="submit">
-              <i class="bi bi-envelope"></i>
-              Enviar
-            </button>
-
-
-          </form>
-
-
-        </div>
-
-
-        <div class="col-lg-4 col-md-12 footer-links">
-
-
-          <h4>Informações</h4>
-
-
-          <ul>
-            <li><a href="#">Termos de Uso</a></li>
-            <li><a href="#">Política de Privacidade</a></li>
-          </ul>
-
-
-          <p class="copyright-text">
-            © 2026 ShowMe. Todos os direitos reservados.
-          </p>
-
-
-        </div>
-
-
-      </div>
-
-
-    </div>
-
-
-  </footer>
+  <?php require __DIR__ . '/rodape.php'; ?>
 
 
 

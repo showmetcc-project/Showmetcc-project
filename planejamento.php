@@ -1,4 +1,6 @@
 <?php
+require_once __DIR__ . '/config/verifica_login.php';
+
 /*
 =========================================================
  SHOWME - PLANEJAMENTO DE VIAGEM
@@ -24,7 +26,7 @@ planejamento.php?id_evento=15
 // CONEXÃO COM O BANCO
 // -------------------------------------------------------
 
-require_once __DIR__ . 'assets/config/conexao.php';
+require_once __DIR__ . '/assets/config/conexao.php';
 
 $idEvento = filter_input(
     INPUT_GET,
@@ -34,11 +36,6 @@ $idEvento = filter_input(
 
 if (!$idEvento) {
     die("Evento não informado.");
-}
-
-// Verifica conexão PDO
-if (!isset($pdo) || !($pdo instanceof PDO)) {
-    die("A conexão com o banco não foi encontrada.");
 }
 
 // -------------------------------------------------------
@@ -59,10 +56,17 @@ $sql = "
     LIMIT 1
 ";
 
-$stmt = $pdo->prepare($sql);
-$stmt->execute([$idEvento]);
+$stmt = $conn->prepare($sql);
 
-$evento = $stmt->fetch(PDO::FETCH_ASSOC);
+if (!$stmt) {
+    die("Não foi possível preparar a busca do evento.");
+}
+
+$stmt->bind_param('i', $idEvento);
+$stmt->execute();
+$resultado = $stmt->get_result();
+$evento = $resultado->fetch_assoc();
+$stmt->close();
 
 if (!$evento) {
     die("Evento não encontrado.");

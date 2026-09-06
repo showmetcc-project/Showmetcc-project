@@ -1,3 +1,4 @@
+<?php require_once __DIR__ . '/config/verifica_login.php'; ?>
 <!DOCTYPE html>
 <html lang="pt-BR">
 
@@ -63,33 +64,30 @@
                 Preencha as informações abaixo. Nossa equipe analisará e aprovará seu evento.
             </p>
 
-            <form>
+            <div id="mensagemEvento" class="alert d-none" role="alert"></div>
 
-                <label class="form-label">Foto do evento</label>
+            <form id="formEvento">
 
-                <label class="upload-area">
-
-                    <input type="file" id="imagemEvento" accept="image/*">
-
-                    <i class="fa-solid fa-arrow-up-from-bracket"></i>
-
-                    <p id="texto-upload">
-                        Clique ou arraste uma imagem aqui<br>
-                        PNG, JPG, WEBP — máx. 10 MB
-                    </p>
-
-                </label>
+                <div class="mb-3">
+                    <label class="form-label" for="imagemEvento">URL da imagem do evento</label>
+                    <input
+                        type="url"
+                        id="imagemEvento"
+                        class="form-control"
+                        placeholder="https://exemplo.com/imagem.jpg"
+                    >
+                </div>
 
                 <div class="mb-3">
                     <label class="form-label">Nome do evento</label>
 
-                    <input type="text" class="form-control" placeholder="Ex: Festival de Jazz 2026">
+                    <input id="nomeEvento" type="text" class="form-control" placeholder="Ex: Festival de Jazz 2026" required>
                 </div>
 
                 <div class="mb-3">
                     <label class="form-label">Local</label>
 
-                    <input type="text" class="form-control" placeholder="Ex: Parque Villa-Lobos, São Paulo - SP">
+                    <input id="localEvento" type="text" class="form-control" placeholder="Ex: Parque Villa-Lobos, São Paulo - SP">
                 </div>
 
                 <div class="row">
@@ -97,13 +95,13 @@
                     <div class="col-md-6 mb-3">
                         <label class="form-label">Data</label>
 
-                        <input type="date" class="form-control">
+                        <input id="dataEvento" type="date" class="form-control">
                     </div>
 
                     <div class="col-md-6 mb-3">
                         <label class="form-label">Horário</label>
 
-                        <input type="time" class="form-control">
+                        <input id="horarioEvento" type="time" class="form-control">
                     </div>
 
                 </div>
@@ -116,13 +114,13 @@
 
                     <div class="tipo-ingresso">
 
-                        <input type="radio" name="ingresso" id="gratuito" checked>
+                        <input type="radio" name="ingresso" id="gratuito" value="1" checked>
 
                         <label for="gratuito" class="opcao">
                             Gratuito
                         </label>
 
-                        <input type="radio" name="ingresso" id="pago">
+                        <input type="radio" name="ingresso" id="pago" value="0">
 
                         <label for="pago" class="opcao">
                             Pago
@@ -137,7 +135,7 @@
                         Descrição do evento
                     </label>
 
-                    <textarea class="form-control descricao-grande"
+                    <textarea id="descricaoEvento" class="form-control descricao-grande"
                         placeholder="Conte sobre o evento: programação, atrações, experiências..."></textarea>
                 </div>
 
@@ -146,7 +144,7 @@
                         Descrição do artista / atração
                     </label>
 
-                    <textarea class="form-control descricao-media"
+                    <textarea id="descricaoArtista" class="form-control descricao-media"
                         placeholder="Quem são os artistas ou atrações principais? Biografia, estilo, destaque..."></textarea>
                 </div>
 
@@ -168,17 +166,42 @@
     <script>
 
         const inputImagem = document.getElementById("imagemEvento");
-        const textoUpload = document.getElementById("texto-upload");
 
-        inputImagem.addEventListener("change", function () {
+        const formEvento = document.getElementById('formEvento');
+        const mensagemEvento = document.getElementById('mensagemEvento');
 
-            if (this.files.length > 0) {
+        formEvento.addEventListener('submit', async (evento) => {
+            evento.preventDefault();
+            mensagemEvento.className = 'alert d-none';
 
-                textoUpload.innerHTML =
-                    this.files[0].name;
+            try {
+                const resposta = await fetch('api/eventos/', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        nome_evento: document.getElementById('nomeEvento').value,
+                        local_evento: document.getElementById('localEvento').value,
+                        data_evento: document.getElementById('dataEvento').value || null,
+                        horario_evento: document.getElementById('horarioEvento').value || null,
+                        gratuidade: document.querySelector('input[name="ingresso"]:checked').value === '1',
+                        descricao_evento: document.getElementById('descricaoEvento').value,
+                        descricao_artista: document.getElementById('descricaoArtista').value,
+                        foto: inputImagem.value || null
+                    })
+                });
+                const dados = await resposta.json();
 
+                if (!resposta.ok) {
+                    throw new Error(dados.erro || 'Não foi possível enviar o evento.');
+                }
+
+                mensagemEvento.textContent = dados.mensagem;
+                mensagemEvento.className = 'alert alert-success';
+                formEvento.reset();
+            } catch (erro) {
+                mensagemEvento.textContent = erro.message;
+                mensagemEvento.className = 'alert alert-danger';
             }
-
         });
 
 </script>

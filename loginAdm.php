@@ -1,4 +1,3 @@
-<?php require_once __DIR__ . '/config/verifica_login.php'; ?>
 <!DOCTYPE html>
 <html lang="pt-br">
 
@@ -55,12 +54,14 @@
 
         <h2>Entrar como Administrador</h2>
 
-        <form action="admin.php" method="GET">
+        <div id="mensagemLoginAdmin" class="alert d-none" role="alert"></div>
+
+        <form id="formLoginAdmin">
 
           <div class="mb-4">
             <label for="email">E-mail</label>
 
-            <input id="email" type="email" class="form-control login-input" placeholder="seu@gmail.com">
+            <input id="email" name="email" type="email" class="form-control login-input" placeholder="admin@gmail.com" required>
           </div>
 
           <div class="mb-4">
@@ -68,7 +69,7 @@
 
             <div class="password-wrapper">
 
-              <input id="senha" type="password" class="form-control login-input" placeholder="••••••••">
+              <input id="senha" name="senha" type="password" class="form-control login-input" placeholder="••••••••" required>
 
                
 
@@ -94,6 +95,43 @@
   </main>
 
   <?php require __DIR__ . '/rodape.php'; ?>
+
+  <script>
+    const formLoginAdmin = document.getElementById('formLoginAdmin');
+    const mensagemLoginAdmin = document.getElementById('mensagemLoginAdmin');
+
+    formLoginAdmin.addEventListener('submit', async (evento) => {
+      evento.preventDefault();
+      mensagemLoginAdmin.className = 'alert d-none';
+      const formulario = new FormData(formLoginAdmin);
+
+      try {
+        const resposta = await fetch('api/sessoes/', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({
+            email: formulario.get('email'),
+            senha: formulario.get('senha')
+          })
+        });
+        const dados = await resposta.json();
+
+        if (!resposta.ok) {
+          throw new Error(dados.erro || 'Não foi possível entrar.');
+        }
+
+        if (dados.usuario.tipo_usuario !== 'admin') {
+          await fetch('api/sessoes/', {method: 'DELETE'});
+          throw new Error('Esta conta não possui perfil de administrador.');
+        }
+
+        window.location.href = 'admin.php';
+      } catch (erro) {
+        mensagemLoginAdmin.textContent = erro.message;
+        mensagemLoginAdmin.className = 'alert alert-danger';
+      }
+    });
+  </script>
 
 </body>
 </html>

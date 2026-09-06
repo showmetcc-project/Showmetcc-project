@@ -83,7 +83,7 @@
 
             <button class="aba ativa" data-tab="favoritos">
                 <i class="bi bi-heart"></i>
-                Favoritos (3)
+                Favoritos (<span id="contadorFavoritos">0</span>)
             </button>
 
             <button class="aba" data-tab="planejados">

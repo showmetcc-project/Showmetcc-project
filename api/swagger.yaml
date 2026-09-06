@@ -1,0 +1,718 @@
+openapi: 3.0.3
+info:
+  title: API REST ShowMe
+  version: 1.0.0
+  description: API em PHP puro para usuários, sessões, eventos, favoritos e avaliações.
+
+servers:
+  - url: ./
+    description: API na mesma origem do front-end
+
+tags:
+  - name: Sessões
+  - name: Usuários
+  - name: Eventos
+  - name: Favoritos
+  - name: Avaliações
+
+paths:
+  /sessoes:
+    get:
+      tags: [Sessões]
+      summary: Retorna o usuário da sessão atual
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: Sessão ativa
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  usuario:
+                    $ref: '#/components/schemas/Usuario'
+        '401':
+          $ref: '#/components/responses/NaoAutenticado'
+    post:
+      tags: [Sessões]
+      summary: Cria uma sessão (login)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginEntrada'
+      responses:
+        '201':
+          description: Login realizado
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  mensagem:
+                    type: string
+                  usuario:
+                    $ref: '#/components/schemas/Usuario'
+        '400':
+          $ref: '#/components/responses/RequisicaoInvalida'
+        '401':
+          $ref: '#/components/responses/NaoAutenticado'
+    delete:
+      tags: [Sessões]
+      summary: Encerra a sessão atual
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: Logout realizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Mensagem'
+        '401':
+          $ref: '#/components/responses/NaoAutenticado'
+
+  /usuarios:
+    post:
+      tags: [Usuários]
+      summary: Cadastra um usuário comum
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UsuarioCadastro'
+      responses:
+        '201':
+          description: Usuário cadastrado
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  mensagem:
+                    type: string
+                  usuario:
+                    $ref: '#/components/schemas/Usuario'
+        '400':
+          $ref: '#/components/responses/RequisicaoInvalida'
+        '409':
+          description: E-mail já cadastrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erro'
+
+  /usuarios/{id}:
+    get:
+      tags: [Usuários]
+      summary: Consulta um perfil
+      description: Permitido para o próprio usuário ou para um administrador.
+      security:
+        - cookieAuth: []
+      parameters:
+        - $ref: '#/components/parameters/IdNaRota'
+      responses:
+        '200':
+          description: Perfil encontrado
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  usuario:
+                    $ref: '#/components/schemas/Usuario'
+        '401':
+          $ref: '#/components/responses/NaoAutenticado'
+        '403':
+          $ref: '#/components/responses/Proibido'
+        '404':
+          $ref: '#/components/responses/NaoEncontrado'
+
+  /eventos:
+    get:
+      tags: [Eventos]
+      summary: Lista eventos aprovados
+      responses:
+        '200':
+          description: Lista de eventos
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  eventos:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Evento'
+    post:
+      tags: [Eventos]
+      summary: Cria uma solicitação de evento
+      description: O evento permanece pendente até a análise de um administrador.
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SolicitacaoCadastro'
+      responses:
+        '201':
+          description: Solicitação criada
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  mensagem:
+                    type: string
+                  solicitacao:
+                    $ref: '#/components/schemas/SolicitacaoResultado'
+        '400':
+          $ref: '#/components/responses/RequisicaoInvalida'
+        '401':
+          $ref: '#/components/responses/NaoAutenticado'
+
+  /eventos/{id}:
+    get:
+      tags: [Eventos]
+      summary: Consulta um evento aprovado
+      parameters:
+        - $ref: '#/components/parameters/IdNaRota'
+      responses:
+        '200':
+          description: Evento encontrado
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  evento:
+                    $ref: '#/components/schemas/Evento'
+        '404':
+          $ref: '#/components/responses/NaoEncontrado'
+    put:
+      tags: [Eventos]
+      summary: Aprova ou recusa uma solicitação
+      description: Neste método, o parâmetro id representa id_solicitacao. Aprovar também insere o evento na tabela evento.
+      security:
+        - cookieAuth: []
+      parameters:
+        - $ref: '#/components/parameters/IdNaRota'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [status_solicitacao]
+              properties:
+                status_solicitacao:
+                  type: string
+                  enum: [aprovado, recusado]
+      responses:
+        '200':
+          description: Solicitação analisada
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  mensagem:
+                    type: string
+                  solicitacao:
+                    $ref: '#/components/schemas/SolicitacaoResultado'
+        '400':
+          $ref: '#/components/responses/RequisicaoInvalida'
+        '401':
+          $ref: '#/components/responses/NaoAutenticado'
+        '403':
+          $ref: '#/components/responses/Proibido'
+        '404':
+          $ref: '#/components/responses/NaoEncontrado'
+        '409':
+          description: Solicitação já analisada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erro'
+
+  /favoritos:
+    get:
+      tags: [Favoritos]
+      summary: Lista os favoritos do usuário atual
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: Lista de favoritos
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  favoritos:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Favorito'
+        '401':
+          $ref: '#/components/responses/NaoAutenticado'
+    post:
+      tags: [Favoritos]
+      summary: Adiciona um evento aos favoritos
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [id_evento]
+              properties:
+                id_evento:
+                  type: integer
+      responses:
+        '201':
+          description: Favorito criado
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  mensagem:
+                    type: string
+                  favorito:
+                    $ref: '#/components/schemas/FavoritoCriado'
+        '400':
+          $ref: '#/components/responses/RequisicaoInvalida'
+        '401':
+          $ref: '#/components/responses/NaoAutenticado'
+        '404':
+          $ref: '#/components/responses/NaoEncontrado'
+        '409':
+          description: Evento já favoritado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erro'
+
+  /favoritos/{id}:
+    delete:
+      tags: [Favoritos]
+      summary: Remove um favorito
+      description: O parâmetro id representa id_favorito e o registro deve pertencer ao usuário atual.
+      security:
+        - cookieAuth: []
+      parameters:
+        - $ref: '#/components/parameters/IdNaRota'
+      responses:
+        '200':
+          description: Favorito removido
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Mensagem'
+        '400':
+          $ref: '#/components/responses/RequisicaoInvalida'
+        '401':
+          $ref: '#/components/responses/NaoAutenticado'
+        '404':
+          $ref: '#/components/responses/NaoEncontrado'
+
+  /avaliacoes:
+    get:
+      tags: [Avaliações]
+      summary: Lista avaliações de um evento
+      parameters:
+        - name: evento_id
+          in: query
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+      responses:
+        '200':
+          description: Lista de avaliações
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  avaliacoes:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Avaliacao'
+        '400':
+          $ref: '#/components/responses/RequisicaoInvalida'
+    post:
+      tags: [Avaliações]
+      summary: Cria uma avaliação
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AvaliacaoEntrada'
+      responses:
+        '201':
+          description: Avaliação criada
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  mensagem:
+                    type: string
+                  avaliacao:
+                    $ref: '#/components/schemas/Avaliacao'
+        '400':
+          $ref: '#/components/responses/RequisicaoInvalida'
+        '401':
+          $ref: '#/components/responses/NaoAutenticado'
+        '404':
+          $ref: '#/components/responses/NaoEncontrado'
+        '409':
+          description: Usuário já avaliou o evento
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erro'
+
+  /avaliacoes/{id}:
+    put:
+      tags: [Avaliações]
+      summary: Atualiza uma avaliação
+      description: Permitido para o autor da avaliação ou para um administrador.
+      security:
+        - cookieAuth: []
+      parameters:
+        - $ref: '#/components/parameters/IdNaRota'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AvaliacaoAtualizacao'
+      responses:
+        '200':
+          description: Avaliação atualizada
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  mensagem:
+                    type: string
+                  avaliacao:
+                    $ref: '#/components/schemas/Avaliacao'
+        '400':
+          $ref: '#/components/responses/RequisicaoInvalida'
+        '401':
+          $ref: '#/components/responses/NaoAutenticado'
+        '403':
+          $ref: '#/components/responses/Proibido'
+        '404':
+          $ref: '#/components/responses/NaoEncontrado'
+    delete:
+      tags: [Avaliações]
+      summary: Remove uma avaliação
+      description: Permitido para o autor da avaliação ou para um administrador.
+      security:
+        - cookieAuth: []
+      parameters:
+        - $ref: '#/components/parameters/IdNaRota'
+      responses:
+        '200':
+          description: Avaliação removida
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Mensagem'
+        '401':
+          $ref: '#/components/responses/NaoAutenticado'
+        '403':
+          $ref: '#/components/responses/Proibido'
+        '404':
+          $ref: '#/components/responses/NaoEncontrado'
+
+components:
+  securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: PHPSESSID
+
+  parameters:
+    IdNaRota:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: integer
+        minimum: 1
+
+  responses:
+    RequisicaoInvalida:
+      description: Dados inválidos
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Erro'
+    NaoAutenticado:
+      description: Sessão inexistente ou credenciais inválidas
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Erro'
+    Proibido:
+      description: Usuário sem permissão
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Erro'
+    NaoEncontrado:
+      description: Recurso não encontrado
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Erro'
+
+  schemas:
+    Erro:
+      type: object
+      required: [erro]
+      properties:
+        erro:
+          type: string
+
+    Mensagem:
+      type: object
+      required: [mensagem]
+      properties:
+        mensagem:
+          type: string
+
+    LoginEntrada:
+      type: object
+      required: [email, senha]
+      properties:
+        email:
+          type: string
+          format: email
+        senha:
+          type: string
+          format: password
+
+    UsuarioCadastro:
+      type: object
+      required: [nome, sobrenome, email, senha]
+      properties:
+        nome:
+          type: string
+          maxLength: 100
+        sobrenome:
+          type: string
+          maxLength: 100
+        email:
+          type: string
+          format: email
+          maxLength: 100
+        senha:
+          type: string
+          format: password
+          minLength: 6
+
+    Usuario:
+      type: object
+      properties:
+        id_user:
+          type: integer
+        nome_user:
+          type: string
+        sobrenome:
+          type: string
+          nullable: true
+        email_user:
+          type: string
+          format: email
+        tipo_usuario:
+          type: string
+          enum: [comum, admin]
+        data_cadastro:
+          type: string
+          format: date-time
+
+    Evento:
+      type: object
+      properties:
+        id_evento:
+          type: integer
+        num_evento:
+          type: integer
+          nullable: true
+        nome_evento:
+          type: string
+        local_evento:
+          type: string
+          nullable: true
+        rua_evento:
+          type: string
+          nullable: true
+        cidade_evento:
+          type: string
+          nullable: true
+        uf:
+          type: string
+          nullable: true
+        descricao_evento:
+          type: string
+          nullable: true
+        data_evento:
+          type: string
+          format: date
+          nullable: true
+        gratuidade:
+          type: boolean
+        categoria_evento:
+          type: string
+          nullable: true
+        link_oficial:
+          type: string
+          nullable: true
+        imagem_evento:
+          type: string
+          nullable: true
+        status_evento:
+          type: string
+          enum: [ativo, cancelado]
+
+    SolicitacaoCadastro:
+      type: object
+      required: [nome_evento]
+      properties:
+        nome_evento:
+          type: string
+          maxLength: 100
+        foto:
+          type: string
+          nullable: true
+        horario_evento:
+          type: string
+          example: '20:00'
+          nullable: true
+        data_evento:
+          type: string
+          format: date
+          nullable: true
+        local_evento:
+          type: string
+          nullable: true
+        gratuidade:
+          type: boolean
+        descricao_evento:
+          type: string
+          nullable: true
+        descricao_artista:
+          type: string
+          nullable: true
+
+    SolicitacaoResultado:
+      type: object
+      properties:
+        id_solicitacao:
+          type: integer
+        status_solicitacao:
+          type: string
+          enum: [pendente, aprovado, recusado]
+        id_evento:
+          type: integer
+          nullable: true
+
+    FavoritoCriado:
+      type: object
+      properties:
+        id_favorito:
+          type: integer
+        id_evento:
+          type: integer
+
+    Favorito:
+      allOf:
+        - $ref: '#/components/schemas/FavoritoCriado'
+        - type: object
+          properties:
+            nome_evento:
+              type: string
+            local_evento:
+              type: string
+              nullable: true
+            cidade_evento:
+              type: string
+              nullable: true
+            uf:
+              type: string
+              nullable: true
+            data_evento:
+              type: string
+              format: date
+              nullable: true
+            gratuidade:
+              type: boolean
+            imagem_evento:
+              type: string
+              nullable: true
+
+    AvaliacaoEntrada:
+      type: object
+      required: [id_evento, nota, comentario]
+      properties:
+        id_evento:
+          type: integer
+        nota:
+          type: integer
+          minimum: 1
+          maximum: 5
+        comentario:
+          type: string
+          maxLength: 1000
+
+    AvaliacaoAtualizacao:
+      type: object
+      required: [nota, comentario]
+      properties:
+        nota:
+          type: integer
+          minimum: 1
+          maximum: 5
+        comentario:
+          type: string
+          maxLength: 1000
+
+    Avaliacao:
+      type: object
+      properties:
+        id_avaliacao:
+          type: integer
+        id_evento:
+          type: integer
+        id_user:
+          type: integer
+        nota:
+          type: integer
+          minimum: 1
+          maximum: 5
+        comentario:
+          type: string
+        data_avaliacao:
+          type: string
+          format: date
+        nome_user:
+          type: string
+        sobrenome:
+          type: string

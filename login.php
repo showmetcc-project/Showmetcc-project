@@ -1,47 +1,4 @@
-<?php
-
-session_start();
-require_once __DIR__ . '/assets/config/conexao.php';
-
-$erro = '';
-$cadastroConcluido = isset($_GET['sucesso']);
-
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $email = trim($_POST['email'] ?? '');
-    $senhaInformada = $_POST['senha'] ?? '';
-
-    if (!filter_var($email, FILTER_VALIDATE_EMAIL) || $senhaInformada === '') {
-        $erro = 'Informe um e-mail válido e a senha.';
-    } else {
-        $stmt = $conn->prepare(
-            'SELECT id_user, nome_user, senha_user FROM usuario WHERE email_user = ? LIMIT 1'
-        );
-
-        if (!$stmt) {
-            $erro = 'Não foi possível processar o login agora.';
-        } else {
-            $stmt->bind_param('s', $email);
-            $stmt->execute();
-            $stmt->bind_result($idUser, $nomeUser, $senhaHash);
-
-            if ($stmt->fetch() && password_verify($senhaInformada, (string) $senhaHash)) {
-                $stmt->close();
-                $conn->close();
-
-                session_regenerate_id(true);
-                $_SESSION['id_user'] = $idUser;
-                $_SESSION['nome_user'] = $nomeUser;
-
-                header('Location: inicio.php');
-                exit;
-            }
-
-            $stmt->close();
-            $erro = 'E-mail ou senha incorretos.';
-        }
-    }
-}
-?>
+<?php $cadastroConcluido = isset($_GET['sucesso']); ?>
 <!DOCTYPE html>
 <html lang="pt-br">
 
@@ -115,13 +72,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     </div>
                 <?php endif; ?>
 
-                <?php if ($erro !== ''): ?>
-                    <div class="alert alert-danger" role="alert">
-                        <?= htmlspecialchars($erro, ENT_QUOTES, 'UTF-8') ?>
-                    </div>
-                <?php endif; ?>
+                <div id="mensagemLogin" class="alert d-none" role="alert"></div>
 
-                <form action="login.php" method="POST">
+                <form id="formLogin">
 
                     <div class="mb-3">
                         <label>E-mail</label>
@@ -132,8 +85,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             <i class="bi bi-envelope-fill"></i>
                         </span>
 
-                            <input type="email" class="form-control" name="email" placeholder="seu@gmail.com" required
-                                value="<?= htmlspecialchars($_POST['email'] ?? '', ENT_QUOTES, 'UTF-8') ?>">
+                            <input type="email" class="form-control" name="email" placeholder="seu@gmail.com" required>
                         </div>
 
                     </div>
@@ -171,6 +123,39 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     </main>
     <?php require __DIR__ . '/rodape.php'; ?>
+
+    <script>
+        const formLogin = document.getElementById('formLogin');
+        const mensagemLogin = document.getElementById('mensagemLogin');
+
+        formLogin.addEventListener('submit', async (evento) => {
+            evento.preventDefault();
+            mensagemLogin.className = 'alert d-none';
+
+            const formulario = new FormData(formLogin);
+
+            try {
+                const resposta = await fetch('api/sessoes/', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        email: formulario.get('email'),
+                        senha: formulario.get('senha')
+                    })
+                });
+                const dados = await resposta.json();
+
+                if (!resposta.ok) {
+                    throw new Error(dados.erro || 'Não foi possível entrar.');
+                }
+
+                window.location.href = 'inicio.php';
+            } catch (erro) {
+                mensagemLogin.textContent = erro.message;
+                mensagemLogin.className = 'alert alert-danger';
+            }
+        });
+    </script>
 
 </body>
 </html>

@@ -205,10 +205,7 @@ if (!$avaliacao) {
         </p>
 
 
-        <form
-            action="./php/update_avaliacao.php"
-            method="POST"
-        >
+        <form id="formEditarAvaliacao">
 
             <input
                 type="hidden"
@@ -328,6 +325,33 @@ estrelas.forEach(estrela => {
 
     });
 
+});
+
+document.getElementById('formEditarAvaliacao').addEventListener('submit', async (evento) => {
+    evento.preventDefault();
+
+    const idAvaliacao = Number(document.querySelector('[name="id_avaliacao"]').value);
+    const idEvento = Number(document.querySelector('[name="id_evento"]').value);
+
+    try {
+        const resposta = await fetch(`api/avaliacoes/${idAvaliacao}`, {
+            method: 'PUT',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                nota: Number(campoNota.value),
+                comentario: document.getElementById('comentario').value
+            })
+        });
+        const dados = await resposta.json();
+
+        if (!resposta.ok) {
+            throw new Error(dados.erro || 'Não foi possível atualizar a avaliação.');
+        }
+
+        window.location.href = `detalhesEvento.php?id_evento=${idEvento}#avaliacoes`;
+    } catch (erro) {
+        alert(erro.message);
+    }
 });
 
 </script>

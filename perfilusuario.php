@@ -57,7 +57,7 @@
 
  
         <div class="perfil-header">
-            <div class="email-principal">User@gmail.com</div>
+            <div class="email-principal" id="perfilEmailPrincipal">Carregando...</div>
             <button class="btn-editar">
                 <i class="bi bi-pencil"></i>
                 Editar Perfil
@@ -71,7 +71,7 @@
                 <label>Nome</label>
                 <div class="input-icon">
                     <i class="bi bi-person"></i>
-                    <input type="text" value="Nome" readonly>
+                    <input id="perfilNome" type="text" value="" readonly>
                 </div>
             </div>
 
@@ -79,15 +79,7 @@
                 <label>Sobrenome</label>
                 <div class="input-icon">
                     <i class="bi bi-person"></i>
-                    <input type="text" value="User" readonly>
-                </div>
-            </div>
-
-            <div class="grupo full">
-                <label>Apelido</label>
-                <div class="input-icon">
-                    <i class="bi bi-at"></i>
-                    <input type="text" value="userzinho" readonly>
+                    <input id="perfilSobrenome" type="text" value="" readonly>
                 </div>
             </div>
 
@@ -95,7 +87,7 @@
                 <label>E-mail</label>
                 <div class="input-icon">
                     <i class="bi bi-envelope"></i>
-                    <input type="email" value="User@gmail.com" readonly>
+                    <input id="perfilEmail" type="email" value="" readonly>
                 </div>
             </div>
 
@@ -144,6 +136,25 @@
     <script src="assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
     <script src="assets/vendor/aos/aos.js"></script>
     <script src="assets/js/perfil.js"></script>
+    <script>
+        fetch('api/usuarios/<?= (int) $_SESSION['id_user'] ?>')
+            .then(async (resposta) => {
+                const dados = await resposta.json();
+                if (!resposta.ok) {
+                    throw new Error(dados.erro || 'Não foi possível carregar o perfil.');
+                }
+                return dados.usuario;
+            })
+            .then((usuario) => {
+                document.getElementById('perfilEmailPrincipal').textContent = usuario.email_user;
+                document.getElementById('perfilNome').value = usuario.nome_user;
+                document.getElementById('perfilSobrenome').value = usuario.sobrenome || '';
+                document.getElementById('perfilEmail').value = usuario.email_user;
+            })
+            .catch((erro) => {
+                document.getElementById('perfilEmailPrincipal').textContent = erro.message;
+            });
+    </script>
 
     <script>AOS.init();</script>
 

@@ -1,64 +1,3 @@
-<?php
-
-session_start();
-require_once __DIR__ . '/assets/config/conexao.php';
-
-$erro = '';
-
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-  $nome = trim($_POST['nome'] ?? '');
-  $sobrenome = trim($_POST['sobrenome'] ?? '');
-  $email = trim($_POST['email'] ?? '');
-  $senha = $_POST['senha'] ?? '';
-
-  if ($nome === '' || $sobrenome === '') {
-    $erro = 'Informe o nome e o sobrenome.';
-  } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-    $erro = 'Informe um e-mail válido.';
-  } elseif (strlen($senha) < 6) {
-    $erro = 'A senha deve ter pelo menos 6 caracteres.';
-  } else {
-    $stmt = $conn->prepare('SELECT id_user FROM usuario WHERE email_user = ? LIMIT 1');
-
-    if (!$stmt) {
-      $erro = 'Não foi possível verificar o e-mail agora.';
-    } else {
-      $stmt->bind_param('s', $email);
-      $stmt->execute();
-      $stmt->store_result();
-
-      if ($stmt->num_rows > 0) {
-        $erro = 'Este e-mail já está cadastrado.';
-      }
-
-      $stmt->close();
-    }
-
-    if ($erro === '') {
-      $senhaHash = password_hash($senha, PASSWORD_DEFAULT);
-      $stmt = $conn->prepare(
-        'INSERT INTO usuario (nome_user, sobrenome, email_user, senha_user) VALUES (?, ?, ?, ?)'
-      );
-
-      if (!$stmt) {
-        $erro = 'Não foi possível concluir o cadastro agora.';
-      } else {
-        $stmt->bind_param('ssss', $nome, $sobrenome, $email, $senhaHash);
-
-        if ($stmt->execute()) {
-          $stmt->close();
-          $conn->close();
-          header('Location: login.php?sucesso=1');
-          exit;
-        }
-
-        $erro = 'Não foi possível concluir o cadastro agora.';
-        $stmt->close();
-      }
-    }
-  }
-}
-?>
 <!DOCTYPE html>
 <html lang="pt-br">
 
@@ -103,13 +42,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         <h1>Criar Conta</h1>
 
-        <?php if ($erro !== ''): ?>
-          <div class="alert alert-danger" role="alert">
-            <?= htmlspecialchars($erro, ENT_QUOTES, 'UTF-8') ?>
-          </div>
-        <?php endif; ?>
+        <div id="mensagemCadastro" class="alert d-none" role="alert"></div>
 
-        <form action="cadastro.php" method="POST">
+        <form id="formCadastro">
 
           <div class="row">
 
@@ -120,8 +55,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
               <div class="cadastro-input-box">
                 <i class="bi bi-person"></i>
 
-                <input type="text" class="form-control cadastro-input" placeholder="Digite seu nome" name="nome" id="nome" required
-                  value="<?= htmlspecialchars($_POST['nome'] ?? '', ENT_QUOTES, 'UTF-8') ?>">
+                <input type="text" class="form-control cadastro-input" placeholder="Digite seu nome" name="nome" id="nome" required>
               
                 </div>
 
@@ -140,8 +74,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                   placeholder="Digite seu sobrenome"
                   name="sobrenome"
                   id="sobrenome"
-                  required
-                  value="<?= htmlspecialchars($_POST['sobrenome'] ?? '', ENT_QUOTES, 'UTF-8') ?>">
+                  required>
               </div>
 
             </div>
@@ -161,8 +94,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 placeholder="seuemail@gmail.com"
                 name="email"
                 id="email"
-                required
-                value="<?= htmlspecialchars($_POST['email'] ?? '', ENT_QUOTES, 'UTF-8') ?>">
+                required>
             </div>
 
           </div>
@@ -210,6 +142,40 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 
   <?php require __DIR__ . '/rodape.php'; ?>
+
+  <script>
+    const formCadastro = document.getElementById('formCadastro');
+    const mensagemCadastro = document.getElementById('mensagemCadastro');
+
+    formCadastro.addEventListener('submit', async (evento) => {
+      evento.preventDefault();
+      mensagemCadastro.className = 'alert d-none';
+      const formulario = new FormData(formCadastro);
+
+      try {
+        const resposta = await fetch('api/usuarios/', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({
+            nome: formulario.get('nome'),
+            sobrenome: formulario.get('sobrenome'),
+            email: formulario.get('email'),
+            senha: formulario.get('senha')
+          })
+        });
+        const dados = await resposta.json();
+
+        if (!resposta.ok) {
+          throw new Error(dados.erro || 'Não foi possível concluir o cadastro.');
+        }
+
+        window.location.href = 'login.php?sucesso=1';
+      } catch (erro) {
+        mensagemCadastro.textContent = erro.message;
+        mensagemCadastro.className = 'alert alert-danger';
+      }
+    });
+  </script>
 
 
 </body>

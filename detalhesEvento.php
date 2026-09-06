@@ -955,6 +955,21 @@ $imagemEvento = !empty($evento['imagem_evento'])
 
                                         </div>
 
+                                        <?php if ($id_user && ((int) $avaliacao['id_user'] === (int) $id_user || ($_SESSION['tipo_usuario'] ?? '') === 'admin')): ?>
+                                            <div class="acoes-avaliacao">
+                                                <a href="editar_avalicoes.php?id_avaliacao=<?= (int) $avaliacao['id_avaliacao'] ?>">
+                                                    Editar
+                                                </a>
+                                                <button
+                                                    type="button"
+                                                    class="btn-apagar-avaliacao"
+                                                    data-avaliacao-id="<?= (int) $avaliacao['id_avaliacao'] ?>"
+                                                >
+                                                    Apagar
+                                                </button>
+                                            </div>
+                                        <?php endif; ?>
+
 
                                     </div>
 
@@ -996,12 +1011,9 @@ $imagemEvento = !empty($evento['imagem_evento'])
                     <?php if ($id_user): ?>
 
 
-                        <form
-                            action="./php/avaliacoes.php"
-                            method="POST"
-                            enctype="multipart/form-data"
-                            id="formAvaliacao"
-                        >
+                        <div id="mensagemAvaliacao" class="alert d-none" role="alert"></div>
+
+                        <form id="formAvaliacao">
 
 
                             <h2>
@@ -1009,15 +1021,6 @@ $imagemEvento = !empty($evento['imagem_evento'])
                                 Avaliar este evento/local
 
                             </h2>
-
-
-                            <!-- ID USUÁRIO -->
-
-                            <input
-                                type="hidden"
-                                name="id_user"
-                                value="<?= (int)$id_user ?>"
-                            >
 
 
                             <!-- ID EVENTO -->
@@ -1100,43 +1103,6 @@ $imagemEvento = !empty($evento['imagem_evento'])
                                 placeholder="Conte a sua experiência aqui..."
                                 required
                             ></textarea>
-
-
-                            <!-- ARQUIVOS -->
-
-                            <label>
-
-                                Suas fotos e vídeos:
-
-                            </label>
-
-
-                            <label
-                                class="upload-area"
-                                for="uploadFotos"
-                            >
-
-                                <i class="bi bi-image"></i>
-
-
-                                <span>
-
-                                    Adicionar fotos e vídeos
-
-                                </span>
-
-
-                                <input
-                                    type="file"
-                                    id="uploadFotos"
-                                    name="arquivos[]"
-                                    accept="image/*,video/*"
-                                    multiple
-                                    hidden
-                                >
-
-
-                            </label>
 
 
                             <!-- ENVIAR -->
@@ -1297,6 +1263,7 @@ $imagemEvento = !empty($evento['imagem_evento'])
                 <button
                     type="button"
                     class="btn-acao btn-favoritar"
+                    data-evento-id="<?= (int) $id_evento ?>"
                 >
 
                     <i class="bi bi-heart"></i>
@@ -1463,6 +1430,85 @@ $imagemEvento = !empty($evento['imagem_evento'])
         );
 
 
+    });
+
+    const formAvaliacao = document.getElementById('formAvaliacao');
+
+    if (formAvaliacao) {
+        const mensagemAvaliacao = document.getElementById('mensagemAvaliacao');
+
+        formAvaliacao.addEventListener('submit', async function(evento) {
+            evento.preventDefault();
+            mensagemAvaliacao.className = 'alert d-none';
+
+            try {
+                const resposta = await fetch('api/avaliacoes/', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        id_evento: Number(formAvaliacao.elements.id_evento.value),
+                        nota: Number(campoNota.value),
+                        comentario: formAvaliacao.elements.comentario.value
+                    })
+                });
+                const dados = await resposta.json();
+
+                if (!resposta.ok) {
+                    throw new Error(dados.erro || 'Não foi possível enviar a avaliação.');
+                }
+
+                window.location.reload();
+            } catch (erro) {
+                mensagemAvaliacao.textContent = erro.message;
+                mensagemAvaliacao.className = 'alert alert-danger';
+            }
+        });
+    }
+
+    const botaoFavoritar = document.querySelector('.btn-favoritar');
+
+    if (botaoFavoritar) {
+        botaoFavoritar.addEventListener('click', async function() {
+            try {
+                const resposta = await fetch('api/favoritos/', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({id_evento: Number(this.dataset.eventoId)})
+                });
+                const dados = await resposta.json();
+
+                if (!resposta.ok) {
+                    throw new Error(dados.erro || 'Não foi possível favoritar o evento.');
+                }
+
+                this.innerHTML = '<i class="bi bi-heart-fill"></i> Favoritado';
+            } catch (erro) {
+                alert(erro.message);
+            }
+        });
+    }
+
+    document.querySelectorAll('.btn-apagar-avaliacao').forEach(function(botao) {
+        botao.addEventListener('click', async function() {
+            if (!window.confirm('Deseja apagar esta avaliação?')) {
+                return;
+            }
+
+            try {
+                const resposta = await fetch(`api/avaliacoes/${this.dataset.avaliacaoId}`, {
+                    method: 'DELETE'
+                });
+                const dados = await resposta.json();
+
+                if (!resposta.ok) {
+                    throw new Error(dados.erro || 'Não foi possível apagar a avaliação.');
+                }
+
+                window.location.reload();
+            } catch (erro) {
+                alert(erro.message);
+            }
+        });
     });
 
 

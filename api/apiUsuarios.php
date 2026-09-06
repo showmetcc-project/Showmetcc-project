@@ -112,8 +112,8 @@ switch ($metodo) {
 
         $senhaHash = password_hash($senha, PASSWORD_DEFAULT);
         $stmt = $conn->prepare(
-            'INSERT INTO usuario (nome_user, sobrenome, email_user, senha_user)
-             VALUES (?, ?, ?, ?)'
+            "INSERT INTO usuario (nome_user, sobrenome, email_user, senha_user, tipo_usuario)
+             VALUES (?, ?, ?, ?, 'comum')"
         );
         $stmt->bind_param('ssss', $nome, $sobrenome, $email, $senhaHash);
         $stmt->execute();

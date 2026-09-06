@@ -60,6 +60,30 @@ curl.exe -i -X POST "$BASE/usuarios/" `
   -d '{"nome":"Maria","email":"email-invalido","senha":"123"}'
 ```
 
+### POST /usuarios — tentativa de definir administrador é ignorada
+
+O cadastro abaixo envia `tipo_usuario: admin` de propósito. A resposta deve mostrar
+`tipo_usuario: comum`.
+
+```powershell
+curl.exe -i -X POST "$BASE/usuarios/" `
+  -H "Content-Type: application/json" `
+  -d '{"nome":"Teste","sobrenome":"Comum","email":"teste.comum@exemplo.com","senha":"senha123","tipo_usuario":"admin"}'
+```
+
+Para confirmar o valor gravado no banco, faça login com esse usuário e consulte o ID
+devolvido pelo cadastro. O campo `tipo_usuario` também deve ser `comum` no perfil:
+
+```powershell
+$COOKIE_TESTE_PERFIL = "$env:TEMP\showme-teste-perfil.txt"
+
+curl.exe -i -c $COOKIE_TESTE_PERFIL -X POST "$BASE/sessoes/" `
+  -H "Content-Type: application/json" `
+  -d '{"email":"teste.comum@exemplo.com","senha":"senha123"}'
+
+curl.exe -i -b $COOKIE_TESTE_PERFIL "$BASE/usuarios/ID_RETORNADO_PELO_CADASTRO"
+```
+
 ### GET /usuarios/{id} — sucesso e erro 403
 
 ```powershell

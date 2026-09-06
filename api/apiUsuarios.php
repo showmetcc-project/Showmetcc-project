@@ -131,6 +131,137 @@ switch ($metodo) {
             ]
         ], 201);
 
+    case 'PUT':
+        if ($id === null) {
+            responder(['erro' => 'Informe o ID do usuário na URL'], 400);
+        }
+
+        $idLogado = exigirLogin();
+
+        if ($idLogado !== $id) {
+            responder(['erro' => 'Você só pode editar o próprio perfil'], 403);
+        }
+
+        $dados = lerJson();
+        $camposEditaveis = ['nome', 'sobrenome', 'email', 'senha'];
+        $camposRecebidos = array_intersect($camposEditaveis, array_keys($dados));
+
+        if ($camposRecebidos === []) {
+            responder(['erro' => 'Informe ao menos um campo editável'], 400);
+        }
+
+        $stmt = $conn->prepare(
+            'SELECT nome_user, sobrenome, email_user
+             FROM usuario WHERE id_user = ? LIMIT 1'
+        );
+        $stmt->bind_param('i', $id);
+        $stmt->execute();
+        $usuarioAtual = $stmt->get_result()->fetch_assoc();
+        $stmt->close();
+
+        if (!$usuarioAtual) {
+            responder(['erro' => 'Usuário não encontrado'], 404);
+        }
+
+        $nome = array_key_exists('nome', $dados)
+            ? trim((string) $dados['nome'])
+            : $usuarioAtual['nome_user'];
+        $sobrenome = array_key_exists('sobrenome', $dados)
+            ? trim((string) $dados['sobrenome'])
+            : $usuarioAtual['sobrenome'];
+        $email = array_key_exists('email', $dados)
+            ? trim((string) $dados['email'])
+            : $usuarioAtual['email_user'];
+        $alterarSenha = array_key_exists('senha', $dados);
+
+        if ($nome === '' || $sobrenome === '') {
+            responder(['erro' => 'Nome e sobrenome são obrigatórios'], 400);
+        }
+
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            responder(['erro' => 'E-mail inválido'], 400);
+        }
+
+        $stmt = $conn->prepare(
+            'SELECT id_user FROM usuario WHERE email_user = ? AND id_user <> ? LIMIT 1'
+        );
+        $stmt->bind_param('si', $email, $id);
+        $stmt->execute();
+        $stmt->store_result();
+
+        if ($stmt->num_rows > 0) {
+            $stmt->close();
+            responder(['erro' => 'Este e-mail já está cadastrado'], 409);
+        }
+        $stmt->close();
+
+        if ($alterarSenha) {
+            $senha = (string) $dados['senha'];
+
+            if (strlen($senha) < 6) {
+                responder(['erro' => 'A senha deve ter pelo menos 6 caracteres'], 400);
+            }
+
+            $senhaHash = password_hash($senha, PASSWORD_DEFAULT);
+            $stmt = $conn->prepare(
+                'UPDATE usuario
+                 SET nome_user = ?, sobrenome = ?, email_user = ?, senha_user = ?
+                 WHERE id_user = ?'
+            );
+            $stmt->bind_param('ssssi', $nome, $sobrenome, $email, $senhaHash, $id);
+        } else {
+            $stmt = $conn->prepare(
+                'UPDATE usuario
+                 SET nome_user = ?, sobrenome = ?, email_user = ?
+                 WHERE id_user = ?'
+            );
+            $stmt->bind_param('sssi', $nome, $sobrenome, $email, $id);
+        }
+
+        $stmt->execute();
+        $stmt->close();
+        $_SESSION['nome_user'] = $nome;
+
+        $stmt = $conn->prepare(
+            'SELECT id_user, nome_user, sobrenome, email_user, tipo_usuario, data_cadastro
+             FROM usuario WHERE id_user = ? LIMIT 1'
+        );
+        $stmt->bind_param('i', $id);
+        $stmt->execute();
+        $usuario = $stmt->get_result()->fetch_assoc();
+        $stmt->close();
+
+        responder([
+            'mensagem' => 'Perfil atualizado com sucesso',
+            'usuario' => $usuario
+        ]);
+
+    case 'DELETE':
+        if ($id === null) {
+            responder(['erro' => 'Informe o ID do usuário na URL'], 400);
+        }
+
+        $idLogado = exigirLogin();
+
+        if ($idLogado !== $id) {
+            responder(['erro' => 'Você só pode apagar a própria conta'], 403);
+        }
+
+        $stmt = $conn->prepare('DELETE FROM usuario WHERE id_user = ?');
+        $stmt->bind_param('i', $id);
+        $stmt->execute();
+        $removido = $stmt->affected_rows;
+        $stmt->close();
+
+        if ($removido === 0) {
+            responder(['erro' => 'Usuário não encontrado'], 404);
+        }
+
+        session_unset();
+        session_destroy();
+
+        responder(['mensagem' => 'Conta removida com sucesso']);
+
     default:
         responder(['erro' => 'Método não permitido'], 405);
 }

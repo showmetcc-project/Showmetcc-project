@@ -1264,6 +1264,7 @@ $imagemEvento = !empty($evento['imagem_evento'])
                     type="button"
                     class="btn-acao btn-favoritar"
                     data-evento-id="<?= (int) $id_evento ?>"
+                    aria-pressed="false"
                 >
 
                     <i class="bi bi-heart"></i>
@@ -1468,24 +1469,72 @@ $imagemEvento = !empty($evento['imagem_evento'])
     const botaoFavoritar = document.querySelector('.btn-favoritar');
 
     if (botaoFavoritar) {
-        botaoFavoritar.addEventListener('click', async function() {
+        const idEventoFavorito = Number(botaoFavoritar.dataset.eventoId);
+        let favoritoAtual = null;
+
+        function atualizarBotaoFavorito() {
+            const estaFavoritado = favoritoAtual !== null;
+            botaoFavoritar.setAttribute('aria-pressed', String(estaFavoritado));
+            botaoFavoritar.innerHTML = estaFavoritado
+                ? '<i class="bi bi-heart-fill"></i> Favoritado'
+                : '<i class="bi bi-heart"></i> Favoritar';
+        }
+
+        async function carregarEstadoFavorito() {
+            botaoFavoritar.disabled = true;
+
             try {
-                const resposta = await fetch('api/favoritos/', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({id_evento: Number(this.dataset.eventoId)})
-                });
+                const resposta = await fetch('api/favoritos/');
+
+                if (resposta.status === 401) {
+                    return;
+                }
+
+                const dados = await resposta.json();
+                if (!resposta.ok) {
+                    throw new Error(dados.erro || 'Não foi possível consultar os favoritos.');
+                }
+
+                favoritoAtual = dados.favoritos.find(
+                    favorito => Number(favorito.id_evento) === idEventoFavorito
+                ) || null;
+                atualizarBotaoFavorito();
+            } catch (erro) {
+                console.error(erro);
+            } finally {
+                botaoFavoritar.disabled = false;
+            }
+        }
+
+        botaoFavoritar.addEventListener('click', async function() {
+            this.disabled = true;
+
+            try {
+                const resposta = favoritoAtual
+                    ? await fetch(`api/favoritos/${favoritoAtual.id_favorito}`, {
+                        method: 'DELETE'
+                    })
+                    : await fetch('api/favoritos/', {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({id_evento: idEventoFavorito})
+                    });
                 const dados = await resposta.json();
 
                 if (!resposta.ok) {
-                    throw new Error(dados.erro || 'Não foi possível favoritar o evento.');
+                    throw new Error(dados.erro || 'Não foi possível alterar o favorito.');
                 }
 
-                this.innerHTML = '<i class="bi bi-heart-fill"></i> Favoritado';
+                favoritoAtual = favoritoAtual ? null : dados.favorito;
+                atualizarBotaoFavorito();
             } catch (erro) {
                 alert(erro.message);
+            } finally {
+                this.disabled = false;
             }
         });
+
+        carregarEstadoFavorito();
     }
 
     document.querySelectorAll('.btn-apagar-avaliacao').forEach(function(botao) {

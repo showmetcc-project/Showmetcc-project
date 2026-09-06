@@ -6,6 +6,7 @@ Os exemplos abaixo usam `curl.exe` no PowerShell. Ajuste a URL para a pasta/port
 $BASE = 'http://localhost/SEU-DIRETORIO/api'
 $COOKIE_COMUM = "$env:TEMP\showme-comum.txt"
 $COOKIE_ADMIN = "$env:TEMP\showme-admin.txt"
+$COOKIE_CONTA_DESCARTAVEL = "$env:TEMP\showme-conta-descartavel.txt"
 ```
 
 Para testar aprovação, deve existir uma conta com `tipo_usuario = 'admin'`. Esse perfil deve ser atribuído diretamente pelo administrador do banco, não pelo endpoint público de cadastro.
@@ -91,9 +92,34 @@ curl.exe -i -b $COOKIE_COMUM "$BASE/usuarios/ID_DO_PROPRIO_USUARIO"
 curl.exe -i -b $COOKIE_COMUM "$BASE/usuarios/ID_DE_OUTRO_USUARIO"
 ```
 
+### PUT /usuarios/{id} — sucesso e erro 403
+
+O primeiro comando atualiza o próprio perfil. Mesmo enviando `tipo_usuario`, esse campo
+é ignorado e permanece inalterado. O segundo tenta editar outro usuário.
+
+```powershell
+curl.exe -i -b $COOKIE_COMUM -X PUT "$BASE/usuarios/ID_DO_PROPRIO_USUARIO" `
+  -H "Content-Type: application/json" `
+  -d '{"nome":"Maria Atualizada","email":"maria.atualizada@exemplo.com","senha":"novaSenha123","tipo_usuario":"admin"}'
+
+curl.exe -i -b $COOKIE_COMUM -X PUT "$BASE/usuarios/ID_DE_OUTRO_USUARIO" `
+  -H "Content-Type: application/json" `
+  -d '{"nome":"Alteração indevida"}'
+```
+
+### DELETE /usuarios/{id} — sucesso e erro 403
+
+Use uma conta descartável no teste de sucesso, pois a conta e seus relacionamentos em
+cascata serão removidos e a sessão será encerrada.
+
+```powershell
+curl.exe -i -b $COOKIE_COMUM -X DELETE "$BASE/usuarios/ID_DE_OUTRO_USUARIO"
+curl.exe -i -b $COOKIE_CONTA_DESCARTAVEL -X DELETE "$BASE/usuarios/ID_DA_CONTA_DESCARTAVEL"
+```
+
 ## Eventos
 
-### GET /eventos — sucesso e erro 405
+### GET /eventos — sucesso e DELETE sem ID com erro 400
 
 ```powershell
 curl.exe -i "$BASE/eventos/"
@@ -132,7 +158,7 @@ curl.exe -i -c $COOKIE_ADMIN -X POST "$BASE/sessoes/" `
 
 curl.exe -i -b $COOKIE_ADMIN -X PUT "$BASE/eventos/ID_SOLICITACAO" `
   -H "Content-Type: application/json" `
-  -d '{"status_solicitacao":"aprovado"}'
+  -d '{"acao":"moderar","status_solicitacao":"aprovado"}'
 ```
 
 ### PUT /eventos/{id_solicitacao} — erro 403
@@ -140,12 +166,39 @@ curl.exe -i -b $COOKIE_ADMIN -X PUT "$BASE/eventos/ID_SOLICITACAO" `
 ```powershell
 curl.exe -i -b $COOKIE_COMUM -X PUT "$BASE/eventos/ID_SOLICITACAO" `
   -H "Content-Type: application/json" `
-  -d '{"status_solicitacao":"recusado"}'
+  -d '{"acao":"moderar","status_solicitacao":"recusado"}'
+```
+
+### PUT /eventos/{id_evento} — editar com sucesso e erro 403
+
+Com `acao: editar`, o ID da URL representa um evento aprovado, não uma solicitação.
+
+```powershell
+curl.exe -i -b $COOKIE_ADMIN -X PUT "$BASE/eventos/ID_EVENTO" `
+  -H "Content-Type: application/json" `
+  -d '{"acao":"editar","nome_evento":"Festival Regional Atualizado","cidade_evento":"Campinas","uf":"SP","gratuidade":false,"status_evento":"ativo"}'
+
+curl.exe -i -b $COOKIE_COMUM -X PUT "$BASE/eventos/ID_EVENTO" `
+  -H "Content-Type: application/json" `
+  -d '{"acao":"editar","nome_evento":"Alteração indevida"}'
+```
+
+### DELETE /eventos/{id} — sucesso e erro 403
+
+Use um evento descartável para o caso de sucesso, pois favoritos, avaliações, rotas e
+relações com artistas vinculados a ele serão removidos em cascata.
+
+```powershell
+curl.exe -i -b $COOKIE_COMUM -X DELETE "$BASE/eventos/ID_EVENTO"
+curl.exe -i -b $COOKIE_ADMIN -X DELETE "$BASE/eventos/ID_EVENTO_DESCARTAVEL"
 ```
 
 ## Favoritos
 
 ### GET /favoritos — sucesso e erro 401
+
+A resposta inclui `id_favorito` e `id_evento`; o frontend usa esses campos para decidir
+entre adicionar com POST ou remover com DELETE ao clicar no mesmo botão.
 
 ```powershell
 curl.exe -i -b $COOKIE_COMUM "$BASE/favoritos/"

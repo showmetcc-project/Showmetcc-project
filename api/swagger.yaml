@@ -78,6 +78,7 @@ paths:
     post:
       tags: [Usuários]
       summary: Cadastra um usuário comum
+      description: Qualquer tipo_usuario enviado pelo cliente é ignorado; o valor persistido é sempre comum.
       requestBody:
         required: true
         content:
@@ -124,6 +125,67 @@ paths:
                 properties:
                   usuario:
                     $ref: '#/components/schemas/Usuario'
+        '401':
+          $ref: '#/components/responses/NaoAutenticado'
+        '403':
+          $ref: '#/components/responses/Proibido'
+        '404':
+          $ref: '#/components/responses/NaoEncontrado'
+    put:
+      tags: [Usuários]
+      summary: Atualiza o próprio perfil
+      description: Permite alterar nome, sobrenome, e-mail e senha. tipo_usuario nunca é editável pela API.
+      security:
+        - cookieAuth: []
+      parameters:
+        - $ref: '#/components/parameters/IdNaRota'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UsuarioAtualizacao'
+      responses:
+        '200':
+          description: Perfil atualizado
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  mensagem:
+                    type: string
+                  usuario:
+                    $ref: '#/components/schemas/Usuario'
+        '400':
+          $ref: '#/components/responses/RequisicaoInvalida'
+        '401':
+          $ref: '#/components/responses/NaoAutenticado'
+        '403':
+          $ref: '#/components/responses/Proibido'
+        '404':
+          $ref: '#/components/responses/NaoEncontrado'
+        '409':
+          description: E-mail já utilizado por outro usuário
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erro'
+    delete:
+      tags: [Usuários]
+      summary: Apaga a própria conta
+      description: A exclusão em cascata do banco remove favoritos, avaliações, preferências, rotas, dados do Spotify e solicitações do usuário.
+      security:
+        - cookieAuth: []
+      parameters:
+        - $ref: '#/components/parameters/IdNaRota'
+      responses:
+        '200':
+          description: Conta removida e sessão encerrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Mensagem'
         '401':
           $ref: '#/components/responses/NaoAutenticado'
         '403':
@@ -196,8 +258,8 @@ paths:
           $ref: '#/components/responses/NaoEncontrado'
     put:
       tags: [Eventos]
-      summary: Aprova ou recusa uma solicitação
-      description: Neste método, o parâmetro id representa id_solicitacao. Aprovar também insere o evento na tabela evento.
+      summary: Modera uma solicitação ou edita um evento
+      description: Use acao=moderar quando o ID representar uma solicitação e acao=editar quando representar um evento. Por compatibilidade, enviar apenas status_solicitacao também seleciona a moderação.
       security:
         - cookieAuth: []
       parameters:
@@ -207,24 +269,28 @@ paths:
         content:
           application/json:
             schema:
-              type: object
-              required: [status_solicitacao]
-              properties:
-                status_solicitacao:
-                  type: string
-                  enum: [aprovado, recusado]
+              oneOf:
+                - $ref: '#/components/schemas/ModeracaoSolicitacao'
+                - $ref: '#/components/schemas/EventoAtualizacao'
       responses:
         '200':
-          description: Solicitação analisada
+          description: Solicitação analisada ou evento atualizado
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  mensagem:
-                    type: string
-                  solicitacao:
-                    $ref: '#/components/schemas/SolicitacaoResultado'
+                oneOf:
+                  - type: object
+                    properties:
+                      mensagem:
+                        type: string
+                      solicitacao:
+                        $ref: '#/components/schemas/SolicitacaoResultado'
+                  - type: object
+                    properties:
+                      mensagem:
+                        type: string
+                      evento:
+                        $ref: '#/components/schemas/Evento'
         '400':
           $ref: '#/components/responses/RequisicaoInvalida'
         '401':
@@ -239,11 +305,33 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Erro'
+    delete:
+      tags: [Eventos]
+      summary: Remove um evento
+      description: Restrito a administradores. Relacionamentos configurados com ON DELETE CASCADE são removidos pelo banco.
+      security:
+        - cookieAuth: []
+      parameters:
+        - $ref: '#/components/parameters/IdNaRota'
+      responses:
+        '200':
+          description: Evento removido
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Mensagem'
+        '401':
+          $ref: '#/components/responses/NaoAutenticado'
+        '403':
+          $ref: '#/components/responses/Proibido'
+        '404':
+          $ref: '#/components/responses/NaoEncontrado'
 
   /favoritos:
     get:
       tags: [Favoritos]
       summary: Lista os favoritos do usuário atual
+      description: Cada item contém id_favorito e id_evento, permitindo ao frontend alternar o favorito sem endpoint adicional.
       security:
         - cookieAuth: []
       responses:
@@ -528,6 +616,25 @@ components:
           format: password
           minLength: 6
 
+    UsuarioAtualizacao:
+      type: object
+      description: Informe pelo menos um campo editável. Se tipo_usuario for enviado, será ignorado e nunca alterado.
+      properties:
+        nome:
+          type: string
+          maxLength: 100
+        sobrenome:
+          type: string
+          maxLength: 100
+        email:
+          type: string
+          format: email
+          maxLength: 100
+        senha:
+          type: string
+          format: password
+          minLength: 6
+
     Usuario:
       type: object
       properties:
@@ -572,6 +679,68 @@ components:
           nullable: true
         descricao_evento:
           type: string
+          nullable: true
+        data_evento:
+          type: string
+          format: date
+          nullable: true
+        gratuidade:
+          type: boolean
+        categoria_evento:
+          type: string
+          nullable: true
+        link_oficial:
+          type: string
+          nullable: true
+        imagem_evento:
+          type: string
+          nullable: true
+        status_evento:
+          type: string
+          enum: [ativo, cancelado]
+
+    ModeracaoSolicitacao:
+      type: object
+      required: [status_solicitacao]
+      properties:
+        acao:
+          type: string
+          enum: [moderar]
+        status_solicitacao:
+          type: string
+          enum: [aprovado, recusado]
+
+    EventoAtualizacao:
+      type: object
+      required: [acao]
+      properties:
+        acao:
+          type: string
+          enum: [editar]
+        num_evento:
+          type: integer
+          minimum: 1
+          nullable: true
+        nome_evento:
+          type: string
+          maxLength: 100
+        local_evento:
+          type: string
+          nullable: true
+        rua_evento:
+          type: string
+          nullable: true
+        cidade_evento:
+          type: string
+          nullable: true
+        uf:
+          type: string
+          minLength: 2
+          maxLength: 2
+          nullable: true
+        descricao_evento:
+          type: string
+          maxLength: 1000
           nullable: true
         data_evento:
           type: string

@@ -110,7 +110,7 @@
 
                 <div class="admin-link">
                     Procurando pela
-                    <a href="loginAdm.php">área administrativa?</a>
+                    <a href="loginAdmin.php">área administrativa?</a>
                 </div>
 
                 <div class="register-link">

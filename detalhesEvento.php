@@ -957,7 +957,7 @@ $imagemEvento = !empty($evento['imagem_evento'])
 
                                         <?php if ($id_user && ((int) $avaliacao['id_user'] === (int) $id_user || ($_SESSION['tipo_usuario'] ?? '') === 'admin')): ?>
                                             <div class="acoes-avaliacao">
-                                                <a href="editar_avalicoes.php?id_avaliacao=<?= (int) $avaliacao['id_avaliacao'] ?>">
+                                                <a href="editarAvaliacoes.php?id_avaliacao=<?= (int) $avaliacao['id_avaliacao'] ?>">
                                                     Editar
                                                 </a>
                                                 <button

@@ -679,7 +679,7 @@ foreach ($eventos as $evento) {
 
 
             <?php if (isset($_SESSION['id_user'])): ?>
-                <a class="btn-user preto" href="perfilusuario.php">
+                <a class="btn-user preto" href="perfilUsuario.php">
                     <i class="bi bi-person-fill"></i>
                     <?= htmlspecialchars($_SESSION['nome_user'], ENT_QUOTES, 'UTF-8') ?>
                 </a>

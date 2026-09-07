@@ -28,7 +28,7 @@ $nomeUsuario = htmlspecialchars(
             </a>
             <ul>
               <li>
-                <a href="perfilusuario.php">
+                <a href="perfilUsuario.php">
                   <i class="bi bi-person"></i>
                   <div>
                     <span>Meu perfil</span>
@@ -37,7 +37,7 @@ $nomeUsuario = htmlspecialchars(
                 </a>
               </li>
               <li>
-                <a href="loginAdm.php">
+                <a href="loginAdmin.php">
                   <i class="bi bi-shield"></i>
                   <div>
                     <span>Administrador</span>

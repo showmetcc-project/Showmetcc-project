@@ -305,6 +305,32 @@ a {
     border-color: #39ff14;
 }
 
+.avaliar-card input[type="file"] {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #383838;
+    border-radius: 10px;
+    background: #1a1a1a;
+    color: #ddd;
+}
+
+.avaliar-card input[type="file"]::file-selector-button {
+    margin-right: 12px;
+    padding: 8px 12px;
+    border: 0;
+    border-radius: 8px;
+    background: #39ff14;
+    color: #101010;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.avaliar-card form > small {
+    display: block;
+    margin-top: 7px;
+    color: #888;
+}
+
 /* Área de upload */
 .upload-area {
     display: inline-flex;

@@ -212,13 +212,13 @@ paths:
     post:
       tags: [Eventos]
       summary: Cria uma solicitação de evento
-      description: O evento permanece pendente até a análise de um administrador.
+      description: O evento permanece pendente até a análise de um administrador. Exige exatamente uma foto JPG, PNG ou WebP, com até 10 MB; vídeos não são aceitos. A API atual não possui edição de solicitação pendente; cada POST cria uma nova solicitação, portanto não há substituição de foto neste fluxo.
       security:
         - cookieAuth: []
       requestBody:
         required: true
         content:
-          application/json:
+          multipart/form-data:
             schema:
               $ref: '#/components/schemas/SolicitacaoCadastro'
       responses:
@@ -439,12 +439,13 @@ paths:
     post:
       tags: [Avaliações]
       summary: Cria uma avaliação
+      description: Exige de 1 a 5 mídias no total. Cada arquivo pode ser uma foto JPG, PNG ou WebP (até 10 MB) ou um vídeo MP4 ou WebM (até 30 MB). A requisição completa não pode ultrapassar 38 MB.
       security:
         - cookieAuth: []
       requestBody:
         required: true
         content:
-          application/json:
+          multipart/form-data:
             schema:
               $ref: '#/components/schemas/AvaliacaoEntrada'
       responses:
@@ -476,7 +477,7 @@ paths:
     put:
       tags: [Avaliações]
       summary: Atualiza uma avaliação
-      description: Permitido para o autor da avaliação ou para um administrador.
+      description: Permitido para o autor da avaliação ou para um administrador. Este endpoint edita somente nota e comentário; as mídias são definidas na criação.
       security:
         - cookieAuth: []
       parameters:
@@ -763,14 +764,14 @@ components:
 
     SolicitacaoCadastro:
       type: object
-      required: [nome_evento]
+      required: [nome_evento, foto]
       properties:
         nome_evento:
           type: string
           maxLength: 100
         foto:
           type: string
-          nullable: true
+          format: binary
         horario_evento:
           type: string
           example: '20:00'
@@ -801,6 +802,9 @@ components:
           enum: [pendente, aprovado, recusado]
         id_evento:
           type: integer
+          nullable: true
+        foto:
+          type: string
           nullable: true
 
     FavoritoCriado:
@@ -839,7 +843,7 @@ components:
 
     AvaliacaoEntrada:
       type: object
-      required: [id_evento, nota, comentario]
+      required: [id_evento, nota, comentario, midias]
       properties:
         id_evento:
           type: integer
@@ -850,6 +854,13 @@ components:
         comentario:
           type: string
           maxLength: 1000
+        midias:
+          type: array
+          minItems: 1
+          maxItems: 5
+          items:
+            type: string
+            format: binary
 
     AvaliacaoAtualizacao:
       type: object
@@ -885,3 +896,23 @@ components:
           type: string
         sobrenome:
           type: string
+        midias:
+          type: array
+          items:
+            $ref: '#/components/schemas/AvaliacaoMidia'
+
+    AvaliacaoMidia:
+      type: object
+      properties:
+        id_midia:
+          type: integer
+        id_avaliacao:
+          type: integer
+        tipo_midia:
+          type: string
+          enum: [foto, video]
+        caminho_arquivo:
+          type: string
+        data_upload:
+          type: string
+          format: date-time

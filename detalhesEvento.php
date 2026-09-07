@@ -1013,7 +1013,7 @@ $imagemEvento = !empty($evento['imagem_evento'])
 
                         <div id="mensagemAvaliacao" class="alert d-none" role="alert"></div>
 
-                        <form id="formAvaliacao">
+                        <form id="formAvaliacao" enctype="multipart/form-data">
 
 
                             <h2>
@@ -1103,6 +1103,28 @@ $imagemEvento = !empty($evento['imagem_evento'])
                                 placeholder="Conte a sua experiência aqui..."
                                 required
                             ></textarea>
+
+
+                            <!-- MÍDIAS -->
+
+                            <label for="midiasAvaliacao">
+
+                                Fotos e vídeos:
+
+                            </label>
+
+
+                            <input
+                                type="file"
+                                name="midias[]"
+                                id="midiasAvaliacao"
+                                accept="image/jpeg,image/png,image/webp,video/mp4,video/webm"
+                                multiple
+                                required
+                            >
+
+
+                            <small>Envie de 1 a 5 arquivos: JPG, PNG, WebP, MP4 ou WebM.</small>
 
 
                             <!-- ENVIAR -->
@@ -1443,14 +1465,14 @@ $imagemEvento = !empty($evento['imagem_evento'])
             mensagemAvaliacao.className = 'alert d-none';
 
             try {
+                const arquivos = formAvaliacao.elements['midias[]'].files;
+                if (arquivos.length < 1 || arquivos.length > 5) {
+                    throw new Error('Selecione de 1 a 5 fotos ou vídeos.');
+                }
+
                 const resposta = await fetch('api/avaliacoes/', {
                     method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({
-                        id_evento: Number(formAvaliacao.elements.id_evento.value),
-                        nota: Number(campoNota.value),
-                        comentario: formAvaliacao.elements.comentario.value
-                    })
+                    body: new FormData(formAvaliacao)
                 });
                 const dados = await resposta.json();
 

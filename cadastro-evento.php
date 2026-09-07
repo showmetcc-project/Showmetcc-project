@@ -66,16 +66,19 @@
 
             <div id="mensagemEvento" class="alert d-none" role="alert"></div>
 
-            <form id="formEvento">
+            <form id="formEvento" enctype="multipart/form-data">
 
                 <div class="mb-3">
-                    <label class="form-label" for="imagemEvento">URL da imagem do evento</label>
+                    <label class="form-label" for="imagemEvento">Foto do evento</label>
                     <input
-                        type="url"
+                        type="file"
                         id="imagemEvento"
+                        name="foto"
                         class="form-control"
-                        placeholder="https://exemplo.com/imagem.jpg"
+                        accept="image/jpeg,image/png,image/webp"
+                        required
                     >
+                    <div class="form-text">JPG, PNG ou WebP, com até 10 MB.</div>
                 </div>
 
                 <div class="mb-3">
@@ -175,19 +178,22 @@
             mensagemEvento.className = 'alert d-none';
 
             try {
+                const dadosFormulario = new FormData();
+                dadosFormulario.append('nome_evento', document.getElementById('nomeEvento').value);
+                dadosFormulario.append('local_evento', document.getElementById('localEvento').value);
+                dadosFormulario.append('data_evento', document.getElementById('dataEvento').value);
+                dadosFormulario.append('horario_evento', document.getElementById('horarioEvento').value);
+                dadosFormulario.append(
+                    'gratuidade',
+                    document.querySelector('input[name="ingresso"]:checked').value === '1' ? 'true' : 'false'
+                );
+                dadosFormulario.append('descricao_evento', document.getElementById('descricaoEvento').value);
+                dadosFormulario.append('descricao_artista', document.getElementById('descricaoArtista').value);
+                dadosFormulario.append('foto', inputImagem.files[0]);
+
                 const resposta = await fetch('api/eventos/', {
                     method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({
-                        nome_evento: document.getElementById('nomeEvento').value,
-                        local_evento: document.getElementById('localEvento').value,
-                        data_evento: document.getElementById('dataEvento').value || null,
-                        horario_evento: document.getElementById('horarioEvento').value || null,
-                        gratuidade: document.querySelector('input[name="ingresso"]:checked').value === '1',
-                        descricao_evento: document.getElementById('descricaoEvento').value,
-                        descricao_artista: document.getElementById('descricaoArtista').value,
-                        foto: inputImagem.value || null
-                    })
+                    body: dadosFormulario
                 });
                 const dados = await resposta.json();
 

@@ -136,6 +136,15 @@ CREATE TABLE avaliacao (
     UNIQUE KEY uk_avaliacao (id_user, id_evento)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+CREATE TABLE avaliacao_midia (
+    id_midia        INT PRIMARY KEY AUTO_INCREMENT,
+    id_avaliacao    INT NOT NULL,
+    tipo_midia      ENUM('foto', 'video') NOT NULL,
+    caminho_arquivo VARCHAR(255) NOT NULL,
+    data_upload     DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (id_avaliacao) REFERENCES avaliacao(id_avaliacao) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 CREATE TABLE solicitacao (
     id_solicitacao      INT PRIMARY KEY AUTO_INCREMENT,
     id_user              INT NOT NULL,

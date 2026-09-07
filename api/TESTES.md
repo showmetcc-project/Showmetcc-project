@@ -7,7 +7,18 @@ $BASE = 'http://localhost/SEU-DIRETORIO/api'
 $COOKIE_COMUM = "$env:TEMP\showme-comum.txt"
 $COOKIE_ADMIN = "$env:TEMP\showme-admin.txt"
 $COOKIE_CONTA_DESCARTAVEL = "$env:TEMP\showme-conta-descartavel.txt"
+$FOTO_1 = 'C:\CAMINHO\foto1.jpg'
+$FOTO_2 = 'C:\CAMINHO\foto2.png'
+$FOTO_3 = 'C:\CAMINHO\foto3.webp'
+$VIDEO_1 = 'C:\CAMINHO\video1.mp4'
+$VIDEO_2 = 'C:\CAMINHO\video2.webm'
+$ARQUIVO_PHP = 'C:\CAMINHO\arquivo.php'
 ```
+
+Antes de testar mídias de avaliações, aplique manualmente a migração
+`assets/banco/showme.sql` no banco de desenvolvimento.
+Use arquivos pequenos: a aplicação limita fotos a 10 MB, vídeos a 30 MB e a requisição
+completa a 38 MB.
 
 Para testar aprovação, deve existir uma conta com `tipo_usuario = 'admin'`. Esse perfil deve ser atribuído diretamente pelo administrador do banco, não pelo endpoint público de cadastro.
 
@@ -137,16 +148,37 @@ curl.exe -i "$BASE/eventos/999999999"
 
 ```powershell
 curl.exe -i -b $COOKIE_COMUM -X POST "$BASE/eventos/" `
-  -H "Content-Type: application/json" `
-  -d '{"nome_evento":"Festival Regional","local_evento":"Praça Central","data_evento":"2026-12-20","horario_evento":"20:00","gratuidade":true,"descricao_evento":"Evento cultural","descricao_artista":"Artistas locais"}'
+  -F "nome_evento=Festival Regional" `
+  -F "local_evento=Praça Central" `
+  -F "data_evento=2026-12-20" `
+  -F "horario_evento=20:00" `
+  -F "gratuidade=true" `
+  -F "descricao_evento=Evento cultural" `
+  -F "descricao_artista=Artistas locais" `
+  -F "foto=@$FOTO_1"
 ```
 
 ### POST /eventos — erro 401
 
 ```powershell
 curl.exe -i -X POST "$BASE/eventos/" `
-  -H "Content-Type: application/json" `
-  -d '{"nome_evento":"Festival sem sessão"}'
+  -F "nome_evento=Festival sem sessão" `
+  -F "foto=@$FOTO_1"
+```
+
+### POST /eventos — PHP disfarçado e vídeo são rejeitados com 400
+
+O parâmetro `filename` simula a troca do nome para `.jpg`, e o `type` simula um MIME
+declarado pelo cliente. A API deve detectar o conteúdo PHP real com `finfo`.
+
+```powershell
+curl.exe -i -b $COOKIE_COMUM -X POST "$BASE/eventos/" `
+  -F "nome_evento=Arquivo malicioso" `
+  -F "foto=@$ARQUIVO_PHP;filename=disfarce.jpg;type=image/jpeg"
+
+curl.exe -i -b $COOKIE_COMUM -X POST "$BASE/eventos/" `
+  -F "nome_evento=Evento com vídeo" `
+  -F "foto=@$VIDEO_1"
 ```
 
 ### PUT /eventos/{id_solicitacao} — sucesso
@@ -228,21 +260,62 @@ curl.exe -i -b $COOKIE_COMUM -X DELETE "$BASE/favoritos/999999999"
 
 ### GET /avaliacoes?evento_id= — sucesso e erro 400
 
+A resposta de sucesso deve trazer `midias` como array em cada avaliação.
+
 ```powershell
 curl.exe -i "$BASE/avaliacoes/?evento_id=1"
 curl.exe -i "$BASE/avaliacoes/"
 ```
 
-### POST /avaliacoes — sucesso e erro 400
+### POST /avaliacoes — PHP disfarçado é rejeitado com 400
 
 ```powershell
 curl.exe -i -b $COOKIE_COMUM -X POST "$BASE/avaliacoes/" `
-  -H "Content-Type: application/json" `
-  -d '{"id_evento":1,"nota":5,"comentario":"Excelente evento"}'
+  -F "id_evento=ID_EVENTO" `
+  -F "nota=5" `
+  -F "comentario=Teste de tipo real" `
+  -F "midias[]=@$ARQUIVO_PHP;filename=disfarce.jpg;type=image/jpeg"
+```
 
+### POST /avaliacoes — sucesso com 3 fotos e 2 vídeos
+
+Use um usuário que ainda não tenha avaliado o evento indicado.
+
+```powershell
 curl.exe -i -b $COOKIE_COMUM -X POST "$BASE/avaliacoes/" `
-  -H "Content-Type: application/json" `
-  -d '{"id_evento":1,"nota":9,"comentario":"Nota inválida"}'
+  -F "id_evento=ID_EVENTO" `
+  -F "nota=5" `
+  -F "comentario=Excelente evento" `
+  -F "midias[]=@$FOTO_1" `
+  -F "midias[]=@$FOTO_2" `
+  -F "midias[]=@$FOTO_3" `
+  -F "midias[]=@$VIDEO_1" `
+  -F "midias[]=@$VIDEO_2"
+```
+
+### POST /avaliacoes — uma 6ª mídia é rejeitada com 400
+
+```powershell
+curl.exe -i -b $COOKIE_COMUM -X POST "$BASE/avaliacoes/" `
+  -F "id_evento=ID_EVENTO" `
+  -F "nota=5" `
+  -F "comentario=Mídias demais" `
+  -F "midias[]=@$FOTO_1" `
+  -F "midias[]=@$FOTO_2" `
+  -F "midias[]=@$FOTO_3" `
+  -F "midias[]=@$VIDEO_1" `
+  -F "midias[]=@$VIDEO_2" `
+  -F "midias[]=@$FOTO_1"
+```
+
+### POST /avaliacoes — nota inválida retorna 400
+
+```powershell
+curl.exe -i -b $COOKIE_COMUM -X POST "$BASE/avaliacoes/" `
+  -F "id_evento=ID_EVENTO" `
+  -F "nota=9" `
+  -F "comentario=Nota inválida" `
+  -F "midias[]=@$FOTO_1"
 ```
 
 ### PUT /avaliacoes/{id} — sucesso e erro 404

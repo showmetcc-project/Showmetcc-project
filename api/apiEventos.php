@@ -52,6 +52,7 @@ if (session_status() !== PHP_SESSION_ACTIVE) {
 require_once dirname(__DIR__) . '/assets/config/conexao.php';
 require_once __DIR__ . '/middleware/verifica_login.php';
 require_once __DIR__ . '/middleware/verifica_admin.php';
+require_once __DIR__ . '/middleware/uploadHelper.php';
 
 $metodo = $_SERVER['REQUEST_METHOD'];
 $id = null;
@@ -101,19 +102,39 @@ switch ($metodo) {
         }
 
         $idUsuario = exigirLogin();
-        $dados = lerJson();
+        $tipoConteudo = (string) ($_SERVER['CONTENT_TYPE'] ?? '');
+        if (!str_starts_with(strtolower($tipoConteudo), 'multipart/form-data')) {
+            responder(['erro' => 'Envie os dados como multipart/form-data'], 400);
+        }
+
+        try {
+            validarTamanhoTotalUpload();
+        } catch (UploadInvalidoException $erro) {
+            responder(['erro' => $erro->getMessage()], 400);
+        }
+
+        $dados = $_POST;
         $nome = trim((string) ($dados['nome_evento'] ?? ''));
-        $foto = isset($dados['foto']) ? trim((string) $dados['foto']) : null;
         $horario = isset($dados['horario_evento']) ? trim((string) $dados['horario_evento']) : null;
         $data = isset($dados['data_evento']) ? trim((string) $dados['data_evento']) : null;
         $local = isset($dados['local_evento']) ? trim((string) $dados['local_evento']) : null;
-        $gratuidade = !empty($dados['gratuidade']) ? 1 : 0;
+        $gratuidadeRecebida = filter_var(
+            $dados['gratuidade'] ?? false,
+            FILTER_VALIDATE_BOOLEAN,
+            FILTER_NULL_ON_FAILURE
+        );
         $descricao = isset($dados['descricao_evento']) ? trim((string) $dados['descricao_evento']) : null;
         $descricaoArtista = isset($dados['descricao_artista']) ? trim((string) $dados['descricao_artista']) : null;
 
         if ($nome === '') {
             responder(['erro' => 'Nome do evento é obrigatório'], 400);
         }
+
+        if ($gratuidadeRecebida === null) {
+            responder(['erro' => 'gratuidade deve ser true ou false'], 400);
+        }
+
+        $gratuidade = $gratuidadeRecebida ? 1 : 0;
 
         if ($data !== null && $data !== '' && !preg_match('/^\d{4}-\d{2}-\d{2}$/', $data)) {
             responder(['erro' => 'data_evento deve usar o formato YYYY-MM-DD'], 400);
@@ -123,33 +144,58 @@ switch ($metodo) {
             responder(['erro' => 'horario_evento deve usar HH:MM ou HH:MM:SS'], 400);
         }
 
-        $stmt = $conn->prepare(
-            'INSERT INTO solicitacao
-             (id_user, nome_evento, foto, horario_evento, data_evento, local_evento,
-              gratuidade, descricao_evento, descricao_artista)
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)'
-        );
-        $stmt->bind_param(
-            'isssssiss',
-            $idUsuario,
-            $nome,
-            $foto,
-            $horario,
-            $data,
-            $local,
-            $gratuidade,
-            $descricao,
-            $descricaoArtista
-        );
-        $stmt->execute();
-        $idSolicitacao = $conn->insert_id;
-        $stmt->close();
+        try {
+            $arquivos = normalizarArquivosUpload($_FILES['foto'] ?? null);
+        } catch (UploadInvalidoException $erro) {
+            responder(['erro' => $erro->getMessage()], 400);
+        }
+
+        if (count($arquivos) !== 1) {
+            responder(['erro' => 'Envie exatamente uma foto do evento'], 400);
+        }
+
+        $fotoSalva = null;
+
+        try {
+            $fotoSalva = salvarArquivoUpload($arquivos[0], ['foto'], 'eventos');
+            $foto = $fotoSalva['caminho_arquivo'];
+
+            $stmt = $conn->prepare(
+                'INSERT INTO solicitacao
+                 (id_user, nome_evento, foto, horario_evento, data_evento, local_evento,
+                  gratuidade, descricao_evento, descricao_artista)
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)'
+            );
+            $stmt->bind_param(
+                'isssssiss',
+                $idUsuario,
+                $nome,
+                $foto,
+                $horario,
+                $data,
+                $local,
+                $gratuidade,
+                $descricao,
+                $descricaoArtista
+            );
+            $stmt->execute();
+            $idSolicitacao = $conn->insert_id;
+            $stmt->close();
+        } catch (UploadInvalidoException $erro) {
+            responder(['erro' => $erro->getMessage()], 400);
+        } catch (Throwable $erro) {
+            if ($fotoSalva !== null) {
+                removerArquivoUpload($fotoSalva['caminho_arquivo']);
+            }
+            responder(['erro' => 'Não foi possível criar a solicitação de evento'], 500);
+        }
 
         responder([
             'mensagem' => 'Solicitação de evento criada com sucesso',
             'solicitacao' => [
                 'id_solicitacao' => $idSolicitacao,
-                'status_solicitacao' => 'pendente'
+                'status_solicitacao' => 'pendente',
+                'foto' => $foto
             ]
         ], 201);
 

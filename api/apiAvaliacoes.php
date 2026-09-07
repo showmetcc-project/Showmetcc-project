@@ -50,6 +50,7 @@ if (session_status() !== PHP_SESSION_ACTIVE) {
 
 require_once dirname(__DIR__) . '/assets/config/conexao.php';
 require_once __DIR__ . '/middleware/verifica_login.php';
+require_once __DIR__ . '/middleware/uploadHelper.php';
 
 $metodo = $_SERVER['REQUEST_METHOD'];
 $id = null;
@@ -94,9 +95,35 @@ switch ($metodo) {
             $avaliacao['id_evento'] = (int) $avaliacao['id_evento'];
             $avaliacao['id_user'] = (int) $avaliacao['id_user'];
             $avaliacao['nota'] = (int) $avaliacao['nota'];
+            $avaliacao['midias'] = [];
             $avaliacoes[] = $avaliacao;
         }
         $stmt->close();
+
+        $stmt = $conn->prepare(
+            'SELECT m.id_midia, m.id_avaliacao, m.tipo_midia, m.caminho_arquivo, m.data_upload
+             FROM avaliacao_midia m
+             INNER JOIN avaliacao a ON a.id_avaliacao = m.id_avaliacao
+             WHERE a.id_evento = ?
+             ORDER BY m.id_midia ASC'
+        );
+        $stmt->bind_param('i', $idEvento);
+        $stmt->execute();
+        $resultadoMidias = $stmt->get_result();
+        $midiasPorAvaliacao = [];
+
+        while ($midia = $resultadoMidias->fetch_assoc()) {
+            $idAvaliacao = (int) $midia['id_avaliacao'];
+            $midia['id_midia'] = (int) $midia['id_midia'];
+            $midia['id_avaliacao'] = $idAvaliacao;
+            $midiasPorAvaliacao[$idAvaliacao][] = $midia;
+        }
+        $stmt->close();
+
+        foreach ($avaliacoes as &$avaliacao) {
+            $avaliacao['midias'] = $midiasPorAvaliacao[$avaliacao['id_avaliacao']] ?? [];
+        }
+        unset($avaliacao);
 
         responder(['avaliacoes' => $avaliacoes]);
 
@@ -106,12 +133,33 @@ switch ($metodo) {
         }
 
         $idUsuario = exigirLogin();
-        $dados = lerJson();
+        $tipoConteudo = (string) ($_SERVER['CONTENT_TYPE'] ?? '');
+        if (!str_starts_with(strtolower($tipoConteudo), 'multipart/form-data')) {
+            responder(['erro' => 'Envie os dados como multipart/form-data'], 400);
+        }
+
+        try {
+            validarTamanhoTotalUpload();
+        } catch (UploadInvalidoException $erro) {
+            responder(['erro' => $erro->getMessage()], 400);
+        }
+
+        $dados = $_POST;
         $idEvento = filter_var($dados['id_evento'] ?? null, FILTER_VALIDATE_INT);
         [$nota, $comentario] = validarAvaliacao($dados);
 
         if (!$idEvento) {
             responder(['erro' => 'id_evento é obrigatório'], 400);
+        }
+
+        try {
+            $arquivos = normalizarArquivosUpload($_FILES['midias'] ?? null);
+        } catch (UploadInvalidoException $erro) {
+            responder(['erro' => $erro->getMessage()], 400);
+        }
+
+        if (count($arquivos) < 1 || count($arquivos) > 5) {
+            responder(['erro' => 'Envie de 1 a 5 fotos ou vídeos'], 400);
         }
 
         $stmt = $conn->prepare('SELECT id_evento FROM evento WHERE id_evento = ? LIMIT 1');
@@ -138,13 +186,61 @@ switch ($metodo) {
         }
         $stmt->close();
 
-        $stmt = $conn->prepare(
-            'INSERT INTO avaliacao (id_user, id_evento, nota, comentario) VALUES (?, ?, ?, ?)'
-        );
-        $stmt->bind_param('iiis', $idUsuario, $idEvento, $nota, $comentario);
-        $stmt->execute();
-        $idAvaliacao = $conn->insert_id;
-        $stmt->close();
+        $midiasSalvas = [];
+        try {
+            foreach ($arquivos as $arquivo) {
+                $midiasSalvas[] = salvarArquivoUpload(
+                    $arquivo,
+                    ['foto', 'video'],
+                    'avaliacoes'
+                );
+            }
+        } catch (UploadInvalidoException $erro) {
+            foreach ($midiasSalvas as $midia) {
+                removerArquivoUpload($midia['caminho_arquivo']);
+            }
+            responder(['erro' => $erro->getMessage()], 400);
+        } catch (Throwable $erro) {
+            foreach ($midiasSalvas as $midia) {
+                removerArquivoUpload($midia['caminho_arquivo']);
+            }
+            responder(['erro' => 'Não foi possível salvar as mídias da avaliação'], 500);
+        }
+
+        $conn->begin_transaction();
+
+        try {
+            $stmt = $conn->prepare(
+                'INSERT INTO avaliacao (id_user, id_evento, nota, comentario) VALUES (?, ?, ?, ?)'
+            );
+            $stmt->bind_param('iiis', $idUsuario, $idEvento, $nota, $comentario);
+            $stmt->execute();
+            $idAvaliacao = $conn->insert_id;
+            $stmt->close();
+
+            $stmtMidia = $conn->prepare(
+                'INSERT INTO avaliacao_midia (id_avaliacao, tipo_midia, caminho_arquivo)
+                 VALUES (?, ?, ?)'
+            );
+
+            foreach ($midiasSalvas as $indiceMidia => $midia) {
+                $tipoMidia = $midia['tipo_midia'];
+                $caminhoArquivo = $midia['caminho_arquivo'];
+                $stmtMidia->bind_param('iss', $idAvaliacao, $tipoMidia, $caminhoArquivo);
+                $stmtMidia->execute();
+                $midiasSalvas[$indiceMidia]['id_midia'] = $conn->insert_id;
+                $midiasSalvas[$indiceMidia]['id_avaliacao'] = $idAvaliacao;
+            }
+
+            $stmtMidia->close();
+            $conn->commit();
+        } catch (Throwable $erro) {
+            $conn->rollback();
+            foreach ($midiasSalvas as $midia) {
+                removerArquivoUpload($midia['caminho_arquivo']);
+            }
+            responder(['erro' => 'Não foi possível criar a avaliação'], 500);
+        }
 
         responder([
             'mensagem' => 'Avaliação criada com sucesso',
@@ -152,7 +248,8 @@ switch ($metodo) {
                 'id_avaliacao' => $idAvaliacao,
                 'id_evento' => $idEvento,
                 'nota' => $nota,
-                'comentario' => $comentario
+                'comentario' => $comentario,
+                'midias' => $midiasSalvas
             ]
         ], 201);
 
@@ -217,10 +314,27 @@ switch ($metodo) {
             responder(['erro' => 'Você não pode apagar esta avaliação'], 403);
         }
 
+        $stmt = $conn->prepare(
+            'SELECT caminho_arquivo FROM avaliacao_midia WHERE id_avaliacao = ?'
+        );
+        $stmt->bind_param('i', $id);
+        $stmt->execute();
+        $resultadoMidias = $stmt->get_result();
+        $caminhosMidias = [];
+
+        while ($midia = $resultadoMidias->fetch_assoc()) {
+            $caminhosMidias[] = $midia['caminho_arquivo'];
+        }
+        $stmt->close();
+
         $stmt = $conn->prepare('DELETE FROM avaliacao WHERE id_avaliacao = ?');
         $stmt->bind_param('i', $id);
         $stmt->execute();
         $stmt->close();
+
+        foreach ($caminhosMidias as $caminhoMidia) {
+            removerArquivoUpload($caminhoMidia);
+        }
 
         responder(['mensagem' => 'Avaliação removida com sucesso']);
 

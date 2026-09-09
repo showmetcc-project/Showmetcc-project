@@ -4,6 +4,7 @@ Os exemplos abaixo usam `curl.exe` no PowerShell. Ajuste a URL para a pasta/port
 
 ```powershell
 $BASE = 'http://localhost/SEU-DIRETORIO/api'
+$SITE = 'http://localhost/SEU-DIRETORIO'
 $COOKIE_COMUM = "$env:TEMP\showme-comum.txt"
 $COOKIE_ADMIN = "$env:TEMP\showme-admin.txt"
 $COOKIE_CONTA_DESCARTAVEL = "$env:TEMP\showme-conta-descartavel.txt"
@@ -364,6 +365,36 @@ curl.exe -i -b $COOKIE_COMUM -X PUT "$BASE/avaliacoes/999999999" `
 ```powershell
 curl.exe -i -b $COOKIE_COMUM -X DELETE "$BASE/avaliacoes/ID_AVALIACAO"
 curl.exe -i -b $COOKIE_COMUM -X DELETE "$BASE/avaliacoes/999999999"
+```
+
+## Formulário de contato
+
+Antes do teste de sucesso, preencha `config/email.php` com as credenciais SMTP do
+provedor de testes e execute `composer install` na raiz do projeto.
+
+### POST /forms/contact.php — envio com sucesso
+
+A resposta esperada é HTTP `200` com `{"sucesso":true}`, e a mensagem deve aparecer na
+caixa de entrada do provedor de testes.
+
+```powershell
+curl.exe -i -X POST "$SITE/forms/contact.php" `
+  -H "Accept: application/json" `
+  -F "nome=Usuário de Teste" `
+  -F "email=usuario@exemplo.com" `
+  -F "mensagem=Mensagem enviada pelo teste automatizado do formulário ShowMe."
+```
+
+### POST /forms/contact.php — erro de validação
+
+A resposta esperada é HTTP `422` com um objeto JSON contendo `erro`.
+
+```powershell
+curl.exe -i -X POST "$SITE/forms/contact.php" `
+  -H "Accept: application/json" `
+  -F "nome=A" `
+  -F "email=email-invalido" `
+  -F "mensagem=curta"
 ```
 
 ## Preflight CORS

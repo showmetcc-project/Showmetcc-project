@@ -1,0 +1,9 @@
+{
+    "name": "showme/tcc",
+    "description": "Projeto de TCC ShowMe em PHP e MySQL",
+    "type": "project",
+    "license": "proprietary",
+    "require": {
+        "phpmailer/phpmailer": "^7.1"
+    }
+}

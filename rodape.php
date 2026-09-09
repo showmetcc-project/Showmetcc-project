@@ -19,12 +19,36 @@
 
       <div class="col-lg-4 col-md-6">
         <h4>Entre em Contato</h4>
-        <form class="footer-contact-form">
-          <input type="email" placeholder="Seu e-mail" aria-label="Seu e-mail">
-          <textarea placeholder="Sua mensagem" aria-label="Sua mensagem"></textarea>
+        <form class="footer-contact-form" action="forms/contact.php" method="post">
+          <input
+            type="text"
+            name="nome"
+            placeholder="Seu nome"
+            aria-label="Seu nome"
+            minlength="2"
+            maxlength="100"
+            required
+          >
+          <input
+            type="email"
+            name="email"
+            placeholder="Seu e-mail"
+            aria-label="Seu e-mail"
+            maxlength="254"
+            required
+          >
+          <textarea
+            name="mensagem"
+            placeholder="Sua mensagem"
+            aria-label="Sua mensagem"
+            minlength="10"
+            maxlength="5000"
+            required
+          ></textarea>
+          <p class="footer-contact-feedback" role="status" aria-live="polite" hidden></p>
           <button type="submit">
             <i class="bi bi-envelope"></i>
-            Enviar
+            <span>Enviar</span>
           </button>
         </form>
       </div>
@@ -40,3 +64,5 @@
     </div>
   </div>
 </footer>
+
+<script src="assets/js/contactForm.js" defer></script>

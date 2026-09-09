@@ -985,6 +985,36 @@ h1, h2, h3, h4, h5, h6 {
   color: #2a5312;
 }
 
+.footer-contact-form button:disabled {
+  cursor: wait;
+  opacity: 0.65;
+  transform: none;
+}
+
+.footer-contact-feedback {
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: 5px;
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.footer-contact-feedback[hidden] {
+  display: none;
+}
+
+.footer-contact-feedback.sucesso {
+  border: 1px solid #0aff16;
+  background: rgba(10, 255, 22, 0.1);
+  color: #0aff16;
+}
+
+.footer-contact-feedback.erro {
+  border: 1px solid #ff1493;
+  background: rgba(255, 20, 147, 0.1);
+  color: #ff9ed1;
+}
+
 .footer-links ul {
   list-style: none;
   padding: 0;

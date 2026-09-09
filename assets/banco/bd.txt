@@ -1,23 +1,41 @@
--- =========================================================
--- DADOS DO BANCO SHOWME
--- =========================================================
-
+USE showme;
 
 -- =========================================================
--- 1. USUARIO
+-- 1. USUÁRIOS
+-- Senha de teste para todos: 123456
 -- =========================================================
 
 INSERT INTO usuario
-(nome_user, sobrenome, email_user, senha_user)
+(nome_user, sobrenome, email_user, senha_user, tipo_usuario)
 VALUES
-('Ana', 'Silva', 'ana.silva@email.com', '$2y$10$U3r2Tf5z9YOVsdeS/9IeOOgsNI6cqGOy/K.ll9SO8AeEgKP/RFAhy'),
-('Lucas', 'Oliveira', 'lucas.oliveira@email.com', '$2y$10$U3r2Tf5z9YOVsdeS/9IeOOgsNI6cqGOy/K.ll9SO8AeEgKP/RFAhy'),
-('Mariana', 'Santos', 'mariana.santos@email.com', '$2y$10$U3r2Tf5z9YOVsdeS/9IeOOgsNI6cqGOy/K.ll9SO8AeEgKP/RFAhy'),
-('Gabriel', 'Souza', 'gabriel.souza@email.com', '$2y$10$U3r2Tf5z9YOVsdeS/9IeOOgsNI6cqGOy/K.ll9SO8AeEgKP/RFAhy'),
-('Beatriz', 'Costa', 'beatriz.costa@email.com', '$2y$10$U3r2Tf5z9YOVsdeS/9IeOOgsNI6cqGOy/K.ll9SO8AeEgKP/RFAhy'),
-('Rafael', 'Lima', 'rafael.lima@email.com', '$2y$10$U3r2Tf5z9YOVsdeS/9IeOOgsNI6cqGOy/K.ll9SO8AeEgKP/RFAhy'),
-('Julia', 'Almeida', 'julia.almeida@email.com', '$2y$10$U3r2Tf5z9YOVsdeS/9IeOOgsNI6cqGOy/K.ll9SO8AeEgKP/RFAhy'),
-('Pedro', 'Ferreira', 'pedro.ferreira@email.com', '$2y$10$U3r2Tf5z9YOVsdeS/9IeOOgsNI6cqGOy/K.ll9SO8AeEgKP/RFAhy');
+(
+    'Lorena',
+    'Silva',
+    'lorena@email.com',
+    '$2y$12$XCSSohhKIraV2yR0JGAodexb6D5GL90kNTQEdVl91h5SsLnrW8aTW',
+    'comum'
+),
+(
+    'Carlos',
+    'Oliveira',
+    'carlos@email.com',
+    '$2y$12$XCSSohhKIraV2yR0JGAodexb6D5GL90kNTQEdVl91h5SsLnrW8aTW',
+    'comum'
+),
+(
+    'Ana',
+    'Santos',
+    'ana@email.com',
+    '$2y$12$XCSSohhKIraV2yR0JGAodexb6D5GL90kNTQEdVl91h5SsLnrW8aTW',
+    'comum'
+),
+(
+    'Administrador',
+    'ShowMe',
+    'admin@showme.com',
+    '$2y$12$XCSSohhKIraV2yR0JGAodexb6D5GL90kNTQEdVl91h5SsLnrW8aTW',
+    'admin'
+);
 
 
 -- =========================================================
@@ -27,45 +45,67 @@ VALUES
 INSERT INTO spotify
 (id_user, spotify_id, artistas_mais_tocados, generos_preferidos)
 VALUES
-(1, 1001, 'Taylor Swift, The Weeknd, Billie Eilish', 'Pop, Indie Pop'),
-(2, 1002, 'Jorge & Mateus, Henrique & Juliano', 'Sertanejo'),
-(3, 1003, 'Billie Eilish, Lana Del Rey, Arctic Monkeys', 'Indie, Pop, Rock'),
-(4, 1004, 'Matuê, Veigh, MC Ryan SP', 'Rap, Trap'),
-(5, 1005, 'Bruno Mars, Dua Lipa, Rihanna', 'Pop, R&B'),
-(6, 1006, 'Legião Urbana, Charlie Brown Jr., O Rappa', 'Rock Nacional'),
-(7, 1007, 'Anitta, Ludmilla, Gloria Groove', 'Pop, Funk'),
-(8, 1008, 'Metallica, Iron Maiden, Slipknot', 'Rock, Metal');
+(
+    1,
+    'spotify_lorena_001',
+    'Taylor Swift,The Weeknd,Harry Styles',
+    'Pop,Indie,Pop Rock'
+),
+(
+    2,
+    'spotify_carlos_002',
+    'Arctic Monkeys,Imagine Dragons,Coldplay',
+    'Rock,Indie Rock,Alternative'
+),
+(
+    3,
+    'spotify_ana_003',
+    'Anitta,Iza,Ludmilla',
+    'Pop,Funk,R&B'
+);
 
 
 -- =========================================================
--- 3. ARTISTA
+-- 3. ARTISTAS
 -- =========================================================
 
 INSERT INTO artista
 (nome_artista, genero_artista, imagem_artista)
 VALUES
-('Taylor Swift', 'Pop', 'taylor-swift.jpg'),
-('The Weeknd', 'R&B / Pop', 'the-weeknd.jpg'),
-('Billie Eilish', 'Pop', 'billie-eilish.jpg'),
-('Lana Del Rey', 'Indie Pop', 'lana-del-rey.jpg'),
-('Arctic Monkeys', 'Rock', 'arctic-monkeys.jpg'),
-('Jorge & Mateus', 'Sertanejo', 'jorge-mateus.jpg'),
-('Henrique & Juliano', 'Sertanejo', 'henrique-juliano.jpg'),
-('Matuê', 'Trap', 'matue.jpg'),
-('Veigh', 'Trap', 'veigh.jpg'),
-('Anitta', 'Pop / Funk', 'anitta.jpg'),
-('Ludmilla', 'Funk / Pop', 'ludmilla.jpg'),
-('Gloria Groove', 'Pop / Funk', 'gloria-groove.jpg'),
-('Bruno Mars', 'Pop / R&B', 'bruno-mars.jpg'),
-('Dua Lipa', 'Pop', 'dua-lipa.jpg'),
-('Charlie Brown Jr.', 'Rock Nacional', 'charlie-brown-jr.jpg'),
-('Legião Urbana', 'Rock Nacional', 'legiao-urbana.jpg'),
-('Metallica', 'Metal', 'metallica.jpg'),
-('Iron Maiden', 'Heavy Metal', 'iron-maiden.jpg');
+(
+    'Taylor Swift',
+    'Pop',
+    'https://images.unsplash.com/photo-1492684223066-81342ee5ff30'
+),
+(
+    'Harry Styles',
+    'Pop Rock',
+    'https://images.unsplash.com/photo-1501386761578-eac5c94b800a'
+),
+(
+    'Coldplay',
+    'Rock',
+    'https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3'
+),
+(
+    'Anitta',
+    'Pop / Funk',
+    'https://images.unsplash.com/photo-1516280440614-37939bbacd81'
+),
+(
+    'Arctic Monkeys',
+    'Indie Rock',
+    'https://images.unsplash.com/photo-1524368535928-5b5e00ddc76b'
+),
+(
+    'Ludmilla',
+    'Funk / Pop',
+    'https://images.unsplash.com/photo-1540039155733-5bb30b53aa14'
+);
 
 
 -- =========================================================
--- 4. EVENTO
+-- 4. EVENTOS
 -- =========================================================
 
 INSERT INTO evento
@@ -81,128 +121,99 @@ INSERT INTO evento
     gratuidade,
     categoria_evento,
     link_oficial,
-    imagem_evento
+    imagem_evento,
+    status_evento
 )
 VALUES
-
 (
     1001,
-    'Festival Pop Brasil',
-    'Allianz Parque',
-    'Av. Francisco Matarazzo, 1705',
+    'Harry Styles - Together Together',
+    'Estádio do MorumBIS',
+    'Praça Roberto Gomes Pedrosa',
     'São Paulo',
     'SP',
-    'Festival com grandes nomes da música pop nacional e internacional.',
-    '2026-09-12',
-    FALSE,
-    'Música',
-    'https://exemplo.com/festival-pop',
-    'festival-pop.jpg'
-),
-
-(
-    1002,
-    'Festival Sertanejo SP',
-    'Villa Country',
-    'Av. Francisco Matarazzo, 774',
-    'São Paulo',
-    'SP',
-    'Evento dedicado aos principais artistas do sertanejo brasileiro.',
-    '2026-09-20',
-    FALSE,
-    'Música',
-    'https://exemplo.com/festival-sertanejo',
-    'festival-sertanejo.jpg'
-),
-
-(
-    1003,
-    'Show Billie Eilish',
-    'Estádio do Morumbi',
-    'Praça Roberto Gomes Pedrosa, 1',
-    'São Paulo',
-    'SP',
-    'Apresentação especial da cantora Billie Eilish.',
-    '2026-10-05',
-    FALSE,
-    'Música',
-    'https://exemplo.com/billie-show',
-    'billie-eilish.jpg'
-),
-
-(
-    1004,
-    'Festival de Rock Independente',
-    'Espaço das Américas',
-    'Rua Tagipuru, 795',
-    'São Paulo',
-    'SP',
-    'Festival reunindo bandas independentes e artistas do cenário alternativo.',
-    '2026-09-27',
-    FALSE,
-    'Rock',
-    'https://exemplo.com/rock-independente',
-    'rock-independente.jpg'
-),
-
-(
-    1005,
-    'Festival Cultural de Ribeirão Pires',
-    'Centro de Ribeirão Pires',
-    'Rua Miguel Prisco, 286',
-    'Ribeirão Pires',
-    'SP',
-    'Evento cultural gratuito com música, artesanato, gastronomia e apresentações artísticas.',
-    '2026-09-06',
-    TRUE,
-    'Cultura',
-    'https://exemplo.com/ribeirao-pires',
-    'ribeirao-pires.jpg'
-),
-
-(
-    1006,
-    'Festival Trap Nacional',
-    'Audio',
-    'Av. Francisco Matarazzo, 694',
-    'São Paulo',
-    'SP',
-    'Festival reunindo grandes nomes do trap brasileiro.',
+    'Show especial de Harry Styles com repertório de sua carreira solo.',
     '2026-10-18',
     FALSE,
-    'Rap / Trap',
-    'https://exemplo.com/trap',
-    'festival-trap.jpg'
+    'Show Internacional',
+    'https://www.ticketmaster.com.br/',
+    'https://images.unsplash.com/photo-1501386761578-eac5c94b800a',
+    'ativo'
 ),
-
 (
-    1007,
-    'Virada Cultural',
-    'Centro Histórico',
-    'Praça da Sé',
+    1002,
+    'Coldplay - Music of the Spheres',
+    'Estádio do MorumBIS',
+    'Praça Roberto Gomes Pedrosa',
     'São Paulo',
     'SP',
-    'Programação cultural com shows, teatro, dança e diversas atividades gratuitas.',
-    '2026-11-15',
+    'Apresentação da turnê Music of the Spheres.',
+    '2026-11-08',
+    FALSE,
+    'Show Internacional',
+    'https://www.ticketmaster.com.br/',
+    'https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3',
+    'ativo'
+),
+(
+    1003,
+    'Festival ShowMe Cultural',
+    'Vale do Anhangabaú',
+    'Avenida São João',
+    'São Paulo',
+    'SP',
+    'Festival gratuito reunindo música, arte, dança e cultura urbana.',
+    '2026-09-26',
     TRUE,
-    'Cultura',
-    'https://exemplo.com/virada-cultural',
-    'virada-cultural.jpg'
+    'Festival Cultural',
+    'https://www.sympla.com.br/',
+    'https://images.unsplash.com/photo-1492684223066-81342ee5ff30',
+    'ativo'
 ),
-
 (
-    1008,
-    'Festival Rock Nacional',
-    'Espaço Unimed',
-    'Rua Tagipuru, 795',
+    1004,
+    'Noite do Pop Nacional',
+    'Espaço das Américas',
+    'Rua Tagipuru',
     'São Paulo',
     'SP',
-    'Festival dedicado ao rock brasileiro.',
-    '2026-10-25',
+    'Evento com artistas nacionais de diferentes estilos musicais.',
+    '2026-10-30',
+    FALSE,
+    'Show Nacional',
+    'https://www.sympla.com.br/',
+    'https://images.unsplash.com/photo-1540039155733-5bb30b53aa14',
+    'ativo'
+),
+(
+    1005,
+    'Festival Cultural Amazônia',
+    'Centro Cultural de Belém',
+    'Avenida Cultural',
+    'Belém',
+    'PA',
+    'Evento voltado à música e às manifestações culturais amazônicas.',
+    '2026-12-05',
+    TRUE,
+    'Cultura Regional',
+    'https://www.sympla.com.br/',
+    'https://images.unsplash.com/photo-1506157786151-b8491531f063',
+    'ativo'
+),
+(
+    1006,
+    'Show Cancelado - Rock Festival',
+    'Arena Cultural',
+    'Avenida Central',
+    'Brasília',
+    'DF',
+    'Evento cancelado para fins de demonstração do sistema.',
+    '2026-10-10',
     FALSE,
     'Rock',
-    'https://exemplo.com/rock-nacional',
-    'rock-nacional.jpg'
+    'https://www.sympla.com.br/',
+    'https://images.unsplash.com/photo-1524368535928-5b5e00ddc76b',
+    'cancelado'
 );
 
 
@@ -213,45 +224,16 @@ VALUES
 INSERT INTO artista_evento
 (id_artista, id_evento)
 VALUES
-
--- Festival Pop Brasil
-(1, 1),
-(2, 1),
-(13, 1),
-
--- Festival Sertanejo SP
-(6, 2),
-(7, 2),
-
--- Show Billie Eilish
-(3, 3),
-
--- Festival de Rock Independente
-(5, 4),
-(15, 4),
-
--- Festival Cultural de Ribeirão Pires
-(10, 5),
-(11, 5),
-(12, 5),
-
--- Festival Trap Nacional
-(8, 6),
-(9, 6),
-
--- Virada Cultural
-(10, 7),
-(11, 7),
-(12, 7),
-
--- Festival Rock Nacional
-(15, 8),
-(16, 8),
-(17, 8);
+(2, 1), -- Harry Styles
+(3, 2), -- Coldplay
+(1, 3), -- Taylor Swift
+(4, 4), -- Anitta
+(6, 4), -- Ludmilla
+(5, 6); -- Arctic Monkeys
 
 
 -- =========================================================
--- 6. PREFERENCIAS
+-- 6. PREFERÊNCIAS
 -- =========================================================
 
 INSERT INTO preferencias
@@ -259,25 +241,10 @@ INSERT INTO preferencias
 VALUES
 (1, 'Pop'),
 (1, 'Indie'),
-
-(2, 'Sertanejo'),
-
-(3, 'Indie'),
-(3, 'Rock'),
-
-(4, 'Trap'),
-(4, 'Rap'),
-
-(5, 'Pop'),
-(5, 'R&B'),
-
-(6, 'Rock Nacional'),
-
-(7, 'Funk'),
-(7, 'Pop'),
-
-(8, 'Rock'),
-(8, 'Metal');
+(2, 'Rock'),
+(2, 'Indie Rock'),
+(3, 'Funk'),
+(3, 'R&B');
 
 
 -- =========================================================
@@ -288,28 +255,15 @@ INSERT INTO favoritos
 (id_user, id_evento)
 VALUES
 (1, 1),
-(1, 3),
-
+(1, 2),
 (2, 2),
-
+(2, 6),
 (3, 3),
-(3, 4),
-
-(4, 6),
-
-(5, 1),
-(5, 7),
-
-(6, 8),
-
-(7, 5),
-(7, 7),
-
-(8, 8);
+(3, 4);
 
 
 -- =========================================================
--- 8. ROTA
+-- 8. ROTAS
 -- =========================================================
 
 INSERT INTO rota
@@ -321,29 +275,38 @@ INSERT INTO rota
     tempo_estimado
 )
 VALUES
-(1, 1, 'Carro', 18.50, 35),
-(1, 3, 'Metrô', 14.20, 42),
-
-(2, 2, 'Carro', 12.80, 28),
-
-(3, 3, 'Transporte público', 15.60, 48),
-(3, 4, 'Metrô', 16.30, 45),
-
-(4, 6, 'Carro', 21.30, 40),
-
-(5, 1, 'Metrô', 10.50, 30),
-(5, 7, 'Metrô', 8.70, 25),
-
-(6, 8, 'Ônibus', 17.80, 55),
-
-(7, 5, 'Carro', 34.20, 50),
-(7, 7, 'Transporte público', 29.40, 65),
-
-(8, 8, 'Metrô', 16.40, 45);
+(
+    1,
+    1,
+    'carro',
+    18.50,
+    42
+),
+(
+    1,
+    2,
+    'metrô',
+    15.20,
+    38
+),
+(
+    2,
+    2,
+    'ônibus',
+    21.70,
+    65
+),
+(
+    3,
+    4,
+    'Uber',
+    12.40,
+    35
+);
 
 
 -- =========================================================
--- 9. AVALIACAO
+-- 9. AVALIAÇÕES
 -- =========================================================
 
 INSERT INTO avaliacao
@@ -351,33 +314,75 @@ INSERT INTO avaliacao
     id_user,
     id_evento,
     nota,
-    comentario,
-    data_avaliacao
+    comentario
 )
 VALUES
-(1, 1, 5, 'Evento muito organizado e com ótimas atrações.', '2026-09-13'),
-
-(2, 2, 4, 'Gostei bastante dos shows e da estrutura.', '2026-09-21'),
-
-(3, 3, 5, 'Excelente apresentação e ótima experiência.', '2026-10-06'),
-
-(3, 4, 4, 'Boas bandas e ambiente agradável.', '2026-09-28'),
-
-(4, 6, 5, 'Ótimo festival de trap, gostei bastante.', '2026-10-19'),
-
-(5, 1, 4, 'Gostei bastante, mas estava um pouco cheio.', '2026-09-13'),
-
-(6, 8, 5, 'Muito bom para quem gosta de rock nacional.', '2026-10-26'),
-
-(7, 5, 5, 'Evento gratuito muito interessante.', '2026-09-07'),
-
-(7, 7, 4, 'Boa variedade de atrações culturais.', '2026-11-16'),
-
-(8, 8, 5, 'Excelente evento para quem gosta de rock.', '2026-10-26');
+(
+    1,
+    1,
+    5,
+    'Experiência incrível! O show foi muito bem organizado.'
+),
+(
+    2,
+    2,
+    4,
+    'Ótimo espetáculo, mas o acesso ao local estava bastante movimentado.'
+),
+(
+    3,
+    3,
+    5,
+    'Evento gratuito muito interessante e com bastante diversidade cultural.'
+),
+(
+    1,
+    4,
+    4,
+    'Gostei bastante dos artistas e da estrutura do evento.'
+);
 
 
 -- =========================================================
--- 10. SOLICITACAO
+-- 10. MÍDIAS DAS AVALIAÇÕES
+-- =========================================================
+
+INSERT INTO avaliacao_midia
+(
+    id_avaliacao,
+    tipo_midia,
+    caminho_arquivo
+)
+VALUES
+(
+    1,
+    'foto',
+    'https://images.unsplash.com/photo-1501386761578-eac5c94b800a'
+),
+(
+    1,
+    'video',
+    'https://www.youtube.com/watch?v=dQw4w9WgXcQ'
+),
+(
+    2,
+    'foto',
+    'https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3'
+),
+(
+    3,
+    'foto',
+    'https://images.unsplash.com/photo-1492684223066-81342ee5ff30'
+),
+(
+    4,
+    'video',
+    'https://www.youtube.com/watch?v=dQw4w9WgXcQ'
+);
+
+
+-- =========================================================
+-- 11. SOLICITAÇÕES DE EVENTOS
 -- =========================================================
 
 INSERT INTO solicitacao
@@ -394,55 +399,39 @@ INSERT INTO solicitacao
     descricao_artista
 )
 VALUES
-
 (
     1,
-    'Festival de Música de Santo André',
+    'Festival de Música Independente',
     'pendente',
-    'festival-santo-andre.jpg',
-    '2026-10-10 18:00:00',
-    '2026-10-10',
-    'Paço Municipal de Santo André',
+    'https://images.unsplash.com/photo-1492684223066-81342ee5ff30',
+    '19:00:00',
+    '2026-11-20',
+    'Centro Cultural de Santo André - Santo André/SP',
     TRUE,
-    'Festival gratuito com apresentações de artistas locais.',
-    'Artistas independentes da região do ABC Paulista.'
+    'Festival com bandas independentes da região.',
+    'Artistas independentes de rock, pop e música alternativa.'
 ),
-
 (
     2,
-    'Encontro Cultural do ABC',
+    'Show de Música Urbana',
     'aprovado',
-    'encontro-cultural.jpg',
-    '2026-09-19 14:00:00',
-    '2026-09-19',
-    'Centro Cultural de São Caetano',
+    'https://images.unsplash.com/photo-1540039155733-5bb30b53aa14',
+    '20:30:00',
+    '2026-12-12',
+    'Praça das Artes - São Paulo/SP',
     TRUE,
-    'Evento com música, dança, teatro e exposições.',
-    'Artistas e grupos culturais da região.'
+    'Evento gratuito dedicado à música urbana.',
+    'Artistas de rap, hip-hop, funk e R&B.'
 ),
-
 (
-    4,
-    'Show de Trap ABC',
-    'pendente',
-    'trap-abc.jpg',
-    '2026-11-07 20:00:00',
-    '2026-11-07',
-    'Clube Atlético Aramaçan',
-    FALSE,
-    'Show com artistas do cenário nacional de trap.',
-    'Artistas de trap e rap nacional.'
-),
-
-(
-    6,
-    'Festival Rock da Região',
+    3,
+    'Festival Regional',
     'recusado',
-    'rock-regiao.jpg',
-    '2026-10-31 16:00:00',
-    '2026-10-31',
-    'Parque Municipal',
-    TRUE,
-    'Festival de bandas de rock da região.',
-    'Bandas independentes de rock.'
+    'https://images.unsplash.com/photo-1506157786151-b8491531f063',
+    '18:00:00',
+    '2026-12-20',
+    'Centro Cultural - Mauá/SP',
+    FALSE,
+    'Evento cultural regional.',
+    'Artistas locais e convidados.'
 );

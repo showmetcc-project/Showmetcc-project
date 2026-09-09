@@ -154,7 +154,7 @@
       const formulario = new FormData(formCadastro);
 
       try {
-        const resposta = await fetch('api/usuarios/', {
+        const resposta = await fetch('api/apiUsuarios.php', {
           method: 'POST',
           headers: {'Content-Type': 'application/json'},
           body: JSON.stringify({

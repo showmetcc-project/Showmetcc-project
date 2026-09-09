@@ -1,183 +1,8 @@
 <?php
-
 if (session_status() !== PHP_SESSION_ACTIVE) {
     session_start();
 }
-
-/* =========================================================
-   CONEXÃO COM O BANCO
-========================================================= */
-
-$host = "localhost";
-$usuario = "root";
-$senha = "";
-$banco = "showme";
-
-$conn = new mysqli(
-    $host,
-    $usuario,
-    $senha,
-    $banco
-);
-
-if ($conn->connect_error) {
-    die("Erro ao conectar ao banco: " . $conn->connect_error);
-}
-
-$conn->set_charset("utf8mb4");
-
-
-/* =========================================================
-   FUNÇÃO PARA ESCAPAR HTML
-========================================================= */
-
-function e($texto)
-{
-    return htmlspecialchars(
-        $texto ?? "",
-        ENT_QUOTES,
-        "UTF-8"
-    );
-}
-
-
-/* =========================================================
-   FUNÇÃO PARA DEFINIR A IMAGEM
-========================================================= */
-
-function imagemEvento($imagem)
-{
-    if (empty($imagem)) {
-        return "assets/img/banner_site_565x235px.png";
-    }
-
-    /*
-     * Se no banco estiver salvo apenas o nome:
-     *
-     * exemplo:
-     * rock.png
-     *
-     * procura dentro de assets/img/
-     */
-
-    if (
-        strpos($imagem, "/") === false &&
-        strpos($imagem, "\\") === false &&
-        strpos($imagem, "http") !== 0
-    ) {
-        return "assets/img/" . $imagem;
-    }
-
-    return $imagem;
-}
-
-
-/* =========================================================
-   BUSCAR TODOS OS EVENTOS
-========================================================= */
-
-$sql = "
-    SELECT
-        id_evento,
-        nome_evento,
-        local_evento,
-        cidade_evento,
-        uf,
-        data_evento,
-        gratuidade,
-        imagem_evento,
-        categoria_evento
-    FROM evento
-    ORDER BY data_evento ASC
-";
-
-$result = $conn->query($sql);
-
-if (!$result) {
-    die("Erro ao buscar eventos: " . $conn->error);
-}
-
-
-/* =========================================================
-   TRANSFORMAR RESULTADO EM ARRAY
-========================================================= */
-
-$eventos = [];
-
-while ($evento = $result->fetch_assoc()) {
-    $eventos[] = $evento;
-}
-
-
-/* =========================================================
-   RECOMENDAÇÕES
-=========================================================
-
-   Aqui estamos simulando a recomendação usando:
-   - categoria do evento
-   - gênero
-   - artistas
-
-   Depois podemos ligar isso diretamente à tabela
-   spotify + artista + artista_evento.
-========================================================= */
-
-$recomendados = [];
-
-
-/*
- * Por enquanto, pegamos os primeiros eventos.
- * Isso mantém a página funcionando mesmo sem Spotify.
- *
- * Depois substituímos por uma consulta que compara:
- *
- * spotify.generos_preferidos
- * spotify.artistas_mais_tocados
- *
- * com:
- *
- * artista.nome_artista
- * artista.genero_artista
- */
-
-foreach ($eventos as $evento) {
-
-    if (count($recomendados) >= 5) {
-        break;
-    }
-
-    $recomendados[] = $evento;
-}
-
-
-/* =========================================================
-   SEPARAR OUTROS EVENTOS
-========================================================= */
-
-$outrosEventos = [];
-
-foreach ($eventos as $evento) {
-
-    $jaRecomendado = false;
-
-    foreach ($recomendados as $rec) {
-
-        if (
-            $rec['id_evento'] ==
-            $evento['id_evento']
-        ) {
-            $jaRecomendado = true;
-            break;
-        }
-    }
-
-    if (!$jaRecomendado) {
-        $outrosEventos[] = $evento;
-    }
-}
-
 ?>
-
 <!doctype html>
 
 <html lang="pt-br">
@@ -331,26 +156,7 @@ foreach ($eventos as $evento) {
         }
 
 
-        /* =====================================================
-           IMAGEM
-        ====================================================== */
-
-        /* =====================================================
-           CONTEÚDO
-        ====================================================== */
-
-        /* =====================================================
-           INFORMAÇÕES
-        ====================================================== */
-
-        /* =====================================================
-           BADGES
-        ====================================================== */
-
-        /* =====================================================
-           BOTÕES DO CARROSSEL
-        ====================================================== */
-
+       
         .btn-carrossel {
             position: absolute;
 
@@ -544,100 +350,23 @@ foreach ($eventos as $evento) {
          RECOMENDADOS
     ====================================================== -->
 
-    <?php if (!empty($recomendados)): ?>
-
-
     <section class="eventos recomendados">
-
-
-        <h3>
-
-            Recomendados para Você
-
-        </h3>
-
-
-        <div class="carrossel-eventos">
-
-
-            <button
-                class="btn-carrossel esquerda"
-                onclick="moverCarrossel('recomendados', -1)"
-            >
-
-                <i class="bi bi-chevron-left"></i>
-
-            </button>
-
-
-            <div
-                class="carrossel-wrapper"
-                id="recomendados"
-            >
-
-
-                <?php foreach ($recomendados as $evento): ?>
-
-
-                <?php
-
-                $imagem =
-                    imagemEvento(
-                        $evento['imagem_evento']
-                    );
-
-
-                $data =
-                    !empty(
-                        $evento['data_evento']
-                    )
-                    ?
-                    date(
-                        'd/m/Y',
-                        strtotime(
-                            $evento['data_evento']
-                        )
-                    )
-                    :
-                    'Data não informada';
-
-
-                $gratuito =
-                    (bool)
-                    $evento['gratuidade'];
-
-                ?>
-
-
-                <div class="card-evento">
-
-
-                    <a
-                        href="detalhesEvento.php?id=<?= (int)$evento['id_evento'] ?>"
-                    >
-
-
-                        <?php if ($gratuito): ?>
-
-
-                        <div class="badge-evento gratuito">
-
-                            Gratuito
-
-                        </div>
-
-
-                        <?php else: ?>
-
-
-                        <div class="badge-evento pago">
-
-                            Pago
-
-                        </div>
-
-
-                        <?php endif; ?>
+    <h3>Recomendados para Você</h3>
+    <div class="carrossel-eventos">
+        <button class="btn-carrossel esquerda" onclick="moverCarrossel('recomendados', -1)" aria-label="Eventos recomendados anteriores">
+            <i class="bi bi-chevron-left"></i>
+        </button>
+        <div class="carrossel-wrapper" id="recomendados" aria-live="polite">
+            <div class="sem-eventos">
+                <i class="bi bi-hourglass-split"></i>
+                <p>Carregando eventos...</p>
+            </div>
+        </div>
+        <button class="btn-carrossel direita" onclick="moverCarrossel('recomendados', 1)" aria-label="Próximos eventos recomendados">
+            <i class="bi bi-chevron-right"></i>
+        </button>
+    </div>
+</section>
 
 
                         <img
@@ -731,199 +460,22 @@ foreach ($eventos as $evento) {
     ====================================================== -->
 
     <section class="eventos">
-
-
-        <h3>
-
-            Eventos Musicais
-
-        </h3>
-
-
-        <?php if (!empty($outrosEventos)): ?>
-
-
-        <div class="carrossel-eventos">
-
-
-            <button
-                class="btn-carrossel esquerda"
-                onclick="moverCarrossel('outrosEventos', -1)"
-            >
-
-                <i class="bi bi-chevron-left"></i>
-
-            </button>
-
-
-            <div
-                class="carrossel-wrapper"
-                id="outrosEventos"
-            >
-
-
-                <?php foreach ($outrosEventos as $evento): ?>
-
-
-                <?php
-
-                $imagem =
-                    imagemEvento(
-                        $evento['imagem_evento']
-                    );
-
-
-                $data =
-                    !empty(
-                        $evento['data_evento']
-                    )
-                    ?
-                    date(
-                        'd/m/Y',
-                        strtotime(
-                            $evento['data_evento']
-                        )
-                    )
-                    :
-                    'Data não informada';
-
-
-                $gratuito =
-                    (bool)
-                    $evento['gratuidade'];
-
-                ?>
-
-
-                <div class="card-evento">
-
-
-                    <a
-                     href="detalhesEvento.php?id_evento=<?= (int)$evento['id_evento'] ?>">
-
-
-                        <?php if ($gratuito): ?>
-
-
-                        <div class="badge-evento gratuito">
-
-                            Gratuito
-
-                        </div>
-
-
-                        <?php else: ?>
-
-
-                        <div class="badge-evento pago">
-
-                            Pago
-
-                        </div>
-
-
-                        <?php endif; ?>
-
-
-                        <img
-                            src="<?= e($imagem) ?>"
-                            alt="<?= e($evento['nome_evento']) ?>"
-                            onerror="this.src='assets/img/banner_site_565x235px.png';"
-                        >
-
-
-                        <div class="card-conteudo">
-
-
-                            <h4>
-
-                                <?= e(
-                                    $evento['nome_evento']
-                                ) ?>
-
-                            </h4>
-
-
-                            <div class="info-evento">
-
-
-                                <span>
-
-                                    <i class="bi bi-geo-alt-fill"></i>
-
-                                    <?= e(
-                                        $evento['cidade_evento']
-                                    ) ?>
-
-                                    -
-
-                                    <?= e(
-                                        $evento['uf']
-                                    ) ?>
-
-                                </span>
-
-
-                                <span>
-
-                                    <i class="bi bi-calendar-event"></i>
-
-                                    <?= $data ?>
-
-                                </span>
-
-
-                            </div>
-
-
-                        </div>
-
-
-                    </a>
-
-
-                </div>
-
-
-                <?php endforeach; ?>
-
-
+    <h3>Eventos Musicais</h3>
+    <div class="carrossel-eventos">
+        <button class="btn-carrossel esquerda" onclick="moverCarrossel('outrosEventos', -1)" aria-label="Eventos anteriores">
+            <i class="bi bi-chevron-left"></i>
+        </button>
+        <div class="carrossel-wrapper" id="outrosEventos" aria-live="polite">
+            <div class="sem-eventos">
+                <i class="bi bi-hourglass-split"></i>
+                <p>Carregando eventos...</p>
             </div>
-
-
-            <button
-                class="btn-carrossel direita"
-                onclick="moverCarrossel('outrosEventos', 1)"
-            >
-
-                <i class="bi bi-chevron-right"></i>
-
-            </button>
-
-
         </div>
-
-
-        <?php else: ?>
-
-
-        <div class="sem-eventos">
-
-            <i class="bi bi-calendar-x"></i>
-
-            <p>
-
-                Nenhum outro evento cadastrado no momento.
-
-            </p>
-
-        </div>
-
-
-        <?php endif; ?>
-
-
-    </section>
+        <button class="btn-carrossel direita" onclick="moverCarrossel('outrosEventos', 1)" aria-label="Próximos eventos">
+            <i class="bi bi-chevron-right"></i>
+        </button>
+    </div>
+</section>
 
 
 </main>
@@ -1024,6 +576,123 @@ function moverCarrossel(
 
 }
 
+
+
+/* =========================================================
+   EVENTOS VINDOS DA API
+========================================================= */
+
+const API_EVENTOS = "api/eventos.php";
+
+function escaparHTML(valor) {
+    const div = document.createElement("div");
+    div.textContent = valor ?? "";
+    return div.innerHTML;
+}
+
+function formatarData(data) {
+    if (!data) return "Data não informada";
+    const partes = String(data).split("-");
+    if (partes.length !== 3) return String(data);
+    return `${partes[2]}/${partes[1]}/${partes[0]}`;
+}
+
+function imagemEventoJS(imagem) {
+    if (!imagem) return "assets/img/banner_site_565x235px.png";
+    const valor = String(imagem);
+
+    if (!valor.includes("/") &&
+        !valor.includes("\\") &&
+        !valor.startsWith("http")) {
+        return "assets/img/" + valor;
+    }
+    return valor;
+}
+
+function criarCardEvento(evento) {
+    const gratuito = Number(evento.gratuidade) === 1;
+    const imagem = imagemEventoJS(evento.imagem_evento);
+    const nome = evento.nome_evento || "Evento sem nome";
+    const cidade = evento.cidade_evento || "Local não informado";
+    const uf = evento.uf || "";
+
+    return `
+        <div class="card-evento">
+            <a href="detalhesEvento.php?id_evento=${encodeURIComponent(evento.id_evento)}">
+                <div class="badge-evento ${gratuito ? "gratuito" : "pago"}">
+                    ${gratuito ? "Gratuito" : "Pago"}
+                </div>
+                <img src="${escaparHTML(imagem)}"
+                     alt="${escaparHTML(nome)}"
+                     onerror="this.src='assets/img/banner_site_565x235px.png';">
+                <div class="card-conteudo">
+                    <h4>${escaparHTML(nome)}</h4>
+                    <div class="info-evento">
+                        <span>
+                            <i class="bi bi-geo-alt-fill"></i>
+                            ${escaparHTML(cidade)}${uf ? " - " + escaparHTML(uf) : ""}
+                        </span>
+                        <span>
+                            <i class="bi bi-calendar-event"></i>
+                            ${formatarData(evento.data_evento)}
+                        </span>
+                    </div>
+                </div>
+            </a>
+        </div>
+    `;
+}
+
+function mostrarEstado(id, icone, mensagem) {
+    const container = document.getElementById(id);
+    if (!container) return;
+
+    container.innerHTML = `
+        <div class="sem-eventos">
+            <i class="bi ${icone}"></i>
+            <p>${escaparHTML(mensagem)}</p>
+        </div>
+    `;
+}
+
+async function carregarEventos() {
+    try {
+        const resposta = await fetch(API_EVENTOS, {
+            method: "GET",
+            headers: { "Accept": "application/json" }
+        });
+
+        if (!resposta.ok) {
+            throw new Error("Erro HTTP " + resposta.status);
+        }
+
+        const dados = await resposta.json();
+        const eventos = Array.isArray(dados.eventos) ? dados.eventos : [];
+
+        const recomendados = eventos.slice(0, 5);
+        const outrosEventos = eventos.slice(5);
+
+        if (recomendados.length) {
+            document.getElementById("recomendados").innerHTML =
+                recomendados.map(criarCardEvento).join("");
+        } else {
+            mostrarEstado("recomendados", "bi-calendar-x", "Nenhum evento disponível no momento.");
+        }
+
+        if (outrosEventos.length) {
+            document.getElementById("outrosEventos").innerHTML =
+                outrosEventos.map(criarCardEvento).join("");
+        } else {
+            mostrarEstado("outrosEventos", "bi-calendar-x", "Nenhum outro evento cadastrado no momento.");
+        }
+    } catch (erro) {
+        console.error("Erro ao carregar eventos:", erro);
+        mostrarEstado("recomendados", "bi-exclamation-triangle", "Não foi possível carregar os eventos.");
+        mostrarEstado("outrosEventos", "bi-exclamation-triangle", "Não foi possível carregar os eventos.");
+    }
+}
+
+carregarEventos();
 
 </script>
 

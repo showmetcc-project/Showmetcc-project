@@ -16,16 +16,16 @@ VALUES
     'comum'
 ),
 (
-    'Carlos',
-    'Oliveira',
-    'carlos@email.com',
+    'Joao',
+    'Vinicius',
+    'joao@email.com',
     '$2y$12$XCSSohhKIraV2yR0JGAodexb6D5GL90kNTQEdVl91h5SsLnrW8aTW',
     'comum'
 ),
 (
-    'Ana',
-    'Santos',
-    'ana@email.com',
+    'Rihana',
+    'Carolina',
+    'riana@email.com',
     '$2y$12$XCSSohhKIraV2yR0JGAodexb6D5GL90kNTQEdVl91h5SsLnrW8aTW',
     'comum'
 ),
@@ -53,13 +53,13 @@ VALUES
 ),
 (
     2,
-    'spotify_carlos_002',
+    'spotify_joao_002',
     'Arctic Monkeys,Imagine Dragons,Coldplay',
     'Rock,Indie Rock,Alternative'
 ),
 (
     3,
-    'spotify_ana_003',
+    'spotify_rihana_003',
     'Anitta,Iza,Ludmilla',
     'Pop,Funk,R&B'
 );

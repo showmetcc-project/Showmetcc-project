@@ -159,5 +159,7 @@
         });
     </script>
 
+    <?php require_once __DIR__ . '/acessibilidade.php'; ?>
+
 </body>
 </html>

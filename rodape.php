@@ -66,3 +66,4 @@
 </footer>
 
 <script src="assets/js/contactForm.js" defer></script>
+<?php require_once __DIR__ . '/acessibilidade.php'; ?>

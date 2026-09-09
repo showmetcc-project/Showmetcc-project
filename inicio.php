@@ -3,6 +3,7 @@ if (session_status() !== PHP_SESSION_ACTIVE) {
     session_start();
 }
 ?>
+
 <!doctype html>
 
 <html lang="pt-br">
@@ -96,7 +97,7 @@ if (session_status() !== PHP_SESSION_ACTIVE) {
 
 
     <!-- =====================================================
-         CSS DOS CARDS
+         CSS DOS CARDS E CARROSSÉIS
     ====================================================== -->
 
     <style>
@@ -156,7 +157,10 @@ if (session_status() !== PHP_SESSION_ACTIVE) {
         }
 
 
-       
+        /* =====================================================
+           BOTÕES DO CARROSSEL
+        ====================================================== */
+
         .btn-carrossel {
             position: absolute;
 
@@ -216,6 +220,8 @@ if (session_status() !== PHP_SESSION_ACTIVE) {
         ====================================================== */
 
         .sem-eventos {
+            width: 100%;
+
             text-align: center;
 
             padding: 50px;
@@ -269,8 +275,8 @@ if (session_status() !== PHP_SESSION_ACTIVE) {
 
 <body class="com-cabecalho-padrao">
 
-<?php require __DIR__ . '/cabecalho.php'; ?>
 
+<?php require __DIR__ . '/cabecalho.php'; ?>
 
 
 <!-- =========================================================
@@ -300,6 +306,8 @@ if (session_status() !== PHP_SESSION_ACTIVE) {
             <div class="swiper-wrapper">
 
 
+                <!-- BANNER 1 -->
+
                 <div class="swiper-slide">
 
                     <img
@@ -310,6 +318,8 @@ if (session_status() !== PHP_SESSION_ACTIVE) {
                 </div>
 
 
+                <!-- BANNER 2 -->
+
                 <div class="swiper-slide">
 
                     <img
@@ -319,6 +329,8 @@ if (session_status() !== PHP_SESSION_ACTIVE) {
 
                 </div>
 
+
+                <!-- BANNER 3 -->
 
                 <div class="swiper-slide">
 
@@ -333,7 +345,12 @@ if (session_status() !== PHP_SESSION_ACTIVE) {
             </div>
 
 
+            <!-- PAGINAÇÃO -->
+
             <div class="swiper-pagination"></div>
+
+
+            <!-- BOTÕES -->
 
             <div class="swiper-button-prev"></div>
 
@@ -347,97 +364,62 @@ if (session_status() !== PHP_SESSION_ACTIVE) {
 
 
     <!-- =====================================================
-         RECOMENDADOS
+         EVENTOS RECOMENDADOS
     ====================================================== -->
 
     <section class="eventos recomendados">
-    <h3>Recomendados para Você</h3>
-    <div class="carrossel-eventos">
-        <button class="btn-carrossel esquerda" onclick="moverCarrossel('recomendados', -1)" aria-label="Eventos recomendados anteriores">
-            <i class="bi bi-chevron-left"></i>
-        </button>
-        <div class="carrossel-wrapper" id="recomendados" aria-live="polite">
-            <div class="sem-eventos">
-                <i class="bi bi-hourglass-split"></i>
-                <p>Carregando eventos...</p>
-            </div>
-        </div>
-        <button class="btn-carrossel direita" onclick="moverCarrossel('recomendados', 1)" aria-label="Próximos eventos recomendados">
-            <i class="bi bi-chevron-right"></i>
-        </button>
-    </div>
-</section>
 
 
-                        <img
-                            src="<?= e($imagem) ?>"
-                            alt="<?= e($evento['nome_evento']) ?>"
-                            onerror="this.src='assets/img/banner_site_565x235px.png';"
-                        >
+        <h3>
+
+            Recomendados para Você
+
+        </h3>
 
 
-                        <div class="card-conteudo">
+        <div class="carrossel-eventos">
 
 
-                            <h4>
+            <!-- BOTÃO ESQUERDA -->
 
-                                <?= e(
-                                    $evento['nome_evento']
-                                ) ?>
+            <button
+                class="btn-carrossel esquerda"
+                onclick="moverCarrossel('recomendados', -1)"
+                aria-label="Eventos recomendados anteriores"
+            >
 
-                            </h4>
+                <i class="bi bi-chevron-left"></i>
 
-
-                            <div class="info-evento">
-
-
-                                <span>
-
-                                    <i class="bi bi-geo-alt-fill"></i>
-
-                                    <?= e(
-                                        $evento['cidade_evento']
-                                    ) ?>
-
-                                    -
-
-                                    <?= e(
-                                        $evento['uf']
-                                    ) ?>
-
-                                </span>
+            </button>
 
 
-                                <span>
+            <!-- CARDS -->
 
-                                    <i class="bi bi-calendar-event"></i>
+            <div
+                class="carrossel-wrapper"
+                id="recomendados"
+                aria-live="polite"
+            >
 
-                                    <?= $data ?>
+                <div class="sem-eventos">
 
-                                </span>
+                    <i class="bi bi-hourglass-split"></i>
 
-
-                            </div>
-
-
-                        </div>
-
-
-                    </a>
-
+                    <p>
+                        Carregando eventos...
+                    </p>
 
                 </div>
 
-
-                <?php endforeach; ?>
-
-
             </div>
 
+
+            <!-- BOTÃO DIREITA -->
 
             <button
                 class="btn-carrossel direita"
                 onclick="moverCarrossel('recomendados', 1)"
+                aria-label="Próximos eventos recomendados"
             >
 
                 <i class="bi bi-chevron-right"></i>
@@ -447,11 +429,7 @@ if (session_status() !== PHP_SESSION_ACTIVE) {
 
         </div>
 
-
     </section>
-
-
-    <?php endif; ?>
 
 
 
@@ -460,22 +438,68 @@ if (session_status() !== PHP_SESSION_ACTIVE) {
     ====================================================== -->
 
     <section class="eventos">
-    <h3>Eventos Musicais</h3>
-    <div class="carrossel-eventos">
-        <button class="btn-carrossel esquerda" onclick="moverCarrossel('outrosEventos', -1)" aria-label="Eventos anteriores">
-            <i class="bi bi-chevron-left"></i>
-        </button>
-        <div class="carrossel-wrapper" id="outrosEventos" aria-live="polite">
-            <div class="sem-eventos">
-                <i class="bi bi-hourglass-split"></i>
-                <p>Carregando eventos...</p>
+
+
+        <h3>
+
+            Eventos Musicais
+
+        </h3>
+
+
+        <div class="carrossel-eventos">
+
+
+            <!-- BOTÃO ESQUERDA -->
+
+            <button
+                class="btn-carrossel esquerda"
+                onclick="moverCarrossel('outrosEventos', -1)"
+                aria-label="Eventos anteriores"
+            >
+
+                <i class="bi bi-chevron-left"></i>
+
+            </button>
+
+
+            <!-- CARDS -->
+
+            <div
+                class="carrossel-wrapper"
+                id="outrosEventos"
+                aria-live="polite"
+            >
+
+                <div class="sem-eventos">
+
+                    <i class="bi bi-hourglass-split"></i>
+
+                    <p>
+                        Carregando eventos...
+                    </p>
+
+                </div>
+
             </div>
+
+
+            <!-- BOTÃO DIREITA -->
+
+            <button
+                class="btn-carrossel direita"
+                onclick="moverCarrossel('outrosEventos', 1)"
+                aria-label="Próximos eventos"
+            >
+
+                <i class="bi bi-chevron-right"></i>
+
+            </button>
+
+
         </div>
-        <button class="btn-carrossel direita" onclick="moverCarrossel('outrosEventos', 1)" aria-label="Próximos eventos">
-            <i class="bi bi-chevron-right"></i>
-        </button>
-    </div>
-</section>
+
+    </section>
 
 
 </main>
@@ -505,72 +529,69 @@ if (session_status() !== PHP_SESSION_ACTIVE) {
 <script>
 
 /* =========================================================
-   BANNER
+   BANNER SWIPER
 ========================================================= */
 
-const bannerSwiper =
-    new Swiper(
-        ".banner.swiper",
-        {
+const bannerSwiper = new Swiper(
+    ".banner.swiper",
+    {
 
-            loop: true,
+        loop: true,
 
-            autoplay: {
+        autoplay: {
 
-                delay: 4500,
+            delay: 4500,
 
-                disableOnInteraction: false
+            disableOnInteraction: false
 
-            },
+        },
 
-            pagination: {
+        pagination: {
 
-                el: ".swiper-pagination"
+            el: ".swiper-pagination",
 
-            },
+            clickable: true
 
-            navigation: {
+        },
 
-                nextEl: ".swiper-button-next",
+        navigation: {
 
-                prevEl: ".swiper-button-prev"
+            nextEl: ".swiper-button-next",
 
-            }
+            prevEl: ".swiper-button-prev"
 
         }
-    );
+
+    }
+);
+
 
 
 /* =========================================================
    CARROSSEL DE EVENTOS
 ========================================================= */
 
-function moverCarrossel(
-    id,
-    direcao
-) {
+function moverCarrossel(id, direcao) {
 
     const carrossel =
         document.getElementById(id);
 
 
     if (!carrossel) {
+
         return;
+
     }
 
 
-    const distancia =
-        330;
+    const distancia = 330;
 
 
     carrossel.scrollBy({
 
-        left:
-            distancia *
-            direcao,
+        left: distancia * direcao,
 
-        behavior:
-            "smooth"
+        behavior: "smooth"
 
     });
 
@@ -579,118 +600,442 @@ function moverCarrossel(
 
 
 /* =========================================================
-   EVENTOS VINDOS DA API
+   API DE EVENTOS
 ========================================================= */
 
 const API_EVENTOS = "api/eventos.php";
 
+
+
+/* =========================================================
+   ESCAPAR HTML
+========================================================= */
+
 function escaparHTML(valor) {
-    const div = document.createElement("div");
-    div.textContent = valor ?? "";
+
+    const div =
+        document.createElement("div");
+
+
+    div.textContent =
+        valor ?? "";
+
+
     return div.innerHTML;
+
 }
+
+
+
+/* =========================================================
+   FORMATAR DATA
+========================================================= */
 
 function formatarData(data) {
-    if (!data) return "Data não informada";
-    const partes = String(data).split("-");
-    if (partes.length !== 3) return String(data);
+
+    if (!data) {
+
+        return "Data não informada";
+
+    }
+
+
+    const partes =
+        String(data).split("-");
+
+
+    if (partes.length !== 3) {
+
+        return String(data);
+
+    }
+
+
     return `${partes[2]}/${partes[1]}/${partes[0]}`;
+
 }
+
+
+
+/* =========================================================
+   IMAGEM DO EVENTO
+========================================================= */
 
 function imagemEventoJS(imagem) {
-    if (!imagem) return "assets/img/banner_site_565x235px.png";
-    const valor = String(imagem);
 
-    if (!valor.includes("/") &&
-        !valor.includes("\\") &&
-        !valor.startsWith("http")) {
-        return "assets/img/" + valor;
+    if (!imagem) {
+
+        return "assets/img/banner_site_565x235px.png";
+
     }
+
+
+    const valor =
+        String(imagem);
+
+
+    /*
+     * Se a API mandar somente:
+     *
+     * imagem.jpg
+     *
+     * acrescenta assets/img/
+     */
+
+    if (
+        !valor.includes("/") &&
+        !valor.includes("\\") &&
+        !valor.startsWith("http")
+    ) {
+
+        return "assets/img/" + valor;
+
+    }
+
+
     return valor;
+
 }
+
+
+
+/* =========================================================
+   CRIAR CARD DO EVENTO
+========================================================= */
 
 function criarCardEvento(evento) {
-    const gratuito = Number(evento.gratuidade) === 1;
-    const imagem = imagemEventoJS(evento.imagem_evento);
-    const nome = evento.nome_evento || "Evento sem nome";
-    const cidade = evento.cidade_evento || "Local não informado";
-    const uf = evento.uf || "";
+
+
+    const gratuito =
+        Number(evento.gratuidade) === 1;
+
+
+    const imagem =
+        imagemEventoJS(evento.imagem_evento);
+
+
+    const nome =
+        evento.nome_evento ||
+        "Evento sem nome";
+
+
+    const cidade =
+        evento.cidade_evento ||
+        "Local não informado";
+
+
+    const uf =
+        evento.uf ||
+        "";
+
+
+    /*
+     * ID do evento
+     */
+
+    const idEvento =
+        evento.id_evento ||
+        evento.num_evento ||
+        "";
+
 
     return `
+
         <div class="card-evento">
-            <a href="detalhesEvento.php?id_evento=${encodeURIComponent(evento.id_evento)}">
-                <div class="badge-evento ${gratuito ? "gratuito" : "pago"}">
+
+            <a
+                href="detalhesEvento.php?id_evento=${encodeURIComponent(idEvento)}"
+            >
+
+
+                <!-- BADGE -->
+
+                <div
+                    class="badge-evento ${gratuito ? "gratuito" : "pago"}"
+                >
+
                     ${gratuito ? "Gratuito" : "Pago"}
+
                 </div>
-                <img src="${escaparHTML(imagem)}"
-                     alt="${escaparHTML(nome)}"
-                     onerror="this.src='assets/img/banner_site_565x235px.png';">
+
+
+                <!-- IMAGEM -->
+
+                <img
+                    src="${escaparHTML(imagem)}"
+                    alt="${escaparHTML(nome)}"
+                    onerror="this.src='assets/img/banner_site_565x235px.png';"
+                >
+
+
+                <!-- CONTEÚDO -->
+
                 <div class="card-conteudo">
-                    <h4>${escaparHTML(nome)}</h4>
+
+
+                    <h4>
+
+                        ${escaparHTML(nome)}
+
+                    </h4>
+
+
                     <div class="info-evento">
+
+
+                        <!-- LOCAL -->
+
                         <span>
+
                             <i class="bi bi-geo-alt-fill"></i>
-                            ${escaparHTML(cidade)}${uf ? " - " + escaparHTML(uf) : ""}
+
+                            ${escaparHTML(cidade)}
+
+                            ${
+                                uf
+                                    ? " - " + escaparHTML(uf)
+                                    : ""
+                            }
+
                         </span>
+
+
+                        <!-- DATA -->
+
                         <span>
+
                             <i class="bi bi-calendar-event"></i>
+
                             ${formatarData(evento.data_evento)}
+
                         </span>
+
+
                     </div>
+
+
                 </div>
+
+
             </a>
+
         </div>
+
     `;
+
 }
+
+
+
+/* =========================================================
+   MOSTRAR ESTADO DO CARROSSEL
+========================================================= */
 
 function mostrarEstado(id, icone, mensagem) {
-    const container = document.getElementById(id);
-    if (!container) return;
+
+
+    const container =
+        document.getElementById(id);
+
+
+    if (!container) {
+
+        return;
+
+    }
+
 
     container.innerHTML = `
+
         <div class="sem-eventos">
+
             <i class="bi ${icone}"></i>
-            <p>${escaparHTML(mensagem)}</p>
+
+            <p>
+
+                ${escaparHTML(mensagem)}
+
+            </p>
+
         </div>
+
     `;
+
 }
+
+
+
+/* =========================================================
+   CARREGAR EVENTOS DA API
+========================================================= */
 
 async function carregarEventos() {
+
+
     try {
-        const resposta = await fetch(API_EVENTOS, {
-            method: "GET",
-            headers: { "Accept": "application/json" }
-        });
+
+
+        const resposta =
+            await fetch(
+                API_EVENTOS,
+                {
+                    method: "GET",
+
+                    headers: {
+                        "Accept": "application/json"
+                    }
+                }
+            );
+
+
+        /*
+         * Verifica erro HTTP
+         */
 
         if (!resposta.ok) {
-            throw new Error("Erro HTTP " + resposta.status);
+
+            throw new Error(
+                "Erro HTTP " + resposta.status
+            );
+
         }
 
-        const dados = await resposta.json();
-        const eventos = Array.isArray(dados.eventos) ? dados.eventos : [];
 
-        const recomendados = eventos.slice(0, 5);
-        const outrosEventos = eventos.slice(5);
+        /*
+         * Converte resposta para JSON
+         */
+
+        const dados =
+            await resposta.json();
+
+
+        /*
+         * Verifica se a API retornou
+         * um array de eventos
+         */
+
+        const eventos =
+            Array.isArray(dados.eventos)
+                ? dados.eventos
+                : [];
+
+
+        /*
+         * Primeiros 5 eventos
+         * ficam em recomendados
+         */
+
+        const recomendados =
+            eventos.slice(0, 5);
+
+
+        /*
+         * Restante dos eventos
+         */
+
+        const outrosEventos =
+            eventos.slice(5);
+
+
+
+        /* =================================================
+           RECOMENDADOS
+        ================================================= */
+
+        const containerRecomendados =
+            document.getElementById(
+                "recomendados"
+            );
+
 
         if (recomendados.length) {
-            document.getElementById("recomendados").innerHTML =
-                recomendados.map(criarCardEvento).join("");
+
+
+            containerRecomendados.innerHTML =
+                recomendados
+                    .map(criarCardEvento)
+                    .join("");
+
+
         } else {
-            mostrarEstado("recomendados", "bi-calendar-x", "Nenhum evento disponível no momento.");
+
+
+            mostrarEstado(
+                "recomendados",
+                "bi-calendar-x",
+                "Nenhum evento disponível no momento."
+            );
+
         }
 
+
+
+        /* =================================================
+           OUTROS EVENTOS
+        ================================================= */
+
+        const containerOutros =
+            document.getElementById(
+                "outrosEventos"
+            );
+
+
         if (outrosEventos.length) {
-            document.getElementById("outrosEventos").innerHTML =
-                outrosEventos.map(criarCardEvento).join("");
+
+
+            containerOutros.innerHTML =
+                outrosEventos
+                    .map(criarCardEvento)
+                    .join("");
+
+
         } else {
-            mostrarEstado("outrosEventos", "bi-calendar-x", "Nenhum outro evento cadastrado no momento.");
+
+
+            mostrarEstado(
+                "outrosEventos",
+                "bi-calendar-x",
+                "Nenhum outro evento cadastrado no momento."
+            );
+
         }
+
+
     } catch (erro) {
-        console.error("Erro ao carregar eventos:", erro);
-        mostrarEstado("recomendados", "bi-exclamation-triangle", "Não foi possível carregar os eventos.");
-        mostrarEstado("outrosEventos", "bi-exclamation-triangle", "Não foi possível carregar os eventos.");
+
+
+        console.error(
+            "Erro ao carregar eventos:",
+            erro
+        );
+
+
+        /*
+         * Mostra erro nos dois carrosséis
+         */
+
+        mostrarEstado(
+            "recomendados",
+            "bi-exclamation-triangle",
+            "Não foi possível carregar os eventos."
+        );
+
+
+        mostrarEstado(
+            "outrosEventos",
+            "bi-exclamation-triangle",
+            "Não foi possível carregar os eventos."
+        );
+
     }
+
 }
+
+
+
+/* =========================================================
+   INICIAR CARREGAMENTO
+========================================================= */
 
 carregarEventos();
 
@@ -700,9 +1045,3 @@ carregarEventos();
 </body>
 
 </html>
-
-<?php
-
-$conn->close();
-
-?>

@@ -255,7 +255,17 @@ foreach ($eventos as $evento) {
     ====================================================== -->
 
     <link
+        href="assets/css/main.css"
+        rel="stylesheet"
+    >
+
+    <link
         href="assets/css/inicio.css"
+        rel="stylesheet"
+    >
+
+    <link
+        href="assets/css/cardsEvento.css"
         rel="stylesheet"
     >
 
@@ -314,40 +324,10 @@ foreach ($eventos as $evento) {
            CARD
         ====================================================== */
 
-        .card-evento {
+        .carrossel-wrapper .card-evento {
             flex: 0 0 300px;
             width: 300px;
             min-width: 300px;
-
-            background: #ffffff;
-
-            border-radius: 15px;
-
-            overflow: hidden;
-
-            position: relative;
-
-            box-shadow:
-                0 5px 20px rgba(0,0,0,0.12);
-
-            transition:
-                transform 0.3s ease,
-                box-shadow 0.3s ease;
-        }
-
-
-        .card-evento:hover {
-            transform: translateY(-6px);
-
-            box-shadow:
-                0 10px 30px rgba(0,0,0,0.18);
-        }
-
-
-        .card-evento a {
-            text-decoration: none;
-            color: inherit;
-            display: block;
         }
 
 
@@ -355,108 +335,17 @@ foreach ($eventos as $evento) {
            IMAGEM
         ====================================================== */
 
-        .card-evento img {
-            width: 100%;
-            height: 180px;
-
-            object-fit: cover;
-
-            display: block;
-
-            background: #eeeeee;
-        }
-
-
         /* =====================================================
            CONTEÚDO
         ====================================================== */
-
-        .card-conteudo {
-            padding: 18px;
-        }
-
-
-        .card-conteudo h4 {
-            font-size: 20px;
-
-            font-weight: 700;
-
-            margin-bottom: 15px;
-
-            color: #222;
-
-            white-space: nowrap;
-
-            overflow: hidden;
-
-            text-overflow: ellipsis;
-        }
-
 
         /* =====================================================
            INFORMAÇÕES
         ====================================================== */
 
-        .info-evento {
-            display: flex;
-
-            flex-direction: column;
-
-            gap: 8px;
-        }
-
-
-        .info-evento span {
-            font-size: 14px;
-
-            color: #555;
-
-            display: flex;
-
-            align-items: center;
-
-            gap: 7px;
-        }
-
-
-        .info-evento i {
-            font-size: 15px;
-        }
-
-
         /* =====================================================
            BADGES
         ====================================================== */
-
-        .badge-evento {
-            position: absolute;
-
-            top: 12px;
-            left: 12px;
-
-            z-index: 5;
-
-            padding: 6px 12px;
-
-            border-radius: 20px;
-
-            font-size: 12px;
-
-            font-weight: 700;
-
-            color: white;
-        }
-
-
-        .badge-evento.gratuito {
-            background: #8ee000;
-        }
-
-
-        .badge-evento.pago {
-            background: #e83e8c;
-        }
-
 
         /* =====================================================
            BOTÕES DO CARROSSEL
@@ -552,7 +441,7 @@ foreach ($eventos as $evento) {
             }
 
 
-            .card-evento {
+            .carrossel-wrapper .card-evento {
                 flex: 0 0 270px;
 
                 min-width: 270px;
@@ -572,132 +461,9 @@ foreach ($eventos as $evento) {
 </head>
 
 
-<body>
+<body class="com-cabecalho-padrao">
 
-
-<!-- =========================================================
-     TOPBAR
-========================================================= -->
-
-<header class="topbar">
-
-
-    <button
-        class="hamburger-toggle"
-        id="hamburgerToggle"
-        aria-label="Abrir menu"
-        aria-expanded="false"
-    >
-
-        <i class="bi bi-list"></i>
-
-    </button>
-
-
-    <div class="logo">
-
-        <a href="sobre.php">
-
-            <img
-                src="assets/img/showme.png"
-                alt="ShowMe"
-            >
-
-        </a>
-
-    </div>
-
-
-    <div
-        class="topbar-nav"
-        id="topbarNav"
-    >
-
-        <div class="search-box">
-
-            <i class="bi bi-search"></i>
-
-            <input
-                type="text"
-                placeholder="Buscar eventos..."
-            >
-
-        </div>
-
-
-        <div class="topbar-actions">
-
-
-            <a
-                href="cadastro-evento.php"
-                class="btn-cadastrar"
-            >
-
-                <i class="bi bi-plus-circle"></i>
-
-                Cadastrar Evento
-
-            </a>
-
-
-            <nav class="menu-links">
-
-
-                <a
-                    href="favoritos.php"
-                    class="link-favoritos"
-                >
-
-                    <i class="bi bi-heart heart-outline"></i>
-
-                    <i class="bi bi-heart-fill heart-filled"></i>
-
-                    Favoritos
-
-                </a>
-
-
-                <a href="sobre.php">
-
-                    <i class="bi bi-info-circle"></i>
-
-                    Sobre
-
-                </a>
-
-
-                <a href="#footer">
-
-                    <i class="bi bi-telephone"></i>
-
-                    Contato
-
-                </a>
-
-
-            </nav>
-
-
-            <?php if (isset($_SESSION['id_user'])): ?>
-                <a class="btn-user preto" href="perfilUsuario.php">
-                    <i class="bi bi-person-fill"></i>
-                    <?= htmlspecialchars($_SESSION['nome_user'], ENT_QUOTES, 'UTF-8') ?>
-                </a>
-                <a href="logout.php">Sair</a>
-            <?php else: ?>
-                <a class="btn-user preto" href="login.php">
-                    <i class="bi bi-person-fill"></i>
-                    Login
-                </a>
-                <a href="cadastro.php">Cadastro</a>
-            <?php endif; ?>
-
-
-        </div>
-
-    </div>
-
-</header>
+<?php require __DIR__ . '/cabecalho.php'; ?>
 
 
 
@@ -1187,88 +953,6 @@ foreach ($eventos as $evento) {
 <script>
 
 /* =========================================================
-   MENU HAMBÚRGUER
-========================================================= */
-
-const hamburgerToggle =
-    document.getElementById(
-        "hamburgerToggle"
-    );
-
-
-const topbarNav =
-    document.getElementById(
-        "topbarNav"
-    );
-
-
-if (
-    hamburgerToggle &&
-    topbarNav
-) {
-
-    hamburgerToggle.addEventListener(
-        "click",
-        function() {
-
-            const aberto =
-                topbarNav.classList.toggle(
-                    "ativo"
-                );
-
-
-            this.setAttribute(
-                "aria-expanded",
-                aberto
-            );
-
-
-            this.innerHTML =
-                aberto
-
-                ?
-                '<i class="bi bi-x-lg"></i>'
-
-                :
-                '<i class="bi bi-list"></i>';
-
-        }
-    );
-
-
-    topbarNav
-        .querySelectorAll("a")
-        .forEach(
-            function(link) {
-
-                link.addEventListener(
-                    "click",
-                    function() {
-
-                        topbarNav.classList.remove(
-                            "ativo"
-                        );
-
-
-                        hamburgerToggle.innerHTML =
-                            '<i class="bi bi-list"></i>';
-
-
-                        hamburgerToggle.setAttribute(
-                            "aria-expanded",
-                            "false"
-                        );
-
-                    }
-                );
-
-            }
-        );
-
-}
-
-
-/* =========================================================
    BANNER
 ========================================================= */
 
@@ -1340,65 +1024,6 @@ function moverCarrossel(
 
 }
 
-
-/* =========================================================
-   TOPBAR AO ROLAR
-========================================================= */
-
-const topbarEl =
-    document.querySelector(
-        ".topbar"
-    );
-
-
-const DISTANCIA_MAX = 250;
-
-const OPACIDADE_MIN = 0.55;
-
-const OPACIDADE_MAX = 0.97;
-
-
-function atualizaTopbar() {
-
-    if (!topbarEl) {
-        return;
-    }
-
-
-    const distancia =
-        Math.min(
-            window.scrollY,
-            DISTANCIA_MAX
-        );
-
-
-    const progresso =
-        distancia /
-        DISTANCIA_MAX;
-
-
-    const opacidade =
-        OPACIDADE_MIN +
-        progresso *
-        (
-            OPACIDADE_MAX -
-            OPACIDADE_MIN
-        );
-
-
-    topbarEl.style.background =
-        `rgba(17,17,17,${opacidade.toFixed(2)})`;
-
-}
-
-
-window.addEventListener(
-    "scroll",
-    atualizaTopbar
-);
-
-
-atualizaTopbar();
 
 </script>
 

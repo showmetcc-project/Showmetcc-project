@@ -90,8 +90,7 @@ body {
 .eventos-container {
     max-width: 1100px;
     margin: 0 auto;
-    /* espaço reservado para o nav fixo não cobrir o conteúdo */
-    padding: 130px 20px 60px;
+    padding: 45px 20px 60px;
 }
 
 /* ==========================

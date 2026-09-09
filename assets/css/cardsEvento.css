@@ -1,0 +1,83 @@
+.card-evento {
+  background: #ffffff;
+  border: 2px solid #1eff00;
+  border-radius: 15px;
+  overflow: hidden;
+  position: relative;
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.12);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card-evento:hover {
+  border-color: #ff07ea;
+  transform: translateY(-6px);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.18);
+}
+
+.card-evento a {
+  display: block;
+  color: inherit;
+  text-decoration: none;
+}
+
+.card-evento img {
+  display: block;
+  width: 100%;
+  height: 180px;
+  background: #eeeeee;
+  object-fit: cover;
+}
+
+.card-conteudo {
+  padding: 18px;
+}
+
+.card-conteudo h4 {
+  overflow: hidden;
+  margin-bottom: 15px;
+  color: #222222;
+  font-size: 20px;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.info-evento {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.info-evento span {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: #555555;
+  font-size: 14px;
+}
+
+.info-evento i {
+  font-size: 15px;
+}
+
+.badge-evento {
+  position: absolute;
+  top: 12px;
+  right: auto;
+  left: 12px;
+  z-index: 5;
+  padding: 6px 12px;
+  border-radius: 20px;
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.badge-evento.gratuito {
+  background: #8ee000;
+  color: #000000;
+}
+
+.badge-evento.pago {
+  background: #e83e8c;
+}

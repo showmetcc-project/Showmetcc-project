@@ -63,18 +63,9 @@
 
 </head>
 
-<body>
+<body class="com-cabecalho-padrao">
 
-    <!-- NAV FIXO: fica preso no topo ao rolar a página -->
-    <header class="nav-fixo">
-        <div class="topo">
-            <a href="inicio.php" class="voltar">
-                <i class="bi bi-arrow-left"></i>
-                Meus <span>Eventos</span>
-            </a>
-        </div>
-        <div class="linha-verde"></div>
-    </header>
+    <?php require __DIR__ . '/cabecalho.php'; ?>
 
     <main class="eventos-container">
 
@@ -214,6 +205,7 @@
     <!-- Vendor JS -->
     <script src="assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
     <script src="assets/vendor/aos/aos.js"></script>
+    <script src="assets/js/main.js"></script>
     <script src="js/favoritos.js"></script>
     <script>AOS.init();</script>
 

@@ -1,0 +1,68 @@
+.resultados-busca-main {
+  min-height: 65vh;
+  padding: 58px 20px 80px;
+  background: #f5f5f5;
+}
+
+.resultados-busca-container {
+  width: min(1180px, 100%);
+  margin: 0 auto;
+}
+
+.resultados-busca-cabecalho {
+  margin-bottom: 32px;
+}
+
+.resultados-busca-cabecalho h1 {
+  margin-bottom: 8px;
+  color: #151515;
+  font-family: "Oswald", sans-serif;
+  font-size: clamp(28px, 4vw, 42px);
+}
+
+.resultados-busca-cabecalho p {
+  margin: 0;
+  color: #666666;
+}
+
+.resultados-busca-termo {
+  color: #e9009b;
+}
+
+.resultados-busca-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 24px;
+  padding: 0;
+  background: transparent;
+  color: inherit;
+}
+
+.resultados-busca-grid .card-evento {
+  width: 100%;
+}
+
+.estado-resultados-busca {
+  grid-column: 1 / -1;
+  margin: 0;
+  padding: 55px 20px;
+  border: 1px dashed #bcbcbc;
+  border-radius: 14px;
+  color: #666666;
+  text-align: center;
+}
+
+.estado-resultados-busca.erro {
+  border-color: #e9009b;
+  color: #a0006b;
+}
+
+@media (max-width: 575px) {
+  .resultados-busca-main {
+    padding: 38px 16px 60px;
+  }
+
+  .resultados-busca-grid {
+    grid-template-columns: 1fr;
+  }
+}

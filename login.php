@@ -41,6 +41,10 @@
 
 <body class="index-page">
 
+    <a href="index.php" class="voltar-home-auth" aria-label="Voltar para a página inicial" title="Voltar para a página inicial">
+        <i class="bi bi-arrow-left"></i>
+    </a>
+
     <main class="main-login">
 
         <div class="login-wrapper">
@@ -122,8 +126,6 @@
         </div>
 
     </main>
-    <?php require __DIR__ . '/rodape.php'; ?>
-
     <script>
         const formLogin = document.getElementById('formLogin');
         const mensagemLogin = document.getElementById('mensagemLogin');

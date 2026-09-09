@@ -42,7 +42,7 @@
                HEADER
                ========================================================= */
           
-          header {
+          .header-planejamento-section {
               width: 100%;
               padding: 30px 6%;
               border-bottom: 1px solid rgba(255, 255, 255, 0.08);
@@ -55,26 +55,6 @@
               display: flex;
               align-items: center;
               gap: 20px;
-          }
-          
-          .voltar-header {
-              width: 45px;
-              height: 45px;
-              border: 1px solid var(--verde);
-              border-radius: 50%;
-              display: flex;
-              justify-content: center;
-              align-items: center;
-              color: var(--verde);
-              text-decoration: none;
-              font-size: 20px;
-              transition: .3s;
-          }
-          
-          .voltar-header:hover {
-              background: var(--verde);
-              color: #000;
-              box-shadow: 0 0 15px rgba(168, 255, 0, .5);
           }
           
           .header-planejamento h1 {
@@ -674,70 +654,6 @@
               font-size: 12px;
               margin: 8px 0;
           }
-          /* =========================================================
-               FOOTER
-               ========================================================= */
-          
-          footer {
-              border-top: 1px solid rgba(255, 255, 255, .08);
-              padding: 50px 6%;
-              background: #050505;
-          }
-          
-          .footer-container {
-              width: min(1150px, 92%);
-              margin: auto;
-              display: grid;
-              grid-template-columns: repeat(3, 1fr);
-              gap: 50px;
-          }
-          
-          footer h3 {
-              font-size: 16px;
-              margin-bottom: 15px;
-          }
-          
-          footer h3 span {
-              color: var(--verde);
-          }
-          
-          footer h3 strong {
-              color: var(--rosa);
-          }
-          
-          footer p {
-              color: #777;
-              font-size: 12px;
-              line-height: 1.7;
-          }
-          
-          .social-links {
-              display: flex;
-              gap: 12px;
-              margin-top: 15px;
-          }
-          
-          .social-links i {
-              color: #aaa;
-              cursor: pointer;
-              transition: .25s;
-          }
-          
-          .social-links i:hover {
-              color: var(--verde);
-          }
-          
-          footer input,
-          footer textarea {
-              margin-bottom: 10px;
-              background: #0d0d0d;
-          }
-          
-          footer textarea {
-              height: 90px;
-              resize: none;
-          }
-          
           .origem-rota {
               margin-top: 25px;
               padding: 20px;
@@ -890,7 +806,7 @@
           }
           
           @media (max-width: 600px) {
-              header {
+              .header-planejamento-section {
                   padding: 20px;
               }
               .header-planejamento h1 {
@@ -922,9 +838,5 @@
               }
               .botoes button {
                   width: 100%;
-              }
-              .footer-container {
-                  grid-template-columns: 1fr;
-                  gap: 30px;
               }
           }

@@ -1,3 +1,8 @@
+<?php
+if (session_status() !== PHP_SESSION_ACTIVE) {
+  session_start();
+}
+?>
 <!DOCTYPE html>
 <html lang="pt-br">
 
@@ -40,7 +45,9 @@
 </head>
 
 
-<body class="index-page">
+<body class="index-page com-cabecalho-padrao">
+
+  <?php require __DIR__ . '/cabecalho.php'; ?>
 
   <main class="main-login">
 
@@ -95,6 +102,8 @@
   </main>
 
   <?php require __DIR__ . '/rodape.php'; ?>
+
+  <script src="assets/js/main.js"></script>
 
   <script>
     const formLoginAdmin = document.getElementById('formLoginAdmin');

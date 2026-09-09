@@ -196,7 +196,25 @@ paths:
   /eventos:
     get:
       tags: [Eventos]
-      summary: Lista eventos aprovados
+      summary: Lista ou busca eventos aprovados
+      description: Sem parâmetros, lista todos os eventos. Com busca, filtra por nome do evento, cidade, categoria ou nome de artista, sem duplicar eventos associados a mais de um artista.
+      parameters:
+        - name: busca
+          in: query
+          required: false
+          description: Termo pesquisado no nome do evento, cidade, categoria ou artista.
+          schema:
+            type: string
+          example: Festival
+        - name: limite
+          in: query
+          required: false
+          description: Quantidade máxima de resultados quando busca estiver preenchido. Usado pelo autocomplete.
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 50
+          example: 5
       responses:
         '200':
           description: Lista de eventos
@@ -209,6 +227,8 @@ paths:
                     type: array
                     items:
                       $ref: '#/components/schemas/Evento'
+        '400':
+          $ref: '#/components/responses/RequisicaoInvalida'
     post:
       tags: [Eventos]
       summary: Cria uma solicitação de evento

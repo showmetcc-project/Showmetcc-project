@@ -35,21 +35,16 @@
     href="https://fonts.googleapis.com/css2?family=Anton&family=Oswald:wght@300;400;500;600;700&display=swap"
     rel="stylesheet">
 
+  <link href="assets/css/main.css" rel="stylesheet">
+
   <!-- Principal CSS File (por último, para ter prioridade sobre o Bootstrap) -->
   <link href="assets/css/cadastro-evento.css" rel="stylesheet">
 
 </head>
 
-<body>
+<body class="com-cabecalho-padrao">
 
-    <div class="top-bar">
-        <a href="inicio.php" class="voltar">
-            <i class="fa-solid fa-arrow-left"></i>
-            Voltar
-        </a>
-    </div>
-
-    <div class="linha-topo"></div>
+    <?php require __DIR__ . '/cabecalho.php'; ?>
 
     <div class="container-fluid evento-container">
 
@@ -165,6 +160,7 @@
 <?php require __DIR__ . '/rodape.php'; ?>
 
 
+    <script src="assets/js/main.js"></script>
 
     <script>
 

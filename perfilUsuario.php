@@ -31,19 +31,9 @@
     <link href="assets/css/usuario.css" rel="stylesheet">
 </head>
 
-<body>
+<body class="com-cabecalho-padrao">
 
- 
-    <nav class="topo">
-        <a href="inicio.php" class="voltar">
-            <i class="bi bi-arrow-left"></i>
-            <span class="verde">Meu</span> <span class="rosa">Perfil</span>
-        </a>
-        <a href="logout.php" class="sair">
-            <i class="bi bi-box-arrow-right"></i>
-            <?= htmlspecialchars($_SESSION['nome_user'], ENT_QUOTES, 'UTF-8') ?> · Sair
-        </a>
-    </nav>
+    <?php require __DIR__ . '/cabecalho.php'; ?>
 
     
     <div class="banner-wrap">
@@ -135,6 +125,7 @@
     <!-- Vendor JS (mesmo padrão do index) -->
     <script src="assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
     <script src="assets/vendor/aos/aos.js"></script>
+    <script src="assets/js/main.js"></script>
     <script src="assets/js/perfil.js"></script>
     <script>
         fetch('api/usuarios/<?= (int) $_SESSION['id_user'] ?>')

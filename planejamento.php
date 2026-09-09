@@ -110,6 +110,10 @@ if ($local !== '') {
             Planejar Viagem - ShowMe
         </title>
 
+        <link rel="stylesheet" href="assets/vendor/bootstrap/css/bootstrap.min.css">
+
+        <link rel="stylesheet" href="assets/css/main.css">
+
         <!-- CSS DO PROJETO -->
 
         <link rel="stylesheet" href="./assets/css/planejamento.css">
@@ -129,23 +133,18 @@ if ($local !== '') {
     </head>
 
 
-    <body>
+    <body class="com-cabecalho-padrao">
+
+        <?php require __DIR__ . '/cabecalho.php'; ?>
 
 
         <!-- =====================================================
      HEADER
 ===================================================== -->
 
-        <header>
+        <section class="header-planejamento-section">
 
             <div class="header-planejamento">
-
-                <a href="javascript:history.back()" class="voltar-header">
-
-                    <i class="bi bi-arrow-left"></i>
-
-                </a>
-
 
                 <div>
 
@@ -174,7 +173,7 @@ if ($local !== '') {
 
             </div>
 
-        </header>
+        </section>
 
 
 
@@ -1185,81 +1184,7 @@ if ($local !== '') {
      FOOTER
 ===================================================== -->
 
-        <footer>
-
-            <div class="footer-container">
-
-
-                <div>
-
-                    <h3>
-
-                        <span>
-                    Show
-                </span>
-
-                        <strong>
-                    Me
-                </strong>
-
-                    </h3>
-
-
-                    <p>
-                        Democratizando o acesso à cultura desde 2026.
-                    </p>
-
-
-                    <div class="social-links">
-
-                        <i class="bi bi-instagram"></i>
-
-                        <i class="bi bi-twitter-x"></i>
-
-                        <i class="bi bi-facebook"></i>
-
-                    </div>
-
-                </div>
-
-
-                <div>
-
-                    <h3>
-                        Entre em contato
-                    </h3>
-
-
-                    <input type="email" placeholder="Seu e-mail">
-
-
-                    <textarea placeholder="Sua mensagem"></textarea>
-
-                </div>
-
-
-                <div>
-
-                    <h3>
-                        Informações
-                    </h3>
-
-
-                    <p>
-                        Termos de Uso
-                    </p>
-
-
-                    <p>
-                        Política de Privacidade
-                    </p>
-
-                </div>
-
-
-            </div>
-
-        </footer>
+        <?php require __DIR__ . '/rodape.php'; ?>
 
 
 
@@ -3745,6 +3670,8 @@ atualizarResumo();
 
 atualizarTimeline(1);
         </script>
+
+        <script src="assets/js/main.js"></script>
 
     </body>
 

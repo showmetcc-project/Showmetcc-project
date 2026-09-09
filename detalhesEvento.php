@@ -293,6 +293,11 @@ $imagemEvento = !empty($evento['imagem_evento'])
 
     <link
         rel="stylesheet"
+        href="assets/css/main.css"
+    >
+
+    <link
+        rel="stylesheet"
         href="assets/css/detalhesEvento.css"
     >
 
@@ -465,7 +470,9 @@ $imagemEvento = !empty($evento['imagem_evento'])
 </head>
 
 
-<body>
+<body class="com-cabecalho-padrao">
+
+<?php require __DIR__ . '/cabecalho.php'; ?>
 
 
 <div class="pagina-wrapper">
@@ -1343,6 +1350,8 @@ $imagemEvento = !empty($evento['imagem_evento'])
 <script src="assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
 
 <script src="assets/vendor/aos/aos.js"></script>
+
+<script src="assets/js/main.js"></script>
 
 <script>
 

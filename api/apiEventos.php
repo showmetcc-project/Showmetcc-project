@@ -71,6 +71,11 @@ $camposEvento = 'id_evento, num_evento, nome_evento, local_evento, rua_evento,
                  cidade_evento, uf, descricao_evento, data_evento, gratuidade,
                  categoria_evento, link_oficial, imagem_evento, status_evento';
 
+$camposEventoComAlias = 'e.id_evento, e.num_evento, e.nome_evento, e.local_evento,
+                         e.rua_evento, e.cidade_evento, e.uf, e.descricao_evento,
+                         e.data_evento, e.gratuidade, e.categoria_evento,
+                         e.link_oficial, e.imagem_evento, e.status_evento';
+
 switch ($metodo) {
     case 'GET':
         if ($id !== null) {
@@ -87,11 +92,91 @@ switch ($metodo) {
             responder(['evento' => normalizarEvento($evento)]);
         }
 
-        $resultado = $conn->query("SELECT $camposEvento FROM evento ORDER BY data_evento ASC");
+        $busca = null;
+
+        if (array_key_exists('busca', $_GET)) {
+            if (!is_string($_GET['busca'])) {
+                responder(['erro' => 'O parâmetro busca deve ser um texto'], 400);
+            }
+
+            $busca = trim($_GET['busca']);
+            $busca = $busca === '' ? null : $busca;
+        }
+
         $eventos = [];
 
-        while ($evento = $resultado->fetch_assoc()) {
-            $eventos[] = normalizarEvento($evento);
+        if ($busca !== null) {
+            $limite = null;
+
+            if (array_key_exists('limite', $_GET)) {
+                $limiteInformado = $_GET['limite'];
+
+                if (
+                    !is_string($limiteInformado)
+                    || !ctype_digit($limiteInformado)
+                    || (int) $limiteInformado < 1
+                    || (int) $limiteInformado > 50
+                ) {
+                    responder(['erro' => 'O parâmetro limite deve ser um inteiro entre 1 e 50'], 400);
+                }
+
+                $limite = (int) $limiteInformado;
+            }
+
+            // O caractere = funciona como escape para que %, _ e o próprio =
+            // sejam pesquisados literalmente, sem alterar o padrão do LIKE.
+            $termoEscapado = str_replace(['=', '%', '_'], ['==', '=%', '=_'], $busca);
+            $padraoBusca = '%' . $termoEscapado . '%';
+
+            $sqlBusca = "SELECT DISTINCT $camposEventoComAlias
+                         FROM evento e
+                         LEFT JOIN artista_evento ae ON ae.id_evento = e.id_evento
+                         LEFT JOIN artista a ON a.id_artista = ae.id_artista
+                         WHERE e.nome_evento LIKE ? ESCAPE '='
+                            OR e.cidade_evento LIKE ? ESCAPE '='
+                            OR e.categoria_evento LIKE ? ESCAPE '='
+                            OR a.nome_artista LIKE ? ESCAPE '='
+                         ORDER BY e.data_evento ASC";
+
+            if ($limite !== null) {
+                $sqlBusca .= ' LIMIT ?';
+            }
+
+            $stmt = $conn->prepare($sqlBusca);
+
+            if ($limite !== null) {
+                $stmt->bind_param(
+                    'ssssi',
+                    $padraoBusca,
+                    $padraoBusca,
+                    $padraoBusca,
+                    $padraoBusca,
+                    $limite
+                );
+            } else {
+                $stmt->bind_param(
+                    'ssss',
+                    $padraoBusca,
+                    $padraoBusca,
+                    $padraoBusca,
+                    $padraoBusca
+                );
+            }
+
+            $stmt->execute();
+            $resultado = $stmt->get_result();
+
+            while ($evento = $resultado->fetch_assoc()) {
+                $eventos[] = normalizarEvento($evento);
+            }
+
+            $stmt->close();
+        } else {
+            $resultado = $conn->query("SELECT $camposEvento FROM evento ORDER BY data_evento ASC");
+
+            while ($evento = $resultado->fetch_assoc()) {
+                $eventos[] = normalizarEvento($evento);
+            }
         }
 
         responder(['eventos' => $eventos]);

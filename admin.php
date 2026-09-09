@@ -18,36 +18,16 @@
     <link href="assets/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
     <link href="assets/vendor/bootstrap-icons/bootstrap-icons.css" rel="stylesheet">
 
+    <link rel="stylesheet" href="assets/css/main.css">
+
     <!-- CSS customizado — sempre por último -->
     <link rel="stylesheet" href="assets/css/admin.css">
 </head>
-<body>
+<body class="com-cabecalho-padrao">
+
+<?php require __DIR__ . '/cabecalho.php'; ?>
 
 <div class="container py-4">
-
-    <!-- TOPBAR -->
-    <nav class="topbar">
-
-        <div class="logo">
-            <span class="show">Show</span><span class="me">Me</span>
-        </div>
-
-        <div class="admin-badge">
-            <i class="bi bi-shield-shaded"></i>
-            Área Administrativa
-        </div>
-
-        <div class="user-area">
-            <span class="user-email"><?= htmlspecialchars($_SESSION['nome_user'], ENT_QUOTES, 'UTF-8') ?></span>
-            <a href="logout.php" class="btn-sair">
-                <i class="bi bi-box-arrow-right"></i>
-                Sair
-            </a>
-        </div>
-
-    </nav>
-
-    <hr class="divider">
 
     <!-- CABEÇALHO -->
     <section class="header-admin">
@@ -253,6 +233,7 @@
 
 <!-- Vendor JS -->
 <script src="assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+<script src="assets/js/main.js"></script>
 
 <script>
     // Toggle expand/collapse dos cards

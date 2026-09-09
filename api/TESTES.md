@@ -137,6 +137,35 @@ curl.exe -i "$BASE/eventos/"
 curl.exe -i -X DELETE "$BASE/eventos/"
 ```
 
+### GET /eventos?busca= — busca por nome, cidade e artista
+
+Substitua os termos pelos dados existentes no banco. As três respostas devem conter o
+evento correspondente. O último comando também confirma o limite usado pelo autocomplete.
+
+```powershell
+curl.exe -i -G "$BASE/eventos/" --data-urlencode "busca=Festival Regional"
+curl.exe -i -G "$BASE/eventos/" --data-urlencode "busca=Campinas"
+curl.exe -i -G "$BASE/eventos/" --data-urlencode "busca=Nome do Artista"
+curl.exe -i -G "$BASE/eventos/" --data-urlencode "busca=Festival" --data-urlencode "limite=5"
+```
+
+### GET /eventos?busca= — termo sem resultados
+
+A resposta esperada é `200` com `{"eventos":[]}`.
+
+```powershell
+curl.exe -i -G "$BASE/eventos/" --data-urlencode "busca=evento-que-nao-existe-987654321"
+```
+
+### GET /eventos?busca= — aspas e percentual
+
+O termo é enviado com URL encoding. A resposta deve ser JSON válido, sem erro SQL; `%` é
+tratado como texto literal pela busca, e não como curinga do `LIKE`.
+
+```powershell
+curl.exe -i -G "$BASE/eventos/" --data-urlencode "busca=Festival `"Especial`" 100%"
+```
+
 ### GET /eventos/{id} — sucesso e erro 404
 
 ```powershell

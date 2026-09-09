@@ -99,6 +99,8 @@ if (!$avaliacao) {
         rel="stylesheet"
     >
 
+    <link href="assets/css/main.css" rel="stylesheet">
+
     <style>
 
         body {
@@ -189,7 +191,9 @@ if (!$avaliacao) {
 
 </head>
 
-<body>
+<body class="com-cabecalho-padrao">
+
+<?php require __DIR__ . '/cabecalho.php'; ?>
 
 <div class="editar-container">
 
@@ -282,6 +286,9 @@ if (!$avaliacao) {
 
 </div>
 
+<?php require __DIR__ . '/rodape.php'; ?>
+
+<script src="assets/js/main.js"></script>
 
 <script>
 

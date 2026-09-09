@@ -29,7 +29,6 @@
 
     <!-- Favicons -->
     <link href="assets/img/showme.png" rel="icon">
-    <link href="assets/img/apple-touch-icon.png" rel="apple-touch-icon">
 
 
     <!-- Fonts -->
@@ -206,7 +205,7 @@
     <script src="assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
     <script src="assets/vendor/aos/aos.js"></script>
     <script src="assets/js/main.js"></script>
-    <script src="js/favoritos.js"></script>
+    <script src="assets/js/favoritos.js"></script>
     <script>AOS.init();</script>
 
 </body>

@@ -2,7 +2,7 @@
 
 session_start();
 
-require '../assets/config/conexao.php';
+require __DIR__ . '/../config/conexao.php';
 require '../api_spotify/spotify_config.php';
 
 if (!isset($_GET['code'])) {

@@ -145,6 +145,12 @@ body {
     box-shadow: 0 6px 20px rgba(57, 255, 20, .3);
 }
 
+.btn-editar:disabled {
+    cursor: wait;
+    opacity: .65;
+    transform: none;
+}
+
 
 
 .perfil-form {
@@ -167,6 +173,29 @@ body {
 }
 
 .full { grid-column: 1 / 3; }
+
+.perfil-feedback {
+    grid-column: 1 / 3;
+    margin: 0;
+    padding: 12px 14px;
+    border-radius: 10px;
+}
+
+.perfil-feedback[hidden] {
+    display: none;
+}
+
+.perfil-feedback.sucesso {
+    border: 1px solid #39ff14;
+    background: rgba(57, 255, 20, .1);
+    color: #39ff14;
+}
+
+.perfil-feedback.erro {
+    border: 1px solid #e9009b;
+    background: rgba(233, 0, 155, .1);
+    color: #ff8bd8;
+}
 
 .input-icon {
     display: flex;

@@ -11,7 +11,6 @@
 
   <!-- Favicons -->
   <link href="assets/img/showme.png" rel="icon">
-  <link href="assets/img/apple-touch-icon.png" rel="apple-touch-icon">
 
   <!-- Fonts -->
   <link href="https://fonts.googleapis.com" rel="preconnect">
@@ -28,6 +27,7 @@
   <link href="assets/vendor/swiper/swiper-bundle.min.css" rel="stylesheet">
 
   <!-- Principal CSS File -->
+  <link href="assets/css/main.css" rel="stylesheet">
   <link href="assets/css/sobre.css" rel="stylesheet">
  
 
@@ -42,7 +42,7 @@
 
 </head>
 
-<body class="index-page">
+<body class="index-page pagina-sobre">
 
   <?php require __DIR__ . '/cabecalho.php'; ?>
 
@@ -52,7 +52,7 @@
     <!-- Banner Inicio linha 858-->
     <section id="hero" class="hero section dark-background">
       <video autoplay muted loop width="100%">
-        <source src="assets/bannervideo.mp4" type="video/mp4">
+        <source src="assets/video/bannervideo.mp4" type="video/mp4">
       </video>
       <div class="row gy-4">
         <div class="container">

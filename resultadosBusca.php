@@ -18,7 +18,6 @@ $termoBuscaEscapado = htmlspecialchars($termoBusca, ENT_QUOTES, 'UTF-8');
   <meta name="description" content="Encontre eventos por nome, cidade, categoria ou artista.">
 
   <link href="assets/img/showme.png" rel="icon">
-  <link href="assets/img/apple-touch-icon.png" rel="apple-touch-icon">
 
   <link href="https://fonts.googleapis.com" rel="preconnect">
   <link href="https://fonts.gstatic.com" rel="preconnect" crossorigin>

@@ -32,7 +32,7 @@ if (session_status() !== PHP_SESSION_ACTIVE) {
     session_start();
 }
 
-require_once dirname(__DIR__) . '/assets/config/conexao.php';
+require_once dirname(__DIR__) . '/config/conexao.php';
 require_once __DIR__ . '/middleware/verifica_login.php';
 
 $metodo = $_SERVER['REQUEST_METHOD'];

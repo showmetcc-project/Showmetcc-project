@@ -33,7 +33,7 @@ if (session_status() !== PHP_SESSION_ACTIVE) {
     session_start();
 }
 
-require_once dirname(__DIR__) . '/assets/config/conexao.php';
+require_once dirname(__DIR__) . '/config/conexao.php';
 
 $metodo = $_SERVER['REQUEST_METHOD'];
 $id = null;

@@ -10,14 +10,14 @@
 INSERT INTO usuario
 (nome_user, sobrenome, email_user, senha_user)
 VALUES
-('Ana', 'Silva', 'ana.silva@email.com', '123456'),
-('Lucas', 'Oliveira', 'lucas.oliveira@email.com', '123456'),
-('Mariana', 'Santos', 'mariana.santos@email.com', '123456'),
-('Gabriel', 'Souza', 'gabriel.souza@email.com', '123456'),
-('Beatriz', 'Costa', 'beatriz.costa@email.com', '123456'),
-('Rafael', 'Lima', 'rafael.lima@email.com', '123456'),
-('Julia', 'Almeida', 'julia.almeida@email.com', '123456'),
-('Pedro', 'Ferreira', 'pedro.ferreira@email.com', '123456');
+('Ana', 'Silva', 'ana.silva@email.com', '$2y$10$U3r2Tf5z9YOVsdeS/9IeOOgsNI6cqGOy/K.ll9SO8AeEgKP/RFAhy'),
+('Lucas', 'Oliveira', 'lucas.oliveira@email.com', '$2y$10$U3r2Tf5z9YOVsdeS/9IeOOgsNI6cqGOy/K.ll9SO8AeEgKP/RFAhy'),
+('Mariana', 'Santos', 'mariana.santos@email.com', '$2y$10$U3r2Tf5z9YOVsdeS/9IeOOgsNI6cqGOy/K.ll9SO8AeEgKP/RFAhy'),
+('Gabriel', 'Souza', 'gabriel.souza@email.com', '$2y$10$U3r2Tf5z9YOVsdeS/9IeOOgsNI6cqGOy/K.ll9SO8AeEgKP/RFAhy'),
+('Beatriz', 'Costa', 'beatriz.costa@email.com', '$2y$10$U3r2Tf5z9YOVsdeS/9IeOOgsNI6cqGOy/K.ll9SO8AeEgKP/RFAhy'),
+('Rafael', 'Lima', 'rafael.lima@email.com', '$2y$10$U3r2Tf5z9YOVsdeS/9IeOOgsNI6cqGOy/K.ll9SO8AeEgKP/RFAhy'),
+('Julia', 'Almeida', 'julia.almeida@email.com', '$2y$10$U3r2Tf5z9YOVsdeS/9IeOOgsNI6cqGOy/K.ll9SO8AeEgKP/RFAhy'),
+('Pedro', 'Ferreira', 'pedro.ferreira@email.com', '$2y$10$U3r2Tf5z9YOVsdeS/9IeOOgsNI6cqGOy/K.ll9SO8AeEgKP/RFAhy');
 
 
 -- =========================================================

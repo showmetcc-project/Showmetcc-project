@@ -7,12 +7,20 @@ https://www.figma.com/design/OfIRwYhogB1vUhzETBJfBr/Prot%C3%B3tipo-ShowMe?node-i
 ## Diário de Bordo:
 https://docs.google.com/document/d/1eQmMmD_ZRE1Jcs-hp6PKNb1CXcPMcDlCV_TuUi69Axs/edit?usp=sharing
 
-## Link do site:
-https://showmetcc-project.github.io/Showmetcc-project/
+## Execução da aplicação
+
+O ShowMe ainda não possui uma publicação compatível com PHP e MySQL. O antigo link do GitHub Pages exibia apenas arquivos estáticos e não representava a aplicação completa.
+
+Para executar localmente:
+
+1. Importe `assets/banco/showme.sql` no MySQL.
+2. Confira a conexão em `config/conexao.php` e crie `config/email.php` a partir de `config/email.example.php`.
+3. Execute `composer install`.
+4. No VS Code, rode a tarefa **Iniciar servidor PHP do ShowMe** ou use `php -S 127.0.0.1:8000`.
 
 <div align="center">
 
-<img src="./assets/banner.png" width="100%">
+<img src="./assets/img/showme.png" width="40%" alt="Logotipo ShowMe">
 
 # SHOW ME
 
@@ -65,7 +73,7 @@ Tudo em uma única experiência moderna e intuitiva.
 
 <div align="center">
 
-<img src="./assets/preview1.png" width="85%">
+<img src="./assets/img/banner.png" width="85%" alt="Banner da aplicação ShowMe">
 
 </div>
 
@@ -75,7 +83,7 @@ Tudo em uma única experiência moderna e intuitiva.
 
 <div align="center">
 
-<img src="https://skillicons.dev/icons?i=html,css,js,aws,git,github,vscode" />
+<img src="https://skillicons.dev/icons?i=html,css,js,php,mysql,git,github,vscode" alt="HTML, CSS, JavaScript, PHP, MySQL, Git, GitHub e VS Code" />
 
 </div>
 

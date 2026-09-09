@@ -26,7 +26,7 @@ planejamento.php?id_evento=15
 // CONEXÃO COM O BANCO
 // -------------------------------------------------------
 
-require_once __DIR__ . '/assets/config/conexao.php';
+require_once __DIR__ . '/config/conexao.php';
 
 $idEvento = filter_input(
     INPUT_GET,

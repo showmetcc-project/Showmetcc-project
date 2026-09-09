@@ -1,4 +1,4 @@
-// Troca de abas: Favoritos <-> Planejados
+// Alterna as abas Favoritos e Planejados.
 document.querySelectorAll('.aba').forEach(btn => {
     btn.addEventListener('click', () => {
         const tab = btn.dataset.tab;

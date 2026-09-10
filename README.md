@@ -14,9 +14,21 @@ O ShowMe ainda não possui uma publicação compatível com PHP e MySQL. O antig
 Para executar localmente:
 
 1. Importe `assets/banco/showme.sql` no MySQL.
-2. Confira a conexão em `config/conexao.php` e crie `config/email.php` a partir de `config/email.example.php`.
-3. Execute `composer install`.
-4. No VS Code, rode a tarefa **Iniciar servidor PHP do ShowMe** ou use `php -S 127.0.0.1:8000`.
+2. Confira a conexão em `config/conexao.php` e crie os arquivos locais `config/email.php` e `config/google.php` a partir dos respectivos arquivos `.example.php`.
+3. Execute manualmente as migrações SQL pendentes de `database/migrations/` no banco de desenvolvimento.
+4. Execute `composer install`.
+5. No VS Code, rode a tarefa **Iniciar servidor PHP do ShowMe** ou use `php -S 127.0.0.1:8000`.
+
+### Configuração do login Google
+
+Crie um **OAuth Client ID** do tipo aplicação Web no Google Cloud/Identity Platform,
+cadastre as origens autorizadas usadas pelo projeto e copie o Client ID para
+`config/google.php`. O `client_secret` ficou previsto no modelo, mas não é usado pelo
+fluxo atual de ID token. Consulte a
+[documentação oficial do Google](https://docs.cloud.google.com/identity-platform/docs/web/google?hl=pt-br).
+
+O arquivo `config/google.php` é ignorado pelo Git. O Client ID será exposto no HTML por
+definição do fluxo web; já o segredo não deve ser enviado ao navegador nem commitado.
 
 <div align="center">
 

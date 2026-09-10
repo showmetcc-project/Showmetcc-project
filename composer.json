@@ -4,6 +4,7 @@
     "type": "project",
     "license": "proprietary",
     "require": {
-        "phpmailer/phpmailer": "^7.1"
+        "phpmailer/phpmailer": "^7.1",
+        "google/apiclient": "^2.19"
     }
 }

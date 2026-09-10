@@ -1,4 +1,10 @@
-<?php $cadastroConcluido = isset($_GET['sucesso']); ?>
+<?php
+$cadastroConcluido = isset($_GET['sucesso']);
+$googleConfig = is_file(__DIR__ . '/config/google.php')
+    ? require __DIR__ . '/config/google.php'
+    : [];
+$googleClientId = is_array($googleConfig) ? trim((string) ($googleConfig['client_id'] ?? '')) : '';
+?>
 <!DOCTYPE html>
 <html lang="pt-br">
 
@@ -56,10 +62,14 @@
 
                 <h2>Entrar</h2>
 
-                <button type="button" class="social-btn google-btn">
-                <i class="bi bi-google"></i>
-                Continuar com Google
-            </button>
+                <div
+                    class="google-login-container"
+                    data-google-login
+                    data-google-client-id="<?= htmlspecialchars($googleClientId, ENT_QUOTES, 'UTF-8') ?>"
+                    data-google-endpoint="api/sessoes/"
+                    data-google-error-target="mensagemLogin"
+                    data-google-success-url="inicio.php"
+                    data-google-text="continue_with"></div>
 
                 <a href="api_spotify/spotify_login.php" class="social-btn spotify-btn">
                     <i class="bi bi-spotify"></i> Continuar com Spotify
@@ -157,6 +167,9 @@
             }
         });
     </script>
+
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <script src="assets/js/googleLogin.js" defer></script>
 
     <?php require_once __DIR__ . '/acessibilidade.php'; ?>
 

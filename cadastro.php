@@ -1,3 +1,9 @@
+<?php
+$googleConfig = is_file(__DIR__ . '/config/google.php')
+  ? require __DIR__ . '/config/google.php'
+  : [];
+$googleClientId = is_array($googleConfig) ? trim((string) ($googleConfig['client_id'] ?? '')) : '';
+?>
 <!DOCTYPE html>
 <html lang="pt-br">
 
@@ -47,6 +53,19 @@
         <h1>Criar Conta</h1>
 
         <div id="mensagemCadastro" class="alert d-none" role="alert"></div>
+
+        <div
+          class="google-login-container"
+          data-google-login
+          data-google-client-id="<?= htmlspecialchars($googleClientId, ENT_QUOTES, 'UTF-8') ?>"
+          data-google-endpoint="api/sessoes/"
+          data-google-error-target="mensagemCadastro"
+          data-google-success-url="inicio.php"
+          data-google-text="signup_with"></div>
+
+        <div class="divider">
+          <span>ou</span>
+        </div>
 
         <form id="formCadastro">
 
@@ -177,6 +196,9 @@
       }
     });
   </script>
+
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <script src="assets/js/googleLogin.js" defer></script>
 
   <?php require_once __DIR__ . '/acessibilidade.php'; ?>
 

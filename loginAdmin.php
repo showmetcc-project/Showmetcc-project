@@ -46,8 +46,6 @@ if (session_status() !== PHP_SESSION_ACTIVE) {
 
 <body class="index-page com-cabecalho-padrao">
 
-  <?php require __DIR__ . '/cabecalho.php'; ?>
-
   <main class="main-login">
 
     <div class="login-wrapper">
@@ -99,8 +97,6 @@ if (session_status() !== PHP_SESSION_ACTIVE) {
     </div>
 
   </main>
-
-  <?php require __DIR__ . '/rodape.php'; ?>
 
   <script src="assets/js/main.js"></script>
 

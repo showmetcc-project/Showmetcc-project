@@ -78,7 +78,7 @@
 
             <button class="aba" data-tab="planejados">
                 <i class="bi bi-calendar-event"></i>
-                Planejados (2)
+                Planejados (<span id="contadorPlanejados">0</span>)
             </button>
 
         </div>
@@ -145,46 +145,7 @@
              PLANEJADOS
         ═══════════════════════════ -->
         <section id="planejados" class="conteudo">
-
-            <!-- Card 1 -->
-            <div class="card-evento">
-                <img src="img/harry.jpg" alt="Harry Styles">
-                <div class="info">
-                    <h3>Harry Styles: Together, Together</h3>
-                    <p><i class="bi bi-geo-alt-fill"></i> São Paulo, SP</p>
-                    <p><i class="bi bi-calendar3"></i> 15 Jun 2026</p>
-                    <div class="botoes-duplos">
-                        <button class="btn-detalhes"><a href="detalhesEvento.php">Ver detalhes</a></button>
-                        <button class="btn-planejamento">Ver Planejamento</button>
-                    </div>
-                </div>
-                <div class="acoes">
-                    <span class="tag pago">Pago</span>
-                    <button class="btn-excluir" title="Remover">
-                        <i class="bi bi-trash3"></i>
-                    </button>
-                </div>
-            </div>
-
-            <!-- Card 2 -->
-            <div class="card-evento">
-                <img src="img/virada.jpg" alt="Virada Cultural">
-                <div class="info">
-                    <h3>Virada Cultural 2026</h3>
-                    <p><i class="bi bi-geo-alt-fill"></i> São Paulo, SP</p>
-                    <p><i class="bi bi-calendar3"></i> 22 Jul 2026</p>
-                    <div class="botoes-duplos">
-                        <button class="btn-detalhes">Ver detalhes</button>
-                        <button class="btn-planejamento">Ver Planejamento</button>
-                    </div>
-                </div>
-                <div class="acoes">
-                    <span class="tag gratis">Grátis</span>
-                    <button class="btn-excluir" title="Remover">
-                        <i class="bi bi-trash3"></i>
-                    </button>
-                </div>
-            </div>
+            <p>Carregando seus planejados...</p>
 
         </section>
 

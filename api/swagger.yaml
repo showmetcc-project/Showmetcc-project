@@ -2,7 +2,7 @@ openapi: 3.0.3
 info:
   title: API REST ShowMe
   version: 1.0.0
-  description: API em PHP puro para usuários, sessões, eventos, favoritos e avaliações.
+  description: API em PHP puro para usuários, sessões, eventos, favoritos, planejamentos e avaliações.
 
 servers:
   - url: ./
@@ -13,6 +13,7 @@ tags:
   - name: Usuários
   - name: Eventos
   - name: Favoritos
+  - name: Planejamentos
   - name: Avaliações
 
 paths:
@@ -36,7 +37,10 @@ paths:
           $ref: '#/components/responses/NaoAutenticado'
     post:
       tags: [Sessões]
-      summary: Cria uma sessão (login)
+      summary: Cria uma sessão com senha ou ID token do Google
+      description: >-
+        No login Google, procura primeiro pelo sub em google_id; se não encontrar,
+        vincula uma conta do mesmo e-mail ou cria um usuário comum sem senha.
       requestBody:
         required: true
         content:
@@ -59,6 +63,18 @@ paths:
           $ref: '#/components/responses/RequisicaoInvalida'
         '401':
           $ref: '#/components/responses/NaoAutenticado'
+        '409':
+          description: E-mail já vinculado a outra identidade Google
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erro'
+        '503':
+          description: Login Google ainda não configurado ou dependências ausentes
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erro'
     delete:
       tags: [Sessões]
       summary: Encerra a sessão atual
@@ -347,6 +363,119 @@ paths:
         '404':
           $ref: '#/components/responses/NaoEncontrado'
 
+  /planejamento:
+    get:
+      tags: [Planejamentos]
+      summary: Lista os planejamentos finalizados do usuário atual
+      description: Cada planejamento já inclui os dados principais do evento relacionado.
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: Lista de planejamentos
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  planejamentos:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Planejamento'
+        '401':
+          $ref: '#/components/responses/NaoAutenticado'
+    post:
+      tags: [Planejamentos]
+      summary: Finaliza o planejamento de um evento
+      description: Um usuário pode manter somente um planejamento por evento.
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PlanejamentoCadastro'
+      responses:
+        '201':
+          description: Planejamento criado
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  mensagem:
+                    type: string
+                  planejamento:
+                    $ref: '#/components/schemas/PlanejamentoRota'
+        '400':
+          $ref: '#/components/responses/RequisicaoInvalida'
+        '401':
+          $ref: '#/components/responses/NaoAutenticado'
+        '404':
+          $ref: '#/components/responses/NaoEncontrado'
+        '409':
+          description: O usuário já finalizou um planejamento para o evento
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erro'
+
+  /planejamento/{id}:
+    put:
+      tags: [Planejamentos]
+      summary: Edita um planejamento do usuário atual
+      description: O parâmetro id representa id_rota. id_user e id_evento não são editáveis.
+      security:
+        - cookieAuth: []
+      parameters:
+        - $ref: '#/components/parameters/IdNaRota'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PlanejamentoAtualizacao'
+      responses:
+        '200':
+          description: Planejamento atualizado
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  mensagem:
+                    type: string
+                  planejamento:
+                    $ref: '#/components/schemas/PlanejamentoRota'
+        '400':
+          $ref: '#/components/responses/RequisicaoInvalida'
+        '401':
+          $ref: '#/components/responses/NaoAutenticado'
+        '404':
+          $ref: '#/components/responses/NaoEncontrado'
+    delete:
+      tags: [Planejamentos]
+      summary: Desfaz um planejamento do usuário atual
+      description: O parâmetro id representa id_rota.
+      security:
+        - cookieAuth: []
+      parameters:
+        - $ref: '#/components/parameters/IdNaRota'
+      responses:
+        '200':
+          description: Planejamento removido
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Mensagem'
+        '400':
+          $ref: '#/components/responses/RequisicaoInvalida'
+        '401':
+          $ref: '#/components/responses/NaoAutenticado'
+        '404':
+          $ref: '#/components/responses/NaoEncontrado'
+
   /favoritos:
     get:
       tags: [Favoritos]
@@ -608,8 +737,15 @@ components:
           type: string
 
     LoginEntrada:
+      description: Use exatamente uma das duas formas de autenticação.
+      oneOf:
+        - $ref: '#/components/schemas/LoginSenhaEntrada'
+        - $ref: '#/components/schemas/LoginGoogleEntrada'
+
+    LoginSenhaEntrada:
       type: object
       required: [email, senha]
+      additionalProperties: false
       properties:
         email:
           type: string
@@ -617,6 +753,15 @@ components:
         senha:
           type: string
           format: password
+
+    LoginGoogleEntrada:
+      type: object
+      required: [google_token]
+      additionalProperties: false
+      properties:
+        google_token:
+          type: string
+          description: ID token JWT emitido pelo Google Identity Services.
 
     UsuarioCadastro:
       type: object
@@ -826,6 +971,87 @@ components:
         foto:
           type: string
           nullable: true
+
+    PlanejamentoCadastro:
+      type: object
+      required: [id_evento, meio_transporte, distancia_km, tempo_estimado]
+      properties:
+        id_evento:
+          type: integer
+          minimum: 1
+        meio_transporte:
+          type: string
+          maxLength: 30
+        distancia_km:
+          type: number
+          format: float
+          exclusiveMinimum: true
+          minimum: 0
+        tempo_estimado:
+          type: integer
+          minimum: 1
+          description: Tempo em minutos.
+
+    PlanejamentoAtualizacao:
+      type: object
+      minProperties: 1
+      properties:
+        meio_transporte:
+          type: string
+          maxLength: 30
+        distancia_km:
+          type: number
+          format: float
+          exclusiveMinimum: true
+          minimum: 0
+        tempo_estimado:
+          type: integer
+          minimum: 1
+          description: Tempo em minutos.
+
+    PlanejamentoRota:
+      type: object
+      properties:
+        id_rota:
+          type: integer
+        id_evento:
+          type: integer
+        meio_transporte:
+          type: string
+        distancia_km:
+          type: number
+          format: float
+        tempo_estimado:
+          type: integer
+
+    Planejamento:
+      allOf:
+        - $ref: '#/components/schemas/PlanejamentoRota'
+        - type: object
+          properties:
+            nome_evento:
+              type: string
+            local_evento:
+              type: string
+              nullable: true
+            cidade_evento:
+              type: string
+              nullable: true
+            uf:
+              type: string
+              nullable: true
+            data_evento:
+              type: string
+              format: date
+              nullable: true
+            imagem_evento:
+              type: string
+              nullable: true
+            gratuidade:
+              type: boolean
+            status_evento:
+              type: string
+              enum: [ativo, cancelado]
 
     FavoritoCriado:
       type: object

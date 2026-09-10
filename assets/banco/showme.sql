@@ -8,13 +8,16 @@ CREATE TABLE usuario (
     nome_user     VARCHAR(100) NOT NULL,
     sobrenome     VARCHAR(100),
     email_user    VARCHAR(100) NOT NULL,
-    senha_user    VARCHAR(255) NOT NULL,
+    senha_user    VARCHAR(255) NULL,
+
+    google_id     VARCHAR(255) NULL,
 
     tipo_usuario  ENUM('comum', 'admin') NOT NULL DEFAULT 'comum',
 
     data_cadastro DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
-    UNIQUE KEY uk_usuario_email (email_user)
+    UNIQUE KEY uk_usuario_email (email_user),
+    UNIQUE KEY uk_usuario_google (google_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE spotify (
@@ -28,7 +31,7 @@ CREATE TABLE spotify (
 
     FOREIGN KEY (id_user)
         REFERENCES usuario(id_user)
-        ON DELETE CASCADE  -- FIX: dado do Spotify não faz sentido sem o usuário dono
+        ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE artista (
@@ -114,7 +117,9 @@ CREATE TABLE rota (
 
     FOREIGN KEY (id_evento)
         REFERENCES evento(id_evento)
-        ON DELETE CASCADE
+        ON DELETE CASCADE,
+
+    UNIQUE KEY uk_rota (id_user, id_evento)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE avaliacao (
@@ -132,7 +137,7 @@ CREATE TABLE avaliacao (
     FOREIGN KEY (id_evento)
         REFERENCES evento(id_evento)
         ON DELETE CASCADE,
-    CONSTRAINT chk_avaliacao_nota CHECK (nota BETWEEN 1 AND 5), 
+    CONSTRAINT chk_avaliacao_nota CHECK (nota BETWEEN 1 AND 5),
     UNIQUE KEY uk_avaliacao (id_user, id_evento)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
@@ -151,7 +156,7 @@ CREATE TABLE solicitacao (
     nome_evento          VARCHAR(100) NOT NULL,
     status_solicitacao   ENUM('pendente', 'aprovado', 'recusado') NOT NULL DEFAULT 'pendente',
     foto                 VARCHAR(255),
-    horario_evento       TIME,  
+    horario_evento       TIME,
     data_evento          DATE,
     local_evento         VARCHAR(255),
     gratuidade            BOOLEAN NOT NULL DEFAULT FALSE,

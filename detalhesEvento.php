@@ -1611,19 +1611,284 @@ $imagemEvento = !empty($evento['imagem_evento'])
      * localizar o evento automaticamente.
      */
 
-    const enderecoEvento =
-        <?= json_encode(
-            trim(
-                ($evento['local_evento'] ?? '') .
-                ', ' .
-                ($evento['rua_evento'] ?? '') .
-                ', ' .
-                ($evento['cidade_evento'] ?? '') .
-                ' - ' .
-                ($evento['uf'] ?? '')
-            ),
-            JSON_UNESCAPED_UNICODE
-        ) ?>;
+/* =========================================================
+   MAPA DO EVENTO
+========================================================= */
+
+const mapaElemento = document.getElementById("mapaEventoBanco");
+
+const localEvento = <?= json_encode(
+    trim($evento['local_evento'] ?? ''),
+    JSON_UNESCAPED_UNICODE
+) ?>;
+
+const ruaEvento = <?= json_encode(
+    trim($evento['rua_evento'] ?? ''),
+    JSON_UNESCAPED_UNICODE
+) ?>;
+
+const cidadeEvento = <?= json_encode(
+    trim($evento['cidade_evento'] ?? ''),
+    JSON_UNESCAPED_UNICODE
+) ?>;
+
+const ufEvento = <?= json_encode(
+    trim($evento['uf'] ?? ''),
+    JSON_UNESCAPED_UNICODE
+) ?>;
+
+const nomeEvento = <?= json_encode(
+    trim($evento['nome_evento'] ?? ''),
+    JSON_UNESCAPED_UNICODE
+) ?>;
+
+
+/* =========================================================
+   MONTA O ENDEREÇO
+========================================================= */
+
+const partesEndereco = [
+    localEvento,
+    ruaEvento,
+    cidadeEvento,
+    ufEvento,
+    "Brasil"
+].filter(function(parte) {
+    return parte && parte.trim() !== "";
+});
+
+const enderecoEvento = partesEndereco.join(", ");
+
+console.log("Endereço pesquisado:", enderecoEvento);
+
+
+/* =========================================================
+   VERIFICA SE EXISTE ENDEREÇO
+========================================================= */
+
+if (!mapaElemento) {
+
+    console.error("Elemento do mapa não encontrado.");
+
+} else if (!enderecoEvento) {
+
+    mapaElemento.innerHTML = `
+        <div style="
+            padding:20px;
+            text-align:center;
+        ">
+            Endereço do evento não informado.
+        </div>
+    `;
+
+} else {
+
+    /*
+     * Busca no Nominatim / OpenStreetMap
+     */
+
+    const urlNominatim =
+        "https://nominatim.openstreetmap.org/search?" +
+        new URLSearchParams({
+            format: "json",
+            q: enderecoEvento,
+            limit: "1",
+            countrycodes: "br",
+            "accept-language": "pt-BR"
+        });
+
+
+    fetch(urlNominatim, {
+        method: "GET",
+        headers: {
+            "Accept": "application/json"
+        }
+    })
+
+    .then(function(response) {
+
+        if (!response.ok) {
+            throw new Error(
+                "Erro HTTP ao consultar localização: " +
+                response.status
+            );
+        }
+
+        return response.json();
+
+    })
+
+    .then(function(dados) {
+
+        console.log("Resultado Nominatim:", dados);
+
+
+        if (!Array.isArray(dados) || dados.length === 0) {
+
+            mapaElemento.innerHTML = `
+                <div style="
+                    padding:20px;
+                    text-align:center;
+                ">
+                    <strong>Localização não encontrada.</strong>
+                    <br>
+                    <small>
+                        Verifique o endereço cadastrado para este evento.
+                    </small>
+                </div>
+            `;
+
+            return;
+        }
+
+
+        const latitude = parseFloat(dados[0].lat);
+        const longitude = parseFloat(dados[0].lon);
+
+
+        if (
+            Number.isNaN(latitude) ||
+            Number.isNaN(longitude)
+        ) {
+
+            throw new Error(
+                "Coordenadas inválidas recebidas."
+            );
+
+        }
+
+
+        /* =================================================
+           CRIA O MAPA
+        ================================================= */
+
+        const mapa = L.map(
+            "mapaEventoBanco"
+        ).setView(
+            [
+                latitude,
+                longitude
+            ],
+            16
+        );
+
+
+        /* =================================================
+           MAPA ESCURO
+        ================================================= */
+
+        L.tileLayer(
+            "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",
+            {
+
+                attribution:
+                    "&copy; OpenStreetMap &copy; CARTO",
+
+                subdomains:
+                    "abcd",
+
+                maxZoom:
+                    20
+
+            }
+        ).addTo(mapa);
+
+
+        /* =================================================
+           PIN
+        ================================================= */
+
+        const icone = L.divIcon({
+
+            className: "pin-evento",
+
+            html: `
+                <div style="
+                    width:40px;
+                    height:40px;
+                    display:flex;
+                    align-items:center;
+                    justify-content:center;
+                    color:#a8ff00;
+                    font-size:32px;
+                    filter:
+                        drop-shadow(0 0 5px #a8ff00)
+                        drop-shadow(0 0 12px #a8ff00);
+                ">
+                    <i class="bi bi-geo-alt-fill"></i>
+                </div>
+            `,
+
+            iconSize: [40, 40],
+
+            iconAnchor: [20, 40],
+
+            popupAnchor: [0, -40]
+
+        });
+
+
+        /* =================================================
+           MARCADOR
+        ================================================= */
+
+        L.marker(
+            [
+                latitude,
+                longitude
+            ],
+            {
+                icon: icone
+            }
+        )
+
+        .addTo(mapa)
+
+        .bindPopup(`
+            <strong>
+                ${nomeEvento}
+            </strong>
+            <br>
+            ${localEvento || ""}
+            <br>
+            ${cidadeEvento || ""}
+            ${ufEvento ? " - " + ufEvento : ""}
+        `)
+
+        .openPopup();
+
+
+        /*
+         * Ajusta o mapa depois que o elemento aparece
+         */
+
+        setTimeout(function() {
+            mapa.invalidateSize();
+        }, 300);
+
+
+    })
+
+    .catch(function(erro) {
+
+        console.error(
+            "Erro ao carregar localização:",
+            erro
+        );
+
+        mapaElemento.innerHTML = `
+            <div style="
+                padding:20px;
+                text-align:center;
+            ">
+                Não foi possível carregar a localização.
+            </div>
+        `;
+
+    });
+
+}
+
 
 
     if (mapaElemento && enderecoEvento.trim() !== "") {

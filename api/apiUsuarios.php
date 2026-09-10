@@ -1,4 +1,3 @@
-```php
 <?php
 
 header("Content-Type: application/json; charset=UTF-8");
@@ -499,4 +498,3 @@ if ($metodo === 'DELETE') {
 responder([
     'erro' => 'Método não permitido'
 ], 405);
-```

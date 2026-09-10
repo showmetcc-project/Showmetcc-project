@@ -110,7 +110,7 @@ if (session_status() !== PHP_SESSION_ACTIVE) {
       const formulario = new FormData(formLoginAdmin);
 
       try {
-        const resposta = await fetch('api/sessoes/', {
+        const resposta = await fetch('api/apiSessoes.php', {
           method: 'POST',
           headers: {'Content-Type': 'application/json'},
           body: JSON.stringify({

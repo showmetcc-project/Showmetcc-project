@@ -146,7 +146,7 @@ $googleClientId = is_array($googleConfig) ? trim((string) ($googleConfig['client
             const formulario = new FormData(formLogin);
 
             try {
-                const resposta = await fetch('api/sessoes/', {
+                const resposta = await fetch('api/apiSessoes.php', {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({

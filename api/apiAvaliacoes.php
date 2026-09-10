@@ -41,6 +41,14 @@ function validarAvaliacao(array $dados): array
         responder(['erro' => 'O comentário é obrigatório'], 400);
     }
 
+    $tamanhoComentario = function_exists('mb_strlen')
+        ? mb_strlen($comentario, 'UTF-8')
+        : strlen($comentario);
+
+    if ($tamanhoComentario > 1000) {
+        responder(['erro' => 'O comentário deve ter no máximo 1000 caracteres'], 400);
+    }
+
     return [(int) $nota, $comentario];
 }
 
@@ -68,7 +76,53 @@ if (array_key_exists('id', $_GET)) {
 switch ($metodo) {
     case 'GET':
         if ($id !== null) {
-            responder(['erro' => 'Use evento_id para listar avaliações'], 400);
+            try {
+                $stmt = $conn->prepare(
+                    'SELECT a.id_avaliacao, a.id_evento, a.id_user, a.nota, a.comentario,
+                            a.data_avaliacao, u.nome_user, u.sobrenome, e.nome_evento
+                     FROM avaliacao a
+                     INNER JOIN usuario u ON u.id_user = a.id_user
+                     INNER JOIN evento e ON e.id_evento = a.id_evento
+                     WHERE a.id_avaliacao = ?
+                     LIMIT 1'
+                );
+                $stmt->bind_param('i', $id);
+                $stmt->execute();
+                $avaliacao = $stmt->get_result()->fetch_assoc();
+                $stmt->close();
+
+                if (!$avaliacao) {
+                    responder(['erro' => 'Avaliação não encontrada'], 404);
+                }
+
+                $avaliacao['id_avaliacao'] = (int) $avaliacao['id_avaliacao'];
+                $avaliacao['id_evento'] = (int) $avaliacao['id_evento'];
+                $avaliacao['id_user'] = (int) $avaliacao['id_user'];
+                $avaliacao['nota'] = (int) $avaliacao['nota'];
+                $avaliacao['midias'] = [];
+
+                $stmt = $conn->prepare(
+                    'SELECT id_midia, id_avaliacao, tipo_midia, caminho_arquivo, data_upload
+                     FROM avaliacao_midia
+                     WHERE id_avaliacao = ?
+                     ORDER BY id_midia ASC'
+                );
+                $stmt->bind_param('i', $id);
+                $stmt->execute();
+                $resultadoMidias = $stmt->get_result();
+
+                while ($midia = $resultadoMidias->fetch_assoc()) {
+                    $midia['id_midia'] = (int) $midia['id_midia'];
+                    $midia['id_avaliacao'] = (int) $midia['id_avaliacao'];
+                    $avaliacao['midias'][] = $midia;
+                }
+                $stmt->close();
+
+                responder(['avaliacao' => $avaliacao]);
+            } catch (mysqli_sql_exception $erro) {
+                error_log('Falha ao carregar avaliação: ' . $erro->getMessage());
+                responder(['erro' => 'Não foi possível carregar a avaliação'], 500);
+            }
         }
 
         $idEvento = filter_input(INPUT_GET, 'evento_id', FILTER_VALIDATE_INT);
@@ -77,55 +131,60 @@ switch ($metodo) {
             responder(['erro' => 'evento_id é obrigatório'], 400);
         }
 
-        $stmt = $conn->prepare(
-            'SELECT a.id_avaliacao, a.id_evento, a.id_user, a.nota, a.comentario,
-                    a.data_avaliacao, u.nome_user, u.sobrenome
-             FROM avaliacao a
-             INNER JOIN usuario u ON u.id_user = a.id_user
-             WHERE a.id_evento = ?
-             ORDER BY a.data_avaliacao DESC, a.id_avaliacao DESC'
-        );
-        $stmt->bind_param('i', $idEvento);
-        $stmt->execute();
-        $resultado = $stmt->get_result();
-        $avaliacoes = [];
+        try {
+            $stmt = $conn->prepare(
+                'SELECT a.id_avaliacao, a.id_evento, a.id_user, a.nota, a.comentario,
+                        a.data_avaliacao, u.nome_user, u.sobrenome
+                 FROM avaliacao a
+                 INNER JOIN usuario u ON u.id_user = a.id_user
+                 WHERE a.id_evento = ?
+                 ORDER BY a.data_avaliacao DESC, a.id_avaliacao DESC'
+            );
+            $stmt->bind_param('i', $idEvento);
+            $stmt->execute();
+            $resultado = $stmt->get_result();
+            $avaliacoes = [];
 
-        while ($avaliacao = $resultado->fetch_assoc()) {
-            $avaliacao['id_avaliacao'] = (int) $avaliacao['id_avaliacao'];
-            $avaliacao['id_evento'] = (int) $avaliacao['id_evento'];
-            $avaliacao['id_user'] = (int) $avaliacao['id_user'];
-            $avaliacao['nota'] = (int) $avaliacao['nota'];
-            $avaliacao['midias'] = [];
-            $avaliacoes[] = $avaliacao;
+            while ($avaliacao = $resultado->fetch_assoc()) {
+                $avaliacao['id_avaliacao'] = (int) $avaliacao['id_avaliacao'];
+                $avaliacao['id_evento'] = (int) $avaliacao['id_evento'];
+                $avaliacao['id_user'] = (int) $avaliacao['id_user'];
+                $avaliacao['nota'] = (int) $avaliacao['nota'];
+                $avaliacao['midias'] = [];
+                $avaliacoes[] = $avaliacao;
+            }
+            $stmt->close();
+
+            $stmt = $conn->prepare(
+                'SELECT m.id_midia, m.id_avaliacao, m.tipo_midia, m.caminho_arquivo, m.data_upload
+                 FROM avaliacao_midia m
+                 INNER JOIN avaliacao a ON a.id_avaliacao = m.id_avaliacao
+                 WHERE a.id_evento = ?
+                 ORDER BY m.id_midia ASC'
+            );
+            $stmt->bind_param('i', $idEvento);
+            $stmt->execute();
+            $resultadoMidias = $stmt->get_result();
+            $midiasPorAvaliacao = [];
+
+            while ($midia = $resultadoMidias->fetch_assoc()) {
+                $idAvaliacao = (int) $midia['id_avaliacao'];
+                $midia['id_midia'] = (int) $midia['id_midia'];
+                $midia['id_avaliacao'] = $idAvaliacao;
+                $midiasPorAvaliacao[$idAvaliacao][] = $midia;
+            }
+            $stmt->close();
+
+            foreach ($avaliacoes as &$avaliacao) {
+                $avaliacao['midias'] = $midiasPorAvaliacao[$avaliacao['id_avaliacao']] ?? [];
+            }
+            unset($avaliacao);
+
+            responder(['avaliacoes' => $avaliacoes]);
+        } catch (mysqli_sql_exception $erro) {
+            error_log('Falha ao listar avaliações: ' . $erro->getMessage());
+            responder(['erro' => 'Não foi possível carregar as avaliações'], 500);
         }
-        $stmt->close();
-
-        $stmt = $conn->prepare(
-            'SELECT m.id_midia, m.id_avaliacao, m.tipo_midia, m.caminho_arquivo, m.data_upload
-             FROM avaliacao_midia m
-             INNER JOIN avaliacao a ON a.id_avaliacao = m.id_avaliacao
-             WHERE a.id_evento = ?
-             ORDER BY m.id_midia ASC'
-        );
-        $stmt->bind_param('i', $idEvento);
-        $stmt->execute();
-        $resultadoMidias = $stmt->get_result();
-        $midiasPorAvaliacao = [];
-
-        while ($midia = $resultadoMidias->fetch_assoc()) {
-            $idAvaliacao = (int) $midia['id_avaliacao'];
-            $midia['id_midia'] = (int) $midia['id_midia'];
-            $midia['id_avaliacao'] = $idAvaliacao;
-            $midiasPorAvaliacao[$idAvaliacao][] = $midia;
-        }
-        $stmt->close();
-
-        foreach ($avaliacoes as &$avaliacao) {
-            $avaliacao['midias'] = $midiasPorAvaliacao[$avaliacao['id_avaliacao']] ?? [];
-        }
-        unset($avaliacao);
-
-        responder(['avaliacoes' => $avaliacoes]);
 
     case 'POST':
         if ($id !== null) {
@@ -178,11 +237,14 @@ switch ($metodo) {
         );
         $stmt->bind_param('ii', $idUsuario, $idEvento);
         $stmt->execute();
-        $stmt->store_result();
+        $avaliacaoExistente = $stmt->get_result()->fetch_assoc();
 
-        if ($stmt->num_rows > 0) {
+        if ($avaliacaoExistente) {
             $stmt->close();
-            responder(['erro' => 'Você já avaliou este evento'], 409);
+            responder([
+                'erro' => 'Você já avaliou este evento; edite sua avaliação existente',
+                'id_avaliacao' => (int) $avaliacaoExistente['id_avaliacao']
+            ], 409);
         }
         $stmt->close();
 
@@ -234,6 +296,20 @@ switch ($metodo) {
 
             $stmtMidia->close();
             $conn->commit();
+        } catch (mysqli_sql_exception $erro) {
+            $conn->rollback();
+            foreach ($midiasSalvas as $midia) {
+                removerArquivoUpload($midia['caminho_arquivo']);
+            }
+
+            if ((int) $erro->getCode() === 1062) {
+                responder([
+                    'erro' => 'Você já avaliou este evento; edite sua avaliação existente'
+                ], 409);
+            }
+
+            error_log('Falha ao criar avaliação: ' . $erro->getMessage());
+            responder(['erro' => 'Não foi possível criar a avaliação'], 500);
         } catch (Throwable $erro) {
             $conn->rollback();
             foreach ($midiasSalvas as $midia) {

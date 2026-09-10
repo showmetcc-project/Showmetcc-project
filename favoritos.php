@@ -87,58 +87,7 @@
              FAVORITOS
         ═══════════════════════════ -->
         <section id="favoritos" class="conteudo ativa">
-
-            <!-- Card 1 -->
-            <div class="card-evento">
-                <img src="img/harry.jpg" alt="Harry Styles">
-                <div class="info">
-                    <h3>Harry Styles: Together, Together</h3>
-                    <p><i class="bi bi-geo-alt-fill"></i> São Paulo, SP</p>
-                    <p><i class="bi bi-calendar3"></i> 15 Jun 2026</p>
-                    <button class="btn-detalhes"><a href="detalhesEvento.php">Ver detalhes</a></button>
-                </div>
-                <div class="acoes">
-                    <span class="tag pago">Pago</span>
-                    <button class="btn-excluir" title="Remover">
-                        <i class="bi bi-trash3"></i>
-                    </button>
-                </div>
-            </div>
-
-            <!-- Card 2 -->
-            <div class="card-evento">
-                <img src="img/virada.jpg" alt="Virada Cultural">
-                <div class="info">
-                    <h3>Virada Cultural 2026</h3>
-                    <p><i class="bi bi-geo-alt-fill"></i> São Paulo, SP</p>
-                    <p><i class="bi bi-calendar3"></i> 22 Jul 2026</p>
-                    <button class="btn-detalhes">Ver detalhes</button>
-                </div>
-                <div class="acoes">
-                    <span class="tag gratis">Grátis</span>
-                    <button class="btn-excluir" title="Remover">
-                        <i class="bi bi-trash3"></i>
-                    </button>
-                </div>
-            </div>
-
-            <!-- Card 3 -->
-            <div class="card-evento">
-                <img src="img/rockinrio.jpg" alt="Rock in Rio">
-                <div class="info">
-                    <h3>Rock in Rio</h3>
-                    <p><i class="bi bi-geo-alt-fill"></i> Rio de Janeiro, RJ</p>
-                    <p><i class="bi bi-calendar3"></i> 15 Set 2026</p>
-                    <button class="btn-detalhes">Ver detalhes</button>
-                </div>
-                <div class="acoes">
-                    <span class="tag pago">Pago</span>
-                    <button class="btn-excluir" title="Remover">
-                        <i class="bi bi-trash3"></i>
-                    </button>
-                </div>
-            </div>
-
+            <p>Carregando seus favoritos...</p>
         </section>
 
         <!-- ══════════════════════════

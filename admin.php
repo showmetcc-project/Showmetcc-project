@@ -1,266 +1,153 @@
 <?php require_once __DIR__ . '/config/verifica_admin.php'; ?>
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ShowMe - Painel Administrativo</title>
 
-    <!-- Favicons -->
     <link href="assets/img/showme.png" rel="icon">
-
-    <!-- Fonts -->
     <link href="https://fonts.googleapis.com" rel="preconnect">
     <link href="https://fonts.gstatic.com" rel="preconnect" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
-
-    <!-- Vendor CSS (mesmo padrão do index) -->
     <link href="assets/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
     <link href="assets/vendor/bootstrap-icons/bootstrap-icons.css" rel="stylesheet">
-
-    <link rel="stylesheet" href="assets/css/main.css">
-
-    <!-- CSS customizado — sempre por último -->
-    <link rel="stylesheet" href="assets/css/admin.css">
+    <link href="assets/css/main.css" rel="stylesheet">
+    <link href="assets/css/admin.css" rel="stylesheet">
 </head>
+
 <body class="com-cabecalho-padrao">
+    <?php require __DIR__ . '/cabecalho.php'; ?>
 
-<?php require __DIR__ . '/cabecalho.php'; ?>
-
-<div class="container py-4">
-
-    <!-- CABEÇALHO -->
-    <section class="header-admin">
-
-        <div class="header-row">
-            <div>
-                <h1><span class="verde">Painel</span> Administrativo</h1>
-                <p>Gerencie os eventos enviados pelos usuários.</p>
-            </div>
-
-            <!-- Barra de busca -->
-            <div class="busca">
-                <i class="bi bi-search"></i>
-                <input type="text" placeholder="Buscar evento...">
-            </div>
-        </div>
-
-    </section>
-
-    <!-- ESTATÍSTICAS / FILTROS -->
-    <section class="stats">
-
-        <div class="total-destaque">
-            <span>2</span>
-        </div>
-
-        <button class="status-item ativo" data-filtro="todos">
-            Todos <span class="badge-count">2</span>
-        </button>
-
-        <button class="status-item" data-filtro="aprovados">
-            Aprovados <span class="badge-count">0</span>
-        </button>
-
-        <button class="status-item" data-filtro="reprovados">
-            Reprovados <span class="badge-count">0</span>
-        </button>
-
-        <!-- Barra decorativa -->
-        <div class="stats-barra"></div>
-
-    </section>
-
-    <!-- ══════════════════════════
-         CARD 1 — EXPANDIDO
-    ═══════════════════════════ -->
-    <div class="evento-card expandido" data-status="pendente">
-
-        <div class="evento-header" onclick="toggleCard(this)">
-
-            <div class="evento-info">
-                <div class="evento-icon">
-                    <i class="bi bi-image"></i>
-                </div>
+    <main class="container py-4">
+        <section class="header-admin">
+            <div class="header-row">
                 <div>
-                    <h3>Noite de Samba &amp; Choro</h3>
-                    <small>Centro Cultural Rio, Rio de Janeiro - RJ</small>
-                    <small class="d-block">19/06/2025 às 20:00 · Gratuito</small>
-                </div>
-            </div>
-
-            <div class="header-direito">
-                <span class="badge-pendente">Pendentes</span>
-                <i class="bi bi-chevron-up chevron"></i>
-            </div>
-
-        </div>
-
-        <div class="evento-body">
-
-            <div class="row g-4">
-
-                <div class="col-md-6">
-                    <div class="campo-info">
-                        <label>Local</label>
-                        <p>Centro Cultural Rio, Rio de Janeiro - RJ</p>
-                    </div>
-                    <div class="campo-info">
-                        <label>Tipo</label>
-                        <p>Gratuito</p>
-                    </div>
-                    <div class="campo-info">
-                        <label>Descrição do evento</label>
-                        <p>Uma noite especial dedicada ao samba de raiz e ao choro instrumental, com rodas ao vivo e apresentações de músicos convidados.</p>
-                    </div>
-                    <div class="campo-info">
-                        <label>Artista / atração</label>
-                        <p>Grupo Raízes do Samba — formado em 2015, o grupo é referência nacional no resgate do samba tradicional carioca.</p>
-                    </div>
+                    <h1><span class="verde">Painel</span> Administrativo</h1>
+                    <p>Gerencie os eventos enviados pelos usuários.</p>
                 </div>
 
-                <div class="col-md-6">
-                    <div class="campo-info">
-                        <label>Data e Hora</label>
-                        <p>15/08/2026 às 20:00</p>
-                    </div>
-                    <div class="campo-info">
-                        <label>Enviado em</label>
-                        <p>01/07/2026, 07:32:00</p>
-                    </div>
-                </div>
+                <label class="busca" for="buscaSolicitacao">
+                    <i class="bi bi-search" aria-hidden="true"></i>
+                    <input
+                        type="search"
+                        id="buscaSolicitacao"
+                        placeholder="Buscar evento ou solicitante..."
+                        autocomplete="off">
+                </label>
+            </div>
+        </section>
 
+        <section class="stats" aria-label="Filtros das solicitações">
+            <div class="total-destaque" title="Total de solicitações">
+                <span id="totalSolicitacoes">0</span>
             </div>
 
-        </div>
+            <button type="button" class="status-item ativo" data-filtro="todas">
+                Todas <span class="badge-count" id="contadorTodas">0</span>
+            </button>
+            <button type="button" class="status-item" data-filtro="pendente">
+                Pendentes <span class="badge-count" id="contadorPendentes">0</span>
+            </button>
+            <button type="button" class="status-item" data-filtro="aprovado">
+                Aprovadas <span class="badge-count" id="contadorAprovadas">0</span>
+            </button>
+            <button type="button" class="status-item" data-filtro="recusado">
+                Recusadas <span class="badge-count" id="contadorRecusadas">0</span>
+            </button>
 
-        <div class="evento-footer">
-            <button class="btn-editar">
-                <i class="bi bi-pencil"></i> Editar
-            </button>
-            <button class="btn-aprovar">
-                <i class="bi bi-check-circle"></i> Aprovar
-            </button>
-            <button class="btn-reprovar">
-                <i class="bi bi-x-circle"></i> Reprovar
-            </button>
-        </div>
+            <div class="stats-barra" aria-hidden="true"></div>
+        </section>
 
+        <div id="mensagemAdmin" class="alert d-none" role="alert" aria-live="assertive"></div>
+
+        <section
+            id="listaSolicitacoes"
+            class="lista-solicitacoes"
+            aria-live="polite"
+            aria-busy="true">
+            <div class="estado-solicitacoes">
+                <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
+                Carregando solicitações...
+            </div>
+        </section>
+    </main>
+
+    <div class="modal fade" id="modalEditarSolicitacao" tabindex="-1" aria-labelledby="tituloModalEditarSolicitacao" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content modal-solicitacao">
+                <form id="formEditarSolicitacao">
+                    <div class="modal-header">
+                        <h2 class="modal-title fs-4" id="tituloModalEditarSolicitacao">Corrigir solicitação</h2>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                    </div>
+
+                    <div class="modal-body">
+                        <div id="mensagemEdicaoSolicitacao" class="alert d-none" role="alert"></div>
+                        <input type="hidden" id="idSolicitacaoEdicao">
+
+                        <div class="row g-3">
+                            <div class="col-12">
+                                <label for="nomeEventoEdicao" class="form-label">Nome do evento</label>
+                                <input type="text" class="form-control" id="nomeEventoEdicao" maxlength="100" required>
+                            </div>
+                            <div class="col-md-7">
+                                <label for="localEventoEdicao" class="form-label">Local</label>
+                                <input type="text" class="form-control" id="localEventoEdicao" maxlength="255">
+                            </div>
+                            <div class="col-md-3">
+                                <label for="dataEventoEdicao" class="form-label">Data</label>
+                                <input type="date" class="form-control" id="dataEventoEdicao">
+                            </div>
+                            <div class="col-md-2">
+                                <label for="horarioEventoEdicao" class="form-label">Horário</label>
+                                <input type="time" class="form-control" id="horarioEventoEdicao">
+                            </div>
+                            <div class="col-md-4">
+                                <label for="gratuidadeEdicao" class="form-label">Tipo</label>
+                                <select class="form-select" id="gratuidadeEdicao">
+                                    <option value="true">Gratuito</option>
+                                    <option value="false">Pago</option>
+                                </select>
+                            </div>
+                            <div class="col-12">
+                                <label for="descricaoEventoEdicao" class="form-label">Descrição do evento</label>
+                                <textarea class="form-control" id="descricaoEventoEdicao" rows="4" maxlength="1000"></textarea>
+                            </div>
+                            <div class="col-12">
+                                <label for="descricaoArtistaEdicao" class="form-label">Artista / atração</label>
+                                <textarea class="form-control" id="descricaoArtistaEdicao" rows="3" maxlength="1000"></textarea>
+                            </div>
+                        </div>
+
+                        <p class="aviso-foto-edicao">
+                            <i class="bi bi-image" aria-hidden="true"></i>
+                            A foto enviada pelo usuário será mantida.
+                        </p>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn-modal-cancelar" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn-modal-salvar" id="btnSalvarSolicitacao">
+                            <i class="bi bi-check-lg" aria-hidden="true"></i>
+                            Salvar correções
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
     </div>
 
-    <!-- ══════════════════════════
-         CARD 2 — RECOLHIDO
-    ═══════════════════════════ -->
-    <div class="evento-card" data-status="pendente">
+    <?php require __DIR__ . '/rodape.php'; ?>
 
-        <div class="evento-header" onclick="toggleCard(this)">
+    <a href="#" id="scroll-top" class="scroll-top d-flex align-items-center justify-content-center">
+        <i class="bi bi-arrow-up-short" aria-hidden="true"></i>
+    </a>
 
-            <div class="evento-info">
-                <div class="evento-icon">
-                    <i class="bi bi-image"></i>
-                </div>
-                <div>
-                    <h3>Exposição: Arte Urbana Brasileira</h3>
-                    <small>Museu de Arte Moderna, São Paulo – SP</small>
-                    <small class="d-block">05/09/2026 às 10:00 · Pago</small>
-                </div>
-            </div>
-
-            <div class="header-direito">
-                <span class="badge-pendente">Pendentes</span>
-                <i class="bi bi-chevron-up chevron"></i>
-            </div>
-
-        </div>
-
-        <div class="evento-body">
-
-            <div class="row g-4">
-
-                <div class="col-md-6">
-                    <div class="campo-info">
-                        <label>Local</label>
-                        <p>Museu de Arte Moderna, São Paulo – SP</p>
-                    </div>
-                    <div class="campo-info">
-                        <label>Tipo</label>
-                        <p>Pago</p>
-                    </div>
-                    <div class="campo-info">
-                        <label>Descrição do evento</label>
-                        <p>Uma exposição que celebra a riqueza e diversidade da arte urbana brasileira, com obras de artistas de todo o país.</p>
-                    </div>
-                </div>
-
-                <div class="col-md-6">
-                    <div class="campo-info">
-                        <label>Data e Hora</label>
-                        <p>05/09/2026 às 10:00</p>
-                    </div>
-                    <div class="campo-info">
-                        <label>Enviado em</label>
-                        <p>20/07/2026, 14:00:00</p>
-                    </div>
-                </div>
-
-            </div>
-
-        </div>
-
-        <div class="evento-footer">
-            <button class="btn-editar">
-                <i class="bi bi-pencil"></i> Editar
-            </button>
-            <button class="btn-aprovar">
-                <i class="bi bi-check-circle"></i> Aprovar
-            </button>
-            <button class="btn-reprovar">
-                <i class="bi bi-x-circle"></i> Reprovar
-            </button>
-        </div>
-
-    </div>
-
-</div>
-
-<!-- FOOTER (reutilizado do index) -->
-<?php require __DIR__ . '/rodape.php'; ?>
-
-<!-- Scroll Top -->
-<a href="#" id="scroll-top" class="scroll-top d-flex align-items-center justify-content-center">
-    <i class="bi bi-arrow-up-short"></i>
-</a>
-
-<!-- Vendor JS -->
-<script src="assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
-<script src="assets/js/main.js"></script>
-
-<script>
-    // Toggle expand/collapse dos cards
-    function toggleCard(header) {
-        const card = header.closest('.evento-card');
-        const chevron = header.querySelector('.chevron');
-        const isExpanded = card.classList.contains('expandido');
-
-        card.classList.toggle('expandido', !isExpanded);
-        chevron.classList.toggle('bi-chevron-up',   !isExpanded);
-        chevron.classList.toggle('bi-chevron-down',  isExpanded);
-    }
-
-    // Inicializa: cards sem .expandido começam com chevron apontando para baixo
-    document.querySelectorAll('.evento-card:not(.expandido) .chevron').forEach(c => {
-        c.classList.replace('bi-chevron-up', 'bi-chevron-down');
-    });
-
-    // Filtros de status
-    document.querySelectorAll('.status-item').forEach(btn => {
-        btn.addEventListener('click', () => {
-            document.querySelectorAll('.status-item').forEach(b => b.classList.remove('ativo'));
-            btn.classList.add('ativo');
-            // Aqui você pode adicionar lógica de filtro real futuramente
-        });
-    });
-</script>
-
+    <script src="assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script src="assets/js/main.js"></script>
+    <script src="assets/js/admin.js"></script>
 </body>
+
 </html>

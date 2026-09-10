@@ -69,7 +69,17 @@
     informacoes.append(local, data);
     conteudo.append(nome, informacoes);
     link.append(badge, imagem, conteudo);
-    card.append(link);
+
+    const favorito = document.createElement('button');
+    favorito.type = 'button';
+    favorito.className = 'btn-toggle-favorito';
+    favorito.dataset.favoritoEvento = String(evento.id_evento);
+    favorito.setAttribute('aria-label', `Adicionar ${evento.nome_evento || 'evento'} aos favoritos`);
+    favorito.setAttribute('aria-pressed', 'false');
+    favorito.title = 'Adicionar aos favoritos';
+    favorito.innerHTML = '<i class="bi bi-heart" aria-hidden="true"></i>';
+
+    card.append(link, favorito);
     return card;
   }
 

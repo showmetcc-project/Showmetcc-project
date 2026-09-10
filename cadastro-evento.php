@@ -60,7 +60,12 @@
 
             <div id="mensagemEvento" class="alert d-none" role="alert"></div>
 
-            <form id="formEvento" enctype="multipart/form-data">
+            <form
+                id="formEvento"
+                action="api/eventos/"
+                method="post"
+                enctype="multipart/form-data"
+                novalidate>
 
                 <div class="mb-3">
                     <label class="form-label" for="imagemEvento">Foto do evento</label>
@@ -76,29 +81,42 @@
                 </div>
 
                 <div class="mb-3">
-                    <label class="form-label">Nome do evento</label>
+                    <label class="form-label" for="nomeEvento">Nome do evento</label>
 
-                    <input id="nomeEvento" type="text" class="form-control" placeholder="Ex: Festival de Jazz 2026" required>
+                    <input
+                        id="nomeEvento"
+                        name="nome_evento"
+                        type="text"
+                        class="form-control"
+                        maxlength="100"
+                        placeholder="Ex: Festival de Jazz 2026"
+                        required>
                 </div>
 
                 <div class="mb-3">
-                    <label class="form-label">Local</label>
+                    <label class="form-label" for="localEvento">Local</label>
 
-                    <input id="localEvento" type="text" class="form-control" placeholder="Ex: Parque Villa-Lobos, São Paulo - SP">
+                    <input
+                        id="localEvento"
+                        name="local_evento"
+                        type="text"
+                        class="form-control"
+                        maxlength="255"
+                        placeholder="Ex: Parque Villa-Lobos, São Paulo - SP">
                 </div>
 
                 <div class="row">
 
                     <div class="col-md-6 mb-3">
-                        <label class="form-label">Data</label>
+                        <label class="form-label" for="dataEvento">Data</label>
 
-                        <input id="dataEvento" type="date" class="form-control">
+                        <input id="dataEvento" name="data_evento" type="date" class="form-control">
                     </div>
 
                     <div class="col-md-6 mb-3">
-                        <label class="form-label">Horário</label>
+                        <label class="form-label" for="horarioEvento">Horário</label>
 
-                        <input id="horarioEvento" type="time" class="form-control">
+                        <input id="horarioEvento" name="horario_evento" type="time" class="form-control">
                     </div>
 
                 </div>
@@ -111,13 +129,13 @@
 
                     <div class="tipo-ingresso">
 
-                        <input type="radio" name="ingresso" id="gratuito" value="1" checked>
+                        <input type="radio" name="gratuidade" id="gratuito" value="true" checked>
 
                         <label for="gratuito" class="opcao">
                             Gratuito
                         </label>
 
-                        <input type="radio" name="ingresso" id="pago" value="0">
+                        <input type="radio" name="gratuidade" id="pago" value="false">
 
                         <label for="pago" class="opcao">
                             Pago
@@ -128,24 +146,24 @@
                 </div>
 
                 <div class="mb-5">
-                    <label class="form-label">
+                    <label class="form-label" for="descricaoEvento">
                         Descrição do evento
                     </label>
 
-                    <textarea id="descricaoEvento" class="form-control descricao-grande"
+                    <textarea id="descricaoEvento" name="descricao_evento" maxlength="1000" class="form-control descricao-grande"
                         placeholder="Conte sobre o evento: programação, atrações, experiências..."></textarea>
                 </div>
 
                 <div class="mb-5">      
-                    <label class="form-label">
+                    <label class="form-label" for="descricaoArtista">
                         Descrição do artista / atração
                     </label>
 
-                    <textarea id="descricaoArtista" class="form-control descricao-media"
+                    <textarea id="descricaoArtista" name="descricao_artista" maxlength="1000" class="form-control descricao-media"
                         placeholder="Quem são os artistas ou atrações principais? Biografia, estilo, destaque..."></textarea>
                 </div>
 
-                <button type="submit" class="btn-enviar">
+                <button type="submit" class="btn-enviar" id="botaoEnviarEvento">
                     Enviar para análise
                 </button>
 
@@ -159,53 +177,9 @@
 <?php require __DIR__ . '/rodape.php'; ?>
 
 
+    <script src="assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
     <script src="assets/js/main.js"></script>
-
-    <script>
-
-        const inputImagem = document.getElementById("imagemEvento");
-
-        const formEvento = document.getElementById('formEvento');
-        const mensagemEvento = document.getElementById('mensagemEvento');
-
-        formEvento.addEventListener('submit', async (evento) => {
-            evento.preventDefault();
-            mensagemEvento.className = 'alert d-none';
-
-            try {
-                const dadosFormulario = new FormData();
-                dadosFormulario.append('nome_evento', document.getElementById('nomeEvento').value);
-                dadosFormulario.append('local_evento', document.getElementById('localEvento').value);
-                dadosFormulario.append('data_evento', document.getElementById('dataEvento').value);
-                dadosFormulario.append('horario_evento', document.getElementById('horarioEvento').value);
-                dadosFormulario.append(
-                    'gratuidade',
-                    document.querySelector('input[name="ingresso"]:checked').value === '1' ? 'true' : 'false'
-                );
-                dadosFormulario.append('descricao_evento', document.getElementById('descricaoEvento').value);
-                dadosFormulario.append('descricao_artista', document.getElementById('descricaoArtista').value);
-                dadosFormulario.append('foto', inputImagem.files[0]);
-
-                const resposta = await fetch('api/eventos/', {
-                    method: 'POST',
-                    body: dadosFormulario
-                });
-                const dados = await resposta.json();
-
-                if (!resposta.ok) {
-                    throw new Error(dados.erro || 'Não foi possível enviar o evento.');
-                }
-
-                mensagemEvento.textContent = dados.mensagem;
-                mensagemEvento.className = 'alert alert-success';
-                formEvento.reset();
-            } catch (erro) {
-                mensagemEvento.textContent = erro.message;
-                mensagemEvento.className = 'alert alert-danger';
-            }
-        });
-
-</script>
+    <script src="assets/js/cadastroEvento.js"></script>
 
 
 </body>

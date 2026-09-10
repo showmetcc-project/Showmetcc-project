@@ -45,9 +45,9 @@ $termoBuscaCabecalho = isset($_GET['busca']) && is_string($_GET['busca'])
     <nav id="navmenu" class="navmenu">
       <ul>
         <li><a href="<?= $usuarioLogado ? 'inicio.php' : 'index.php#hero' ?>">Início</a></li>
-        <li><a href="sobre.php">Sobre Nós</a></li>
-        <li><a href="index.php#work-process">Como Funciona</a></li>
-        <li><a href="index.php#faq-2">Perguntas</a></li>
+        <li><a href="#about">Sobre Nós</a></li>
+        <li><a href="#work-process">Como Funciona</a></li>
+        <li><a href="#faq-2">Perguntas</a></li>
         <li><a href="#footer">Contato</a></li>
 
         <?php if ($usuarioLogado): ?>
@@ -105,7 +105,7 @@ $termoBuscaCabecalho = isset($_GET['busca']) && is_string($_GET['busca'])
             </ul>
           </li>
         <?php else: ?>
-          <li><a href="login.php">Login</a></li>
+         <li class="login-menu"><a href="login.php"><span class="preto">Login</span></a></li>
           <li class="login-menu"><a href="cadastro.php"><span class="preto">Cadastro</span></a></li>
         <?php endif; ?>
       </ul>

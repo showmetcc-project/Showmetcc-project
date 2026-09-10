@@ -71,7 +71,7 @@ $termoBuscaCabecalho = isset($_GET['busca']) && is_string($_GET['busca'])
                   <i class="bi bi-heart"></i>
                   <div>
                     <span>Favoritos</span>
-                    <p>Ver eventos salvos</p>
+                    <p>Ver eventos salvos e planejados</p>
                   </div>
                 </a>
               </li>

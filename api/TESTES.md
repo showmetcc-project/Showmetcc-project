@@ -8,6 +8,9 @@ $SITE = 'http://localhost/SEU-DIRETORIO'
 $COOKIE_COMUM = "$env:TEMP\showme-comum.txt"
 $COOKIE_ADMIN = "$env:TEMP\showme-admin.txt"
 $COOKIE_CONTA_DESCARTAVEL = "$env:TEMP\showme-conta-descartavel.txt"
+$COOKIE_GOOGLE = "$env:TEMP\showme-google.txt"
+$GOOGLE_TOKEN = 'COLE_UM_ID_TOKEN_VALIDO_RECEBIDO_PELO_GOOGLE_IDENTITY_SERVICES'
+$GOOGLE_JSON = '{\"google_token\":\"' + $GOOGLE_TOKEN + '\"}'
 $FOTO_1 = 'C:\CAMINHO\foto1.jpg'
 $FOTO_2 = 'C:\CAMINHO\foto2.png'
 $FOTO_3 = 'C:\CAMINHO\foto3.webp'
@@ -22,6 +25,11 @@ Use arquivos pequenos: a aplicação limita fotos a 10 MB, vídeos a 30 MB e a r
 completa a 38 MB.
 
 Para testar aprovação, deve existir uma conta com `tipo_usuario = 'admin'`. Esse perfil deve ser atribuído diretamente pelo administrador do banco, não pelo endpoint público de cadastro.
+
+Antes dos testes Google, confirme que o banco foi criado com a versão atual de
+`assets/banco/showme.sql`, copie `config/google.example.php` para `config/google.php`,
+preencha o Client ID e execute `composer install`. O token usado nos comandos deve ter
+sido emitido para esse mesmo Client ID e ainda estar dentro do prazo de validade.
 
 ## Sessões
 
@@ -39,6 +47,63 @@ curl.exe -i -c $COOKIE_COMUM -X POST "$BASE/sessoes/" `
 curl.exe -i -X POST "$BASE/sessoes/" `
   -H "Content-Type: application/json" `
   -d '{"email":"usuario@exemplo.com","senha":"incorreta"}'
+```
+
+### POST /sessoes — criação de conta nova via Google
+
+Use um token cujo e-mail ainda não exista em `usuario`. A resposta esperada é `201`,
+com `tipo_usuario: comum`; no banco, `senha_user` deve ficar `NULL` e `google_id` deve
+receber o `sub` do token.
+
+```powershell
+curl.exe -i -c $COOKIE_GOOGLE -X POST "$BASE/sessoes/" `
+  -H "Content-Type: application/json" `
+  --data-raw $GOOGLE_JSON
+```
+
+### POST /sessoes — vínculo de conta existente por e-mail
+
+Primeiro cadastre pelo endpoint de usuários uma conta com o mesmo e-mail confirmado no
+token Google e deixe `google_id` nulo. Depois envie o token. A resposta esperada é `201`
+com o mesmo `id_user` da conta existente; confira no banco que apenas `google_id` foi
+preenchido e que a senha anterior continua válida.
+
+```powershell
+curl.exe -i -c $COOKIE_GOOGLE -X POST "$BASE/sessoes/" `
+  -H "Content-Type: application/json" `
+  --data-raw $GOOGLE_JSON
+```
+
+### POST /sessoes — login Google recorrente
+
+Repita o login com outro ID token válido da mesma conta Google. A resposta deve manter o
+mesmo `id_user`, sem criar outro usuário.
+
+```powershell
+curl.exe -i -c $COOKIE_GOOGLE -X POST "$BASE/sessoes/" `
+  -H "Content-Type: application/json" `
+  --data-raw $GOOGLE_JSON
+```
+
+### POST /sessoes — token Google inválido
+
+```powershell
+curl.exe -i -X POST "$BASE/sessoes/" `
+  -H "Content-Type: application/json" `
+  --data-raw '{\"google_token\":\"token-invalido\"}'
+```
+
+A resposta esperada é `401`, sem criação ou alteração de usuário.
+
+### POST /sessoes — senha em conta exclusivamente Google
+
+Use o e-mail de uma conta criada pelo primeiro teste, cuja `senha_user` seja `NULL`.
+A resposta esperada é `401` com `Esta conta usa login via Google`.
+
+```powershell
+curl.exe -i -X POST "$BASE/sessoes/" `
+  -H "Content-Type: application/json" `
+  --data-raw '{\"email\":\"email-da-conta-google@exemplo.com\",\"senha\":\"qualquer-senha\"}'
 ```
 
 ### GET /sessoes — sucesso e erro
@@ -253,6 +318,73 @@ relações com artistas vinculados a ele serão removidos em cascata.
 ```powershell
 curl.exe -i -b $COOKIE_COMUM -X DELETE "$BASE/eventos/ID_EVENTO"
 curl.exe -i -b $COOKIE_ADMIN -X DELETE "$BASE/eventos/ID_EVENTO_DESCARTAVEL"
+```
+
+## Planejamentos
+
+Substitua os IDs pelos registros do seu banco. A tabela `rota` possui a restrição única
+`(id_user, id_evento)`, portanto remova um planejamento anterior do mesmo evento antes do
+teste de criação.
+
+### POST /planejamento — sucesso
+
+```powershell
+curl.exe -i -b $COOKIE_COMUM -X POST "$BASE/planejamento/" `
+  -H "Content-Type: application/json" `
+  --data-raw '{\"id_evento\":1,\"meio_transporte\":\"Carro\",\"distancia_km\":125.5,\"tempo_estimado\":150}'
+```
+
+A resposta esperada é `201`. Guarde o `id_rota` retornado para os testes de edição e
+remoção.
+
+### POST /planejamento — erro 409 ao repetir o evento
+
+Repita o mesmo comando anterior sem remover o planejamento criado:
+
+```powershell
+curl.exe -i -b $COOKIE_COMUM -X POST "$BASE/planejamento/" `
+  -H "Content-Type: application/json" `
+  --data-raw '{\"id_evento\":1,\"meio_transporte\":\"Carro\",\"distancia_km\":125.5,\"tempo_estimado\":150}'
+```
+
+A resposta esperada é `409`, pois o mesmo usuário não pode finalizar dois planejamentos
+para o mesmo evento.
+
+### POST /planejamento — erro 401 sem login
+
+```powershell
+curl.exe -i -X POST "$BASE/planejamento/" `
+  -H "Content-Type: application/json" `
+  --data-raw '{\"id_evento\":1,\"meio_transporte\":\"Ônibus\",\"distancia_km\":90,\"tempo_estimado\":120}'
+```
+
+### GET /planejamento — sucesso e erro 401
+
+```powershell
+curl.exe -i -b $COOKIE_COMUM "$BASE/planejamento/"
+curl.exe -i "$BASE/planejamento/"
+```
+
+A resposta autenticada deve incluir os dados da rota e do evento, incluindo
+`nome_evento`, `data_evento` e `imagem_evento`.
+
+### PUT /planejamento/{id_rota} — sucesso e erro 404
+
+```powershell
+curl.exe -i -b $COOKIE_COMUM -X PUT "$BASE/planejamento/ID_ROTA" `
+  -H "Content-Type: application/json" `
+  --data-raw '{\"meio_transporte\":\"Ônibus\"}'
+
+curl.exe -i -b $COOKIE_COMUM -X PUT "$BASE/planejamento/999999999" `
+  -H "Content-Type: application/json" `
+  --data-raw '{\"meio_transporte\":\"Carro\"}'
+```
+
+### DELETE /planejamento/{id_rota} — sucesso e erro 404
+
+```powershell
+curl.exe -i -b $COOKIE_COMUM -X DELETE "$BASE/planejamento/ID_ROTA"
+curl.exe -i -b $COOKIE_COMUM -X DELETE "$BASE/planejamento/999999999"
 ```
 
 ## Favoritos

@@ -204,7 +204,7 @@ $contadorFavoritos = count($favoritos);
 
             <button class="aba" data-tab="planejados">
                 <i class="bi bi-calendar-event"></i>
-                Planejados (<?= count($planejados) ?>)
+                Planejados (<span id="contadorPlanejados">0</span>)
             </button>
 
         </div>
@@ -308,114 +308,7 @@ $contadorFavoritos = count($favoritos);
         ═══════════════════════════ -->
 
         <section id="planejados" class="conteudo">
-
-            <?php if (empty($planejados)): ?>
-
-                <div class="card-evento">
-
-                    <div class="info">
-
-                        <h3>Nenhum evento planejado</h3>
-
-                        <p>
-                            <i class="bi bi-calendar-event"></i>
-                            Você ainda não possui eventos planejados.
-                        </p>
-
-                    </div>
-
-                </div>
-
-            <?php else: ?>
-
-
-                <?php foreach ($planejados as $evento): ?>
-
-                    <div class="card-evento">
-
-                        <img
-                            src="<?= e($evento['imagem_evento'] ?: 'assets/img/showme.png') ?>"
-                            alt="<?= e($evento['nome_evento']) ?>"
-                        >
-
-
-                        <div class="info">
-
-                            <h3>
-                                <?= e($evento['nome_evento']) ?>
-                            </h3>
-
-
-                            <p>
-                                <i class="bi bi-geo-alt-fill"></i>
-
-                                <?= e($evento['cidade_evento']) ?>,
-                                <?= e($evento['uf']) ?>
-                            </p>
-
-
-                            <p>
-                                <i class="bi bi-calendar3"></i>
-
-                                <?= formatarData($evento['data_evento']) ?>
-                            </p>
-
-
-                            <div class="botoes-duplos">
-
-                                <button class="btn-detalhes">
-
-                                    <a href="detalhesEvento.php?id_evento=<?= (int)$evento['id_evento'] ?>">
-                                        Ver detalhes
-                                    </a>
-
-                                </button>
-
-
-                                <button
-                                    class="btn-planejamento"
-                                    onclick="window.location.href='planejamento.php?id_evento=<?= (int)$evento['id_evento'] ?>'"
-                                >
-                                    Ver Planejamento
-                                </button>
-
-                            </div>
-
-                        </div>
-
-
-                        <div class="acoes">
-
-                            <?php if ($evento['gratuidade']): ?>
-
-                                <span class="tag gratis">
-                                    Grátis
-                                </span>
-
-                            <?php else: ?>
-
-                                <span class="tag pago">
-                                    Pago
-                                </span>
-
-                            <?php endif; ?>
-
-
-                            <button
-                                class="btn-excluir"
-                                title="Remover"
-                                data-id-evento="<?= (int)$evento['id_evento'] ?>"
-                            >
-                                <i class="bi bi-trash3"></i>
-                            </button>
-
-                        </div>
-
-                    </div>
-
-                <?php endforeach; ?>
-
-            <?php endif; ?>
+            <p>Carregando seus planejados...</p>
 
         </section>
 

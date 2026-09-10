@@ -1,99 +1,14 @@
 <?php
 require_once __DIR__ . '/config/verifica_login.php';
 
-/*
-=========================================================
- SHOWME - PLANEJAMENTO DE VIAGEM
-=========================================================
+$idInformado = $_GET['id'] ?? $_GET['id_evento'] ?? null;
 
-Este arquivo:
-- Busca o evento no banco pelo id_evento
-- NÃO utiliza latitude/longitude armazenadas no banco
-- Usa o endereço do evento para localizar o destino
-- Calcula rotas
-- Estima custos de transporte
-- Pesquisa hospedagens próximas
-- Controla as 5 etapas do planejamento
-
-URL esperada:
-
-planejamento.php?id_evento=15
-
-=========================================================
-*/
-
-// -------------------------------------------------------
-// CONEXÃO COM O BANCO
-// -------------------------------------------------------
-
-require_once __DIR__ . '/config/conexao.php';
-
-$idEvento = filter_input(
-    INPUT_GET,
-    'id_evento',
-    FILTER_VALIDATE_INT
-);
-
-if (!$idEvento) {
-    die("Evento não informado.");
+if (!is_string($idInformado) || !ctype_digit($idInformado) || (int) $idInformado < 1) {
+    http_response_code(400);
+    die('Evento não informado.');
 }
 
-// -------------------------------------------------------
-// BUSCAR EVENTO
-// -------------------------------------------------------
-
-$sql = "
-    SELECT
-        id_evento,
-        nome_evento,
-        cidade_evento,
-        uf,
-        rua_evento,
-        local_evento,
-        data_evento
-    FROM evento
-    WHERE id_evento = ?
-    LIMIT 1
-";
-
-$stmt = $conn->prepare($sql);
-
-if (!$stmt) {
-    die("Não foi possível preparar a busca do evento.");
-}
-
-$stmt->bind_param('i', $idEvento);
-$stmt->execute();
-$resultado = $stmt->get_result();
-$evento = $resultado->fetch_assoc();
-$stmt->close();
-
-if (!$evento) {
-    die("Evento não encontrado.");
-}
-
-// -------------------------------------------------------
-// MONTAR ENDEREÇO
-// -------------------------------------------------------
-
-$rua = trim($evento['rua_evento'] ?? '');
-$cidade = trim($evento['cidade_evento'] ?? '');
-$uf = trim($evento['uf'] ?? '');
-$local = trim($evento['local_evento'] ?? '');
-
-$enderecoEvento = trim(
-    $rua .
-    ($cidade ? ', ' . $cidade : '') .
-    ($uf ? ' - ' . $uf : '')
-);
-
-if ($local !== '') {
-    $enderecoCompleto =
-        $local . ' - ' . $enderecoEvento;
-} else {
-    $enderecoCompleto =
-        $enderecoEvento;
-}
+$idEvento = (int) $idInformado;
 
 ?>
     <!doctype html>
@@ -163,9 +78,7 @@ if ($local !== '') {
 
                     <p id="tituloEvento">
 
-                        <?= htmlspecialchars(
-                    $evento['nome_evento'] ?? 'Evento'
-                ) ?>
+                        Carregando evento...
 
                     </p>
 
@@ -524,9 +437,7 @@ if ($local !== '') {
 
                         <p id="enderecoEvento">
 
-                            <?= htmlspecialchars(
-                        $enderecoCompleto
-                    ) ?>
+                            Carregando endereço...
 
                         </p>
 
@@ -1078,9 +989,7 @@ if ($local !== '') {
 
                             <span id="resumoDestino">
 
-                        <?= htmlspecialchars(
-                            $local ?: $evento['nome_evento']
-                        ) ?>
+                        Carregando...
 
                     </span>
 
@@ -1157,19 +1066,54 @@ if ($local !== '') {
 
                     </div>
 
+                    <form id="formPlanejamento" class="form-planejamento-api">
+                        <h3>Dados do deslocamento</h3>
+                        <p>Confirme os dados que serão salvos em seus planejados.</p>
 
-                    <div class="botoes">
+                        <div class="campos-planejamento-api">
+                            <div>
+                                <label for="meioTransportePlanejamento">Meio de transporte</label>
+                                <select id="meioTransportePlanejamento" required>
+                                    <option value="">Selecione</option>
+                                    <option value="Ônibus">Ônibus</option>
+                                    <option value="Carro">Carro</option>
+                                    <option value="Avião">Avião</option>
+                                    <option value="Uber">Uber</option>
+                                    <option value="Outro">Outro</option>
+                                </select>
+                            </div>
 
-                        <button onclick="voltarEtapa(4)">
-                    Voltar
-                </button>
+                            <div>
+                                <label for="distanciaPlanejamento">Distância (km)</label>
+                                <input
+                                    id="distanciaPlanejamento"
+                                    type="number"
+                                    min="0.01"
+                                    max="99999999.99"
+                                    step="0.01"
+                                    placeholder="Ex.: 125.5"
+                                    required>
+                            </div>
 
+                            <div>
+                                <label for="tempoPlanejamento">Tempo estimado (minutos)</label>
+                                <input
+                                    id="tempoPlanejamento"
+                                    type="number"
+                                    min="1"
+                                    step="1"
+                                    placeholder="Ex.: 150"
+                                    required>
+                            </div>
+                        </div>
 
-                        <button onclick="finalizarPlanejamento()">
-                    Finalizar planejamento
-                </button>
+                        <p id="mensagemPlanejamento" class="mensagem-planejamento-api" aria-live="polite"></p>
 
-                    </div>
+                        <div class="botoes">
+                            <button type="button" onclick="voltarEtapa(4)">Voltar</button>
+                            <button id="botaoFinalizarPlanejamento" type="submit">Finalizar planejamento</button>
+                        </div>
+                    </form>
 
 
                 </div>
@@ -1199,23 +1143,50 @@ if ($local !== '') {
 
         <script>
             /* =========================================================
-                                                                                                                                                   EVENTO VINDO DO BANCO
-                                                                                                                                                ========================================================= */
+               EVENTO CARREGADO PELA API
+            ========================================================= */
 
-            const evento = <?= json_encode(
-    [
-        'id' => $evento['id_evento'],
-        'nome' => $evento['nome_evento'],
-        'cidade' => $evento['cidade_evento'],
-        'uf' => $evento['uf'],
-        'rua' => $evento['rua_evento'],
-        'local' => $evento['local_evento'],
-        'data' => $evento['data_evento'],
-        'endereco' => $enderecoCompleto
-    ],
-    JSON_UNESCAPED_UNICODE |
-    JSON_UNESCAPED_SLASHES
-) ?>;
+            const evento = {
+                id: <?= $idEvento ?>,
+                nome: '',
+                cidade: '',
+                uf: '',
+                rua: '',
+                local: '',
+                data: '',
+                endereco: ''
+            };
+
+            async function carregarEvento() {
+                const resposta = await fetch(`api/eventos/${evento.id}`);
+                const dados = await resposta.json();
+
+                if (!resposta.ok) {
+                    throw new Error(dados.erro || 'Não foi possível carregar o evento.');
+                }
+
+                const eventoApi = dados.evento;
+                const endereco = [eventoApi.rua_evento, eventoApi.cidade_evento]
+                    .filter(Boolean)
+                    .join(', ');
+                const enderecoComUf = [endereco, eventoApi.uf].filter(Boolean).join(' - ');
+
+                Object.assign(evento, {
+                    nome: eventoApi.nome_evento || 'Evento',
+                    cidade: eventoApi.cidade_evento || '',
+                    uf: eventoApi.uf || '',
+                    rua: eventoApi.rua_evento || '',
+                    local: eventoApi.local_evento || '',
+                    data: eventoApi.data_evento || '',
+                    endereco: [eventoApi.local_evento, enderecoComUf].filter(Boolean).join(' - ')
+                });
+
+                document.getElementById('tituloEvento').textContent = evento.nome;
+                document.getElementById('enderecoEvento').textContent = evento.endereco || 'Endereço não informado';
+                document.getElementById('resumoDestino').textContent = evento.local || evento.nome;
+                document.getElementById('textoDestinoTransporte').textContent =
+                    `Pesquise opções de transporte para ${evento.cidade || 'o evento'}, ${evento.uf} e informe o valor escolhido.`;
+            }
 
 
             /* =========================================================
@@ -3532,7 +3503,9 @@ function atualizarResumo() {
    FINALIZAR
 ========================================================= */
 
-function finalizarPlanejamento() {
+async function finalizarPlanejamento(eventoSubmit) {
+
+    eventoSubmit.preventDefault();
 
 
     if (
@@ -3548,11 +3521,7 @@ function finalizarPlanejamento() {
     ) {
 
 
-        alert(
-
-            "Conclua todas as etapas antes de finalizar."
-
-        );
+        alert("Conclua todas as etapas antes de finalizar.");
 
 
         return;
@@ -3560,12 +3529,56 @@ function finalizarPlanejamento() {
     }
 
 
-    atualizarResumo();
+    const mensagem = document.getElementById("mensagemPlanejamento");
+    const botao = document.getElementById("botaoFinalizarPlanejamento");
+    const meioTransporte = document.getElementById("meioTransportePlanejamento").value;
+    const distancia = document.getElementById("distanciaPlanejamento").value;
+    const tempo = document.getElementById("tempoPlanejamento").value;
 
+    mensagem.textContent = "Salvando planejamento...";
+    mensagem.classList.remove("erro");
+    botao.disabled = true;
 
-    alert(
-        "Planejamento finalizado com sucesso!"
-    );
+    try {
+        const resposta = await fetch("api/planejamento/", {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify({
+                id_evento: evento.id,
+                meio_transporte: meioTransporte,
+                distancia_km: distancia,
+                tempo_estimado: tempo
+            })
+        });
+        const dados = await resposta.json();
+
+        if (!resposta.ok) {
+            throw new Error(dados.erro || "Não foi possível finalizar o planejamento.");
+        }
+
+        atualizarResumo();
+        mensagem.replaceChildren();
+        mensagem.append("Planejamento finalizado com sucesso. ");
+
+        const linkPlanejados = document.createElement("a");
+        linkPlanejados.href = "favoritos.php?aba=planejados";
+        linkPlanejados.textContent = "Ver planejados ou desfazer";
+        mensagem.append(linkPlanejados);
+        botao.textContent = "Planejamento finalizado";
+    } catch (erro) {
+        mensagem.replaceChildren();
+        mensagem.append(erro.message + " ");
+        mensagem.classList.add("erro");
+
+        if (erro.message.includes("já possui")) {
+            const linkPlanejados = document.createElement("a");
+            linkPlanejados.href = "favoritos.php?aba=planejados";
+            linkPlanejados.textContent = "Abrir meus planejados";
+            mensagem.append(linkPlanejados);
+        }
+
+        botao.disabled = false;
+    }
 
 }
 
@@ -3643,32 +3656,29 @@ document
         atualizarResumo
     );
 
+document
+    .getElementById("formPlanejamento")
+    .addEventListener("submit", finalizarPlanejamento);
+
 
 /* =========================================================
    INICIALIZAÇÃO
 ========================================================= */
 
-document.getElementById(
-    "tituloEvento"
-).textContent =
-    evento.nome ||
-    "Evento";
+async function inicializarPlanejamento() {
+    try {
+        await carregarEvento();
+    } catch (erro) {
+        document.getElementById("tituloEvento").textContent = erro.message;
+        document.getElementById("botaoFinalizarPlanejamento").disabled = true;
+        mostrarMensagem(erro.message, true);
+    }
 
+    atualizarResumo();
+    atualizarTimeline(1);
+}
 
-document.getElementById(
-    "textoDestinoTransporte"
-).textContent =
-
-    `Pesquise opções de transporte para ${
-        evento.cidade || "o evento"
-    }, ${
-        evento.uf || ""
-    } e informe o valor escolhido.`;
-
-
-atualizarResumo();
-
-atualizarTimeline(1);
+inicializarPlanejamento();
         </script>
 
         <script src="assets/js/main.js"></script>

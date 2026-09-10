@@ -627,6 +627,77 @@
               border-top: 1px solid rgba(255, 255, 255, .08);
               margin: 8px 0;
           }
+
+          .form-planejamento-api {
+              margin-top: 24px;
+              padding: 22px;
+              border: 1px solid rgba(168, 255, 0, .35);
+              border-radius: 12px;
+              background: rgba(168, 255, 0, .035);
+          }
+
+          .form-planejamento-api h3 {
+              margin: 0 0 6px;
+              color: var(--verde);
+              font-size: 17px;
+          }
+
+          .form-planejamento-api > p {
+              margin: 0 0 18px;
+              color: var(--texto-secundario);
+              font-size: 13px;
+          }
+
+          .campos-planejamento-api {
+              display: grid;
+              grid-template-columns: repeat(3, minmax(0, 1fr));
+              gap: 14px;
+          }
+
+          .campos-planejamento-api label {
+              display: block;
+              margin-bottom: 7px;
+              color: #ddd;
+              font-size: 12px;
+          }
+
+          .campos-planejamento-api select {
+              width: 100%;
+              min-height: 47px;
+              padding: 11px 13px;
+              color: #fff;
+              background: #0b0b0b;
+              border: 1px solid rgba(255, 255, 255, .15);
+              border-radius: 8px;
+          }
+
+          .campos-planejamento-api select:focus {
+              border-color: var(--verde);
+              outline: none;
+              box-shadow: 0 0 0 3px rgba(168, 255, 0, .07);
+          }
+
+          .mensagem-planejamento-api {
+              min-height: 22px;
+              margin: 16px 0 0 !important;
+              color: var(--verde) !important;
+          }
+
+          .mensagem-planejamento-api.erro {
+              color: var(--rosa) !important;
+          }
+
+          .mensagem-planejamento-api a {
+              color: inherit;
+              font-weight: 700;
+              text-decoration: underline;
+          }
+
+          #botaoFinalizarPlanejamento:disabled {
+              cursor: not-allowed;
+              opacity: .65;
+              transform: none;
+          }
           /* =========================================================
                DICAS
                ========================================================= */
@@ -827,6 +898,9 @@
                   grid-template-columns: 1fr;
               }
               .informacoes-rota {
+                  grid-template-columns: 1fr;
+              }
+              .campos-planejamento-api {
                   grid-template-columns: 1fr;
               }
               #mapaRota {

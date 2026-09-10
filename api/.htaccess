@@ -26,6 +26,14 @@ RewriteRule ^favoritos/?$ apiFavoritos.php [QSA,L]
 
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^planejamento/(\d+)/?$ apiPlanejamento.php?id=$1 [QSA,L]
+
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^planejamento/?$ apiPlanejamento.php [QSA,L]
+
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
 RewriteRule ^sessoes/(\d+)/?$ apiSessoes.php?id=$1 [QSA,L]
 
 RewriteCond %{REQUEST_FILENAME} !-f

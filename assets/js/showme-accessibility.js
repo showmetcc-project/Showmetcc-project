@@ -17,27 +17,39 @@
       return;
     }
 
-    var style = document.createElement('style');
-    style.textContent = [
-      ':root {',
-      '  --_access-icon-bottom: 80px;',
-      '  --_access-icon-right: 20px;',
-      '  --_access-icon-left: unset;',
-      '  --_access-menu-background-color: #111111;',
-      '  --_access-menu-item-button-background: #1e1e1e;',
-      '  --_access-menu-item-color: rgba(255, 255, 255, 0.75);',
-      '  --_access-menu-header-color: #39ff14;',
-      '  --_access-menu-item-button-active-color: #000000;',
-      '  --_access-menu-item-button-active-background-color: #39ff14;',
-      '  --_access-menu-div-active-background-color: #39ff14;',
-      '  --_access-menu-item-button-hover-color: rgba(255, 255, 255, 0.9);',
-      '  --_access-menu-item-button-hover-background-color: #2a2a2a;',
-      '  --_access-menu-item-icon-color: rgba(255, 255, 255, 0.6);',
-      '  --_access-menu-item-hover-icon-color: rgba(255, 255, 255, 0.9);',
-      '  --_access-menu-item-active-icon-color: #000000;',
-      '}'
-    ].join('\n');
-    document.head.appendChild(style);
+    // O VLibras atual usa Shadow DOM; mantenha suporte ao markup anterior.
+    var vlibrasHost = document.getElementById('vlibras-access-wrapper');
+    var vlibrasButton = vlibrasHost && vlibrasHost.shadowRoot
+      ? vlibrasHost.shadowRoot.querySelector('#vlibras-button')
+      : document.querySelector('[vw-access-button]');
+    var header = document.querySelector('#header');
+    var root = document.documentElement;
+
+    function positionWidgets() {
+      if (vlibrasButton) {
+        var rect = vlibrasButton.getBoundingClientRect();
+        // Ao abrir o VLibras/menu mobile, preserve a ultima ancora visivel.
+        if (rect.width && rect.height) {
+          root.style.setProperty('--showme-access-left', rect.left + 'px');
+          // O centro do VLibras e 50vh; nao use o top intermediario da animacao de resize.
+          root.style.setProperty('--showme-access-top', 'calc(50vh + ' + (rect.height / 2 + 4) + 'px)');
+          root.style.setProperty('--showme-access-panel-left', (rect.right + 10) + 'px');
+        }
+      }
+      var headerBottom = header ? header.getBoundingClientRect().bottom : 0;
+      root.style.setProperty('--showme-access-panel-top', Math.max(8, headerBottom + 8) + 'px');
+    }
+
+    positionWidgets();
+    window.addEventListener('resize', positionWidgets);
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener('resize', positionWidgets);
+    }
+    if (window.ResizeObserver) {
+      var observer = new ResizeObserver(positionWidgets);
+      if (vlibrasButton) observer.observe(vlibrasButton);
+      if (header) observer.observe(header);
+    }
 
     window.showMeAccessibility = new window.Accessibility({
       labels: {

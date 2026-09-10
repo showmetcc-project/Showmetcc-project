@@ -1,0 +1,113 @@
+/* Paleta de main.css; seletores conferidos no bundle accessibility.
+   VLibras atual: #vlibras-access-wrapper > shadowRoot > #vlibras-button.
+   O botao fechado mede 40px e fica em calc(50vh - 20px), a 10px da esquerda.
+   O JS mede o retangulo real; estes valores tambem servem como fallback. */
+:root {
+  --showme-access-left: 10px;
+  --showme-access-top: calc(50vh + 24px);
+  --showme-access-panel-left: 60px;
+  --showme-access-panel-top: 94px;
+}
+
+body ._access-icon {
+  --_access-icon-left: var(--showme-access-left);
+  --_access-icon-right: auto;
+  --_access-icon-top: var(--showme-access-top);
+  --_access-icon-bottom: auto;
+  --_access-icon-width: 40px;
+  --_access-icon-height: 40px;
+  --_access-icon-font: 32px / 40px 'Material Icons';
+  --_access-icon-bg: var(--accent-color);
+  --_access-icon-color: var(--background-color);
+  --_access-icon-border-radius: 8px;
+  --_access-icon-transform-hover: none;
+  --_access-icon-z-index: 998;
+  /* A biblioteca aplica skew no fallback com emoji. Preserve o alinhamento. */
+  transform: none;
+  transition: top .5s ease;
+}
+
+body ._access-menu {
+  --_access-menu-left: var(--showme-access-panel-left);
+  --_access-menu-right: auto;
+  --_access-menu-top: var(--showme-access-panel-top);
+  --_access-menu-bottom: auto;
+  --_access-menu-width: min(340px, calc(100% - var(--showme-access-panel-left) - 10px));
+  --_access-menu-min-width: 0;
+  --_access-menu-background-color: var(--background-color);
+  --_access-menu-color: var(--default-color);
+  --_access-menu-border: 1px solid var(--accent-color);
+  --_access-menu-font-family: var(--default-font);
+  --_access-menu-header-color: var(--accent-color);
+  --_access-menu-header-margin: 44px 8px 12px;
+  --_access-menu-item-color: var(--default-color);
+  --_access-menu-item-button-background: var(--background-color);
+  --_access-menu-item-button-border: 1px solid var(--default-color);
+  --_access-menu-item-button-padding: 10px 8px 10px 38px;
+  --_access-menu-item-button-text-indent: 0;
+  --_access-menu-item-button-active-color: var(--background-color);
+  --_access-menu-item-button-active-background-color: var(--accent-color);
+  --_access-menu-item-button-hover-color: var(--background-color);
+  --_access-menu-item-button-hover-background-color: var(--accent-color);
+  --_access-menu-item-icon-color: var(--default-color);
+  --_access-menu-item-hover-icon-color: var(--background-color);
+  --_access-menu-item-active-icon-color: var(--background-color);
+  --_access-menu-div-active-color: var(--background-color);
+  --_access-menu-div-active-background-color: var(--accent-color);
+  --_access-menu-z-index: 999;
+  --_access-menu-transition-duration: 0s;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  max-height: calc(100vh - var(--showme-access-panel-top) - 10px);
+  max-height: calc(100dvh - var(--showme-access-panel-top) - 10px);
+  overflow: hidden;
+}
+
+body ._access-menu.close {
+  /* O painel fechado nao deve interceptar cliques nem foco. */
+  display: none;
+}
+
+body ._access-menu ._text-center {
+  flex-shrink: 0;
+}
+
+body ._access-menu ul {
+  min-height: 0;
+  max-height: none;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+/* button nao herda a cor do li no estilo padrao do navegador. */
+body ._access-menu ul li button {
+  color: var(--default-color);
+}
+
+body ._access-menu ul li button:hover,
+body ._access-menu ul li button.active,
+body ._access-menu ul li button.active:hover {
+  color: var(--background-color);
+}
+
+body ._access-menu ._menu-btn {
+  color: var(--accent-color);
+}
+
+body ._access-icon:focus-visible,
+body ._access-menu button:focus-visible {
+  outline: 2px solid var(--default-color);
+  outline-offset: 2px;
+}
+
+@media (max-width: 1199px) {
+  /* O menu mobile ocupa a tela. Restaure os widgets ao fecha-lo. */
+  body.mobile-nav-active #vlibras-access-wrapper,
+  body.mobile-nav-active #vlibras-app-root,
+  body.mobile-nav-active [vw],
+  body.mobile-nav-active ._access-icon,
+  body.mobile-nav-active ._access-menu {
+    display: none;
+  }
+}

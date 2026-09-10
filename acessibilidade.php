@@ -10,8 +10,9 @@
   new window.VLibras.Widget({
     rootPath: 'https://vlibras.gov.br/app',
     avatar: 'random',
-    position: 'R'
+    position: 'L'
   });
 </script>
 <script src="assets/js/accessibility.bundle.js"></script>
+<link rel="stylesheet" href="assets/css/showme-accessibility.css">
 <script src="assets/js/showme-accessibility.js"></script>

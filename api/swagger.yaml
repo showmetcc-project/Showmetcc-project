@@ -212,8 +212,8 @@ paths:
   /eventos:
     get:
       tags: [Eventos]
-      summary: Lista ou busca eventos aprovados
-      description: Sem parâmetros, lista todos os eventos. Com busca, filtra por nome do evento, cidade, categoria ou nome de artista, sem duplicar eventos associados a mais de um artista.
+      summary: Lista eventos públicos ou solicitações para moderação
+      description: Sem parâmetros, lista todos os eventos. Com busca, filtra eventos por nome, cidade, categoria ou artista. Com solicitacoes, consulta a tabela de solicitações e exige uma sessão de administrador; esse parâmetro não pode ser combinado com busca ou limite.
       parameters:
         - name: busca
           in: query
@@ -231,20 +231,39 @@ paths:
             minimum: 1
             maximum: 50
           example: 5
+        - name: solicitacoes
+          in: query
+          required: false
+          description: Lista solicitações do status escolhido. Esta modalidade é restrita a administradores.
+          schema:
+            type: string
+            enum: [pendente, aprovado, recusado, todas]
+          example: pendente
       responses:
         '200':
-          description: Lista de eventos
+          description: Lista de eventos públicos ou de solicitações administrativas
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  eventos:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/Evento'
+                oneOf:
+                  - type: object
+                    properties:
+                      eventos:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Evento'
+                  - type: object
+                    properties:
+                      solicitacoes:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/SolicitacaoAdmin'
         '400':
           $ref: '#/components/responses/RequisicaoInvalida'
+        '401':
+          $ref: '#/components/responses/NaoAutenticado'
+        '403':
+          $ref: '#/components/responses/Proibido'
     post:
       tags: [Eventos]
       summary: Cria uma solicitação de evento
@@ -289,13 +308,13 @@ paths:
                 type: object
                 properties:
                   evento:
-                    $ref: '#/components/schemas/Evento'
+                    $ref: '#/components/schemas/EventoDetalhe'
         '404':
           $ref: '#/components/responses/NaoEncontrado'
     put:
       tags: [Eventos]
-      summary: Modera uma solicitação ou edita um evento
-      description: Use acao=moderar quando o ID representar uma solicitação e acao=editar quando representar um evento. Por compatibilidade, enviar apenas status_solicitacao também seleciona a moderação.
+      summary: Edita/modera uma solicitação ou edita um evento publicado
+      description: Use acao=editar_solicitacao para corrigir uma solicitação ainda pendente, acao=moderar para aprová-la ou recusá-la e acao=editar quando o ID representar um evento já publicado. A edição da solicitação preserva a foto enviada pelo usuário.
       security:
         - cookieAuth: []
       parameters:
@@ -307,6 +326,7 @@ paths:
             schema:
               oneOf:
                 - $ref: '#/components/schemas/ModeracaoSolicitacao'
+                - $ref: '#/components/schemas/EdicaoSolicitacao'
                 - $ref: '#/components/schemas/EventoAtualizacao'
       responses:
         '200':
@@ -321,6 +341,12 @@ paths:
                         type: string
                       solicitacao:
                         $ref: '#/components/schemas/SolicitacaoResultado'
+                  - type: object
+                    properties:
+                      mensagem:
+                        type: string
+                      solicitacao:
+                        $ref: '#/components/schemas/SolicitacaoAdmin'
                   - type: object
                     properties:
                       mensagem:
@@ -620,13 +646,39 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Erro'
+                type: object
+                properties:
+                  erro:
+                    type: string
+                  id_avaliacao:
+                    type: integer
+                    description: ID da avaliação existente, quando identificado antes da inserção.
 
   /avaliacoes/{id}:
+    get:
+      tags: [Avaliações]
+      summary: Busca uma avaliação pelo ID
+      description: Retorna os dados da avaliação, o nome do evento e todas as mídias associadas.
+      parameters:
+        - $ref: '#/components/parameters/IdNaRota'
+      responses:
+        '200':
+          description: Avaliação encontrada
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  avaliacao:
+                    $ref: '#/components/schemas/Avaliacao'
+        '400':
+          $ref: '#/components/responses/RequisicaoInvalida'
+        '404':
+          $ref: '#/components/responses/NaoEncontrado'
     put:
       tags: [Avaliações]
       summary: Atualiza uma avaliação
-      description: Permitido para o autor da avaliação ou para um administrador. Este endpoint edita somente nota e comentário; as mídias são definidas na criação.
+      description: Permitido para o autor da avaliação ou para um administrador. Este endpoint edita somente nota e comentário e preserva as mídias definidas na criação.
       security:
         - cookieAuth: []
       parameters:
@@ -865,6 +917,31 @@ components:
           type: string
           enum: [ativo, cancelado]
 
+    EventoDetalhe:
+      allOf:
+        - $ref: '#/components/schemas/Evento'
+        - type: object
+          properties:
+            artistas:
+              type: array
+              description: Artistas e atrações relacionados ao evento.
+              items:
+                $ref: '#/components/schemas/ArtistaEvento'
+
+    ArtistaEvento:
+      type: object
+      properties:
+        id_artista:
+          type: integer
+        nome_artista:
+          type: string
+        genero_artista:
+          type: string
+          nullable: true
+        imagem_artista:
+          type: string
+          nullable: true
+
     ModeracaoSolicitacao:
       type: object
       required: [status_solicitacao]
@@ -875,6 +952,39 @@ components:
         status_solicitacao:
           type: string
           enum: [aprovado, recusado]
+
+    EdicaoSolicitacao:
+      type: object
+      required: [acao]
+      properties:
+        acao:
+          type: string
+          enum: [editar_solicitacao]
+        nome_evento:
+          type: string
+          maxLength: 100
+        horario_evento:
+          type: string
+          nullable: true
+          example: '20:00'
+        data_evento:
+          type: string
+          format: date
+          nullable: true
+        local_evento:
+          type: string
+          maxLength: 255
+          nullable: true
+        gratuidade:
+          type: boolean
+        descricao_evento:
+          type: string
+          maxLength: 1000
+          nullable: true
+        descricao_artista:
+          type: string
+          maxLength: 1000
+          nullable: true
 
     EventoAtualizacao:
       type: object
@@ -970,6 +1080,54 @@ components:
           nullable: true
         foto:
           type: string
+          nullable: true
+
+    SolicitacaoAdmin:
+      type: object
+      properties:
+        id_solicitacao:
+          type: integer
+        id_user:
+          type: integer
+        nome_evento:
+          type: string
+        status_solicitacao:
+          type: string
+          enum: [pendente, aprovado, recusado]
+        foto:
+          type: string
+          nullable: true
+        horario_evento:
+          type: string
+          nullable: true
+        data_evento:
+          type: string
+          format: date
+          nullable: true
+        local_evento:
+          type: string
+          nullable: true
+        gratuidade:
+          type: boolean
+        descricao_evento:
+          type: string
+          nullable: true
+        descricao_artista:
+          type: string
+          nullable: true
+        data_solicitacao:
+          type: string
+          example: '2026-09-10 14:30:00'
+        nome_user:
+          type: string
+        sobrenome:
+          type: string
+          nullable: true
+        email_user:
+          type: string
+          format: email
+        id_evento:
+          type: integer
           nullable: true
 
     PlanejamentoCadastro:
@@ -1141,6 +1299,8 @@ components:
         nome_user:
           type: string
         sobrenome:
+          type: string
+        nome_evento:
           type: string
         midias:
           type: array

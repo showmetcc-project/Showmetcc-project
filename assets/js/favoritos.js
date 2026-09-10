@@ -15,14 +15,57 @@ document.querySelectorAll('.aba').forEach(btn => {
 
 const listaFavoritos = document.getElementById('favoritos');
 const contadorFavoritos = document.getElementById('contadorFavoritos');
+const imagemPadrao = 'assets/img/banner_site_565x235px.png';
+
+async function lerRespostaJson(resposta) {
+    const texto = await resposta.text();
+
+    if (!texto) {
+        return {};
+    }
+
+    try {
+        return JSON.parse(texto);
+    } catch (erro) {
+        throw new Error('A API retornou uma resposta inválida.');
+    }
+}
+
+function caminhoImagem(caminho) {
+    const valor = String(caminho || '').trim();
+
+    if (!valor) {
+        return imagemPadrao;
+    }
+
+    if (/^(?:https?:)?\/\//i.test(valor) || valor.startsWith('/') || valor.includes('/') || valor.includes('\\')) {
+        return valor;
+    }
+
+    return `assets/img/${valor}`;
+}
+
+function mostrarFavoritosVazios() {
+    if (!listaFavoritos) {
+        return;
+    }
+
+    const vazio = document.createElement('p');
+    vazio.textContent = 'Você ainda não adicionou eventos aos favoritos.';
+    listaFavoritos.replaceChildren(vazio);
+}
 
 function criarCardFavorito(favorito) {
     const card = document.createElement('div');
     card.className = 'card-evento';
 
     const imagem = document.createElement('img');
-    imagem.src = favorito.imagem_evento || 'assets/img/banner_site_565x235px.png';
-    imagem.alt = favorito.nome_evento;
+    imagem.src = caminhoImagem(favorito.imagem_evento);
+    imagem.alt = favorito.nome_evento || 'Evento';
+    imagem.loading = 'lazy';
+    imagem.addEventListener('error', function () {
+        this.src = imagemPadrao;
+    }, {once: true});
 
     const info = document.createElement('div');
     info.className = 'info';
@@ -30,17 +73,17 @@ function criarCardFavorito(favorito) {
     const titulo = document.createElement('h3');
     titulo.textContent = favorito.nome_evento;
 
-    const local = document.createElement('p');
-    local.textContent = [favorito.local_evento, favorito.cidade_evento, favorito.uf]
-        .filter(Boolean)
-        .join(', ');
-
-    const data = document.createElement('p');
-    data.textContent = favorito.data_evento || 'Data não informada';
+    const local = criarInformacao(
+        'bi bi-geo-alt-fill',
+        [favorito.local_evento, favorito.cidade_evento, favorito.uf]
+            .filter(Boolean)
+            .join(', ') || 'Local não informado'
+    );
+    const data = criarInformacao('bi bi-calendar3', formatarDataEvento(favorito.data_evento));
 
     const detalhes = document.createElement('a');
     detalhes.className = 'btn-detalhes';
-    detalhes.href = `detalhesEvento.php?id_evento=${favorito.id_evento}`;
+    detalhes.href = `detalhesEvento.php?id=${favorito.id_evento}`;
     detalhes.textContent = 'Ver detalhes';
 
     info.append(titulo, local, data, detalhes);
@@ -53,21 +96,44 @@ function criarCardFavorito(favorito) {
     tipo.textContent = favorito.gratuidade ? 'Grátis' : 'Pago';
 
     const excluir = document.createElement('button');
+    excluir.type = 'button';
     excluir.className = 'btn-excluir';
-    excluir.title = 'Remover';
+    excluir.title = 'Remover dos favoritos';
+    excluir.setAttribute('aria-label', `Remover ${favorito.nome_evento || 'evento'} dos favoritos`);
     excluir.innerHTML = '<i class="bi bi-trash3"></i>';
     excluir.addEventListener('click', async () => {
-        const resposta = await fetch(`api/favoritos/${favorito.id_favorito}`, {method: 'DELETE'});
-        const dados = await resposta.json();
-
-        if (!resposta.ok) {
-            alert(dados.erro || 'Não foi possível remover o favorito.');
+        if (!window.confirm('Deseja remover este evento dos favoritos?')) {
             return;
         }
 
-        card.remove();
-        if (contadorFavoritos) {
-            contadorFavoritos.textContent = Math.max(0, Number(contadorFavoritos.textContent) - 1);
+        excluir.disabled = true;
+
+        try {
+            const resposta = await fetch(`api/favoritos/${favorito.id_favorito}`, {method: 'DELETE'});
+
+            if (resposta.status === 401) {
+                window.location.href = 'login.php';
+                return;
+            }
+
+            const dados = await lerRespostaJson(resposta);
+
+            if (!resposta.ok) {
+                throw new Error(dados.erro || 'Não foi possível remover o favorito.');
+            }
+
+            card.remove();
+            if (contadorFavoritos) {
+                contadorFavoritos.textContent = Math.max(0, Number(contadorFavoritos.textContent) - 1);
+            }
+
+            if (!listaFavoritos.querySelector('.card-evento')) {
+                mostrarFavoritosVazios();
+            }
+        } catch (erro) {
+            window.alert(erro.message);
+        } finally {
+            excluir.disabled = false;
         }
     });
 
@@ -83,7 +149,13 @@ async function carregarFavoritos() {
 
     try {
         const resposta = await fetch('api/favoritos/');
-        const dados = await resposta.json();
+
+        if (resposta.status === 401) {
+            window.location.href = 'login.php';
+            return;
+        }
+
+        const dados = await lerRespostaJson(resposta);
 
         if (!resposta.ok) {
             throw new Error(dados.erro || 'Não foi possível carregar os favoritos.');
@@ -95,9 +167,7 @@ async function carregarFavoritos() {
         }
 
         if (dados.favoritos.length === 0) {
-            const vazio = document.createElement('p');
-            vazio.textContent = 'Você ainda não adicionou eventos aos favoritos.';
-            listaFavoritos.append(vazio);
+            mostrarFavoritosVazios();
             return;
         }
 

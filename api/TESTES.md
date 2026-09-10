@@ -6,6 +6,7 @@ Os exemplos abaixo usam `curl.exe` no PowerShell. Ajuste a URL para a pasta/port
 $BASE = 'http://localhost/SEU-DIRETORIO/api'
 $SITE = 'http://localhost/SEU-DIRETORIO'
 $COOKIE_COMUM = "$env:TEMP\showme-comum.txt"
+$COOKIE_OUTRO_USUARIO = "$env:TEMP\showme-outro-usuario.txt"
 $COOKIE_ADMIN = "$env:TEMP\showme-admin.txt"
 $COOKIE_CONTA_DESCARTAVEL = "$env:TEMP\showme-conta-descartavel.txt"
 $COOKIE_GOOGLE = "$env:TEMP\showme-google.txt"
@@ -239,6 +240,19 @@ curl.exe -i "$BASE/eventos/ID_EVENTO"
 curl.exe -i "$BASE/eventos/999999999"
 ```
 
+### GET /eventos?solicitacoes= — listagem administrativa e erro 403
+
+O retorno inclui os dados da solicitação, a foto e o usuário solicitante. Os três
+primeiros comandos exigem a sessão do administrador; o último confirma a proteção.
+
+```powershell
+curl.exe -i -b $COOKIE_ADMIN "$BASE/eventos/?solicitacoes=pendente"
+curl.exe -i -b $COOKIE_ADMIN "$BASE/eventos/?solicitacoes=aprovado"
+curl.exe -i -b $COOKIE_ADMIN "$BASE/eventos/?solicitacoes=recusado"
+curl.exe -i -b $COOKIE_ADMIN "$BASE/eventos/?solicitacoes=todas"
+curl.exe -i -b $COOKIE_COMUM "$BASE/eventos/?solicitacoes=pendente"
+```
+
 ### POST /eventos — sucesso
 
 ```powershell
@@ -276,7 +290,24 @@ curl.exe -i -b $COOKIE_COMUM -X POST "$BASE/eventos/" `
   -F "foto=@$VIDEO_1"
 ```
 
-### PUT /eventos/{id_solicitacao} — sucesso
+### PUT /eventos/{id_solicitacao} — corrigir uma solicitação pendente
+
+A foto original é mantida; o painel permite corrigir os demais dados antes da decisão.
+
+```powershell
+curl.exe -i -b $COOKIE_ADMIN -X PUT "$BASE/eventos/ID_SOLICITACAO" `
+  -H "Content-Type: application/json" `
+  -d '{"acao":"editar_solicitacao","nome_evento":"Nome corrigido","local_evento":"Local corrigido","data_evento":"2026-12-21","horario_evento":"21:00","gratuidade":true,"descricao_evento":"Descrição corrigida","descricao_artista":"Artista corrigido"}'
+
+curl.exe -i -b $COOKIE_COMUM -X PUT "$BASE/eventos/ID_SOLICITACAO" `
+  -H "Content-Type: application/json" `
+  -d '{"acao":"editar_solicitacao","nome_evento":"Alteração sem permissão"}'
+```
+
+O primeiro comando deve retornar `200`; o segundo deve retornar `403`. Depois de aprovar
+ou recusar a solicitação, repetir `editar_solicitacao` deve retornar `409`.
+
+### PUT /eventos/{id_solicitacao} — aprovar e recusar com sucesso
 
 ```powershell
 curl.exe -i -c $COOKIE_ADMIN -X POST "$BASE/sessoes/" `
@@ -286,6 +317,10 @@ curl.exe -i -c $COOKIE_ADMIN -X POST "$BASE/sessoes/" `
 curl.exe -i -b $COOKIE_ADMIN -X PUT "$BASE/eventos/ID_SOLICITACAO" `
   -H "Content-Type: application/json" `
   -d '{"acao":"moderar","status_solicitacao":"aprovado"}'
+
+curl.exe -i -b $COOKIE_ADMIN -X PUT "$BASE/eventos/OUTRA_ID_SOLICITACAO" `
+  -H "Content-Type: application/json" `
+  -d '{"acao":"moderar","status_solicitacao":"recusado"}'
 ```
 
 ### PUT /eventos/{id_solicitacao} — erro 403
@@ -294,6 +329,16 @@ curl.exe -i -b $COOKIE_ADMIN -X PUT "$BASE/eventos/ID_SOLICITACAO" `
 curl.exe -i -b $COOKIE_COMUM -X PUT "$BASE/eventos/ID_SOLICITACAO" `
   -H "Content-Type: application/json" `
   -d '{"acao":"moderar","status_solicitacao":"recusado"}'
+```
+
+### PUT /eventos/{id_solicitacao} — solicitação já analisada retorna 409
+
+Repita a moderação de uma das solicitações processadas no teste anterior.
+
+```powershell
+curl.exe -i -b $COOKIE_ADMIN -X PUT "$BASE/eventos/ID_SOLICITACAO" `
+  -H "Content-Type: application/json" `
+  -d '{"acao":"moderar","status_solicitacao":"aprovado"}'
 ```
 
 ### PUT /eventos/{id_evento} — editar com sucesso e erro 403
@@ -429,6 +474,15 @@ curl.exe -i "$BASE/avaliacoes/?evento_id=1"
 curl.exe -i "$BASE/avaliacoes/"
 ```
 
+### GET /avaliacoes/{id} — sucesso e erro 404
+
+A resposta de sucesso traz a avaliação, o nome do evento e o array `midias`.
+
+```powershell
+curl.exe -i "$BASE/avaliacoes/ID_AVALIACAO"
+curl.exe -i "$BASE/avaliacoes/999999999"
+```
+
 ### POST /avaliacoes — PHP disfarçado é rejeitado com 400
 
 ```powershell
@@ -453,6 +507,20 @@ curl.exe -i -b $COOKIE_COMUM -X POST "$BASE/avaliacoes/" `
   -F "midias[]=@$FOTO_3" `
   -F "midias[]=@$VIDEO_1" `
   -F "midias[]=@$VIDEO_2"
+```
+
+### POST /avaliacoes — avaliação duplicada retorna 409
+
+Depois do POST de sucesso acima, repita a criação com o mesmo usuário e evento. A resposta
+deve informar que é necessário editar a avaliação existente e retornar seu
+`id_avaliacao`.
+
+```powershell
+curl.exe -i -b $COOKIE_COMUM -X POST "$BASE/avaliacoes/" `
+  -F "id_evento=ID_EVENTO" `
+  -F "nota=4" `
+  -F "comentario=Segunda avaliação do mesmo evento" `
+  -F "midias[]=@$FOTO_1"
 ```
 
 ### POST /avaliacoes — uma 6ª mídia é rejeitada com 400
@@ -480,12 +548,18 @@ curl.exe -i -b $COOKIE_COMUM -X POST "$BASE/avaliacoes/" `
   -F "midias[]=@$FOTO_1"
 ```
 
-### PUT /avaliacoes/{id} — sucesso e erro 404
+### PUT /avaliacoes/{id} — sucesso, erro 403 e erro 404
+
+O PUT altera somente `nota` e `comentario`; as mídias existentes permanecem associadas.
 
 ```powershell
 curl.exe -i -b $COOKIE_COMUM -X PUT "$BASE/avaliacoes/ID_AVALIACAO" `
   -H "Content-Type: application/json" `
   -d '{"nota":4,"comentario":"Comentário atualizado"}'
+
+curl.exe -i -b $COOKIE_OUTRO_USUARIO -X PUT "$BASE/avaliacoes/ID_AVALIACAO" `
+  -H "Content-Type: application/json" `
+  -d '{"nota":3,"comentario":"Alteração sem permissão"}'
 
 curl.exe -i -b $COOKIE_COMUM -X PUT "$BASE/avaliacoes/999999999" `
   -H "Content-Type: application/json" `

@@ -81,3 +81,41 @@
 .badge-evento.pago {
   background: #e83e8c;
 }
+
+.btn-toggle-favorito {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 6;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  padding: 0;
+  border: 2px solid #ffffff;
+  border-radius: 50%;
+  background: rgba(5, 5, 5, 0.82);
+  color: #ffffff;
+  font-size: 20px;
+  cursor: pointer;
+  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
+}
+
+.btn-toggle-favorito:hover,
+.btn-toggle-favorito:focus-visible {
+  border-color: #e9009b;
+  color: #e9009b;
+  transform: scale(1.06);
+}
+
+.btn-toggle-favorito[aria-pressed="true"] {
+  border-color: #e9009b;
+  background: #ffffff;
+  color: #e9009b;
+}
+
+.btn-toggle-favorito:disabled {
+  cursor: wait;
+  opacity: 0.7;
+}

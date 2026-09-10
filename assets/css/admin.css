@@ -241,6 +241,16 @@ body {
     box-shadow: 0 0 24px rgba(0, 212, 255, .15);
 }
 
+.evento-card.status-aprovado.expandido {
+    border-color: var(--green);
+    box-shadow: 0 0 24px rgba(57, 255, 20, .13);
+}
+
+.evento-card.status-recusado.expandido {
+    border-color: var(--pink);
+    box-shadow: 0 0 24px rgba(255, 79, 163, .13);
+}
+
 /* HEADER DO CARD */
 .evento-header {
     display: flex;
@@ -250,6 +260,11 @@ body {
     cursor: pointer;
     user-select: none;
     gap: 16px;
+    width: 100%;
+    border: 0;
+    background: transparent;
+    color: inherit;
+    text-align: left;
 }
 
 .evento-header:hover { background: rgba(255,255,255,.02); }
@@ -273,6 +288,15 @@ body {
     flex-shrink: 0;
 }
 
+.evento-foto {
+    width: 72px;
+    height: 72px;
+    border-radius: 14px;
+    background: #1b1b1b;
+    object-fit: cover;
+    flex-shrink: 0;
+}
+
 .evento-info h3 {
     font-size: 1.35rem;
     font-weight: 700;
@@ -293,11 +317,15 @@ body {
     flex-shrink: 0;
 }
 
-.badge-pendente {
+.badge-pendente,
+.badge-solicitacao {
     color: var(--yellow);
     font-size: 1rem;
     font-weight: 700;
 }
+
+.badge-aprovado { color: var(--green); }
+.badge-recusado { color: var(--pink); }
 
 .chevron {
     font-size: 1.1rem;
@@ -331,6 +359,16 @@ body {
     letter-spacing: .04em;
 }
 
+.campo-info-label {
+    display: block;
+    margin-bottom: 3px;
+    color: #777;
+    font-size: 0.78rem;
+    font-weight: 500;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+}
+
 .campo-info p {
     color: #d0d0d0;
     font-size: 0.92rem;
@@ -353,7 +391,9 @@ body {
 
 .btn-editar,
 .btn-aprovar,
-.btn-reprovar {
+.btn-reprovar,
+.btn-recusar,
+.btn-ver-evento {
     display: inline-flex;
     align-items: center;
     gap: 7px;
@@ -363,6 +403,7 @@ body {
     font-size: 0.9rem;
     cursor: pointer;
     transition: .25s;
+    text-decoration: none;
 }
 
 .btn-editar {
@@ -387,15 +428,121 @@ body {
     color: #000;
 }
 
-.btn-reprovar {
+.btn-reprovar,
+.btn-recusar {
     background: transparent;
     border: 2px solid var(--pink);
     color: var(--pink);
 }
 
-.btn-reprovar:hover {
+.btn-reprovar:hover,
+.btn-recusar:hover {
     background: var(--pink);
     color: #fff;
+}
+
+.btn-ver-evento {
+    border: 2px solid #555;
+    background: #1e1e1e;
+    color: #eeeeee;
+}
+
+.btn-ver-evento:hover {
+    border-color: #888;
+    color: #ffffff;
+}
+
+.btn-aprovar:disabled,
+.btn-editar:disabled,
+.btn-reprovar:disabled,
+.btn-recusar:disabled {
+    cursor: not-allowed;
+    opacity: .4;
+}
+
+.lista-solicitacoes {
+    min-height: 150px;
+}
+
+.estado-solicitacoes {
+    padding: 38px 24px;
+    border: 1px dashed #343434;
+    border-radius: 16px;
+    color: var(--muted);
+    text-align: center;
+}
+
+.estado-solicitacoes.erro {
+    border-color: var(--pink);
+    color: #ff8ec3;
+}
+
+.modal-solicitacao {
+    border: 1px solid #3a3a3a;
+    border-radius: 18px;
+    background: #151515;
+    color: #ffffff;
+}
+
+.modal-solicitacao .modal-header,
+.modal-solicitacao .modal-footer {
+    border-color: #303030;
+}
+
+.modal-solicitacao .form-label {
+    color: #dddddd;
+    font-weight: 600;
+}
+
+.modal-solicitacao .form-control,
+.modal-solicitacao .form-select {
+    border: 1px solid #444444;
+    background-color: #0d0d0d;
+    color: #ffffff;
+}
+
+.modal-solicitacao .form-control:focus,
+.modal-solicitacao .form-select:focus {
+    border-color: var(--green);
+    box-shadow: 0 0 0 .2rem rgba(57, 255, 20, .12);
+}
+
+.aviso-foto-edicao {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 20px 0 0;
+    color: var(--muted);
+    font-size: .88rem;
+}
+
+.btn-modal-cancelar,
+.btn-modal-salvar {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    min-height: 42px;
+    padding: 9px 18px;
+    border-radius: 10px;
+    font-weight: 600;
+}
+
+.btn-modal-cancelar {
+    border: 1px solid #555555;
+    background: transparent;
+    color: #ffffff;
+}
+
+.btn-modal-salvar {
+    border: 1px solid var(--green);
+    background: var(--green);
+    color: #000000;
+}
+
+.btn-modal-salvar:disabled {
+    cursor: wait;
+    opacity: .6;
 }
 
 /* ==========================
@@ -544,5 +691,5 @@ body {
     .evento-header { flex-direction: column; align-items: flex-start; }
     .header-direito { width: 100%; justify-content: space-between; }
     .evento-footer { flex-direction: column; }
-    .btn-editar, .btn-aprovar, .btn-reprovar { width: 100%; justify-content: center; }
+    .btn-editar, .btn-aprovar, .btn-reprovar, .btn-recusar, .btn-ver-evento { width: 100%; justify-content: center; }
 }

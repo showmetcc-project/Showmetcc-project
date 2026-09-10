@@ -94,13 +94,13 @@ $termoBuscaCabecalho = isset($_GET['busca']) && is_string($_GET['busca'])
                 </a>
               </li>
               <li>
-                <a href="logout.php">
+                <button type="button" class="btn-logout-menu" id="btnLogout">
                   <i class="bi bi-box-arrow-right"></i>
                   <div>
                     <span>Sair</span>
                     <p>Encerrar a sessão</p>
                   </div>
-                </a>
+                </button>
               </li>
             </ul>
           </li>
@@ -115,3 +115,6 @@ $termoBuscaCabecalho = isset($_GET['busca']) && is_string($_GET['busca'])
 </header>
 
 <script src="assets/js/buscaEventos.js" defer></script>
+<?php if ($usuarioLogado): ?>
+  <script src="assets/js/logout.js" defer></script>
+<?php endif; ?>

@@ -64,7 +64,7 @@ a {
 }
 
 a:hover {
-  color: color-mix(#05ff6a,  transparent 25%);
+  
   text-decoration: none;
 }
 
@@ -2499,6 +2499,9 @@ label{
     font-size:28px;
     font-weight:700;
     line-height:1;
+    position: static;
+    
+
 }
 
 .banner{

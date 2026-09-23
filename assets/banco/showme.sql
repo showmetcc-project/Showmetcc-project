@@ -1,7 +1,7 @@
 CREATE DATABASE IF NOT EXISTS showme
     CHARACTER SET utf8mb4
     COLLATE utf8mb4_unicode_ci;
-USE showme;
+USE showme --if0_42972428_showme;
 
 CREATE TABLE usuario (
     id_user       INT PRIMARY KEY AUTO_INCREMENT,

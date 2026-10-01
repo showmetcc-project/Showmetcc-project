@@ -19,21 +19,20 @@ $usuarioAdmin = ($_SESSION['tipo_usuario'] ?? '') === 'admin';
     <link href="https://fonts.googleapis.com" rel="preconnect">
     <link href="https://fonts.gstatic.com" rel="preconnect" crossorigin>
     <link
-        href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;500;600;700;800&family=Poppins:wght@300;400;500;600;700;800&family=Jost:wght@300;400;500;600;700;800&display=swap"
+        href="https://fonts.googleapis.com/css2?family=Anton&family=Oswald:wght@400;500;600;700&family=Open+Sans:wght@300;400;500;600;700;800&family=Poppins:wght@300;400;500;600;700;800&family=Jost:wght@300;400;500;600;700;800&display=swap"
         rel="stylesheet">
     <link href="assets/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
     <link href="assets/vendor/bootstrap-icons/bootstrap-icons.css" rel="stylesheet">
     <link href="assets/vendor/aos/aos.css" rel="stylesheet">
     <link href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" rel="stylesheet">
-    <link href="assets/css/main.css" rel="stylesheet">
     <link href="assets/css/detalhesEvento.css" rel="stylesheet">
 
     <style>
         .banner-evento { width: 100%; max-height: 420px; overflow: hidden; position: relative; }
-        .banner-evento img { width: 100%; height: 420px; object-fit: cover; display: block; }
+        .banner-evento img { width: 100%; height: 100%; object-fit: cover; display: block; }
         .badge-gratuidade { display: inline-block; padding: 7px 15px; border-radius: 20px; font-size: 14px; font-weight: 700; margin-bottom: 12px; }
-        .badge-gratuidade.gratuito { background: #a8ff00; color: #111; }
-        .badge-gratuidade.pago { background: #ff4f9a; color: #fff; }
+        .badge-gratuidade.gratuito { background: #00ff00; color: #111; }
+        .badge-gratuidade.pago { background: #ff006e; color: #fff; }
         #mapaEventoBanco { width: 100%; height: 300px; border-radius: 14px; overflow: hidden; margin-top: 20px; }
         .avaliacao-item { padding: 18px; margin-bottom: 15px; border-radius: 12px; background: rgba(255, 255, 255, .04); }
         .avaliacao-topo { display: flex; justify-content: space-between; align-items: flex-start; gap: 15px; }
@@ -43,29 +42,28 @@ $usuarioAdmin = ($_SESSION['tipo_usuario'] ?? '') === 'admin';
         .artista-item:last-child { margin-bottom: 0; }
         .imagem-artista { width: 70px; height: 70px; object-fit: cover; border-radius: 50%; margin-right: 15px; }
         .estado-detalhes { min-height: 45vh; padding: 90px 20px; text-align: center; color: #d8d8d8; }
-        .estado-detalhes.erro { color: #ff8cab; }
+        .estado-detalhes.erro { color: #ff006e; }
         .midias-avaliacao { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; margin-top: 14px; }
         .midia-avaliacao { width: 100%; height: 150px; border-radius: 10px; background: #080808; object-fit: cover; }
         .acoes-avaliacao { display: flex; gap: 10px; margin-top: 12px; }
-        .acoes-avaliacao a, .acoes-avaliacao button { padding: 6px 12px; border: 1px solid #39ff14; border-radius: 8px; background: transparent; color: #39ff14; font-size: .82rem; }
-        .acoes-avaliacao button { border-color: #ff4f9a; color: #ff4f9a; }
-        @media (max-width: 768px) { .avaliacao-topo { flex-wrap: wrap; } }
+        .acoes-avaliacao a, .acoes-avaliacao button { padding: 6px 12px; border: 1px solid #00ff00; border-radius: 8px; background: transparent; color: #00ff00; font-size: .82rem; }
+        .acoes-avaliacao button { border-color: #ff006e; color: #ff006e; }
+        @media (max-width: 767.98px) { .avaliacao-topo { flex-wrap: wrap; } }
     </style>
+    <link href="assets/css/main.css" rel="stylesheet">
 </head>
 
 <body
-    class="com-cabecalho-padrao"
+    class="cabecalho-tipo-d"
     data-user-id="<?= $idUsuarioSessao ?>"
     data-user-admin="<?= $usuarioAdmin ? 'true' : 'false' ?>">
-    <?php require __DIR__ . '/cabecalho.php'; ?>
+    <?php
+    $tipoCabecalho = 'D';
+    $configuracaoCabecalho = ['fallback' => 'inicio.php'];
+    require __DIR__ . '/cabecalho.php';
+    ?>
 
     <div class="pagina-wrapper">
-        <div class="container-fluid px-0">
-            <a href="inicio.php" class="btn-voltar" aria-label="Voltar para a página inicial">
-                <i class="bi bi-arrow-left" aria-hidden="true"></i>
-            </a>
-        </div>
-
         <div id="estadoPagina" class="estado-detalhes" role="status" aria-live="polite">
             <span class="spinner-border" aria-hidden="true"></span>
             <p>Carregando evento...</p>

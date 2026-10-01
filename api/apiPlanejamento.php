@@ -1,37 +1,6 @@
 <?php
 
-header('Content-Type: application/json; charset=UTF-8');
-header('Access-Control-Allow-Origin: *');
-header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
-header('Access-Control-Allow-Headers: Content-Type');
-
-if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
-    http_response_code(200);
-    exit();
-}
-
-function responder($dados, int $status = 200): void
-{
-    http_response_code($status);
-    echo json_encode($dados, JSON_UNESCAPED_UNICODE);
-    exit();
-}
-
-function lerJson(): array
-{
-    $dados = json_decode(file_get_contents('php://input'), true);
-
-    if (!is_array($dados)) {
-        responder(['erro' => 'Corpo JSON inválido'], 400);
-    }
-
-    return $dados;
-}
-
-function tamanhoTexto(string $texto): int
-{
-    return function_exists('mb_strlen') ? mb_strlen($texto, 'UTF-8') : strlen($texto);
-}
+require_once __DIR__ . '/middleware/apiCommon.php';
 
 function validarPlanejamento(array $dados): array
 {
@@ -39,7 +8,7 @@ function validarPlanejamento(array $dados): array
     $distanciaInformada = $dados['distancia_km'] ?? null;
     $tempoInformado = $dados['tempo_estimado'] ?? null;
 
-    if ($meioTransporte === '' || tamanhoTexto($meioTransporte) > 30) {
+    if ($meioTransporte === '' || tamanhoTextoApi($meioTransporte) > 30) {
         responder(['erro' => 'meio_transporte é obrigatório e deve ter até 30 caracteres'], 400);
     }
 
@@ -70,25 +39,12 @@ function validarPlanejamento(array $dados): array
     ];
 }
 
-if (session_status() !== PHP_SESSION_ACTIVE) {
-    session_start();
-}
-
 require_once dirname(__DIR__) . '/config/conexao.php';
+require_once __DIR__ . '/middleware/apiHelper.php';
 require_once __DIR__ . '/middleware/verifica_login.php';
 
 $metodo = $_SERVER['REQUEST_METHOD'];
-$id = null;
-
-if (array_key_exists('id', $_GET)) {
-    $idInformado = $_GET['id'];
-
-    if (!is_string($idInformado) || !ctype_digit($idInformado) || (int) $idInformado < 1) {
-        responder(['erro' => 'O ID deve ser um inteiro positivo'], 400);
-    }
-
-    $id = (int) $idInformado;
-}
+$id = obterIdApi();
 
 $idUsuario = exigirLogin();
 
@@ -109,17 +65,12 @@ switch ($metodo) {
              ORDER BY e.data_evento ASC, r.id_rota DESC'
         );
         $stmt->bind_param('i', $idUsuario);
-        $stmt->execute();
+        executarStatementApi($stmt);
         $resultado = $stmt->get_result();
         $planejamentos = [];
 
         while ($planejamento = $resultado->fetch_assoc()) {
-            $planejamento['id_rota'] = (int) $planejamento['id_rota'];
-            $planejamento['id_evento'] = (int) $planejamento['id_evento'];
-            $planejamento['distancia_km'] = (float) $planejamento['distancia_km'];
-            $planejamento['tempo_estimado'] = (int) $planejamento['tempo_estimado'];
-            $planejamento['gratuidade'] = (bool) $planejamento['gratuidade'];
-            $planejamentos[] = $planejamento;
+            $planejamentos[] = normalizarPlanejamentoApi($planejamento);
         }
 
         $stmt->close();
@@ -145,7 +96,7 @@ switch ($metodo) {
 
         $stmt = $conn->prepare('SELECT id_evento FROM evento WHERE id_evento = ? LIMIT 1');
         $stmt->bind_param('i', $idEvento);
-        $stmt->execute();
+        executarStatementApi($stmt);
         $stmt->store_result();
 
         if ($stmt->num_rows === 0) {
@@ -158,7 +109,7 @@ switch ($metodo) {
             'SELECT id_rota FROM rota WHERE id_user = ? AND id_evento = ? LIMIT 1'
         );
         $stmt->bind_param('ii', $idUsuario, $idEvento);
-        $stmt->execute();
+        executarStatementApi($stmt);
         $existente = $stmt->get_result()->fetch_assoc();
         $stmt->close();
 
@@ -184,7 +135,7 @@ switch ($metodo) {
         );
 
         try {
-            $stmt->execute();
+            executarStatementApi($stmt);
         } catch (Throwable $erro) {
             $stmt->close();
 
@@ -192,22 +143,23 @@ switch ($metodo) {
                 responder(['erro' => 'Este evento já possui um planejamento finalizado'], 409);
             }
 
-            error_log('Falha ao criar planejamento: ' . $erro->getMessage());
-            responder(['erro' => 'Não foi possível criar o planejamento'], 500);
+            responderErroInfraestrutura('Falha ao criar planejamento', $erro);
         }
 
         $idRota = $stmt->insert_id;
         $stmt->close();
 
+        $planejamentoCriado = normalizarPlanejamentoApi([
+            'id_rota' => $idRota,
+            'id_evento' => $idEvento,
+            'meio_transporte' => $planejamento['meio_transporte'],
+            'distancia_km' => $planejamento['distancia_km'],
+            'tempo_estimado' => $planejamento['tempo_estimado'],
+        ]);
+
         responder([
             'mensagem' => 'Planejamento finalizado com sucesso',
-            'planejamento' => [
-                'id_rota' => $idRota,
-                'id_evento' => (int) $idEvento,
-                'meio_transporte' => $planejamento['meio_transporte'],
-                'distancia_km' => $planejamento['distancia_km'],
-                'tempo_estimado' => $planejamento['tempo_estimado'],
-            ],
+            'planejamento' => $planejamentoCriado,
         ], 201);
 
     case 'PUT':
@@ -235,7 +187,7 @@ switch ($metodo) {
              FROM rota WHERE id_rota = ? AND id_user = ? LIMIT 1'
         );
         $stmt->bind_param('ii', $id, $idUsuario);
-        $stmt->execute();
+        executarStatementApi($stmt);
         $atual = $stmt->get_result()->fetch_assoc();
         $stmt->close();
 
@@ -262,12 +214,12 @@ switch ($metodo) {
             $id,
             $idUsuario
         );
-        $stmt->execute();
+        executarStatementApi($stmt);
         $stmt->close();
 
         responder([
             'mensagem' => 'Planejamento atualizado com sucesso',
-            'planejamento' => ['id_rota' => $id] + $planejamento,
+            'planejamento' => normalizarPlanejamentoApi(['id_rota' => $id] + $planejamento),
         ]);
 
     case 'DELETE':
@@ -277,7 +229,7 @@ switch ($metodo) {
 
         $stmt = $conn->prepare('DELETE FROM rota WHERE id_rota = ? AND id_user = ?');
         $stmt->bind_param('ii', $id, $idUsuario);
-        $stmt->execute();
+        executarStatementApi($stmt);
         $removido = $stmt->affected_rows;
         $stmt->close();
 

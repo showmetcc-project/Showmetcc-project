@@ -1,33 +1,6 @@
 <?php
 
-header("Content-Type: application/json; charset=UTF-8");
-header("Access-Control-Allow-Origin: *");
-header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS");
-header("Access-Control-Allow-Headers: Content-Type");
-
-if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
-    http_response_code(200);
-    exit();
-}
-
-function responder($dados, $status = 200)
-{
-    http_response_code($status);
-    echo json_encode($dados, JSON_UNESCAPED_UNICODE);
-    exit();
-}
-
-function lerJson(): array
-{
-    $conteudo = file_get_contents('php://input');
-    $dados = json_decode($conteudo, true);
-
-    if (!is_array($dados)) {
-        responder(['erro' => 'Corpo JSON inválido'], 400);
-    }
-
-    return $dados;
-}
+require_once __DIR__ . '/middleware/apiCommon.php';
 
 function responderLogin(array $usuario): void
 {
@@ -37,7 +10,10 @@ function responderLogin(array $usuario): void
     $_SESSION['tipo_usuario'] = $usuario['tipo_usuario'];
 
     unset($usuario['senha_user'], $usuario['google_id']);
-    responder(['mensagem' => 'Login realizado com sucesso', 'usuario' => $usuario], 201);
+    responder([
+        'mensagem' => 'Login realizado com sucesso',
+        'usuario' => normalizarUsuarioApi($usuario)
+    ], 201);
 }
 
 function carregarConfiguracaoGoogle(): array
@@ -56,15 +32,6 @@ function carregarConfiguracaoGoogle(): array
     }
 
     return ['client_id' => $clientId];
-}
-
-function limitarTexto(string $texto, int $limite): string
-{
-    if (function_exists('mb_substr')) {
-        return mb_substr($texto, 0, $limite, 'UTF-8');
-    }
-
-    return substr($texto, 0, $limite);
 }
 
 function decodificarParteJwt(string $parte): ?array
@@ -175,15 +142,27 @@ function autenticarComGoogle(mysqli $conn, string $token): void
         responder(['erro' => 'O Google não retornou uma identidade válida com e-mail verificado'], 401);
     }
 
-    $nome = limitarTexto(trim((string) ($payload['given_name'] ?? '')), 100);
-    $sobrenome = limitarTexto(trim((string) ($payload['family_name'] ?? '')), 100);
+    $nome = trim((string) ($payload['given_name'] ?? ''));
+    $sobrenome = trim((string) ($payload['family_name'] ?? ''));
 
     if ($nome === '') {
-        $nome = limitarTexto((string) strstr($email, '@', true), 100);
+        $nome = (string) strstr($email, '@', true);
     }
 
     if ($nome === '') {
         $nome = 'Usuário';
+    }
+
+    $erroLimite = validarLimitesTextoApi([
+        'nome' => $nome,
+        'sobrenome' => $sobrenome,
+    ], [
+        'nome' => 100,
+        'sobrenome' => 100,
+    ]);
+
+    if ($erroLimite !== null) {
+        responder(['erro' => 'Os dados de perfil retornados pelo Google excedem o limite permitido'], 400);
     }
 
     try {
@@ -194,7 +173,7 @@ function autenticarComGoogle(mysqli $conn, string $token): void
              FROM usuario WHERE google_id = ? LIMIT 1 FOR UPDATE'
         );
         $stmt->bind_param('s', $googleId);
-        $stmt->execute();
+        executarStatementApi($stmt);
         $usuario = $stmt->get_result()->fetch_assoc();
         $stmt->close();
 
@@ -204,7 +183,7 @@ function autenticarComGoogle(mysqli $conn, string $token): void
                  FROM usuario WHERE email_user = ? LIMIT 1 FOR UPDATE'
             );
             $stmt->bind_param('s', $email);
-            $stmt->execute();
+            executarStatementApi($stmt);
             $usuario = $stmt->get_result()->fetch_assoc();
             $stmt->close();
 
@@ -218,7 +197,7 @@ function autenticarComGoogle(mysqli $conn, string $token): void
                 $idUsuario = (int) $usuario['id_user'];
                 $stmt = $conn->prepare('UPDATE usuario SET google_id = ? WHERE id_user = ?');
                 $stmt->bind_param('si', $googleId, $idUsuario);
-                $stmt->execute();
+                executarStatementApi($stmt);
                 $stmt->close();
                 $usuario['google_id'] = $googleId;
             } else {
@@ -228,7 +207,7 @@ function autenticarComGoogle(mysqli $conn, string $token): void
                      VALUES (?, ?, ?, NULL, ?, 'comum')"
                 );
                 $stmt->bind_param('ssss', $nome, $sobrenome, $email, $googleId);
-                $stmt->execute();
+                executarStatementApi($stmt);
                 $idUsuario = $stmt->insert_id;
                 $stmt->close();
 
@@ -251,31 +230,17 @@ function autenticarComGoogle(mysqli $conn, string $token): void
             // A conexão pode já ter encerrado a transação.
         }
 
-        error_log('Falha no login Google: ' . $erro->getMessage());
-        responder(['erro' => 'Não foi possível concluir o login com Google'], 500);
+        responderErroInfraestrutura('Falha no login Google', $erro);
     }
 
     responderLogin($usuario);
 }
 
-if (session_status() !== PHP_SESSION_ACTIVE) {
-    session_start();
-}
-
 require_once dirname(__DIR__) . '/config/conexao.php';
+require_once __DIR__ . '/middleware/apiHelper.php';
 
 $metodo = $_SERVER['REQUEST_METHOD'];
-$id = null;
-
-if (array_key_exists('id', $_GET)) {
-    $idInformado = $_GET['id'];
-
-    if (!is_string($idInformado) || !ctype_digit($idInformado) || (int) $idInformado < 1) {
-        responder(['erro' => 'O ID deve ser um inteiro positivo'], 400);
-    }
-
-    $id = (int) $idInformado;
-}
+$id = obterIdApi();
 
 if ($id !== null) {
     responder(['erro' => 'O recurso de sessões não recebe ID na URL'], 400);
@@ -293,7 +258,7 @@ switch ($metodo) {
              FROM usuario WHERE id_user = ? LIMIT 1'
         );
         $stmt->bind_param('i', $idUsuario);
-        $stmt->execute();
+        executarStatementApi($stmt);
         $usuario = $stmt->get_result()->fetch_assoc();
         $stmt->close();
 
@@ -303,7 +268,7 @@ switch ($metodo) {
             responder(['erro' => 'Usuário da sessão não encontrado'], 401);
         }
 
-        responder(['usuario' => $usuario]);
+        responder(['usuario' => normalizarUsuarioApi($usuario)]);
 
     case 'POST':
         $dados = lerJson();
@@ -319,12 +284,17 @@ switch ($metodo) {
             responder(['erro' => 'E-mail e senha são obrigatórios'], 400);
         }
 
+        $erroLimite = validarLimitesTextoApi(['email' => $email], ['email' => 100]);
+        if ($erroLimite !== null) {
+            responder(['erro' => $erroLimite], 400);
+        }
+
         $stmt = $conn->prepare(
             'SELECT id_user, nome_user, sobrenome, email_user, senha_user, tipo_usuario
              FROM usuario WHERE email_user = ? LIMIT 1'
         );
         $stmt->bind_param('s', $email);
-        $stmt->execute();
+        executarStatementApi($stmt);
         $usuario = $stmt->get_result()->fetch_assoc();
         $stmt->close();
 

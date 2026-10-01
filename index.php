@@ -16,7 +16,7 @@
   <link href="https://fonts.googleapis.com" rel="preconnect">
   <link href="https://fonts.gstatic.com" rel="preconnect" crossorigin>
   <link
-    href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,300;1,400;1,500;1,600;1,700;1,800&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Jost:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap"
+    href="https://fonts.googleapis.com/css2?family=Anton&family=Oswald:wght@400;500;600;700&family=Open+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,300;1,400;1,500;1,600;1,700;1,800&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Jost:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap"
     rel="stylesheet">
 
   <!-- Vendor CSS Files -->
@@ -26,18 +26,8 @@
   <link href="assets/vendor/glightbox/css/glightbox.min.css" rel="stylesheet">
   <link href="assets/vendor/swiper/swiper-bundle.min.css" rel="stylesheet">
 
-  <!-- Principal CSS File -->
+  <!-- CSS principal carregado depois do Bootstrap -->
   <link href="assets/css/main.css" rel="stylesheet">
-
-
-  <!--Google fontes, Anton-->
-</head>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link
-  href="https://fonts.googleapis.com/css2?family=Anton&family=Archivo+Black&family=Bodoni+Moda:ital,opsz,wght@0,6..96,400..900;1,6..96,400..900&family=Libertinus+Serif+Display&family=Noto+Sans+JP:wght@100..900&family=Noto+Serif:ital,wght@0,100..900;1,100..900&family=Open+Sans:ital,wght@0,300..800;1,300..800&family=Roboto+Condensed:ital,wght@0,100..900;1,100..900&family=Story+Script&family=Vend+Sans:ital,wght@0,300..700;1,300..700&display=swap"
-  rel="stylesheet">
-
 </head>
 
 <body class="index-page">
@@ -103,29 +93,31 @@
         <div class="row gy-4">
 
           <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="100">
-            <div id="ods3" class="service-item">
+            <button type="button" id="ods3" class="service-item ods-card" data-ods-modal="modalOds3" aria-controls="modalOds3" aria-haspopup="dialog">
               <h4>ODS 3</h4>
               <p>Saúde e Bem-Estar</p>
-            </div>
+            </button>
           </div>
 
           <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="200">
-            <div id="ods4" class="service-item">
+            <button type="button" id="ods4" class="service-item ods-card" data-ods-modal="modalOds4" aria-controls="modalOds4" aria-haspopup="dialog">
               <h4>ODS 4</h4>
               <p>Educação de Qualidade</p>
-            </div>
+            </button>
           </div>
 
           <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="300">
-            <div id="ods16" class="service-item">
+            <button type="button" id="ods16" class="service-item ods-card" data-ods-modal="modalOds16" aria-controls="modalOds16" aria-haspopup="dialog">
               <h4>ODS 16</h4>
               <p>Paz, Justiça e Instituições Efetivas</p>
-            </div>
+            </button>
           </div>
         </div>
       </div>
 
     </section><!-- /Services Section -->
+
+    <?php require __DIR__ . '/odsModais.php'; ?>
 
     <!-- Work Process Section -->
     <section id="work-process" class="work-process section">
@@ -143,7 +135,7 @@
           <div class="col-lg-3 col-md-6" data-aos="fade-up" data-aos-delay="200">
             <div class="steps-item">
               <div class="steps-image">
-                <img src="assets/img/services/2.png" alt="Step 1" class="img-fluid" loading="lazy">
+                <span class="icone-etapa icone-etapa-descubra" role="img" aria-label="Ícone musical"></span>
               </div>
               <div class="steps-content">
                 <h3><span class="verde">Descubra Eventos</span></h3>
@@ -169,7 +161,7 @@
           <div class="col-lg-3 col-md-6" data-aos="fade-up" data-aos-delay="300">
             <div class="steps-item">
               <div class="steps-image">
-                <img src="assets/img/services/3.png" alt="Step 2" class="img-fluid" loading="lazy">
+                <span class="icone-etapa icone-etapa-planeje" role="img" aria-label="Ícone de calendário"></span>
               </div>
               <div class="steps-content">
                 <h3><span class="rosa"> Planeje Viagens</span></h3>
@@ -195,7 +187,7 @@
           <div class="col-lg-3 col-md-6" data-aos="fade-up" data-aos-delay="400">
             <div class="steps-item">
               <div class="steps-image">
-                <img src="assets/img/services/4.png" alt="Step 3" class="img-fluid" loading="lazy">
+                <span class="icone-etapa icone-etapa-rotas" role="img" aria-label="Ícone de localização"></span>
               </div>
               <div class="steps-content">
                 <h3><span class="verde"> Rotas e Locais</span> </h3>
@@ -221,7 +213,7 @@
           <div class="col-lg-3 col-md-6" data-aos="fade-up" data-aos-delay="400">
             <div class="steps-item">
               <div class="steps-image">
-                <img src="assets/img/services/1.png" alt="Step 3" class="img-fluid" loading="lazy">
+                <span class="icone-etapa icone-etapa-compartilhe" role="img" aria-label="Ícone de pessoas"></span>
               </div>
               <div class="steps-content">
                 <h3><span class="rosa">Compartilhe</span></h3>
@@ -368,6 +360,7 @@
   <script src="assets/vendor/isotope-layout/isotope.pkgd.min.js"></script>
 
   <!-- Main JS File -->
+  <script src="assets/js/odsModais.js"></script>
   <script src="assets/js/main.js"></script>
 
 </body>

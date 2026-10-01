@@ -38,11 +38,14 @@ CREATE TABLE artista (
     id_artista       INT PRIMARY KEY AUTO_INCREMENT,
     nome_artista     VARCHAR(150) NOT NULL,
     genero_artista   VARCHAR(100),
-    imagem_artista   VARCHAR(255)
+    imagem_artista   VARCHAR(255),
+
+    UNIQUE KEY uk_artista_nome (nome_artista)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE evento (
     id_evento          INT PRIMARY KEY AUTO_INCREMENT,
+    id_solicitacao_origem INT NULL UNIQUE,
     num_evento         INT,
     nome_evento        VARCHAR(100) NOT NULL,
     local_evento       VARCHAR(100),
@@ -51,6 +54,7 @@ CREATE TABLE evento (
     uf                 CHAR(2),
     descricao_evento   VARCHAR(1000),
     data_evento        DATE,
+    horario_evento     TIME,
     gratuidade         BOOLEAN NOT NULL DEFAULT FALSE,
     categoria_evento   VARCHAR(100),
     link_oficial       VARCHAR(255),
@@ -159,12 +163,24 @@ CREATE TABLE solicitacao (
     horario_evento       TIME,
     data_evento          DATE,
     local_evento         VARCHAR(255),
+    rua_evento           VARCHAR(100),
+    cidade_evento        VARCHAR(100),
+    uf                   CHAR(2),
+    categoria_evento     VARCHAR(100),
+    link_oficial         VARCHAR(255),
     gratuidade            BOOLEAN NOT NULL DEFAULT FALSE,
     descricao_evento      VARCHAR(1000),
     descricao_artista     VARCHAR(1000),
+    nome_artista_solicitado VARCHAR(150),
     data_solicitacao      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     FOREIGN KEY (id_user)
         REFERENCES usuario(id_user)
         ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+ALTER TABLE evento
+    ADD CONSTRAINT fk_evento_solicitacao
+    FOREIGN KEY (id_solicitacao_origem)
+        REFERENCES solicitacao(id_solicitacao)
+        ON DELETE SET NULL;

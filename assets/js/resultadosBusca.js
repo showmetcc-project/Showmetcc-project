@@ -27,6 +27,7 @@
   }
 
   function criarCard(evento) {
+    const coluna = document.createElement('div');
     const card = document.createElement('article');
     const link = document.createElement('a');
     const badge = document.createElement('span');
@@ -42,7 +43,8 @@
     const cidade = String(evento.cidade_evento || '').trim();
     const uf = String(evento.uf || '').trim();
 
-    card.className = 'card-evento';
+    coluna.className = 'col-12 col-md-6 col-lg-4';
+    card.className = 'card-evento h-100';
     link.href = `detalhesEvento.php?id=${encodeURIComponent(evento.id_evento)}`;
     badge.className = `badge-evento ${gratuito ? 'gratuito' : 'pago'}`;
     badge.textContent = gratuito ? 'Gratuito' : 'Pago';
@@ -80,12 +82,13 @@
     favorito.innerHTML = '<i class="bi bi-heart" aria-hidden="true"></i>';
 
     card.append(link, favorito);
-    return card;
+    coluna.append(card);
+    return coluna;
   }
 
   function mostrarEstado(mensagem, erro = false) {
     const estado = document.createElement('p');
-    estado.className = `estado-resultados-busca${erro ? ' erro' : ''}`;
+    estado.className = `estado-resultados-busca col-12${erro ? ' erro' : ''}`;
     estado.textContent = mensagem;
     grade.replaceChildren(estado);
     grade.setAttribute('aria-busy', 'false');

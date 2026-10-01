@@ -1,60 +1,32 @@
 <?php
 
-header("Content-Type: application/json; charset=UTF-8");
-header("Access-Control-Allow-Origin: *");
-header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS");
-header("Access-Control-Allow-Headers: Content-Type");
-
-if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
-    http_response_code(200);
-    exit();
-}
-
-function responder($dados, $status = 200)
-{
-    http_response_code($status);
-    echo json_encode($dados, JSON_UNESCAPED_UNICODE);
-    exit();
-}
-
-function lerJson(): array
-{
-    $dados = json_decode(file_get_contents('php://input'), true);
-
-    if (!is_array($dados)) {
-        responder(['erro' => 'Corpo JSON inválido'], 400);
-    }
-
-    return $dados;
-}
+require_once __DIR__ . '/middleware/apiCommon.php';
 
 function normalizarEvento(array $evento): array
 {
-    $evento['id_evento'] = (int) $evento['id_evento'];
-    $evento['gratuidade'] = (bool) $evento['gratuidade'];
-    return $evento;
+    return normalizarEventoApi($evento);
 }
 
 function normalizarArtistaEvento(array $artista): array
 {
-    $artista['id_artista'] = (int) $artista['id_artista'];
-    return $artista;
+    return normalizarArtistaApi($artista);
 }
 
 function normalizarSolicitacao(array $solicitacao): array
 {
-    $solicitacao['id_solicitacao'] = (int) $solicitacao['id_solicitacao'];
-    $solicitacao['id_user'] = (int) $solicitacao['id_user'];
-    $solicitacao['gratuidade'] = (bool) $solicitacao['gratuidade'];
-    $solicitacao['id_evento'] = $solicitacao['id_evento'] === null
-        ? null
-        : (int) $solicitacao['id_evento'];
-    return $solicitacao;
+    return normalizarSolicitacaoApi($solicitacao);
 }
 
 function tamanhoTexto(string $texto): int
 {
     return function_exists('mb_strlen') ? mb_strlen($texto, 'UTF-8') : strlen($texto);
+}
+
+function normalizarEspacos(string $texto): string
+{
+    $texto = trim($texto);
+    $normalizado = preg_replace('/\s+/u', ' ', $texto);
+    return $normalizado === null ? $texto : $normalizado;
 }
 
 function atualizarTextoOpcional(array $dados, string $campo, $valorAtual): ?string
@@ -67,43 +39,51 @@ function atualizarTextoOpcional(array $dados, string $campo, $valorAtual): ?stri
     return $valor === '' ? null : $valor;
 }
 
-if (session_status() !== PHP_SESSION_ACTIVE) {
-    session_start();
-}
-
 require_once dirname(__DIR__) . '/config/conexao.php';
+require_once __DIR__ . '/middleware/apiHelper.php';
 require_once __DIR__ . '/middleware/verifica_login.php';
 require_once __DIR__ . '/middleware/verifica_admin.php';
 require_once __DIR__ . '/middleware/uploadHelper.php';
 
 $metodo = $_SERVER['REQUEST_METHOD'];
-$id = null;
+$id = obterIdApi();
 
-if (array_key_exists('id', $_GET)) {
-    $idInformado = $_GET['id'];
-
-    if (!is_string($idInformado) || !ctype_digit($idInformado) || (int) $idInformado < 1) {
-        responder(['erro' => 'O ID deve ser um inteiro positivo'], 400);
-    }
-
-    $id = (int) $idInformado;
-}
-
-$camposEvento = 'id_evento, num_evento, nome_evento, local_evento, rua_evento,
+$camposEvento = 'id_evento, id_solicitacao_origem, num_evento, nome_evento, local_evento, rua_evento,
                  cidade_evento, uf, descricao_evento, data_evento, gratuidade,
-                 categoria_evento, link_oficial, imagem_evento, status_evento';
+                 horario_evento, categoria_evento, link_oficial, imagem_evento, status_evento';
 
-$camposEventoComAlias = 'e.id_evento, e.num_evento, e.nome_evento, e.local_evento,
+$camposEventoComAlias = 'e.id_evento, e.id_solicitacao_origem, e.num_evento, e.nome_evento, e.local_evento,
                          e.rua_evento, e.cidade_evento, e.uf, e.descricao_evento,
-                         e.data_evento, e.gratuidade, e.categoria_evento,
+                         e.data_evento, e.gratuidade, e.horario_evento, e.categoria_evento,
                          e.link_oficial, e.imagem_evento, e.status_evento';
 
 switch ($metodo) {
     case 'GET':
+        $incluirCancelados = false;
+
+        if (array_key_exists('incluir_cancelados', $_GET)) {
+            $valorIncluirCancelados = $_GET['incluir_cancelados'];
+
+            if (
+                !is_string($valorIncluirCancelados)
+                || !in_array($valorIncluirCancelados, ['0', '1'], true)
+            ) {
+                responder(['erro' => 'incluir_cancelados deve ser 0 ou 1'], 400);
+            }
+
+            if ($valorIncluirCancelados === '1') {
+                exigirAdmin();
+                $incluirCancelados = true;
+            }
+        }
+
         if ($id !== null) {
-            $stmt = $conn->prepare("SELECT $camposEvento FROM evento WHERE id_evento = ? LIMIT 1");
+            $filtroStatus = $incluirCancelados ? '' : " AND status_evento = 'ativo'";
+            $stmt = $conn->prepare(
+                "SELECT $camposEvento FROM evento WHERE id_evento = ?$filtroStatus LIMIT 1"
+            );
             $stmt->bind_param('i', $id);
-            $stmt->execute();
+            executarStatementApi($stmt);
             $evento = $stmt->get_result()->fetch_assoc();
             $stmt->close();
 
@@ -119,7 +99,7 @@ switch ($metodo) {
                  ORDER BY a.nome_artista ASC'
             );
             $stmt->bind_param('i', $id);
-            $stmt->execute();
+            executarStatementApi($stmt);
             $resultadoArtistas = $stmt->get_result();
             $artistas = [];
 
@@ -147,8 +127,14 @@ switch ($metodo) {
                 ], 400);
             }
 
-            if (array_key_exists('busca', $_GET) || array_key_exists('limite', $_GET)) {
-                responder(['erro' => 'Não combine solicitacoes com busca ou limite'], 400);
+            if (
+                array_key_exists('busca', $_GET)
+                || array_key_exists('limite', $_GET)
+                || array_key_exists('incluir_cancelados', $_GET)
+            ) {
+                responder([
+                    'erro' => 'Não combine solicitacoes com busca, limite ou incluir_cancelados'
+                ], 400);
             }
 
             exigirAdmin();
@@ -156,14 +142,16 @@ switch ($metodo) {
             $camposSolicitacao =
                 's.id_solicitacao, s.id_user, s.nome_evento, s.status_solicitacao,
                  s.foto, s.horario_evento, s.data_evento, s.local_evento,
-                 s.gratuidade, s.descricao_evento, s.descricao_artista,
+                 s.rua_evento, s.cidade_evento, s.uf, s.categoria_evento,
+                 s.link_oficial, s.gratuidade, s.descricao_evento, s.descricao_artista,
+                 s.nome_artista_solicitado,
                  s.data_solicitacao, u.nome_user, u.sobrenome, u.email_user,
                  e.id_evento';
             $sqlSolicitacoes =
                 "SELECT $camposSolicitacao
                  FROM solicitacao s
                  INNER JOIN usuario u ON u.id_user = s.id_user
-                 LEFT JOIN evento e ON e.num_evento = s.id_solicitacao";
+                 LEFT JOIN evento e ON e.id_solicitacao_origem = s.id_solicitacao";
 
             if ($statusSolicitacoes !== 'todas') {
                 $sqlSolicitacoes .= ' WHERE s.status_solicitacao = ?';
@@ -178,7 +166,7 @@ switch ($metodo) {
                     $stmt->bind_param('s', $statusSolicitacoes);
                 }
 
-                $stmt->execute();
+                executarStatementApi($stmt);
                 $resultado = $stmt->get_result();
                 $solicitacoes = [];
 
@@ -189,8 +177,7 @@ switch ($metodo) {
                 $stmt->close();
                 responder(['solicitacoes' => $solicitacoes]);
             } catch (mysqli_sql_exception $erro) {
-                error_log('Falha ao listar solicitações: ' . $erro->getMessage());
-                responder(['erro' => 'Não foi possível carregar as solicitações'], 500);
+                responderErroInfraestrutura('Falha ao listar solicitações', $erro);
             }
         }
 
@@ -230,14 +217,17 @@ switch ($metodo) {
             $termoEscapado = str_replace(['=', '%', '_'], ['==', '=%', '=_'], $busca);
             $padraoBusca = '%' . $termoEscapado . '%';
 
+            $filtroStatusBusca = $incluirCancelados
+                ? ''
+                : "e.status_evento = 'ativo' AND ";
             $sqlBusca = "SELECT DISTINCT $camposEventoComAlias
                          FROM evento e
                          LEFT JOIN artista_evento ae ON ae.id_evento = e.id_evento
                          LEFT JOIN artista a ON a.id_artista = ae.id_artista
-                         WHERE e.nome_evento LIKE ? ESCAPE '='
+                         WHERE $filtroStatusBusca(e.nome_evento LIKE ? ESCAPE '='
                             OR e.cidade_evento LIKE ? ESCAPE '='
                             OR e.categoria_evento LIKE ? ESCAPE '='
-                            OR a.nome_artista LIKE ? ESCAPE '='
+                            OR a.nome_artista LIKE ? ESCAPE '=')
                          ORDER BY e.data_evento ASC";
 
             if ($limite !== null) {
@@ -265,7 +255,7 @@ switch ($metodo) {
                 );
             }
 
-            $stmt->execute();
+            executarStatementApi($stmt);
             $resultado = $stmt->get_result();
 
             while ($evento = $resultado->fetch_assoc()) {
@@ -274,7 +264,10 @@ switch ($metodo) {
 
             $stmt->close();
         } else {
-            $resultado = $conn->query("SELECT $camposEvento FROM evento ORDER BY data_evento ASC");
+            $filtroStatus = $incluirCancelados ? '' : " WHERE status_evento = 'ativo'";
+            $resultado = $conn->query(
+                "SELECT $camposEvento FROM evento$filtroStatus ORDER BY data_evento ASC"
+            );
 
             while ($evento = $resultado->fetch_assoc()) {
                 $eventos[] = normalizarEvento($evento);
@@ -305,6 +298,13 @@ switch ($metodo) {
         $horario = isset($dados['horario_evento']) ? trim((string) $dados['horario_evento']) : '';
         $data = isset($dados['data_evento']) ? trim((string) $dados['data_evento']) : '';
         $local = isset($dados['local_evento']) ? trim((string) $dados['local_evento']) : '';
+        $rua = isset($dados['rua_evento']) ? trim((string) $dados['rua_evento']) : '';
+        $cidade = isset($dados['cidade_evento']) ? trim((string) $dados['cidade_evento']) : '';
+        $uf = isset($dados['uf']) ? strtoupper(trim((string) $dados['uf'])) : '';
+        $categoria = isset($dados['categoria_evento'])
+            ? trim((string) $dados['categoria_evento'])
+            : '';
+        $linkOficial = isset($dados['link_oficial']) ? trim((string) $dados['link_oficial']) : '';
         $gratuidadeRecebida = filter_var(
             $dados['gratuidade'] ?? false,
             FILTER_VALIDATE_BOOLEAN,
@@ -312,13 +312,34 @@ switch ($metodo) {
         );
         $descricao = isset($dados['descricao_evento']) ? trim((string) $dados['descricao_evento']) : '';
         $descricaoArtista = isset($dados['descricao_artista']) ? trim((string) $dados['descricao_artista']) : '';
+        $nomeArtistaSolicitado = isset($dados['nome_artista_solicitado'])
+            ? normalizarEspacos((string) $dados['nome_artista_solicitado'])
+            : '';
 
         if ($nome === '' || tamanhoTexto($nome) > 100) {
             responder(['erro' => 'Nome do evento é obrigatório e deve ter até 100 caracteres'], 400);
         }
 
-        if (tamanhoTexto($local) > 255) {
-            responder(['erro' => 'Local do evento deve ter até 255 caracteres'], 400);
+        if (tamanhoTexto($local) > 100) {
+            responder(['erro' => 'Local do evento deve ter até 100 caracteres'], 400);
+        }
+
+        if (
+            tamanhoTexto($rua) > 100
+            || tamanhoTexto($cidade) > 100
+            || tamanhoTexto($categoria) > 100
+            || tamanhoTexto($linkOficial) > 255
+            || tamanhoTexto($nomeArtistaSolicitado) > 150
+        ) {
+            responder(['erro' => 'Um dos campos de endereço, categoria, link ou artista excede o limite'], 400);
+        }
+
+        if ($uf !== '' && !preg_match('/^[A-Z]{2}$/', $uf)) {
+            responder(['erro' => 'uf deve conter duas letras'], 400);
+        }
+
+        if ($linkOficial !== '' && filter_var($linkOficial, FILTER_VALIDATE_URL) === false) {
+            responder(['erro' => 'link_oficial deve ser uma URL válida'], 400);
         }
 
         if (tamanhoTexto($descricao) > 1000 || tamanhoTexto($descricaoArtista) > 1000) {
@@ -354,8 +375,14 @@ switch ($metodo) {
         $horario = $horario === '' ? null : $horario;
         $data = $data === '' ? null : $data;
         $local = $local === '' ? null : $local;
+        $rua = $rua === '' ? null : $rua;
+        $cidade = $cidade === '' ? null : $cidade;
+        $uf = $uf === '' ? null : $uf;
+        $categoria = $categoria === '' ? null : $categoria;
+        $linkOficial = $linkOficial === '' ? null : $linkOficial;
         $descricao = $descricao === '' ? null : $descricao;
         $descricaoArtista = $descricaoArtista === '' ? null : $descricaoArtista;
+        $nomeArtistaSolicitado = $nomeArtistaSolicitado === '' ? null : $nomeArtistaSolicitado;
 
         try {
             $arquivos = normalizarArquivosUpload($_FILES['foto'] ?? null);
@@ -376,22 +403,30 @@ switch ($metodo) {
             $stmt = $conn->prepare(
                 'INSERT INTO solicitacao
                  (id_user, nome_evento, foto, horario_evento, data_evento, local_evento,
-                  gratuidade, descricao_evento, descricao_artista)
-                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)'
+                  rua_evento, cidade_evento, uf, categoria_evento, link_oficial,
+                  gratuidade, descricao_evento, descricao_artista, nome_artista_solicitado)
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
             );
+            $tipos = 'i' . str_repeat('s', 10) . 'i' . str_repeat('s', 3);
             $stmt->bind_param(
-                'isssssiss',
+                $tipos,
                 $idUsuario,
                 $nome,
                 $foto,
                 $horario,
                 $data,
                 $local,
+                $rua,
+                $cidade,
+                $uf,
+                $categoria,
+                $linkOficial,
                 $gratuidade,
                 $descricao,
-                $descricaoArtista
+                $descricaoArtista,
+                $nomeArtistaSolicitado
             );
-            $stmt->execute();
+            executarStatementApi($stmt);
             $idSolicitacao = $conn->insert_id;
             $stmt->close();
         } catch (UploadInvalidoException $erro) {
@@ -400,16 +435,16 @@ switch ($metodo) {
             if ($fotoSalva !== null) {
                 removerArquivoUpload($fotoSalva['caminho_arquivo']);
             }
-            responder(['erro' => 'Não foi possível criar a solicitação de evento'], 500);
+            responderErroInfraestrutura('Falha ao criar solicitação de evento', $erro);
         }
 
         responder([
             'mensagem' => 'Solicitação enviada, aguardando aprovação',
-            'solicitacao' => [
+            'solicitacao' => normalizarSolicitacaoApi([
                 'id_solicitacao' => $idSolicitacao,
                 'status_solicitacao' => 'pendente',
                 'foto' => $foto
-            ]
+            ])
         ], 201);
 
     case 'PUT':
@@ -422,11 +457,18 @@ switch ($metodo) {
         $acao = (string) ($dados['acao'] ?? (
             array_key_exists('status_solicitacao', $dados) ? 'moderar' : ''
         ));
+        $statusAcaoDireta = null;
+
+        if ($acao === 'aprovar' || $acao === 'recusar') {
+            $statusAcaoDireta = $acao === 'aprovar' ? 'aprovado' : 'recusado';
+            $acao = 'moderar';
+        }
 
         if ($acao === 'editar_solicitacao') {
             $camposEditaveisSolicitacao = [
                 'nome_evento', 'horario_evento', 'data_evento', 'local_evento',
-                'gratuidade', 'descricao_evento', 'descricao_artista'
+                'rua_evento', 'cidade_evento', 'uf', 'categoria_evento', 'link_oficial',
+                'gratuidade', 'descricao_evento', 'descricao_artista', 'nome_artista_solicitado'
             ];
 
             if (array_intersect($camposEditaveisSolicitacao, array_keys($dados)) === []) {
@@ -435,13 +477,15 @@ switch ($metodo) {
 
             $stmt = $conn->prepare(
                 'SELECT nome_evento, horario_evento, data_evento, local_evento,
-                        gratuidade, descricao_evento, descricao_artista, status_solicitacao
+                        rua_evento, cidade_evento, uf, categoria_evento, link_oficial,
+                        gratuidade, descricao_evento, descricao_artista,
+                        nome_artista_solicitado, status_solicitacao
                  FROM solicitacao
                  WHERE id_solicitacao = ?
                  LIMIT 1'
             );
             $stmt->bind_param('i', $id);
-            $stmt->execute();
+            executarStatementApi($stmt);
             $solicitacaoAtual = $stmt->get_result()->fetch_assoc();
             $stmt->close();
 
@@ -463,6 +507,19 @@ switch ($metodo) {
             );
             $data = atualizarTextoOpcional($dados, 'data_evento', $solicitacaoAtual['data_evento']);
             $local = atualizarTextoOpcional($dados, 'local_evento', $solicitacaoAtual['local_evento']);
+            $rua = atualizarTextoOpcional($dados, 'rua_evento', $solicitacaoAtual['rua_evento']);
+            $cidade = atualizarTextoOpcional($dados, 'cidade_evento', $solicitacaoAtual['cidade_evento']);
+            $uf = atualizarTextoOpcional($dados, 'uf', $solicitacaoAtual['uf']);
+            $categoria = atualizarTextoOpcional(
+                $dados,
+                'categoria_evento',
+                $solicitacaoAtual['categoria_evento']
+            );
+            $linkOficial = atualizarTextoOpcional(
+                $dados,
+                'link_oficial',
+                $solicitacaoAtual['link_oficial']
+            );
             $descricao = atualizarTextoOpcional(
                 $dados,
                 'descricao_evento',
@@ -473,13 +530,46 @@ switch ($metodo) {
                 'descricao_artista',
                 $solicitacaoAtual['descricao_artista']
             );
+            $nomeArtistaSolicitado = atualizarTextoOpcional(
+                $dados,
+                'nome_artista_solicitado',
+                $solicitacaoAtual['nome_artista_solicitado']
+            );
+
+            if ($nomeArtistaSolicitado !== null) {
+                $nomeArtistaSolicitado = normalizarEspacos($nomeArtistaSolicitado);
+                $nomeArtistaSolicitado = $nomeArtistaSolicitado === ''
+                    ? null
+                    : $nomeArtistaSolicitado;
+            }
 
             if ($nome === '' || tamanhoTexto($nome) > 100) {
                 responder(['erro' => 'Nome do evento é obrigatório e deve ter até 100 caracteres'], 400);
             }
 
-            if ($local !== null && tamanhoTexto($local) > 255) {
-                responder(['erro' => 'Local do evento deve ter até 255 caracteres'], 400);
+            if ($local !== null && tamanhoTexto($local) > 100) {
+                responder(['erro' => 'Local do evento deve ter até 100 caracteres'], 400);
+            }
+
+            if (
+                ($rua !== null && tamanhoTexto($rua) > 100)
+                || ($cidade !== null && tamanhoTexto($cidade) > 100)
+                || ($categoria !== null && tamanhoTexto($categoria) > 100)
+                || ($linkOficial !== null && tamanhoTexto($linkOficial) > 255)
+                || ($nomeArtistaSolicitado !== null && tamanhoTexto($nomeArtistaSolicitado) > 150)
+            ) {
+                responder(['erro' => 'Um dos campos de endereço, categoria, link ou artista excede o limite'], 400);
+            }
+
+            if ($uf !== null) {
+                $uf = strtoupper($uf);
+                if (!preg_match('/^[A-Z]{2}$/', $uf)) {
+                    responder(['erro' => 'uf deve conter duas letras'], 400);
+                }
+            }
+
+            if ($linkOficial !== null && filter_var($linkOficial, FILTER_VALIDATE_URL) === false) {
+                responder(['erro' => 'link_oficial deve ser uma URL válida'], 400);
             }
 
             if (
@@ -528,27 +618,38 @@ switch ($metodo) {
             $stmt = $conn->prepare(
                 "UPDATE solicitacao
                  SET nome_evento = ?, horario_evento = ?, data_evento = ?, local_evento = ?,
-                     gratuidade = ?, descricao_evento = ?, descricao_artista = ?
+                     rua_evento = ?, cidade_evento = ?, uf = ?, categoria_evento = ?,
+                     link_oficial = ?, gratuidade = ?, descricao_evento = ?,
+                     descricao_artista = ?, nome_artista_solicitado = ?
                  WHERE id_solicitacao = ? AND status_solicitacao = 'pendente'"
             );
+            $tipos = str_repeat('s', 9) . 'i' . str_repeat('s', 3) . 'i';
             $stmt->bind_param(
-                'ssssissi',
+                $tipos,
                 $nome,
                 $horario,
                 $data,
                 $local,
+                $rua,
+                $cidade,
+                $uf,
+                $categoria,
+                $linkOficial,
                 $gratuidade,
                 $descricao,
                 $descricaoArtista,
+                $nomeArtistaSolicitado,
                 $id
             );
-            $stmt->execute();
+            executarStatementApi($stmt);
             $stmt->close();
 
             $stmt = $conn->prepare(
                 'SELECT s.id_solicitacao, s.id_user, s.nome_evento, s.status_solicitacao,
                         s.foto, s.horario_evento, s.data_evento, s.local_evento,
-                        s.gratuidade, s.descricao_evento, s.descricao_artista,
+                        s.rua_evento, s.cidade_evento, s.uf, s.categoria_evento,
+                        s.link_oficial, s.gratuidade, s.descricao_evento,
+                        s.descricao_artista, s.nome_artista_solicitado,
                         s.data_solicitacao, u.nome_user, u.sobrenome, u.email_user,
                         NULL AS id_evento
                  FROM solicitacao s
@@ -557,7 +658,7 @@ switch ($metodo) {
                  LIMIT 1'
             );
             $stmt->bind_param('i', $id);
-            $stmt->execute();
+            executarStatementApi($stmt);
             $solicitacao = $stmt->get_result()->fetch_assoc();
             $stmt->close();
 
@@ -576,7 +677,8 @@ switch ($metodo) {
         }
 
         if ($acao === 'moderar') {
-            $novoStatus = (string) ($dados['status_solicitacao'] ?? '');
+            $novoStatus = $statusAcaoDireta
+                ?? (string) ($dados['status_solicitacao'] ?? '');
 
             if (!in_array($novoStatus, ['aprovado', 'recusado'], true)) {
                 responder(['erro' => 'status_solicitacao deve ser aprovado ou recusado'], 400);
@@ -586,12 +688,14 @@ switch ($metodo) {
 
             try {
                 $stmt = $conn->prepare(
-                    'SELECT nome_evento, foto, data_evento, local_evento, gratuidade,
-                            descricao_evento, status_solicitacao
+                    'SELECT nome_evento, foto, horario_evento, data_evento, local_evento,
+                            rua_evento, cidade_evento, uf, categoria_evento, link_oficial,
+                            gratuidade, descricao_evento, nome_artista_solicitado,
+                            status_solicitacao
                      FROM solicitacao WHERE id_solicitacao = ? LIMIT 1 FOR UPDATE'
                 );
                 $stmt->bind_param('i', $id);
-                $stmt->execute();
+                executarStatementApi($stmt);
                 $solicitacao = $stmt->get_result()->fetch_assoc();
                 $stmt->close();
 
@@ -611,54 +715,139 @@ switch ($metodo) {
                     $gratuidade = (int) $solicitacao['gratuidade'];
                     $stmt = $conn->prepare(
                         'INSERT INTO evento
-                         (num_evento, nome_evento, local_evento, descricao_evento,
-                          data_evento, gratuidade, imagem_evento)
-                         VALUES (?, ?, ?, ?, ?, ?, ?)'
+                         (id_solicitacao_origem, nome_evento, local_evento, rua_evento,
+                          cidade_evento, uf, descricao_evento, data_evento, horario_evento,
+                          gratuidade, categoria_evento, link_oficial, imagem_evento)
+                         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
                     );
+                    $tipos = 'i' . str_repeat('s', 8) . 'i' . str_repeat('s', 3);
                     $stmt->bind_param(
-                        'issssis',
+                        $tipos,
                         $id,
                         $solicitacao['nome_evento'],
                         $solicitacao['local_evento'],
+                        $solicitacao['rua_evento'],
+                        $solicitacao['cidade_evento'],
+                        $solicitacao['uf'],
                         $solicitacao['descricao_evento'],
                         $solicitacao['data_evento'],
+                        $solicitacao['horario_evento'],
                         $gratuidade,
+                        $solicitacao['categoria_evento'],
+                        $solicitacao['link_oficial'],
                         $solicitacao['foto']
                     );
-                    $stmt->execute();
+                    executarStatementApi($stmt);
                     $idEvento = $conn->insert_id;
                     $stmt->close();
+
+                    $nomeArtista = $solicitacao['nome_artista_solicitado'] === null
+                        ? null
+                        : normalizarEspacos($solicitacao['nome_artista_solicitado']);
+
+                    if ($nomeArtista !== null && $nomeArtista !== '') {
+                        $stmt = $conn->prepare(
+                            'SELECT id_artista
+                             FROM artista
+                             WHERE LOWER(TRIM(nome_artista)) = LOWER(?)
+                             LIMIT 1'
+                        );
+                        $stmt->bind_param('s', $nomeArtista);
+                        executarStatementApi($stmt);
+                        $artista = $stmt->get_result()->fetch_assoc();
+                        $stmt->close();
+
+                        if ($artista) {
+                            $idArtista = (int) $artista['id_artista'];
+                        } else {
+                            $stmt = $conn->prepare('INSERT INTO artista (nome_artista) VALUES (?)');
+                            $stmt->bind_param('s', $nomeArtista);
+
+                            try {
+                                executarStatementApi($stmt);
+                                $idArtista = $conn->insert_id;
+                                $stmt->close();
+                            } catch (mysqli_sql_exception $erro) {
+                                $stmt->close();
+
+                                if ($erro->getCode() !== 1062) {
+                                    throw $erro;
+                                }
+
+                                $stmt = $conn->prepare(
+                                    'SELECT id_artista
+                                     FROM artista
+                                     WHERE LOWER(TRIM(nome_artista)) = LOWER(?)
+                                     LIMIT 1'
+                                );
+                                $stmt->bind_param('s', $nomeArtista);
+                                executarStatementApi($stmt);
+                                $artista = $stmt->get_result()->fetch_assoc();
+                                $stmt->close();
+
+                                if (!$artista) {
+                                    throw $erro;
+                                }
+
+                                $idArtista = (int) $artista['id_artista'];
+                            }
+                        }
+
+                        $stmt = $conn->prepare(
+                            'INSERT INTO artista_evento (id_artista, id_evento) VALUES (?, ?)'
+                        );
+                        $stmt->bind_param('ii', $idArtista, $idEvento);
+                        executarStatementApi($stmt);
+                        $stmt->close();
+                    }
                 }
 
-                $stmt = $conn->prepare(
-                    'UPDATE solicitacao SET status_solicitacao = ? WHERE id_solicitacao = ?'
-                );
+                $caminhosUploads = [];
+
+                if ($novoStatus === 'recusado') {
+                    $caminhosUploads[] = $solicitacao['foto'];
+                    $stmt = $conn->prepare(
+                        'UPDATE solicitacao
+                         SET status_solicitacao = ?, foto = NULL
+                         WHERE id_solicitacao = ?'
+                    );
+                } else {
+                    $stmt = $conn->prepare(
+                        'UPDATE solicitacao
+                         SET status_solicitacao = ?
+                         WHERE id_solicitacao = ?'
+                    );
+                }
                 $stmt->bind_param('si', $novoStatus, $id);
-                $stmt->execute();
+                executarStatementApi($stmt);
                 $stmt->close();
                 $conn->commit();
 
+                removerArquivosUploadSemReferencia($conn, $caminhosUploads);
+
                 responder([
                     'mensagem' => 'Solicitação atualizada com sucesso',
-                    'solicitacao' => [
+                    'solicitacao' => normalizarSolicitacaoApi([
                         'id_solicitacao' => $id,
                         'status_solicitacao' => $novoStatus,
                         'id_evento' => $idEvento
-                    ]
+                    ])
                 ]);
             } catch (Throwable $erro) {
                 $conn->rollback();
-                responder(['erro' => 'Não foi possível atualizar a solicitação'], 500);
+                responderErroInfraestrutura('Falha ao moderar solicitação', $erro);
             }
         }
 
         if ($acao !== 'editar') {
-            responder(['erro' => 'acao deve ser moderar, editar_solicitacao ou editar'], 400);
+            responder([
+                'erro' => 'acao deve ser aprovar, recusar, moderar, editar_solicitacao ou editar'
+            ], 400);
         }
 
         $camposEditaveis = [
-            'num_evento', 'nome_evento', 'local_evento', 'rua_evento', 'cidade_evento',
-            'uf', 'descricao_evento', 'data_evento', 'gratuidade', 'categoria_evento',
+            'nome_evento', 'local_evento', 'rua_evento', 'cidade_evento',
+            'uf', 'descricao_evento', 'data_evento', 'horario_evento', 'gratuidade', 'categoria_evento',
             'link_oficial', 'imagem_evento', 'status_evento'
         ];
 
@@ -668,31 +857,12 @@ switch ($metodo) {
 
         $stmt = $conn->prepare("SELECT $camposEvento FROM evento WHERE id_evento = ? LIMIT 1");
         $stmt->bind_param('i', $id);
-        $stmt->execute();
+        executarStatementApi($stmt);
         $eventoAtual = $stmt->get_result()->fetch_assoc();
         $stmt->close();
 
         if (!$eventoAtual) {
             responder(['erro' => 'Evento não encontrado'], 404);
-        }
-
-        $numEvento = $eventoAtual['num_evento'] === null ? null : (int) $eventoAtual['num_evento'];
-        if (array_key_exists('num_evento', $dados)) {
-            if ($dados['num_evento'] === null || $dados['num_evento'] === '') {
-                $numEvento = null;
-            } else {
-                $numEventoValidado = filter_var(
-                    $dados['num_evento'],
-                    FILTER_VALIDATE_INT,
-                    ['options' => ['min_range' => 1]]
-                );
-
-                if ($numEventoValidado === false) {
-                    responder(['erro' => 'num_evento deve ser um inteiro positivo'], 400);
-                }
-
-                $numEvento = (int) $numEventoValidado;
-            }
         }
 
         $nome = array_key_exists('nome_evento', $dados)
@@ -709,9 +879,40 @@ switch ($metodo) {
         $uf = atualizarTextoOpcional($dados, 'uf', $eventoAtual['uf']);
         $descricao = atualizarTextoOpcional($dados, 'descricao_evento', $eventoAtual['descricao_evento']);
         $data = atualizarTextoOpcional($dados, 'data_evento', $eventoAtual['data_evento']);
+        $horario = atualizarTextoOpcional($dados, 'horario_evento', $eventoAtual['horario_evento']);
         $categoria = atualizarTextoOpcional($dados, 'categoria_evento', $eventoAtual['categoria_evento']);
         $linkOficial = atualizarTextoOpcional($dados, 'link_oficial', $eventoAtual['link_oficial']);
         $imagem = atualizarTextoOpcional($dados, 'imagem_evento', $eventoAtual['imagem_evento']);
+
+        $erroLimite = validarLimitesTextoApi([
+            'nome_evento' => $nome,
+            'local_evento' => $local,
+            'rua_evento' => $rua,
+            'cidade_evento' => $cidade,
+            'uf' => $uf,
+            'descricao_evento' => $descricao,
+            'categoria_evento' => $categoria,
+            'link_oficial' => $linkOficial,
+            'imagem_evento' => $imagem,
+        ], [
+            'nome_evento' => 100,
+            'local_evento' => 100,
+            'rua_evento' => 100,
+            'cidade_evento' => 100,
+            'uf' => 2,
+            'descricao_evento' => 1000,
+            'categoria_evento' => 100,
+            'link_oficial' => 255,
+            'imagem_evento' => 255,
+        ]);
+
+        if ($erroLimite !== null) {
+            responder(['erro' => $erroLimite], 400);
+        }
+
+        if ($linkOficial !== null && filter_var($linkOficial, FILTER_VALIDATE_URL) === false) {
+            responder(['erro' => 'link_oficial deve ser uma URL válida'], 400);
+        }
 
         if ($uf !== null) {
             $uf = strtoupper($uf);
@@ -724,6 +925,18 @@ switch ($metodo) {
             $dataValidada = DateTimeImmutable::createFromFormat('!Y-m-d', $data);
             if (!$dataValidada || $dataValidada->format('Y-m-d') !== $data) {
                 responder(['erro' => 'data_evento deve usar uma data válida no formato YYYY-MM-DD'], 400);
+            }
+        }
+
+        if ($horario !== null) {
+            $partesHorario = explode(':', $horario);
+            $horarioValido = preg_match('/^\d{2}:\d{2}(:\d{2})?$/', $horario)
+                && (int) $partesHorario[0] <= 23
+                && (int) $partesHorario[1] <= 59
+                && (!isset($partesHorario[2]) || (int) $partesHorario[2] <= 59);
+
+            if (!$horarioValido) {
+                responder(['erro' => 'horario_evento deve ser um horário válido em HH:MM ou HH:MM:SS'], 400);
             }
         }
 
@@ -752,16 +965,15 @@ switch ($metodo) {
 
         $stmt = $conn->prepare(
             'UPDATE evento
-             SET num_evento = ?, nome_evento = ?, local_evento = ?, rua_evento = ?,
+             SET nome_evento = ?, local_evento = ?, rua_evento = ?,
                  cidade_evento = ?, uf = ?, descricao_evento = ?, data_evento = ?,
-                 gratuidade = ?, categoria_evento = ?, link_oficial = ?, imagem_evento = ?,
+                 horario_evento = ?, gratuidade = ?, categoria_evento = ?, link_oficial = ?, imagem_evento = ?,
                  status_evento = ?
              WHERE id_evento = ?'
         );
-        $tipos = 'i' . str_repeat('s', 7) . 'i' . str_repeat('s', 4) . 'i';
+        $tipos = str_repeat('s', 8) . 'i' . str_repeat('s', 4) . 'i';
         $stmt->bind_param(
             $tipos,
-            $numEvento,
             $nome,
             $local,
             $rua,
@@ -769,6 +981,7 @@ switch ($metodo) {
             $uf,
             $descricao,
             $data,
+            $horario,
             $gratuidade,
             $categoria,
             $linkOficial,
@@ -776,12 +989,12 @@ switch ($metodo) {
             $statusEvento,
             $id
         );
-        $stmt->execute();
+        executarStatementApi($stmt);
         $stmt->close();
 
         $stmt = $conn->prepare("SELECT $camposEvento FROM evento WHERE id_evento = ? LIMIT 1");
         $stmt->bind_param('i', $id);
-        $stmt->execute();
+        executarStatementApi($stmt);
         $evento = $stmt->get_result()->fetch_assoc();
         $stmt->close();
 
@@ -797,15 +1010,62 @@ switch ($metodo) {
 
         exigirAdmin();
 
-        $stmt = $conn->prepare('DELETE FROM evento WHERE id_evento = ?');
-        $stmt->bind_param('i', $id);
-        $stmt->execute();
-        $removido = $stmt->affected_rows;
-        $stmt->close();
+        $caminhosUploads = [];
+        $conn->begin_transaction();
 
-        if ($removido === 0) {
-            responder(['erro' => 'Evento não encontrado'], 404);
+        try {
+            $stmt = $conn->prepare(
+                'SELECT imagem_evento
+                 FROM evento
+                 WHERE id_evento = ?
+                 LIMIT 1
+                 FOR UPDATE'
+            );
+            $stmt->bind_param('i', $id);
+            executarStatementApi($stmt);
+            $evento = $stmt->get_result()->fetch_assoc();
+            $stmt->close();
+
+            if (!$evento) {
+                $conn->rollback();
+                responder(['erro' => 'Evento não encontrado'], 404);
+            }
+
+            $caminhosUploads[] = $evento['imagem_evento'];
+
+            $stmt = $conn->prepare(
+                'SELECT am.caminho_arquivo
+                 FROM avaliacao_midia am
+                 INNER JOIN avaliacao a ON a.id_avaliacao = am.id_avaliacao
+                 WHERE a.id_evento = ?'
+            );
+            $stmt->bind_param('i', $id);
+            executarStatementApi($stmt);
+            $resultado = $stmt->get_result();
+
+            while ($midia = $resultado->fetch_assoc()) {
+                $caminhosUploads[] = $midia['caminho_arquivo'];
+            }
+            $stmt->close();
+
+            $stmt = $conn->prepare('DELETE FROM evento WHERE id_evento = ?');
+            $stmt->bind_param('i', $id);
+            executarStatementApi($stmt);
+            $removido = $stmt->affected_rows;
+            $stmt->close();
+
+            if ($removido === 0) {
+                $conn->rollback();
+                responder(['erro' => 'Evento não encontrado'], 404);
+            }
+
+            $conn->commit();
+        } catch (Throwable $erro) {
+            $conn->rollback();
+            responderErroInfraestrutura('Falha ao excluir evento', $erro);
         }
+
+        removerArquivosUploadSemReferencia($conn, $caminhosUploads);
 
         responder(['mensagem' => 'Evento removido com sucesso']);
 

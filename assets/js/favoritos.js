@@ -56,7 +56,9 @@ function mostrarFavoritosVazios() {
 }
 
 function criarCardFavorito(favorito) {
+    const coluna = document.createElement('div');
     const card = document.createElement('div');
+    coluna.className = 'col-12';
     card.className = 'card-evento';
 
     const imagem = document.createElement('img');
@@ -122,7 +124,7 @@ function criarCardFavorito(favorito) {
                 throw new Error(dados.erro || 'Não foi possível remover o favorito.');
             }
 
-            card.remove();
+            coluna.remove();
             if (contadorFavoritos) {
                 contadorFavoritos.textContent = Math.max(0, Number(contadorFavoritos.textContent) - 1);
             }
@@ -139,7 +141,8 @@ function criarCardFavorito(favorito) {
 
     acoes.append(tipo, excluir);
     card.append(imagem, info, acoes);
-    return card;
+    coluna.append(card);
+    return coluna;
 }
 
 async function carregarFavoritos() {
@@ -211,7 +214,9 @@ function textoDeslocamento(planejamento) {
 }
 
 function criarCardPlanejado(planejamento) {
+    const coluna = document.createElement('div');
     const card = document.createElement('div');
+    coluna.className = 'col-12';
     card.className = 'card-evento';
 
     const imagem = document.createElement('img');
@@ -309,7 +314,7 @@ function criarCardPlanejado(planejamento) {
                 throw new Error(dados.erro || 'Não foi possível remover o planejamento.');
             }
 
-            card.remove();
+            coluna.remove();
             contadorPlanejados.textContent = Math.max(0, Number(contadorPlanejados.textContent) - 1);
 
             if (!listaPlanejados.children.length) {
@@ -324,7 +329,8 @@ function criarCardPlanejado(planejamento) {
 
     acoes.append(tipo, excluir);
     card.append(imagem, info, acoes);
-    return card;
+    coluna.append(card);
+    return coluna;
 }
 
 async function carregarPlanejados() {

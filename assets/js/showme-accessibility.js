@@ -30,10 +30,12 @@
         var rect = vlibrasButton.getBoundingClientRect();
         // Ao abrir o VLibras/menu mobile, preserve a ultima ancora visivel.
         if (rect.width && rect.height) {
-          root.style.setProperty('--showme-access-left', rect.left + 'px');
+          var viewportWidth = document.documentElement.clientWidth;
+          var rightOffset = Math.max(0, viewportWidth - rect.right);
+          root.style.setProperty('--showme-access-right', rightOffset + 'px');
           // O centro do VLibras e 50vh; nao use o top intermediario da animacao de resize.
           root.style.setProperty('--showme-access-top', 'calc(50vh + ' + (rect.height / 2 + 4) + 'px)');
-          root.style.setProperty('--showme-access-panel-left', (rect.right + 10) + 'px');
+          root.style.setProperty('--showme-access-panel-right', (viewportWidth - rect.left + 10) + 'px');
         }
       }
       var headerBottom = header ? header.getBoundingClientRect().bottom : 0;

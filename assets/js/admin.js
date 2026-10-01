@@ -130,8 +130,13 @@
             const conteudo = normalizarBusca([
                 solicitacao.nome_evento,
                 solicitacao.local_evento,
+                solicitacao.rua_evento,
+                solicitacao.cidade_evento,
+                solicitacao.uf,
+                solicitacao.categoria_evento,
                 solicitacao.descricao_evento,
                 solicitacao.descricao_artista,
+                solicitacao.nome_artista_solicitado,
                 nomeSolicitante(solicitacao),
                 solicitacao.email_user
             ].filter(Boolean).join(' '));
@@ -199,6 +204,11 @@
         document.getElementById('idSolicitacaoEdicao').value = String(solicitacao.id_solicitacao);
         document.getElementById('nomeEventoEdicao').value = solicitacao.nome_evento || '';
         document.getElementById('localEventoEdicao').value = solicitacao.local_evento || '';
+        document.getElementById('ruaEventoEdicao').value = solicitacao.rua_evento || '';
+        document.getElementById('cidadeEventoEdicao').value = solicitacao.cidade_evento || '';
+        document.getElementById('ufEventoEdicao').value = solicitacao.uf || '';
+        document.getElementById('categoriaEventoEdicao').value = solicitacao.categoria_evento || '';
+        document.getElementById('linkOficialEdicao').value = solicitacao.link_oficial || '';
         document.getElementById('dataEventoEdicao').value = solicitacao.data_evento || '';
         document.getElementById('horarioEventoEdicao').value = solicitacao.horario_evento
             ? String(solicitacao.horario_evento).slice(0, 5)
@@ -206,6 +216,7 @@
         document.getElementById('gratuidadeEdicao').value = solicitacao.gratuidade ? 'true' : 'false';
         document.getElementById('descricaoEventoEdicao').value = solicitacao.descricao_evento || '';
         document.getElementById('descricaoArtistaEdicao').value = solicitacao.descricao_artista || '';
+        document.getElementById('nomeArtistaSolicitadoEdicao').value = solicitacao.nome_artista_solicitado || '';
         mensagemEdicao.className = 'alert d-none';
         mensagemEdicao.replaceChildren();
         modalEdicao.show();
@@ -218,11 +229,17 @@
             acao: 'editar_solicitacao',
             nome_evento: document.getElementById('nomeEventoEdicao').value.trim(),
             local_evento: document.getElementById('localEventoEdicao').value.trim(),
+            rua_evento: document.getElementById('ruaEventoEdicao').value.trim(),
+            cidade_evento: document.getElementById('cidadeEventoEdicao').value.trim(),
+            uf: document.getElementById('ufEventoEdicao').value.trim(),
+            categoria_evento: document.getElementById('categoriaEventoEdicao').value.trim(),
+            link_oficial: document.getElementById('linkOficialEdicao').value.trim(),
             data_evento: document.getElementById('dataEventoEdicao').value,
             horario_evento: document.getElementById('horarioEventoEdicao').value,
             gratuidade: document.getElementById('gratuidadeEdicao').value === 'true',
             descricao_evento: document.getElementById('descricaoEventoEdicao').value.trim(),
-            descricao_artista: document.getElementById('descricaoArtistaEdicao').value.trim()
+            descricao_artista: document.getElementById('descricaoArtistaEdicao').value.trim(),
+            nome_artista_solicitado: document.getElementById('nomeArtistaSolicitadoEdicao').value.trim()
         };
 
         botaoSalvar.disabled = true;
@@ -340,9 +357,14 @@
         colunaEvento.className = 'col-md-6';
         colunaEvento.append(
             criarCampo('Local', solicitacao.local_evento),
+            criarCampo('Endereço', [solicitacao.rua_evento, solicitacao.cidade_evento, solicitacao.uf]
+                .filter(Boolean).join(' · ')),
+            criarCampo('Categoria', solicitacao.categoria_evento),
+            criarCampo('Link oficial', solicitacao.link_oficial),
             criarCampo('Tipo', solicitacao.gratuidade ? 'Gratuito' : 'Pago'),
             criarCampo('Descrição do evento', solicitacao.descricao_evento),
-            criarCampo('Artista / atração', solicitacao.descricao_artista)
+            criarCampo('Nome do artista / atração', solicitacao.nome_artista_solicitado),
+            criarCampo('Descrição do artista / atração', solicitacao.descricao_artista)
         );
         const colunaSolicitante = document.createElement('div');
         colunaSolicitante.className = 'col-md-6';

@@ -1,35 +1,32 @@
 (function () {
     'use strict';
 
-    const imagemPadrao = 'assets/img/banner_site_565x235px.png';
-    const limiteRecomendados = 5;
+    const imagemPadraoCard = 'assets/img/banner_site_565x235px.png';
+    const limiteBanner = 5;
+    let bannerSwiper = null;
 
-    function iniciarBanner() {
-        if (typeof window.Swiper !== 'function') {
-            return;
-        }
+    const secoesCategorias = [
+        {id: 'eventosMusicais', termos: ['musica', 'musical', 'show', 'festival', 'concerto']},
+        {id: 'pertoVoce', termos: ['perto de voce', 'local', 'regional']},
+        {id: 'cinema', termos: ['cinema', 'filme', 'mostra cinematografica']},
+        {id: 'showsInternacionais', termos: ['internacional']},
+        {id: 'showsNacionais', termos: ['nacional'], excluir: ['internacional']},
+        {id: 'emBreve', termos: ['em breve', 'futuro', 'proximamente']}
+    ];
 
-        new window.Swiper('.banner.swiper', {
-            loop: true,
-            autoplay: {
-                delay: 4500,
-                disableOnInteraction: false
-            },
-            pagination: {
-                el: '.swiper-pagination'
-            },
-            navigation: {
-                nextEl: '.swiper-button-next',
-                prevEl: '.swiper-button-prev'
-            }
-        });
+    function normalizarTexto(valor) {
+        return String(valor || '')
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '')
+            .trim()
+            .toLowerCase();
     }
 
-    function caminhoImagem(caminho) {
+    function caminhoImagem(caminho, usarPadrao = true) {
         const valor = String(caminho || '').trim();
 
         if (!valor) {
-            return imagemPadrao;
+            return usarPadrao ? imagemPadraoCard : null;
         }
 
         if (
@@ -44,6 +41,122 @@
         return `assets/img/${valor}`;
     }
 
+    function atualizarControlesBanner(quantidade) {
+        const exibirNavegacao = quantidade > 1;
+        document.querySelector('.banner .swiper-button-prev')?.toggleAttribute('hidden', !exibirNavegacao);
+        document.querySelector('.banner .swiper-button-next')?.toggleAttribute('hidden', !exibirNavegacao);
+        document.querySelector('.banner .swiper-pagination')?.toggleAttribute('hidden', !exibirNavegacao);
+    }
+
+    function iniciarBanner(quantidade) {
+        if (bannerSwiper) {
+            bannerSwiper.destroy(true, true);
+            bannerSwiper = null;
+        }
+
+        atualizarControlesBanner(quantidade);
+
+        if (quantidade === 0 || typeof window.Swiper !== 'function') {
+            return;
+        }
+
+        bannerSwiper = new window.Swiper('.banner.swiper', {
+            loop: quantidade > 1,
+            autoplay: quantidade > 1
+                ? {delay: 4500, disableOnInteraction: false}
+                : false,
+            pagination: {
+                el: '.banner .swiper-pagination',
+                clickable: true
+            },
+            navigation: {
+                nextEl: '.banner .swiper-button-next',
+                prevEl: '.banner .swiper-button-prev'
+            }
+        });
+    }
+
+    function mostrarBannerVazio(mensagem) {
+        const banner = document.querySelector('.banner');
+        const wrapper = document.getElementById('bannerEventos');
+
+        if (!wrapper) {
+            return;
+        }
+
+        const estado = document.createElement('div');
+        estado.className = 'swiper-slide banner-estado';
+
+        const icone = document.createElement('i');
+        icone.className = 'bi bi-image';
+        icone.setAttribute('aria-hidden', 'true');
+
+        const texto = document.createElement('p');
+        texto.textContent = mensagem;
+        estado.append(icone, texto);
+        wrapper.replaceChildren(estado);
+
+        iniciarBanner(0);
+        banner?.setAttribute('aria-busy', 'false');
+    }
+
+    function criarSlideBanner(evento) {
+        const caminho = caminhoImagem(evento.imagem_evento, false);
+
+        if (!caminho) {
+            return null;
+        }
+
+        const slide = document.createElement('div');
+        slide.className = 'swiper-slide';
+
+        const link = document.createElement('a');
+        link.href = `detalhesEvento.php?id=${encodeURIComponent(evento.id_evento)}`;
+        link.setAttribute('aria-label', `Ver detalhes de ${evento.nome_evento || 'evento'}`);
+
+        const imagem = document.createElement('img');
+        imagem.src = caminho;
+        imagem.alt = evento.nome_evento || 'Evento em destaque';
+        imagem.addEventListener('error', function () {
+            slide.remove();
+            const quantidadeRestante = document.querySelectorAll('#bannerEventos .swiper-slide').length;
+
+            if (quantidadeRestante === 0) {
+                mostrarBannerVazio('Nenhum evento em destaque no momento.');
+                return;
+            }
+
+            bannerSwiper?.update();
+            atualizarControlesBanner(quantidadeRestante);
+        }, {once: true});
+
+        link.append(imagem);
+        slide.append(link);
+        return slide;
+    }
+
+    function renderizarBanner(eventos) {
+        const wrapper = document.getElementById('bannerEventos');
+
+        if (!wrapper) {
+            return;
+        }
+
+        const slides = eventos
+            .map(criarSlideBanner)
+            .filter(Boolean)
+            .slice(0, limiteBanner);
+
+        if (slides.length === 0) {
+            mostrarBannerVazio('Nenhum evento em destaque no momento.');
+            return;
+        }
+
+        wrapper.replaceChildren(...slides);
+        iniciarBanner(slides.length);
+        document.querySelector('.banner')?.setAttribute('aria-busy', 'false');
+    }
+
     function formatarData(dataEvento) {
         const partes = String(dataEvento || '').split('-').map(Number);
 
@@ -55,8 +168,10 @@
         return data.toLocaleDateString('pt-BR');
     }
 
-    function criarLinhaInformacao(classeIcone, texto) {
+    function criarLinhaInformacao(classeIcone, texto, classeLinha) {
         const linha = document.createElement('span');
+        linha.className = classeLinha;
+
         const icone = document.createElement('i');
         icone.className = classeIcone;
         icone.setAttribute('aria-hidden', 'true');
@@ -81,7 +196,7 @@
         imagem.alt = evento.nome_evento || 'Evento';
         imagem.loading = 'lazy';
         imagem.addEventListener('error', function () {
-            this.src = imagemPadrao;
+            this.src = imagemPadraoCard;
         }, {once: true});
 
         const conteudo = document.createElement('div');
@@ -100,8 +215,8 @@
             : (evento.local_evento || 'Local não informado');
 
         informacoes.append(
-            criarLinhaInformacao('bi bi-geo-alt-fill', local),
-            criarLinhaInformacao('bi bi-calendar-event', formatarData(evento.data_evento))
+            criarLinhaInformacao('bi bi-geo-alt-fill', local, 'evento-localizacao'),
+            criarLinhaInformacao('bi bi-calendar-event', formatarData(evento.data_evento), 'evento-data')
         );
         conteudo.append(titulo, informacoes);
         link.append(badge, imagem, conteudo);
@@ -156,19 +271,25 @@
         atualizarNavegacao(idCarrossel, eventos.length > 1);
     }
 
+    function eventoPertenceASecao(evento, secao) {
+        const categoria = normalizarTexto(evento.categoria_evento);
+
+        if (!categoria) {
+            return false;
+        }
+
+        const possuiTermo = secao.termos.some((termo) => categoria.includes(termo));
+        const possuiExclusao = (secao.excluir || []).some((termo) => categoria.includes(termo));
+        return possuiTermo && !possuiExclusao;
+    }
+
     function mostrarErro(mensagem) {
-        const recomendados = document.getElementById('recomendados');
-        const outrosEventos = document.getElementById('outrosEventos');
+        mostrarBannerVazio(mensagem);
 
-        if (recomendados) {
-            recomendados.replaceChildren(criarEstado(mensagem, true));
-            atualizarNavegacao('recomendados', false);
-        }
-
-        if (outrosEventos) {
-            outrosEventos.replaceChildren(criarEstado(mensagem, true));
-            atualizarNavegacao('outrosEventos', false);
-        }
+        secoesCategorias.forEach((secao) => {
+            document.getElementById(secao.id)?.replaceChildren(criarEstado(mensagem, true));
+            atualizarNavegacao(secao.id, false);
+        });
     }
 
     async function carregarEventos() {
@@ -186,25 +307,23 @@
                 throw new Error('A API retornou uma resposta inesperada.');
             }
 
-            const recomendados = dados.eventos.slice(0, limiteRecomendados);
-            const outrosEventos = dados.eventos.slice(limiteRecomendados);
+            renderizarBanner(dados.eventos);
 
-            renderizarCarrossel(
-                'recomendados',
-                recomendados,
-                'Nenhum evento cadastrado no momento.'
-            );
-            renderizarCarrossel(
-                'outrosEventos',
-                outrosEventos,
-                'Nenhum outro evento cadastrado no momento.'
-            );
+            secoesCategorias.forEach((secao) => {
+                const eventosDaSecao = dados.eventos.filter((evento) => eventoPertenceASecao(evento, secao));
+                renderizarCarrossel(
+                    secao.id,
+                    eventosDaSecao,
+                    'Nenhum evento cadastrado nesta categoria no momento.'
+                );
+            });
         } catch (erro) {
             console.error('Falha ao carregar eventos na home:', erro);
             mostrarErro('Não foi possível carregar os eventos. Verifique se a API está disponível e tente novamente.');
         } finally {
-            document.getElementById('secaoRecomendados')?.setAttribute('aria-busy', 'false');
-            document.getElementById('secaoOutrosEventos')?.setAttribute('aria-busy', 'false');
+            document.querySelectorAll('[data-secao-categoria]').forEach((secao) => {
+                secao.setAttribute('aria-busy', 'false');
+            });
         }
     }
 
@@ -221,7 +340,6 @@
         });
     }
 
-    iniciarBanner();
     iniciarBotoesCarrossel();
     carregarEventos();
 }());

@@ -8,10 +8,6 @@
 
     <title>Cadastro de Evento - ShowMe</title>
 
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet">
-
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
-
   <!-- Favicons -->
   <link href="assets/img/showme.png" rel="icon">
 
@@ -19,7 +15,7 @@
   <link href="https://fonts.googleapis.com" rel="preconnect">
   <link href="https://fonts.gstatic.com" rel="preconnect" crossorigin>
   <link
-    href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,300;1,400;1,500;1,600;1,700;1,800&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Jost:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap"
+    href="https://fonts.googleapis.com/css2?family=Anton&family=Oswald:wght@400;500;600;700&family=Open+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,300;1,400;1,500;1,600;1,700;1,800&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Jost:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap"
     rel="stylesheet">
 
   <!-- Vendor CSS Files -->
@@ -29,30 +25,30 @@
   <link href="assets/vendor/glightbox/css/glightbox.min.css" rel="stylesheet">
   <link href="assets/vendor/swiper/swiper-bundle.min.css" rel="stylesheet">
 
-  <!-- Anton (títulos) + Oswald (parágrafos/labels) -->
-  <link
-    href="https://fonts.googleapis.com/css2?family=Anton&family=Oswald:wght@300;400;500;600;700&display=swap"
-    rel="stylesheet">
-
-  <link href="assets/css/main.css" rel="stylesheet">
-
-  <!-- Principal CSS File (por último, para ter prioridade sobre o Bootstrap) -->
+  <!-- CSS da página -->
   <link href="assets/css/cadastro-evento.css" rel="stylesheet">
+
+  <!-- CSS compartilhado por último para preservar os cabeçalhos -->
+  <link href="assets/css/main.css" rel="stylesheet">
 
 </head>
 
-<body class="com-cabecalho-padrao">
+<body class="com-cabecalho-padrao cabecalho-tipo-c pagina-cadastro-evento">
 
-    <?php require __DIR__ . '/cabecalho.php'; ?>
+    <?php
+    $tipoCabecalho = 'C';
+    $configuracaoCabecalho = [
+        'titulo_primario' => 'Cadastrar',
+        'titulo_secundario' => 'Evento',
+        'icone' => 'bi-calendar-plus',
+        'fallback' => 'inicio.php',
+    ];
+    require __DIR__ . '/cabecalho.php';
+    ?>
 
     <div class="container-fluid evento-container">
 
         <div class="evento-card">
-
-            <h2>
-                <span class="titulo-verde">Cadastrar</span>
-                <span class="titulo-rosa">Evento</span>
-            </h2>
 
             <p class="subtitulo">
                 Preencha as informações abaixo. Nossa equipe analisará e aprovará seu evento.
@@ -101,8 +97,42 @@
                         name="local_evento"
                         type="text"
                         class="form-control"
-                        maxlength="255"
+                        maxlength="100"
                         placeholder="Ex: Parque Villa-Lobos, São Paulo - SP">
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label" for="ruaEvento">Rua / endereço</label>
+                    <input id="ruaEvento" name="rua_evento" type="text" class="form-control"
+                        maxlength="100" placeholder="Ex: Avenida Paulista, 1000">
+                </div>
+
+                <div class="row">
+                    <div class="col-md-9 mb-3">
+                        <label class="form-label" for="cidadeEvento">Cidade</label>
+                        <input id="cidadeEvento" name="cidade_evento" type="text" class="form-control"
+                            maxlength="100" placeholder="Ex: São Paulo">
+                    </div>
+
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label" for="ufEvento">UF</label>
+                        <input id="ufEvento" name="uf" type="text" class="form-control"
+                            maxlength="2" pattern="[A-Za-z]{2}" placeholder="SP">
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-5 mb-3">
+                        <label class="form-label" for="categoriaEvento">Categoria</label>
+                        <input id="categoriaEvento" name="categoria_evento" type="text" class="form-control"
+                            maxlength="100" placeholder="Ex: Música">
+                    </div>
+
+                    <div class="col-md-7 mb-3">
+                        <label class="form-label" for="linkOficialEvento">Link oficial</label>
+                        <input id="linkOficialEvento" name="link_oficial" type="url" class="form-control"
+                            maxlength="255" placeholder="https://exemplo.com/evento">
+                    </div>
                 </div>
 
                 <div class="row">
@@ -143,6 +173,12 @@
 
                     </div>
 
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label" for="nomeArtistaSolicitado">Nome do artista / atração</label>
+                    <input id="nomeArtistaSolicitado" name="nome_artista_solicitado" type="text"
+                        class="form-control" maxlength="150" placeholder="Ex: Banda Exemplo">
                 </div>
 
                 <div class="mb-5">

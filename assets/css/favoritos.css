@@ -6,18 +6,18 @@
 
 a {
     text-decoration: none;
-    color: #000;
+    color: #bdbdbd;
 }
 
 *, *::before, *::after {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-    font-family: 'Open Sans', 'Segoe UI', sans-serif;
+    font-family: 'Open Sans', 'Poppins', 'Jost', 'Segoe UI', sans-serif;
 }
 
 body {
-    background: #050505 !important;
+    background: #0a0a0a !important;
     color: #fff !important;
 }
 
@@ -25,8 +25,8 @@ body {
    CORES DO PROJETO
 ========================== */
 
-.verde { color: #2FFF00; }
-.rosa  { color: #E9009B; }
+.verde { color: #00ff00; }
+.rosa  { color: #ff006e; }
 
 /* ==========================
    NAV FIXO (topo + linha verde)
@@ -38,7 +38,7 @@ body {
     left: 0;
     width: 100%;
     z-index: 1000;
-    background: #050505;
+    background: #0a0a0a;
 }
 
 .topo {
@@ -56,7 +56,7 @@ body {
     text-decoration: none;
     font-size: 1.5rem;
     font-weight: 700;
-    color: #2FFF00;
+    color: #00ff00;
     transition: opacity .2s;
 }
 
@@ -69,18 +69,18 @@ body {
 }
 
 .voltar span {
-    color: #E9009B;
+    color: #ff006e;
 }
 
 .voltar:hover {
     opacity: .75;
-    color: #2FFF00;
+    color: #00dd00;
 }
 
 .linha-verde {
     width: 100%;
     height: 2px;
-    background: #2FFF00;
+    background: #00ff00;
 }
 
 /* ==========================
@@ -98,18 +98,15 @@ body {
 ========================== */
 
 .abas {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 14px;
     margin-bottom: 30px;
 }
 
 .aba {
     height: 58px;
     border-radius: 14px;
-    border: 2px solid #2FFF00;
+    border: 2px solid #00ff00;
     background: transparent;
-    color: #2FFF00;
+    color: #00ff00;
     font-size: 1rem;
     font-weight: 700;
     cursor: pointer;
@@ -121,38 +118,38 @@ body {
 }
 
 .aba:hover {
-    background: rgba(47, 255, 0, .08);
+    background: rgba(0, 255, 0, .08);
 }
 
 /* Aba ativa: Favoritos → verde sólido */
 .aba.ativa[data-tab="favoritos"] {
-    background: #2FFF00;
+    background: #00ff00;
     color: #000;
-    border-color: #2FFF00;
+    border-color: #00ff00;
 }
 
 /* Aba ativa: Planejados → pink sólido */
 .aba.ativa[data-tab="planejados"] {
-    background: #E9009B;
+    background: #ff006e;
     color: #000;
-    border-color: #E9009B;
+    border-color: #ff006e;
 }
 
 /* Aba inativa de planejados tem borda pink */
 .aba[data-tab="planejados"]:not(.ativa) {
-    border-color: #E9009B;
-    color: #E9009B;
+    border-color: #ff006e;
+    color: #ff006e;
 }
 
 .aba[data-tab="planejados"]:not(.ativa):hover {
-    background: rgba(233, 0, 155, .08);
+    background: rgba(255, 0, 110, .08);
 }
 
 /* ==========================
    CONTEÚDO / VISIBILIDADE
 ========================== */
 
-.conteudo        { display: none; flex-direction: column; gap: 16px; }
+.conteudo        { display: none; flex-wrap: wrap; }
 .conteudo.ativa  { display: flex; }
 
 /* ==========================
@@ -164,7 +161,7 @@ body {
     grid-template-columns: 200px 1fr auto;
     align-items: center;
     background: #141414;
-    border: 2px solid #2FFF00;
+    border: 2px solid #00ff00;
     border-radius: 18px;
     overflow: hidden;
     transition: transform .25s, box-shadow .25s;
@@ -172,11 +169,10 @@ body {
 
 .card-evento:hover {
     transform: translateY(-3px);
-    border-color: #E9009B;
+    border-color: #ff006e;
     box-shadow:
-        0 0 15px 2px rgba(233, 0, 155, .55),
-        0 0 35px 10px rgba(255, 110, 220, .35),
-        0 8px 30px rgba(233, 0, 155, .25);
+        0 0 15px 2px rgba(0, 255, 0, .28),
+        0 8px 30px rgba(0, 255, 0, .16);
 }
 
 .card-evento img {
@@ -222,11 +218,11 @@ body {
 
 .btn-detalhes {
     margin-top: 10px;
-    height: 40px;
+    min-height: 44px;
     padding: 0 22px;
     border: none;
     border-radius: 10px;
-    background: #2FFF00;
+    background: #00ff00;
     color: #000;
     font-weight: 700;
     font-size: 0.9rem;
@@ -242,7 +238,7 @@ body {
 
 .btn-detalhes:hover {
     transform: translateY(-2px);
-    box-shadow: 0 0px 10px rgba(47, 255, 0, .3);
+    box-shadow: 0 8px 20px rgba(0, 255, 0, .24);
 }
 
 /* Botões duplos (aba Planejados) — alinhados lado a lado, mesma largura */
@@ -265,12 +261,12 @@ body {
 }
 
 .btn-planejamento {
-    height: 40px;
+    min-height: 44px;
     padding: 0 22px;
     border: none;
     border-radius: 10px;
-    background: #E9009B;
-    color: #000;
+    background: #232323;
+    color: #fff;
     font-weight: 700;
     font-size: 0.9rem;
     cursor: pointer;
@@ -280,7 +276,7 @@ body {
 
 .btn-planejamento:hover {
     transform: translateY(-2px);
-    box-shadow: 0 0px 10px rgba(233, 0, 155, .35);
+    box-shadow: 0 8px 20px rgba(255, 255, 255, .08);
 }
 
 /* Coluna de ações (tag + lixeira) */
@@ -306,21 +302,21 @@ body {
 }
 
 .tag.pago {
-    background: rgba(233, 0, 155, .15);
-    color: #E9009B;
-    border: 1px solid #E9009B;
+    background: rgba(255, 0, 110, .15);
+    color: #ff006e;
+    border: 1px solid #ff006e;
 }
 
 .tag.gratis {
-    background: rgba(47, 255, 0, .12);
-    color: #2FFF00;
-    border: 1px solid #2FFF00;
+    background: rgba(0, 255, 0, .12);
+    color: #00ff00;
+    border: 1px solid #00ff00;
 }
 
 /* Botão lixeira */
 .btn-excluir {
-    width: 38px;
-    height: 38px;
+    width: 44px;
+    height: 44px;
     border: 2px solid #333;
     border-radius: 10px;
     background: #1e1e1e;
@@ -334,9 +330,9 @@ body {
 }
 
 .btn-excluir:hover {
-    border-color: #E9009B;
-    color: #E9009B;
-    background: rgba(233, 0, 155, .08);
+    border-color: #dd0060;
+    color: #dd0060;
+    background: rgba(255, 0, 110, .08);
 }
 
 /* ==========================
@@ -345,21 +341,21 @@ body {
 
 .footer {
     margin-top: 60px;
-    background: #050505;
+    background: #0a0a0a;
     color: #aaa;
 }
 
 .footer-line {
     width: 100%;
     height: 2px;
-    background: #2FFF00;
+    background: #00ff00;
 }
 
 .footer-top { padding: 50px 0; }
 
 .footer h4,
 .footer .logo-footer {
-    color: #2FFF00;
+    color: #00ff00;
     margin-bottom: 15px;
     font-size: 1.1rem;
     font-weight: 700;
@@ -388,8 +384,8 @@ body {
 }
 
 .social-links a:hover {
-    border-color: #2FFF00;
-    color: #2FFF00;
+    border-color: #00dd00;
+    color: #00dd00;
 }
 
 .footer-contact-form {
@@ -413,7 +409,7 @@ body {
 .footer-contact-form input:focus,
 .footer-contact-form textarea:focus {
     outline: none;
-    border-color: #2FFF00;
+    border-color: #00ff00;
 }
 
 .footer-contact-form textarea {
@@ -425,7 +421,7 @@ body {
     height: 48px;
     border: none;
     border-radius: 12px;
-    background: #2FFF00;
+    background: #00ff00;
     color: #000;
     font-weight: 700;
     cursor: pointer;
@@ -438,7 +434,7 @@ body {
 
 .footer-contact-form button:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 16px rgba(47, 255, 0, .25);
+    box-shadow: 0 8px 20px rgba(0, 255, 0, .24);
 }
 
 .footer-links ul {
@@ -455,7 +451,7 @@ body {
     transition: color .2s;
 }
 
-.footer-links ul li a:hover { color: #2FFF00; }
+.footer-links ul li a:hover { color: #00dd00; }
 
 /* Scroll top */
 .scroll-top {
@@ -464,7 +460,7 @@ body {
     right: 20px;
     width: 40px;
     height: 40px;
-    background: #2FFF00;
+    background: #00ff00;
     color: #000;
     border-radius: 50%;
     text-decoration: none;
@@ -482,7 +478,7 @@ body {
    RESPONSIVO
 ========================== */
 
-@media (max-width: 768px) {
+@media (max-width: 767.98px) {
 
     .topo {
         padding: 18px 20px 16px;
@@ -497,20 +493,19 @@ body {
     }
 
     .card-evento {
-        grid-template-columns: 130px 1fr;
-        grid-template-rows: auto auto;
+        grid-template-columns: 1fr;
     }
 
     .card-evento img {
-        width: 130px;
-        height: 100%;
-        grid-row: 1 / 3;
+        width: 100%;
+        height: 190px;
+        grid-row: auto;
     }
 
     .acoes {
-        grid-column: 2;
+        grid-column: 1;
         flex-direction: row;
-        justify-content: flex-start;
+        justify-content: space-between;
         padding: 0 20px 16px;
     }
 
@@ -524,23 +519,13 @@ body {
     }
 }
 
-@media (max-width: 480px) {
-
-    .abas { grid-template-columns: 1fr; }
-
-    .card-evento {
-        grid-template-columns: 1fr;
+@media (max-width: 575.98px) {
+    .eventos-container {
+        padding-right: 14px;
+        padding-left: 14px;
     }
 
     .card-evento img {
-        width: 100%;
-        height: 160px;
-        grid-row: auto;
-    }
-
-    .acoes {
-        grid-column: 1;
-        flex-direction: row;
-        padding: 0 20px 16px;
+        height: 170px;
     }
 }

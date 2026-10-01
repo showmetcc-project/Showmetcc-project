@@ -27,66 +27,41 @@ $idEvento = (int) $idInformado;
 
         <link rel="stylesheet" href="assets/vendor/bootstrap/css/bootstrap.min.css">
 
-        <link rel="stylesheet" href="assets/css/main.css">
-
-        <!-- CSS DO PROJETO -->
-
-        <link rel="stylesheet" href="./assets/css/planejamento.css">
-
         <!-- BOOTSTRAP ICONS -->
 
-        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-
-        <!-- FONT AWESOME -->
-
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+        <link rel="stylesheet" href="assets/vendor/bootstrap-icons/bootstrap-icons.css">
 
         <!-- LEAFLET -->
 
         <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 
+        <!-- CSS DO PROJETO -->
+
+        <link rel="stylesheet" href="assets/css/planejamento.css">
+
+        <!-- CSS compartilhado por último para preservar o cabeçalho -->
+
+        <link rel="stylesheet" href="assets/css/main.css">
+
     </head>
 
 
-    <body class="com-cabecalho-padrao">
+    <body class="com-cabecalho-padrao cabecalho-tipo-c">
 
-        <?php require __DIR__ . '/cabecalho.php'; ?>
+        <?php
+        $tipoCabecalho = 'C';
+        $configuracaoCabecalho = [
+            'titulo_primario' => 'Planejamento',
+            'titulo_secundario' => 'do Evento',
+            'icone' => 'bi-signpost-split',
+            'fallback' => 'favoritos.php',
+        ];
+        require __DIR__ . '/cabecalho.php';
+        ?>
 
-
-        <!-- =====================================================
-     HEADER
-===================================================== -->
-
-        <section class="header-planejamento-section">
-
-            <div class="header-planejamento">
-
-                <div>
-
-                    <h1>
-
-                        <span>
-                    Planejar
-                </span>
-
-                        <strong>
-                    Viagem
-                </strong>
-
-                    </h1>
-
-
-                    <p id="tituloEvento">
-
-                        Carregando evento...
-
-                    </p>
-
-                </div>
-
-            </div>
-
-        </section>
+        <p id="tituloEvento" class="planejamento-evento-atual">
+            Carregando evento...
+        </p>
 
 
 
@@ -94,14 +69,15 @@ $idEvento = (int) $idInformado;
      CONTEÚDO PRINCIPAL
 ===================================================== -->
 
-        <main class="planejamento-container">
+        <main class="planejamento-container container">
+            <div class="row g-4 g-xl-5 align-items-start">
 
 
             <!-- =================================================
          PROGRESSO
     ================================================== -->
 
-            <aside class="progresso">
+            <aside class="progresso col-12 col-lg-3">
 
                 <h3>
                     Progresso
@@ -196,6 +172,7 @@ $idEvento = (int) $idInformado;
          CARD
     ================================================== -->
 
+            <div class="col-12 col-lg-9">
             <section class="card-planejamento">
 
 
@@ -406,7 +383,7 @@ $idEvento = (int) $idInformado;
 
                     <div class="titulo-card">
 
-                        <i class="fa-solid fa-location-dot"></i>
+                        <i class="bi bi-geo-alt-fill"></i>
 
                         <h2>
                             Planeje sua rota
@@ -428,7 +405,7 @@ $idEvento = (int) $idInformado;
 
                         <strong>
 
-                    <i class="fa-solid fa-location-dot"></i>
+                    <i class="bi bi-geo-alt-fill"></i>
 
                     Local do evento
 
@@ -444,7 +421,7 @@ $idEvento = (int) $idInformado;
 
                         <button type="button" onclick="centralizarEvento()">
 
-                    <i class="fa-solid fa-map"></i>
+                    <i class="bi bi-map"></i>
 
                     Ver localização
 
@@ -464,7 +441,7 @@ $idEvento = (int) $idInformado;
 
                         <h3>
 
-                            <i class="fa-solid fa-route"></i> De onde você vai sair?
+                            <i class="bi bi-signpost-split"></i> De onde você vai sair?
 
                         </h3>
 
@@ -489,7 +466,7 @@ $idEvento = (int) $idInformado;
 
                         <button type="button" class="botao-localizacao" onclick="usarMinhaLocalizacao()">
 
-                    <i class="fa-solid fa-location-crosshairs"></i>
+                    <i class="bi bi-crosshair"></i>
 
                     Usar minha localização
 
@@ -536,7 +513,7 @@ $idEvento = (int) $idInformado;
 
                         <div class="info-rota">
 
-                            <i class="fa-solid fa-road"></i>
+                            <i class="bi bi-signpost-2"></i>
 
                             <span>
                         Distância
@@ -551,7 +528,7 @@ $idEvento = (int) $idInformado;
 
                         <div class="info-rota">
 
-                            <i class="fa-solid fa-clock"></i>
+                            <i class="bi bi-clock"></i>
 
                             <span>
                         Tempo estimado
@@ -572,7 +549,7 @@ $idEvento = (int) $idInformado;
 
                         <h3>
 
-                            <i class="fa-solid fa-compass"></i> Continuar navegação
+                            <i class="bi bi-compass"></i> Continuar navegação
 
                         </h3>
 
@@ -589,7 +566,7 @@ $idEvento = (int) $idInformado;
 
                             <button type="button" onclick="abrirGoogleMaps()">
 
-                        <i class="fa-solid fa-map-location-dot"></i>
+                        <i class="bi bi-map"></i>
 
                         Google Maps
 
@@ -598,7 +575,7 @@ $idEvento = (int) $idInformado;
 
                             <button type="button" onclick="abrirWaze()">
 
-                        <i class="fa-solid fa-car"></i>
+                        <i class="bi bi-car-front"></i>
 
                         Waze
 
@@ -1119,7 +1096,9 @@ $idEvento = (int) $idInformado;
                 </div>
 
             </section>
+            </div>
 
+            </div>
         </main>
 
 
@@ -2463,7 +2442,7 @@ $idEvento = (int) $idInformado;
             <div class="pin-neon">
 
                 <i
-                    class="fa-solid fa-location-dot"
+                    class="bi bi-geo-alt-fill"
                 ></i>
 
             </div>
@@ -3130,7 +3109,7 @@ $idEvento = (int) $idInformado;
 
                                 style: {
 
-                                    color: "#a8ff00",
+                                    color: "#00ff00",
 
                                     weight: 5,
 

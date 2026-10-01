@@ -2,21 +2,23 @@
                SHOWME - PLANEJAMENTO DE VIAGEM
                ========================================================= */
           
-          @import url('https://fonts.googleapis.com/css2?family=Jost:wght@300;400;500;600;700&family=Poppins:wght@300;400;500;600;700&display=swap');
+          @import url('https://fonts.googleapis.com/css2?family=Anton&family=Oswald:wght@400;500;600;700&family=Jost:wght@300;400;500;600;700&family=Poppins:wght@300;400;500;600;700&display=swap');
           /* =========================================================
                VARIÁVEIS
                ========================================================= */
           
            :root {
-              --verde: #a8ff00;
-              --rosa: #ff4da6;
+              --verde: #00ff00;
+              --verde-hover: #00dd00;
+              --rosa: #ff006e;
+              --rosa-hover: #dd0060;
               --roxo: #8b5cf6;
-              --fundo: #080808;
-              --fundo-card: #111111;
-              --fundo-card-2: #161616;
+              --fundo: #0a0a0a;
+              --fundo-card: #141414;
+              --fundo-card-2: #1e1e1e;
               --texto: #ffffff;
-              --texto-secundario: #b8b8b8;
-              --borda: rgba(168, 255, 0, 0.25);
+              --texto-secundario: #bdbdbd;
+              --borda: rgba(0, 255, 0, 0.25);
           }
           /* =========================================================
                RESET
@@ -34,9 +36,9 @@
           
           body {
               min-height: 100vh;
-              background: radial-gradient( circle at 15% 10%, rgba(168, 255, 0, 0.06), transparent 30%), radial-gradient( circle at 85% 30%, rgba(255, 77, 166, 0.05), transparent 30%), var(--fundo);
+              background: radial-gradient( circle at 15% 10%, rgba(0, 255, 0, 0.06), transparent 30%), radial-gradient( circle at 85% 30%, rgba(255, 0, 110, 0.05), transparent 30%), var(--fundo);
               color: var(--texto);
-              font-family: 'Poppins', sans-serif;
+              font-family: 'Open Sans', 'Poppins', 'Jost', 'Segoe UI', sans-serif;
           }
           /* =========================================================
                HEADER
@@ -75,17 +77,21 @@
               color: var(--texto-secundario);
               font-size: 13px;
           }
+
+          .planejamento-evento-atual {
+              width: min(1150px, 92%);
+              margin: 28px auto -28px;
+              color: var(--texto-secundario);
+              font-size: 14px;
+              text-align: right;
+          }
           /* =========================================================
                CONTAINER PRINCIPAL
                ========================================================= */
           
           .planejamento-container {
-              width: min(1150px, 92%);
+              width: min(1150px, 100%);
               margin: 55px auto 80px;
-              display: grid;
-              grid-template-columns: 220px 1fr;
-              gap: 55px;
-              align-items: start;
           }
           /* =========================================================
                PROGRESSO
@@ -165,7 +171,7 @@
               border-color: var(--verde);
               background: var(--verde);
               color: #000;
-              box-shadow: 0 0 15px rgba(168, 255, 0, .4);
+              box-shadow: 0 0 15px rgba(0, 255, 0, .4);
           }
           /* Passo concluído */
           
@@ -186,8 +192,8 @@
               min-height: 620px;
               padding: 45px;
               border-radius: 18px;
-              background: linear-gradient( 145deg, rgba(255, 255, 255, .035), rgba(255, 255, 255, .015));
-              border: 1px solid rgba(255, 255, 255, .09);
+              background: var(--fundo-card);
+              border: 2px solid var(--verde);
               box-shadow: 0 25px 70px rgba(0, 0, 0, .35);
           }
           /* =========================================================
@@ -231,8 +237,8 @@
               display: flex;
               justify-content: center;
               align-items: center;
-              background: rgba(168, 255, 0, .08);
-              border: 1px solid rgba(168, 255, 0, .3);
+              background: rgba(0, 255, 0, .08);
+              border: 1px solid rgba(0, 255, 0, .3);
               color: var(--verde);
               font-size: 21px;
           }
@@ -286,7 +292,7 @@
           input:focus,
           textarea:focus {
               border-color: var(--verde);
-              box-shadow: 0 0 0 3px rgba(168, 255, 0, .07);
+              box-shadow: 0 0 0 3px rgba(0, 255, 0, .07);
           }
           
           input::placeholder,
@@ -301,7 +307,7 @@
               margin: 18px 0 25px;
               padding: 14px 16px;
               border-left: 3px solid var(--rosa);
-              background: rgba(255, 77, 166, .06);
+              background: rgba(255, 0, 110, .06);
               color: #ddd;
               font-size: 13px;
               border-radius: 5px;
@@ -314,8 +320,8 @@
               padding: 17px;
               margin: 20px 0;
               border-radius: 10px;
-              border: 1px solid rgba(168, 255, 0, .2);
-              background: rgba(168, 255, 0, .04);
+              border: 1px solid rgba(0, 255, 0, .2);
+              background: rgba(0, 255, 0, .04);
               display: flex;
               flex-direction: column;
               gap: 4px;
@@ -359,10 +365,10 @@
           }
           
           .opcao:hover {
-              border-color: var(--verde);
-              background: rgba(168, 255, 0, .05);
+              border-color: var(--verde-hover);
+              background: rgba(0, 255, 0, .05);
               transform: translateY(-2px);
-              box-shadow: 0 5px 20px rgba(168, 255, 0, .08);
+              box-shadow: 0 5px 20px rgba(0, 255, 0, .08);
           }
           
           .opcao strong {
@@ -408,7 +414,7 @@
           .botoes button:last-child:hover,
           #etapa1>button:hover {
               transform: translateY(-2px);
-              box-shadow: 0 0 20px rgba(168, 255, 0, .3);
+              box-shadow: 0 0 20px rgba(0, 255, 0, .3);
           }
           
           .botoes {
@@ -430,8 +436,8 @@
           }
           
           .botoes button:first-child:hover {
-              border-color: var(--rosa);
-              color: var(--rosa);
+              border-color: var(--rosa-hover);
+              color: var(--rosa-hover);
           }
           /* =========================================================
                MAPA / ETAPA ROTA
@@ -452,8 +458,8 @@
               margin: 20px 0;
               padding: 17px;
               border-radius: 10px;
-              border: 1px solid rgba(255, 77, 166, .25);
-              background: rgba(255, 77, 166, .035);
+              border: 1px solid rgba(255, 0, 110, .25);
+              background: rgba(255, 0, 110, .035);
           }
           
           .localizacao-box strong {
@@ -487,7 +493,7 @@
           }
           
           .localizacao-box button:hover {
-              background: var(--rosa);
+              background: var(--rosa-hover);
               color: #000;
           }
           /* MAPA */
@@ -498,8 +504,8 @@
               margin: 20px 0;
               border-radius: 12px;
               overflow: hidden;
-              border: 1px solid rgba(168, 255, 0, .35);
-              box-shadow: 0 0 25px rgba(168, 255, 0, .06);
+              border: 1px solid rgba(0, 255, 0, .35);
+              box-shadow: 0 0 25px rgba(0, 255, 0, .06);
           }
           /* Leaflet */
           
@@ -631,9 +637,9 @@
           .form-planejamento-api {
               margin-top: 24px;
               padding: 22px;
-              border: 1px solid rgba(168, 255, 0, .35);
+              border: 1px solid rgba(0, 255, 0, .35);
               border-radius: 12px;
-              background: rgba(168, 255, 0, .035);
+              background: rgba(0, 255, 0, .035);
           }
 
           .form-planejamento-api h3 {
@@ -674,7 +680,7 @@
           .campos-planejamento-api select:focus {
               border-color: var(--verde);
               outline: none;
-              box-shadow: 0 0 0 3px rgba(168, 255, 0, .07);
+              box-shadow: 0 0 0 3px rgba(0, 255, 0, .07);
           }
 
           .mensagem-planejamento-api {
@@ -706,8 +712,8 @@
               margin-top: 20px;
               padding: 20px;
               border-radius: 12px;
-              border: 1px solid rgba(168, 255, 0, .15);
-              background: rgba(168, 255, 0, .025);
+              border: 1px solid rgba(0, 255, 0, .15);
+              background: rgba(0, 255, 0, .025);
           }
           
           .dicas h3 {
@@ -772,7 +778,7 @@
           .botao-localizacao:hover,
           .botao-origem:hover {
               transform: translateY(-2px);
-              box-shadow: 0 0 18px rgba(168, 255, 0, .25);
+              box-shadow: 0 0 18px rgba(0, 255, 0, .25);
           }
           
           .separador-rota {
@@ -821,9 +827,9 @@
           .navegacao-box {
               margin-top: 20px;
               padding: 18px;
-              border: 1px solid rgba(168, 255, 0, .18);
+              border: 1px solid rgba(0, 255, 0, .18);
               border-radius: 12px;
-              background: rgba(168, 255, 0, .025);
+              background: rgba(0, 255, 0, .025);
           }
           
           .navegacao-box h3 {
@@ -839,11 +845,7 @@
                RESPONSIVIDADE
                ========================================================= */
           
-          @media (max-width: 900px) {
-              .planejamento-container {
-                  grid-template-columns: 1fr;
-                  gap: 30px;
-              }
+          @media (max-width: 991.98px) {
               .progresso {
                   position: relative;
                   top: 0;
@@ -876,7 +878,7 @@
               }
           }
           
-          @media (max-width: 600px) {
+          @media (max-width: 767.98px) {
               .header-planejamento-section {
                   padding: 20px;
               }
@@ -884,12 +886,38 @@
                   font-size: 22px;
               }
               .planejamento-container {
-                  width: 94%;
+                  width: 100%;
                   margin-top: 30px;
+                  padding-right: 14px;
+                  padding-left: 14px;
+              }
+              .planejamento-evento-atual {
+                  width: 94%;
+                  margin: 20px auto 0;
+                  text-align: left;
               }
               .card-planejamento {
                   padding: 22px;
                   border-radius: 13px;
+              }
+              .timeline {
+                  display: grid;
+                  grid-template-columns: repeat(5, minmax(0, 1fr));
+                  width: 100%;
+              }
+              .timeline::before {
+                  left: 10%;
+                  right: 10%;
+                  width: 80%;
+              }
+              .passo {
+                  min-width: 0;
+              }
+              .passo span {
+                  max-width: 100%;
+                  font-size: clamp(8px, 2.4vw, 10px);
+                  line-height: 1.25;
+                  overflow-wrap: anywhere;
               }
               .titulo-card h2 {
                   font-size: 20px;

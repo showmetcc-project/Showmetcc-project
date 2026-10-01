@@ -21,13 +21,13 @@ $termoBuscaEscapado = htmlspecialchars($termoBusca, ENT_QUOTES, 'UTF-8');
 
   <link href="https://fonts.googleapis.com" rel="preconnect">
   <link href="https://fonts.gstatic.com" rel="preconnect" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Anton&family=Oswald:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Anton&family=Oswald:wght@400;500;600;700&family=Open+Sans:wght@300;400;500;600;700;800&family=Poppins:wght@300;400;500;600;700;800&family=Jost:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 
   <link href="assets/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
   <link href="assets/vendor/bootstrap-icons/bootstrap-icons.css" rel="stylesheet">
-  <link href="assets/css/main.css" rel="stylesheet">
   <link href="assets/css/cardsEvento.css" rel="stylesheet">
   <link href="assets/css/resultadosBusca.css" rel="stylesheet">
+  <link href="assets/css/main.css" rel="stylesheet">
 </head>
 
 <body class="com-cabecalho-padrao">
@@ -47,11 +47,11 @@ $termoBuscaEscapado = htmlspecialchars($termoBusca, ENT_QUOTES, 'UTF-8');
 
       <section
         id="resultadosBuscaGrid"
-        class="resultados-busca-grid"
+        class="resultados-busca-grid row g-4"
         aria-live="polite"
         aria-busy="true"
       >
-        <p class="estado-resultados-busca">Carregando resultados...</p>
+        <p class="estado-resultados-busca col-12">Carregando resultados...</p>
       </section>
     </div>
   </main>

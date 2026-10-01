@@ -10,21 +10,28 @@
     <link href="assets/img/showme.png" rel="icon">
     <link href="https://fonts.googleapis.com" rel="preconnect">
     <link href="https://fonts.gstatic.com" rel="preconnect" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Anton&family=Oswald:wght@400;500;600;700&family=Poppins:wght@300;400;500;600;700&family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
     <link href="assets/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
     <link href="assets/vendor/bootstrap-icons/bootstrap-icons.css" rel="stylesheet">
-    <link href="assets/css/main.css" rel="stylesheet">
     <link href="assets/css/admin.css" rel="stylesheet">
+    <link href="assets/css/main.css" rel="stylesheet">
 </head>
 
-<body class="com-cabecalho-padrao">
-    <?php require __DIR__ . '/cabecalho.php'; ?>
+<body class="com-cabecalho-padrao cabecalho-tipo-c pagina-admin">
+    <?php
+    $tipoCabecalho = 'C';
+    $configuracaoCabecalho = [
+        'titulo_primario' => 'Painel',
+        'titulo_secundario' => 'Admin',
+        'mostrar_voltar' => false,
+    ];
+    require __DIR__ . '/cabecalho.php';
+    ?>
 
     <main class="container py-4">
         <section class="header-admin">
             <div class="header-row">
                 <div>
-                    <h1><span class="verde">Painel</span> Administrativo</h1>
                     <p>Gerencie os eventos enviados pelos usuários.</p>
                 </div>
 
@@ -94,7 +101,7 @@
                             </div>
                             <div class="col-md-7">
                                 <label for="localEventoEdicao" class="form-label">Local</label>
-                                <input type="text" class="form-control" id="localEventoEdicao" maxlength="255">
+                                <input type="text" class="form-control" id="localEventoEdicao" maxlength="100">
                             </div>
                             <div class="col-md-3">
                                 <label for="dataEventoEdicao" class="form-label">Data</label>
@@ -103,6 +110,26 @@
                             <div class="col-md-2">
                                 <label for="horarioEventoEdicao" class="form-label">Horário</label>
                                 <input type="time" class="form-control" id="horarioEventoEdicao">
+                            </div>
+                            <div class="col-12">
+                                <label for="ruaEventoEdicao" class="form-label">Rua / endereço</label>
+                                <input type="text" class="form-control" id="ruaEventoEdicao" maxlength="100">
+                            </div>
+                            <div class="col-md-8">
+                                <label for="cidadeEventoEdicao" class="form-label">Cidade</label>
+                                <input type="text" class="form-control" id="cidadeEventoEdicao" maxlength="100">
+                            </div>
+                            <div class="col-md-4">
+                                <label for="ufEventoEdicao" class="form-label">UF</label>
+                                <input type="text" class="form-control" id="ufEventoEdicao" maxlength="2" pattern="[A-Za-z]{2}">
+                            </div>
+                            <div class="col-md-5">
+                                <label for="categoriaEventoEdicao" class="form-label">Categoria</label>
+                                <input type="text" class="form-control" id="categoriaEventoEdicao" maxlength="100">
+                            </div>
+                            <div class="col-md-7">
+                                <label for="linkOficialEdicao" class="form-label">Link oficial</label>
+                                <input type="url" class="form-control" id="linkOficialEdicao" maxlength="255">
                             </div>
                             <div class="col-md-4">
                                 <label for="gratuidadeEdicao" class="form-label">Tipo</label>
@@ -118,6 +145,10 @@
                             <div class="col-12">
                                 <label for="descricaoArtistaEdicao" class="form-label">Artista / atração</label>
                                 <textarea class="form-control" id="descricaoArtistaEdicao" rows="3" maxlength="1000"></textarea>
+                            </div>
+                            <div class="col-12">
+                                <label for="nomeArtistaSolicitadoEdicao" class="form-label">Nome do artista / atração</label>
+                                <input type="text" class="form-control" id="nomeArtistaSolicitadoEdicao" maxlength="150">
                             </div>
                         </div>
 

@@ -2,7 +2,10 @@ openapi: 3.0.3
 info:
   title: API REST ShowMe
   version: 1.0.0
-  description: API em PHP puro para usuários, sessões, eventos, favoritos, planejamentos e avaliações.
+  description: >-
+    API em PHP puro para usuários, sessões, eventos, favoritos, planejamentos e avaliações.
+    Campos DATE usam YYYY-MM-DD; campos DATETIME usam ISO 8601/RFC 3339 com o fuso
+    America/Sao_Paulo, por exemplo 2026-09-21T14:30:00-03:00.
 
 servers:
   - url: ./
@@ -213,7 +216,7 @@ paths:
     get:
       tags: [Eventos]
       summary: Lista eventos públicos ou solicitações para moderação
-      description: Sem parâmetros, lista todos os eventos. Com busca, filtra eventos por nome, cidade, categoria ou artista. Com solicitacoes, consulta a tabela de solicitações e exige uma sessão de administrador; esse parâmetro não pode ser combinado com busca ou limite.
+      description: Sem parâmetros, lista somente eventos ativos. Com busca, filtra eventos ativos por nome, cidade, categoria ou artista. Com solicitacoes, consulta a tabela de solicitações e exige uma sessão de administrador; esse parâmetro não pode ser combinado com busca, limite ou incluir_cancelados.
       parameters:
         - name: busca
           in: query
@@ -239,6 +242,14 @@ paths:
             type: string
             enum: [pendente, aprovado, recusado, todas]
           example: pendente
+        - name: incluir_cancelados
+          in: query
+          required: false
+          description: Use 1 para incluir eventos cancelados. Restrito a administradores.
+          schema:
+            type: integer
+            enum: [0, 1]
+            default: 0
       responses:
         '200':
           description: Lista de eventos públicos ou de solicitações administrativas
@@ -267,7 +278,7 @@ paths:
     post:
       tags: [Eventos]
       summary: Cria uma solicitação de evento
-      description: O evento permanece pendente até a análise de um administrador. Exige exatamente uma foto JPG, PNG ou WebP, com até 10 MB; vídeos não são aceitos. A API atual não possui edição de solicitação pendente; cada POST cria uma nova solicitação, portanto não há substituição de foto neste fluxo.
+      description: O evento permanece pendente até a análise de um administrador. Exige exatamente uma foto JPG, PNG ou WebP, com até 10 MB; vídeos não são aceitos. Os dados textuais da solicitação pendente podem ser corrigidos por um administrador com PUT e acao=editar_solicitacao; a foto original é preservada.
       security:
         - cookieAuth: []
       requestBody:
@@ -297,8 +308,17 @@ paths:
     get:
       tags: [Eventos]
       summary: Consulta um evento aprovado
+      description: Por padrão, eventos cancelados retornam 404. Um administrador pode consultá-los com incluir_cancelados=1.
       parameters:
         - $ref: '#/components/parameters/IdNaRota'
+        - name: incluir_cancelados
+          in: query
+          required: false
+          description: Use 1 para permitir o retorno de um evento cancelado. Restrito a administradores.
+          schema:
+            type: integer
+            enum: [0, 1]
+            default: 0
       responses:
         '200':
           description: Evento encontrado
@@ -311,10 +331,20 @@ paths:
                     $ref: '#/components/schemas/EventoDetalhe'
         '404':
           $ref: '#/components/responses/NaoEncontrado'
+        '401':
+          $ref: '#/components/responses/NaoAutenticado'
+        '403':
+          $ref: '#/components/responses/Proibido'
     put:
       tags: [Eventos]
       summary: Edita/modera uma solicitação ou edita um evento publicado
-      description: Use acao=editar_solicitacao para corrigir uma solicitação ainda pendente, acao=moderar para aprová-la ou recusá-la e acao=editar quando o ID representar um evento já publicado. A edição da solicitação preserva a foto enviada pelo usuário.
+      description: >-
+        Use acao=editar_solicitacao para corrigir uma solicitação ainda pendente,
+        acao=aprovar ou acao=recusar para decidir diretamente, acao=moderar com
+        status_solicitacao para manter compatibilidade, e acao=editar quando o ID
+        representar um evento já publicado. Ao aprovar, todos os campos são
+        promovidos para evento, id_solicitacao_origem é preenchido e o artista é
+        criado ou reutilizado por nome normalizado. A edição preserva a foto enviada.
       security:
         - cookieAuth: []
       parameters:
@@ -802,6 +832,7 @@ components:
         email:
           type: string
           format: email
+          maxLength: 100
         senha:
           type: string
           format: password
@@ -878,19 +909,28 @@ components:
       properties:
         id_evento:
           type: integer
+        id_solicitacao_origem:
+          type: integer
+          nullable: true
+          readOnly: true
         num_evento:
           type: integer
           nullable: true
+          readOnly: true
+          description: Campo legado, mantido no banco e sem uso definido pela API.
         nome_evento:
           type: string
         local_evento:
           type: string
+          maxLength: 100
           nullable: true
         rua_evento:
           type: string
+          maxLength: 100
           nullable: true
         cidade_evento:
           type: string
+          maxLength: 100
           nullable: true
         uf:
           type: string
@@ -902,16 +942,24 @@ components:
           type: string
           format: date
           nullable: true
+        horario_evento:
+          type: string
+          format: time
+          nullable: true
         gratuidade:
           type: boolean
         categoria_evento:
           type: string
+          maxLength: 100
           nullable: true
         link_oficial:
           type: string
+          format: uri
+          maxLength: 255
           nullable: true
         imagem_evento:
           type: string
+          maxLength: 255
           nullable: true
         status_evento:
           type: string
@@ -944,14 +992,15 @@ components:
 
     ModeracaoSolicitacao:
       type: object
-      required: [status_solicitacao]
+      required: [acao]
       properties:
         acao:
           type: string
-          enum: [moderar]
+          enum: [aprovar, recusar, moderar]
         status_solicitacao:
           type: string
           enum: [aprovado, recusado]
+          description: Obrigatório somente quando acao for moderar.
 
     EdicaoSolicitacao:
       type: object
@@ -973,6 +1022,28 @@ components:
           nullable: true
         local_evento:
           type: string
+          maxLength: 100
+          nullable: true
+        rua_evento:
+          type: string
+          maxLength: 100
+          nullable: true
+        cidade_evento:
+          type: string
+          maxLength: 100
+          nullable: true
+        uf:
+          type: string
+          minLength: 2
+          maxLength: 2
+          nullable: true
+        categoria_evento:
+          type: string
+          maxLength: 100
+          nullable: true
+        link_oficial:
+          type: string
+          format: uri
           maxLength: 255
           nullable: true
         gratuidade:
@@ -985,6 +1056,10 @@ components:
           type: string
           maxLength: 1000
           nullable: true
+        nome_artista_solicitado:
+          type: string
+          maxLength: 150
+          nullable: true
 
     EventoAtualizacao:
       type: object
@@ -993,21 +1068,20 @@ components:
         acao:
           type: string
           enum: [editar]
-        num_evento:
-          type: integer
-          minimum: 1
-          nullable: true
         nome_evento:
           type: string
           maxLength: 100
         local_evento:
           type: string
+          maxLength: 100
           nullable: true
         rua_evento:
           type: string
+          maxLength: 100
           nullable: true
         cidade_evento:
           type: string
+          maxLength: 100
           nullable: true
         uf:
           type: string
@@ -1022,16 +1096,24 @@ components:
           type: string
           format: date
           nullable: true
+        horario_evento:
+          type: string
+          format: time
+          nullable: true
         gratuidade:
           type: boolean
         categoria_evento:
           type: string
+          maxLength: 100
           nullable: true
         link_oficial:
           type: string
+          format: uri
+          maxLength: 255
           nullable: true
         imagem_evento:
           type: string
+          maxLength: 255
           nullable: true
         status_evento:
           type: string
@@ -1057,14 +1139,43 @@ components:
           nullable: true
         local_evento:
           type: string
+          maxLength: 100
+          nullable: true
+        rua_evento:
+          type: string
+          maxLength: 100
+          nullable: true
+        cidade_evento:
+          type: string
+          maxLength: 100
+          nullable: true
+        uf:
+          type: string
+          minLength: 2
+          maxLength: 2
+          nullable: true
+        categoria_evento:
+          type: string
+          maxLength: 100
+          nullable: true
+        link_oficial:
+          type: string
+          format: uri
+          maxLength: 255
           nullable: true
         gratuidade:
           type: boolean
         descricao_evento:
           type: string
+          maxLength: 1000
           nullable: true
         descricao_artista:
           type: string
+          maxLength: 1000
+          nullable: true
+        nome_artista_solicitado:
+          type: string
+          maxLength: 150
           nullable: true
 
     SolicitacaoResultado:
@@ -1107,17 +1218,46 @@ components:
         local_evento:
           type: string
           nullable: true
+        rua_evento:
+          type: string
+          maxLength: 100
+          nullable: true
+        cidade_evento:
+          type: string
+          maxLength: 100
+          nullable: true
+        uf:
+          type: string
+          minLength: 2
+          maxLength: 2
+          nullable: true
+        categoria_evento:
+          type: string
+          maxLength: 100
+          nullable: true
+        link_oficial:
+          type: string
+          format: uri
+          maxLength: 255
+          nullable: true
         gratuidade:
           type: boolean
         descricao_evento:
           type: string
+          maxLength: 1000
           nullable: true
         descricao_artista:
           type: string
+          maxLength: 1000
+          nullable: true
+        nome_artista_solicitado:
+          type: string
+          maxLength: 150
           nullable: true
         data_solicitacao:
           type: string
-          example: '2026-09-10 14:30:00'
+          format: date-time
+          example: '2026-09-10T14:30:00-03:00'
         nome_user:
           type: string
         sobrenome:

@@ -1,52 +1,13 @@
 <?php
 
-header("Content-Type: application/json; charset=UTF-8");
-header("Access-Control-Allow-Origin: *");
-header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS");
-header("Access-Control-Allow-Headers: Content-Type");
-
-if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
-    http_response_code(200);
-    exit();
-}
-
-function responder($dados, $status = 200)
-{
-    http_response_code($status);
-    echo json_encode($dados, JSON_UNESCAPED_UNICODE);
-    exit();
-}
-
-function lerJson(): array
-{
-    $dados = json_decode(file_get_contents('php://input'), true);
-
-    if (!is_array($dados)) {
-        responder(['erro' => 'Corpo JSON inválido'], 400);
-    }
-
-    return $dados;
-}
-
-if (session_status() !== PHP_SESSION_ACTIVE) {
-    session_start();
-}
+require_once __DIR__ . '/middleware/apiCommon.php';
 
 require_once dirname(__DIR__) . '/config/conexao.php';
+require_once __DIR__ . '/middleware/apiHelper.php';
 require_once __DIR__ . '/middleware/verifica_login.php';
 
 $metodo = $_SERVER['REQUEST_METHOD'];
-$id = null;
-
-if (array_key_exists('id', $_GET)) {
-    $idInformado = $_GET['id'];
-
-    if (!is_string($idInformado) || !ctype_digit($idInformado) || (int) $idInformado < 1) {
-        responder(['erro' => 'O ID deve ser um inteiro positivo'], 400);
-    }
-
-    $id = (int) $idInformado;
-}
+$id = obterIdApi();
 
 $idUsuario = exigirLogin();
 
@@ -65,15 +26,12 @@ switch ($metodo) {
              ORDER BY e.data_evento ASC'
         );
         $stmt->bind_param('i', $idUsuario);
-        $stmt->execute();
+        executarStatementApi($stmt);
         $resultado = $stmt->get_result();
         $favoritos = [];
 
         while ($favorito = $resultado->fetch_assoc()) {
-            $favorito['id_favorito'] = (int) $favorito['id_favorito'];
-            $favorito['id_evento'] = (int) $favorito['id_evento'];
-            $favorito['gratuidade'] = (bool) $favorito['gratuidade'];
-            $favoritos[] = $favorito;
+            $favoritos[] = normalizarFavoritoApi($favorito);
         }
         $stmt->close();
 
@@ -93,7 +51,7 @@ switch ($metodo) {
 
         $stmt = $conn->prepare('SELECT id_evento FROM evento WHERE id_evento = ? LIMIT 1');
         $stmt->bind_param('i', $idEvento);
-        $stmt->execute();
+        executarStatementApi($stmt);
         $stmt->store_result();
 
         if ($stmt->num_rows === 0) {
@@ -106,7 +64,7 @@ switch ($metodo) {
             'SELECT id_favorito FROM favoritos WHERE id_user = ? AND id_evento = ? LIMIT 1'
         );
         $stmt->bind_param('ii', $idUsuario, $idEvento);
-        $stmt->execute();
+        executarStatementApi($stmt);
         $stmt->store_result();
 
         if ($stmt->num_rows > 0) {
@@ -117,13 +75,16 @@ switch ($metodo) {
 
         $stmt = $conn->prepare('INSERT INTO favoritos (id_user, id_evento) VALUES (?, ?)');
         $stmt->bind_param('ii', $idUsuario, $idEvento);
-        $stmt->execute();
+        executarStatementApi($stmt);
         $idFavorito = $conn->insert_id;
         $stmt->close();
 
         responder([
             'mensagem' => 'Favorito adicionado com sucesso',
-            'favorito' => ['id_favorito' => $idFavorito, 'id_evento' => $idEvento]
+            'favorito' => normalizarFavoritoApi([
+                'id_favorito' => $idFavorito,
+                'id_evento' => $idEvento,
+            ])
         ], 201);
 
     case 'DELETE':
@@ -135,7 +96,7 @@ switch ($metodo) {
             'DELETE FROM favoritos WHERE id_favorito = ? AND id_user = ?'
         );
         $stmt->bind_param('ii', $id, $idUsuario);
-        $stmt->execute();
+        executarStatementApi($stmt);
         $removido = $stmt->affected_rows;
         $stmt->close();
 

@@ -21,7 +21,7 @@ $googleClientId = is_array($googleConfig) ? trim((string) ($googleConfig['client
     <!-- Fonts -->
     <link href="https://fonts.googleapis.com" rel="preconnect">
     <link href="https://fonts.gstatic.com" rel="preconnect" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,300;1,400;1,500;1,600;1,700;1,800&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Jost:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap"
+    <link href="https://fonts.googleapis.com/css2?family=Anton&family=Oswald:wght@400;500;600;700&family=Open+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,300;1,400;1,500;1,600;1,700;1,800&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Jost:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap"
         rel="stylesheet">
 
     <!-- Vendor CSS Files -->
@@ -33,20 +33,12 @@ $googleClientId = is_array($googleConfig) ? trim((string) ($googleConfig['client
 
     <!-- Principal CSS File -->
     <link href="assets/css/main.css" rel="stylesheet">
-
-
-    <!--Google fontes, Anton-->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Anton&family=Archivo+Black&family=Bodoni+Moda:ital,opsz,wght@0,6..96,400..900;1,6..96,400..900&family=Libertinus+Serif+Display&family=Noto+Sans+JP:wght@100..900&family=Noto+Serif:ital,wght@0,100..900;1,100..900&family=Open+Sans:ital,wght@0,300..800;1,300..800&family=Roboto+Condensed:ital,wght@0,100..900;1,100..900&family=Story+Script&family=Vend+Sans:ital,wght@0,300..700;1,300..700&display=swap"
-        rel="stylesheet">
-
 </head>
 
 
 <body class="index-page">
 
-    <a href="index.php" class="voltar-home-auth" aria-label="Voltar para a página inicial" title="Voltar para a página inicial">
+    <a href="index.php" class="voltar-home-auth" data-voltar-fallback="index.php" aria-label="Voltar para a página anterior" title="Voltar">
         <i class="bi bi-arrow-left"></i>
     </a>
 
@@ -170,6 +162,7 @@ $googleClientId = is_array($googleConfig) ? trim((string) ($googleConfig['client
 
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     <script src="assets/js/googleLogin.js" defer></script>
+    <script src="assets/js/cabecalho.js" defer></script>
 
     <?php require_once __DIR__ . '/acessibilidade.php'; ?>
 

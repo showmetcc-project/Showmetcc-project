@@ -1,71 +1,13 @@
 <?php
 
-header("Content-Type: application/json; charset=UTF-8");
-header("Access-Control-Allow-Origin: *");
-header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS");
-header("Access-Control-Allow-Headers: Content-Type");
-
-if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
-    http_response_code(200);
-    exit();
-}
-
-function responder($dados, $status = 200)
-{
-    http_response_code($status);
-    echo json_encode($dados, JSON_UNESCAPED_UNICODE);
-    exit();
-}
-
-function lerJson(): array
-{
-    $conteudo = file_get_contents('php://input');
-
-    if ($conteudo === false || trim($conteudo) === '') {
-        responder(['erro' => 'Nenhum dado foi enviado'], 400);
-    }
-
-    $dados = json_decode($conteudo, true);
-
-    if (json_last_error() !== JSON_ERROR_NONE || !is_array($dados)) {
-        responder([
-            'erro' => 'Corpo JSON inválido',
-            'detalhes' => json_last_error_msg()
-        ], 400);
-    }
-
-    return $dados;
-}
-
-if (session_status() !== PHP_SESSION_ACTIVE) {
-    session_start();
-}
+require_once __DIR__ . '/middleware/apiCommon.php';
 
 require_once dirname(__DIR__) . '/config/conexao.php';
+require_once __DIR__ . '/middleware/apiHelper.php';
+require_once __DIR__ . '/middleware/uploadHelper.php';
 
 $metodo = $_SERVER['REQUEST_METHOD'];
-$id = null;
-
-/*
-|--------------------------------------------------------------------------
-| ID DA URL
-|--------------------------------------------------------------------------
-*/
-
-if (array_key_exists('id', $_GET)) {
-
-    $idInformado = $_GET['id'];
-
-    if (
-        !is_string($idInformado) ||
-        !ctype_digit($idInformado) ||
-        (int) $idInformado < 1
-    ) {
-        responder(['erro' => 'O ID deve ser um inteiro positivo'], 400);
-    }
-
-    $id = (int) $idInformado;
-}
+$id = obterIdApi();
 
 /*
 |--------------------------------------------------------------------------
@@ -80,7 +22,7 @@ if ($metodo === 'POST') {
         responder(['erro' => 'O cadastro não recebe ID na URL'], 400);
     }
 
-    $dados = lerJson();
+    $dados = lerJson(true);
 
     $nome = trim((string) ($dados['nome'] ?? ''));
     $sobrenome = trim((string) ($dados['sobrenome'] ?? ''));
@@ -91,6 +33,20 @@ if ($metodo === 'POST') {
         responder([
             'erro' => 'Nome e sobrenome são obrigatórios'
         ], 400);
+    }
+
+    $erroLimite = validarLimitesTextoApi([
+        'nome' => $nome,
+        'sobrenome' => $sobrenome,
+        'email' => $email,
+    ], [
+        'nome' => 100,
+        'sobrenome' => 100,
+        'email' => 100,
+    ]);
+
+    if ($erroLimite !== null) {
+        responder(['erro' => $erroLimite], 400);
     }
 
     if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
@@ -119,13 +75,14 @@ if ($metodo === 'POST') {
     );
 
     if (!$stmt) {
-        responder([
-            'erro' => 'Erro ao preparar consulta no banco'
-        ], 500);
+        responderErroInfraestrutura(
+            'Falha ao preparar consulta de e-mail',
+            new RuntimeException($conn->error)
+        );
     }
 
     $stmt->bind_param('s', $email);
-    $stmt->execute();
+    executarStatementApi($stmt);
     $stmt->store_result();
 
     if ($stmt->num_rows > 0) {
@@ -159,9 +116,10 @@ if ($metodo === 'POST') {
     );
 
     if (!$stmt) {
-        responder([
-            'erro' => 'Erro ao preparar cadastro no banco'
-        ], 500);
+        responderErroInfraestrutura(
+            'Falha ao preparar cadastro de usuário',
+            new RuntimeException($conn->error)
+        );
     }
 
     $stmt->bind_param(
@@ -172,31 +130,23 @@ if ($metodo === 'POST') {
         $senhaHash
     );
 
-    if (!$stmt->execute()) {
-
-        $erroBanco = $stmt->error;
-
-        $stmt->close();
-
-        responder([
-            'erro' => 'Não foi possível cadastrar o usuário',
-            'detalhes' => $erroBanco
-        ], 500);
-    }
+    executarStatementApi($stmt);
 
     $novoId = $conn->insert_id;
 
     $stmt->close();
 
+    $usuarioCriado = normalizarUsuarioApi([
+        'id_user' => $novoId,
+        'nome_user' => $nome,
+        'sobrenome' => $sobrenome,
+        'email_user' => $email,
+        'tipo_usuario' => 'comum'
+    ]);
+
     responder([
         'mensagem' => 'Usuário cadastrado com sucesso',
-        'usuario' => [
-            'id_user' => $novoId,
-            'nome_user' => $nome,
-            'sobrenome' => $sobrenome,
-            'email_user' => $email,
-            'tipo_usuario' => 'comum'
-        ]
+        'usuario' => $usuarioCriado
     ], 201);
 }
 
@@ -241,7 +191,7 @@ if ($metodo === 'GET') {
     );
 
     $stmt->bind_param('i', $id);
-    $stmt->execute();
+    executarStatementApi($stmt);
 
     $usuario = $stmt->get_result()->fetch_assoc();
 
@@ -254,7 +204,7 @@ if ($metodo === 'GET') {
     }
 
     responder([
-        'usuario' => $usuario
+        'usuario' => normalizarUsuarioApi($usuario)
     ]);
 }
 
@@ -280,7 +230,7 @@ if ($metodo === 'PUT') {
         ], 403);
     }
 
-    $dados = lerJson();
+    $dados = lerJson(true);
 
     $camposEditaveis = [
         'nome',
@@ -308,7 +258,7 @@ if ($metodo === 'PUT') {
     );
 
     $stmt->bind_param('i', $id);
-    $stmt->execute();
+    executarStatementApi($stmt);
 
     $usuarioAtual = $stmt->get_result()->fetch_assoc();
 
@@ -340,6 +290,20 @@ if ($metodo === 'PUT') {
         ], 400);
     }
 
+    $erroLimite = validarLimitesTextoApi([
+        'nome' => $nome,
+        'sobrenome' => $sobrenome,
+        'email' => $email,
+    ], [
+        'nome' => 100,
+        'sobrenome' => 100,
+        'email' => 100,
+    ]);
+
+    if ($erroLimite !== null) {
+        responder(['erro' => $erroLimite], 400);
+    }
+
     if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
         responder([
             'erro' => 'E-mail inválido'
@@ -355,7 +319,7 @@ if ($metodo === 'PUT') {
     );
 
     $stmt->bind_param('si', $email, $id);
-    $stmt->execute();
+    executarStatementApi($stmt);
     $stmt->store_result();
 
     if ($stmt->num_rows > 0) {
@@ -420,24 +384,27 @@ if ($metodo === 'PUT') {
         );
     }
 
-    if (!$stmt->execute()) {
-
-        $erroBanco = $stmt->error;
-
-        $stmt->close();
-
-        responder([
-            'erro' => 'Não foi possível atualizar o perfil',
-            'detalhes' => $erroBanco
-        ], 500);
-    }
+    executarStatementApi($stmt);
 
     $stmt->close();
 
     $_SESSION['nome_user'] = $nome;
 
+    $stmt = $conn->prepare(
+        'SELECT id_user, nome_user, sobrenome, email_user,
+                tipo_usuario, data_cadastro
+         FROM usuario
+         WHERE id_user = ?
+         LIMIT 1'
+    );
+    $stmt->bind_param('i', $id);
+    executarStatementApi($stmt);
+    $usuarioAtualizado = $stmt->get_result()->fetch_assoc();
+    $stmt->close();
+
     responder([
-        'mensagem' => 'Perfil atualizado com sucesso'
+        'mensagem' => 'Perfil atualizado com sucesso',
+        'usuario' => normalizarUsuarioApi($usuarioAtualizado)
     ]);
 }
 
@@ -463,23 +430,62 @@ if ($metodo === 'DELETE') {
         ], 403);
     }
 
-    $stmt = $conn->prepare(
-        'DELETE FROM usuario
-         WHERE id_user = ?'
-    );
+    $caminhosUploads = [];
+    $conn->begin_transaction();
 
-    $stmt->bind_param('i', $id);
-    $stmt->execute();
+    try {
+        $stmt = $conn->prepare(
+            'SELECT am.caminho_arquivo
+             FROM avaliacao_midia am
+             INNER JOIN avaliacao a ON a.id_avaliacao = am.id_avaliacao
+             WHERE a.id_user = ?'
+        );
+        $stmt->bind_param('i', $id);
+        executarStatementApi($stmt);
+        $resultado = $stmt->get_result();
 
-    $removido = $stmt->affected_rows;
+        while ($midia = $resultado->fetch_assoc()) {
+            $caminhosUploads[] = $midia['caminho_arquivo'];
+        }
+        $stmt->close();
 
-    $stmt->close();
+        $stmt = $conn->prepare(
+            'SELECT foto
+             FROM solicitacao
+             WHERE id_user = ? AND foto IS NOT NULL'
+        );
+        $stmt->bind_param('i', $id);
+        executarStatementApi($stmt);
+        $resultado = $stmt->get_result();
 
-    if ($removido === 0) {
-        responder([
-            'erro' => 'Usuário não encontrado'
-        ], 404);
+        while ($solicitacao = $resultado->fetch_assoc()) {
+            $caminhosUploads[] = $solicitacao['foto'];
+        }
+        $stmt->close();
+
+        $stmt = $conn->prepare(
+            'DELETE FROM usuario
+             WHERE id_user = ?'
+        );
+        $stmt->bind_param('i', $id);
+        executarStatementApi($stmt);
+        $removido = $stmt->affected_rows;
+        $stmt->close();
+
+        if ($removido === 0) {
+            $conn->rollback();
+            responder([
+                'erro' => 'Usuário não encontrado'
+            ], 404);
+        }
+
+        $conn->commit();
+    } catch (Throwable $erro) {
+        $conn->rollback();
+        responderErroInfraestrutura('Falha ao excluir conta', $erro);
     }
+
+    removerArquivosUploadSemReferencia($conn, $caminhosUploads);
 
     session_unset();
     session_destroy();

@@ -26,7 +26,7 @@ $googleClientId = is_array($googleConfig) ? trim((string) ($googleConfig['client
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+  <link href="https://fonts.googleapis.com/css2?family=Anton&family=Oswald:wght@400;500;600;700&family=Poppins:wght@300;400;500;600;700&display=swap"
     rel="stylesheet">
 
   <!-- CSS -->
@@ -36,7 +36,7 @@ $googleClientId = is_array($googleConfig) ? trim((string) ($googleConfig['client
 
 <body>
 
-  <a href="index.php" class="voltar-home-auth" aria-label="Voltar para a página inicial" title="Voltar para a página inicial">
+  <a href="index.php" class="voltar-home-auth" data-voltar-fallback="index.php" aria-label="Voltar para a página anterior" title="Voltar">
     <i class="bi bi-arrow-left"></i>
   </a>
 
@@ -199,6 +199,7 @@ $googleClientId = is_array($googleConfig) ? trim((string) ($googleConfig['client
 
   <script src="https://accounts.google.com/gsi/client" async defer></script>
   <script src="assets/js/googleLogin.js" defer></script>
+  <script src="assets/js/cabecalho.js" defer></script>
 
   <?php require_once __DIR__ . '/acessibilidade.php'; ?>
 

@@ -4,15 +4,17 @@
    Footer reutilizado do index
 ========================== */
 
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Anton&family=Oswald:wght@400;500;600;700&family=Poppins:wght@300;400;500;600;700&display=swap');
 
 :root {
-    --bg:     #080808;
-    --card:   #101010;
-    --green:  #39ff14;
-    --pink:   #ff4fa3;
+    --bg:     #0a0a0a;
+    --card:   #141414;
+    --green:  #00ff00;
+    --green-hover: #00dd00;
+    --pink:   #ff006e;
+    --pink-hover: #dd0060;
     --yellow: #ffd84f;
-    --text:   #f5f5f5;
+    --text:   #ffffff;
     --muted:  #bdbdbd;
 }
 
@@ -20,7 +22,7 @@
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-    font-family: 'Poppins', 'Open Sans', sans-serif;
+    font-family: 'Open Sans', 'Poppins', 'Jost', 'Segoe UI', sans-serif;
 }
 
 body {
@@ -91,7 +93,7 @@ body {
     transition: opacity .2s;
 }
 
-.btn-sair:hover { opacity: .75; color: var(--pink); }
+.btn-sair:hover { opacity: .75; color: var(--pink-hover); }
 
 /* Divisor */
 .divider {
@@ -115,7 +117,7 @@ body {
 }
 
 .header-admin h1 {
-    font-size: 2.4rem;
+    font-size: clamp(1.7rem, 4vw, 2.4rem);
     font-weight: 700;
     margin-bottom: 8px;
 }
@@ -137,7 +139,7 @@ body {
     min-width: 240px;
 }
 
-.busca i { color: #666; }
+.busca i { color: #aaa; }
 
 .busca input {
     background: none;
@@ -148,7 +150,7 @@ body {
     width: 100%;
 }
 
-.busca input::placeholder { color: #555; }
+.busca input::placeholder { color: #aaa; }
 
 /* ==========================
    ESTATÍSTICAS / FILTROS
@@ -167,7 +169,7 @@ body {
     width: 52px;
     height: 52px;
     border-radius: 50%;
-    background: #f6f1cf;
+    background: var(--yellow);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -183,7 +185,7 @@ body {
     gap: 10px;
     background: none;
     border: none;
-    color: #d8d8d8;
+    color: #cccccc;
     font-weight: 600;
     font-size: 1rem;
     cursor: pointer;
@@ -208,7 +210,7 @@ body {
 }
 
 .status-item.ativo .badge-count {
-    background: #f6f1cf;
+    background: var(--yellow);
     color: #000;
 }
 
@@ -227,8 +229,8 @@ body {
 ========================== */
 
 .evento-card {
-    background: #111;
-    border: 2px solid #242424;
+    background: var(--card);
+    border: 2px solid var(--green);
     border-radius: 20px;
     overflow: hidden;
     margin-bottom: 20px;
@@ -243,12 +245,12 @@ body {
 
 .evento-card.status-aprovado.expandido {
     border-color: var(--green);
-    box-shadow: 0 0 24px rgba(57, 255, 20, .13);
+    box-shadow: 0 0 24px rgba(0, 255, 0, .13);
 }
 
 .evento-card.status-recusado.expandido {
     border-color: var(--pink);
-    box-shadow: 0 0 24px rgba(255, 79, 163, .13);
+    box-shadow: 0 0 24px rgba(255, 0, 110, .13);
 }
 
 /* HEADER DO CARD */
@@ -273,6 +275,11 @@ body {
     display: flex;
     align-items: center;
     gap: 18px;
+    min-width: 0;
+}
+
+.evento-info > span {
+    min-width: 0;
 }
 
 .evento-icon {
@@ -302,6 +309,7 @@ body {
     font-weight: 700;
     margin-bottom: 3px;
     color: #fff;
+    overflow-wrap: anywhere;
 }
 
 .evento-info small {
@@ -329,7 +337,7 @@ body {
 
 .chevron {
     font-size: 1.1rem;
-    color: #666;
+    color: #aaa;
     transition: transform .25s;
 }
 
@@ -352,7 +360,7 @@ body {
 .campo-info label {
     display: block;
     font-size: 0.78rem;
-    color: #777;
+    color: #aaa;
     margin-bottom: 3px;
     font-weight: 500;
     text-transform: uppercase;
@@ -362,7 +370,7 @@ body {
 .campo-info-label {
     display: block;
     margin-bottom: 3px;
-    color: #777;
+    color: #aaa;
     font-size: 0.78rem;
     font-weight: 500;
     letter-spacing: .04em;
@@ -409,7 +417,7 @@ body {
 .btn-editar {
     background: #1e1e1e;
     border: 2px solid #333;
-    color: #ddd;
+    color: #fff;
 }
 
 .btn-editar:hover {
@@ -418,14 +426,17 @@ body {
 }
 
 .btn-aprovar {
-    background: transparent;
+    background: var(--green);
     border: 2px solid var(--green);
-    color: var(--green);
+    color: #000;
+    font-weight: 700;
 }
 
 .btn-aprovar:hover {
-    background: var(--green);
+    background: var(--green-hover);
     color: #000;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(0, 255, 0, .24);
 }
 
 .btn-reprovar,
@@ -437,7 +448,7 @@ body {
 
 .btn-reprovar:hover,
 .btn-recusar:hover {
-    background: var(--pink);
+    background: var(--pink-hover);
     color: #fff;
 }
 
@@ -448,7 +459,7 @@ body {
 }
 
 .btn-ver-evento:hover {
-    border-color: #888;
+    border-color: var(--green-hover);
     color: #ffffff;
 }
 
@@ -466,7 +477,7 @@ body {
 
 .estado-solicitacoes {
     padding: 38px 24px;
-    border: 1px dashed #343434;
+    border: 1px dashed #333333;
     border-radius: 16px;
     color: var(--muted);
     text-align: center;
@@ -474,29 +485,29 @@ body {
 
 .estado-solicitacoes.erro {
     border-color: var(--pink);
-    color: #ff8ec3;
+    color: var(--pink);
 }
 
 .modal-solicitacao {
-    border: 1px solid #3a3a3a;
+    border: 1px solid #333333;
     border-radius: 18px;
-    background: #151515;
+    background: #141414;
     color: #ffffff;
 }
 
 .modal-solicitacao .modal-header,
 .modal-solicitacao .modal-footer {
-    border-color: #303030;
+    border-color: #333333;
 }
 
 .modal-solicitacao .form-label {
-    color: #dddddd;
+    color: #cccccc;
     font-weight: 600;
 }
 
 .modal-solicitacao .form-control,
 .modal-solicitacao .form-select {
-    border: 1px solid #444444;
+    border: 1px solid #333333;
     background-color: #0d0d0d;
     color: #ffffff;
 }
@@ -504,7 +515,7 @@ body {
 .modal-solicitacao .form-control:focus,
 .modal-solicitacao .form-select:focus {
     border-color: var(--green);
-    box-shadow: 0 0 0 .2rem rgba(57, 255, 20, .12);
+    box-shadow: 0 0 0 .2rem rgba(0, 255, 0, .12);
 }
 
 .aviso-foto-edicao {
@@ -594,8 +605,8 @@ body {
 }
 
 .social-links a:hover {
-    border-color: var(--green);
-    color: var(--green);
+    border-color: var(--green-hover);
+    color: var(--green-hover);
 }
 
 .footer-contact-form {
@@ -641,7 +652,7 @@ body {
 
 .footer-contact-form button:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 16px rgba(57,255,20,.25);
+    box-shadow: 0 4px 16px rgba(0, 255, 0,.25);
 }
 
 .footer-links ul {
@@ -658,7 +669,7 @@ body {
     transition: color .2s;
 }
 
-.footer-links ul li a:hover { color: var(--green); }
+.footer-links ul li a:hover { color: var(--green-hover); }
 
 /* Scroll top */
 .scroll-top {
@@ -682,14 +693,62 @@ body {
    RESPONSIVO
 ========================== */
 
-@media (max-width: 768px) {
+@media (max-width: 767.98px) {
     .topbar       { flex-direction: column; align-items: flex-start; }
     .header-row   { flex-direction: column; align-items: flex-start; }
-    .busca        { width: 100%; }
-    .stats        { gap: 16px; }
+    .busca        { width: 100%; min-width: 0; }
+    .stats {
+        width: 100%;
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px;
+    }
+    .total-destaque { display: none; }
+    .status-item {
+        width: 100%;
+        min-width: 0;
+        justify-content: space-between;
+        padding: 8px 10px;
+        border: 1px solid #242424;
+        border-radius: 12px;
+    }
     .stats-barra  { display: none; }
     .evento-header { flex-direction: column; align-items: flex-start; }
     .header-direito { width: 100%; justify-content: space-between; }
     .evento-footer { flex-direction: column; }
     .btn-editar, .btn-aprovar, .btn-reprovar, .btn-recusar, .btn-ver-evento { width: 100%; justify-content: center; }
+
+    .evento-body .row > [class*="col-"] {
+        width: 100%;
+    }
+
+    .modal-footer {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .btn-modal-cancelar,
+    .btn-modal-salvar {
+        width: 100%;
+    }
+}
+
+@media (max-width: 575.98px) {
+    .evento-header,
+    .evento-body,
+    .evento-footer {
+        padding-right: 16px;
+        padding-left: 16px;
+    }
+
+    .evento-info {
+        width: 100%;
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .evento-foto {
+        width: 100%;
+        height: 180px;
+    }
 }

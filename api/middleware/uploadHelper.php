@@ -61,6 +61,263 @@ function validarTamanhoTotalUpload(int $limiteBytes = 39845888): void
     }
 }
 
+function validarEstruturaMp4(string $arquivo): bool
+{
+    $tamanhoArquivo = filesize($arquivo);
+    if ($tamanhoArquivo === false || $tamanhoArquivo < 24) {
+        return false;
+    }
+
+    $handle = @fopen($arquivo, 'rb');
+    if ($handle === false) {
+        return false;
+    }
+
+    $encontrouFtyp = false;
+    $encontrouMoov = false;
+    $encontrouMdat = false;
+    $offset = 0;
+    $quantidadeBoxes = 0;
+
+    try {
+        while ($offset < $tamanhoArquivo && $quantidadeBoxes < 1024) {
+            if ($tamanhoArquivo - $offset < 8 || fseek($handle, $offset) !== 0) {
+                return false;
+            }
+
+            $cabecalho = fread($handle, 8);
+            if ($cabecalho === false || strlen($cabecalho) !== 8) {
+                return false;
+            }
+
+            $dadosTamanho = unpack('Ntamanho', substr($cabecalho, 0, 4));
+            $tamanhoBox = (int) ($dadosTamanho['tamanho'] ?? 0);
+            $tipoBox = substr($cabecalho, 4, 4);
+            $tamanhoCabecalho = 8;
+
+            if (!preg_match('/^[\x20-\x7E]{4}$/', $tipoBox)) {
+                return false;
+            }
+
+            if ($tamanhoBox === 1) {
+                $estendido = fread($handle, 8);
+                if ($estendido === false || strlen($estendido) !== 8) {
+                    return false;
+                }
+
+                $partes = unpack('Nalto/Nbaixo', $estendido);
+                if (($partes['alto'] ?? 1) !== 0) {
+                    return false;
+                }
+
+                $tamanhoBox = (int) ($partes['baixo'] ?? 0);
+                $tamanhoCabecalho = 16;
+            } elseif ($tamanhoBox === 0) {
+                $tamanhoBox = $tamanhoArquivo - $offset;
+            }
+
+            if (
+                $tamanhoBox < $tamanhoCabecalho
+                || $offset + $tamanhoBox > $tamanhoArquivo
+            ) {
+                return false;
+            }
+
+            if ($tipoBox === 'ftyp') {
+                if ($offset > 4096 || $tamanhoBox < $tamanhoCabecalho + 8) {
+                    return false;
+                }
+
+                $marcaPrincipal = fread($handle, 4);
+                if (
+                    $marcaPrincipal === false
+                    || strlen($marcaPrincipal) !== 4
+                    || !preg_match('/^[\x20-\x7E]{4}$/', $marcaPrincipal)
+                ) {
+                    return false;
+                }
+                $encontrouFtyp = true;
+            } elseif ($tipoBox === 'moov' && $tamanhoBox > $tamanhoCabecalho) {
+                $encontrouMoov = true;
+            } elseif ($tipoBox === 'mdat' && $tamanhoBox > $tamanhoCabecalho) {
+                $encontrouMdat = true;
+            }
+
+            $offset += $tamanhoBox;
+            $quantidadeBoxes++;
+        }
+    } finally {
+        fclose($handle);
+    }
+
+    return $offset === $tamanhoArquivo
+        && $encontrouFtyp
+        && $encontrouMoov
+        && $encontrouMdat;
+}
+
+function lerElementoEbml($handle, int $offset, int $limite): ?array
+{
+    if ($offset >= $limite || fseek($handle, $offset) !== 0) {
+        return null;
+    }
+
+    $primeiroId = fread($handle, 1);
+    if ($primeiroId === false || strlen($primeiroId) !== 1) {
+        return null;
+    }
+
+    $byteId = ord($primeiroId);
+    $mascaraId = 0x80;
+    $tamanhoId = 1;
+    while ($tamanhoId <= 4 && ($byteId & $mascaraId) === 0) {
+        $mascaraId >>= 1;
+        $tamanhoId++;
+    }
+
+    if ($tamanhoId > 4 || $offset + $tamanhoId >= $limite) {
+        return null;
+    }
+
+    $id = $byteId;
+    if ($tamanhoId > 1) {
+        $restanteId = fread($handle, $tamanhoId - 1);
+        if ($restanteId === false || strlen($restanteId) !== $tamanhoId - 1) {
+            return null;
+        }
+        foreach (unpack('C*', $restanteId) as $byte) {
+            $id = ($id << 8) | $byte;
+        }
+    }
+
+    $primeiroTamanho = fread($handle, 1);
+    if ($primeiroTamanho === false || strlen($primeiroTamanho) !== 1) {
+        return null;
+    }
+
+    $byteTamanho = ord($primeiroTamanho);
+    $mascaraTamanho = 0x80;
+    $comprimentoTamanho = 1;
+    while ($comprimentoTamanho <= 8 && ($byteTamanho & $mascaraTamanho) === 0) {
+        $mascaraTamanho >>= 1;
+        $comprimentoTamanho++;
+    }
+
+    if ($comprimentoTamanho > 8) {
+        return null;
+    }
+
+    $valorTamanho = $byteTamanho & ($mascaraTamanho - 1);
+    $tamanhoDesconhecido = $valorTamanho === ($mascaraTamanho - 1);
+
+    if ($comprimentoTamanho > 1) {
+        $restanteTamanho = fread($handle, $comprimentoTamanho - 1);
+        if ($restanteTamanho === false || strlen($restanteTamanho) !== $comprimentoTamanho - 1) {
+            return null;
+        }
+        foreach (unpack('C*', $restanteTamanho) as $byte) {
+            $valorTamanho = ($valorTamanho << 8) | $byte;
+            $tamanhoDesconhecido = $tamanhoDesconhecido && $byte === 0xFF;
+        }
+    }
+
+    $inicioDados = $offset + $tamanhoId + $comprimentoTamanho;
+    $tamanho = $tamanhoDesconhecido ? null : $valorTamanho;
+
+    if ($tamanho !== null && ($tamanho < 0 || $inicioDados + $tamanho > $limite)) {
+        return null;
+    }
+
+    return [
+        'id' => $id,
+        'inicio_dados' => $inicioDados,
+        'tamanho' => $tamanho,
+        'proximo' => $tamanho === null ? null : $inicioDados + $tamanho
+    ];
+}
+
+function validarEstruturaWebm(string $arquivo): bool
+{
+    $tamanhoArquivo = filesize($arquivo);
+    if ($tamanhoArquivo === false || $tamanhoArquivo < 32) {
+        return false;
+    }
+
+    $handle = @fopen($arquivo, 'rb');
+    if ($handle === false) {
+        return false;
+    }
+
+    try {
+        $cabecalho = lerElementoEbml($handle, 0, $tamanhoArquivo);
+        if (
+            $cabecalho === null
+            || $cabecalho['id'] !== 0x1A45DFA3
+            || $cabecalho['tamanho'] === null
+            || $cabecalho['proximo'] === null
+        ) {
+            return false;
+        }
+
+        if (fseek($handle, $cabecalho['inicio_dados']) !== 0) {
+            return false;
+        }
+        $conteudoCabecalho = fread($handle, $cabecalho['tamanho']);
+        if ($conteudoCabecalho === false || stripos($conteudoCabecalho, 'webm') === false) {
+            return false;
+        }
+
+        $segmento = lerElementoEbml($handle, $cabecalho['proximo'], $tamanhoArquivo);
+        if ($segmento === null || $segmento['id'] !== 0x18538067) {
+            return false;
+        }
+
+        $limiteSegmento = $segmento['proximo'] ?? $tamanhoArquivo;
+        $offset = $segmento['inicio_dados'];
+        $encontrouInfo = false;
+        $encontrouTracks = false;
+        $encontrouCluster = false;
+        $quantidadeElementos = 0;
+
+        while ($offset < $limiteSegmento && $quantidadeElementos < 2048) {
+            $elemento = lerElementoEbml($handle, $offset, $limiteSegmento);
+            if ($elemento === null) {
+                return false;
+            }
+
+            if ($elemento['id'] === 0x1549A966) {
+                $encontrouInfo = true;
+            } elseif ($elemento['id'] === 0x1654AE6B) {
+                $encontrouTracks = true;
+            } elseif ($elemento['id'] === 0x1F43B675) {
+                $encontrouCluster = true;
+            }
+
+            if ($elemento['proximo'] === null) {
+                return $elemento['id'] === 0x1F43B675
+                    && $encontrouInfo
+                    && $encontrouTracks;
+            }
+
+            $offset = $elemento['proximo'];
+            $quantidadeElementos++;
+        }
+
+        return $encontrouInfo && $encontrouTracks && $encontrouCluster;
+    } finally {
+        fclose($handle);
+    }
+}
+
+function validarEstruturaVideo(string $arquivo, string $mime): bool
+{
+    return match ($mime) {
+        'video/mp4' => validarEstruturaMp4($arquivo),
+        'video/webm' => validarEstruturaWebm($arquivo),
+        default => false
+    };
+}
+
 function salvarArquivoUpload(array $arquivo, array $tiposAceitos, string $subpasta): array
 {
     $formatos = [
@@ -121,6 +378,10 @@ function salvarArquivoUpload(array $arquivo, array $tiposAceitos, string $subpas
         throw new UploadInvalidoException('O conteúdo enviado não é uma imagem válida');
     }
 
+    if ($formato['tipo'] === 'video' && !validarEstruturaVideo($temporario, $mime)) {
+        throw new UploadInvalidoException('O conteúdo enviado não possui uma estrutura de vídeo válida');
+    }
+
     $diretorioBase = dirname(__DIR__, 2) . DIRECTORY_SEPARATOR . 'assets' . DIRECTORY_SEPARATOR . 'uploads';
     $diretorioDestino = $diretorioBase . DIRECTORY_SEPARATOR . $subpasta;
 
@@ -141,23 +402,80 @@ function salvarArquivoUpload(array $arquivo, array $tiposAceitos, string $subpas
     ];
 }
 
-function removerArquivoUpload(string $caminhoRelativo): void
+function removerArquivoUpload(string $caminhoRelativo): bool
 {
     $caminhoNormalizado = str_replace('\\', '/', ltrim($caminhoRelativo, '/'));
 
-    if (!str_starts_with($caminhoNormalizado, 'assets/uploads/')) {
-        return;
+    if (
+        !str_starts_with($caminhoNormalizado, 'assets/uploads/')
+        || str_contains($caminhoNormalizado, '../')
+    ) {
+        error_log('Upload não removido: caminho fora de assets/uploads: ' . $caminhoRelativo);
+        return false;
     }
 
     $diretorioBase = realpath(dirname(__DIR__, 2) . DIRECTORY_SEPARATOR . 'assets' . DIRECTORY_SEPARATOR . 'uploads');
     $arquivo = realpath(dirname(__DIR__, 2) . DIRECTORY_SEPARATOR . str_replace('/', DIRECTORY_SEPARATOR, $caminhoNormalizado));
 
     if ($diretorioBase === false || $arquivo === false) {
-        return;
+        error_log('Upload não removido: arquivo inexistente ou caminho inacessível: ' . $caminhoNormalizado);
+        return false;
     }
 
     $prefixoSeguro = rtrim($diretorioBase, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
-    if (str_starts_with($arquivo, $prefixoSeguro) && is_file($arquivo)) {
-        @unlink($arquivo);
+    if (!str_starts_with($arquivo, $prefixoSeguro) || !is_file($arquivo)) {
+        error_log('Upload não removido: destino inválido: ' . $caminhoNormalizado);
+        return false;
+    }
+
+    if (!@unlink($arquivo)) {
+        $ultimoErro = error_get_last();
+        $detalhe = is_array($ultimoErro) ? (string) ($ultimoErro['message'] ?? '') : '';
+        error_log('Falha ao remover upload ' . $caminhoNormalizado . ($detalhe === '' ? '' : ': ' . $detalhe));
+        return false;
+    }
+
+    return true;
+}
+
+function caminhoUploadAindaReferenciado(mysqli $conn, string $caminhoRelativo): bool
+{
+    $consultas = [
+        'SELECT 1 FROM avaliacao_midia WHERE caminho_arquivo = ? LIMIT 1',
+        'SELECT 1 FROM solicitacao WHERE foto = ? LIMIT 1',
+        'SELECT 1 FROM evento WHERE imagem_evento = ? LIMIT 1'
+    ];
+
+    foreach ($consultas as $sql) {
+        $stmt = $conn->prepare($sql);
+        $stmt->bind_param('s', $caminhoRelativo);
+        executarStatementApi($stmt);
+        $stmt->store_result();
+        $referenciado = $stmt->num_rows > 0;
+        $stmt->close();
+
+        if ($referenciado) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+function removerArquivosUploadSemReferencia(mysqli $conn, array $caminhos): void
+{
+    $caminhosUnicos = array_unique(array_filter(
+        $caminhos,
+        static fn($caminho): bool => is_string($caminho) && trim($caminho) !== ''
+    ));
+
+    foreach ($caminhosUnicos as $caminho) {
+        try {
+            if (!caminhoUploadAindaReferenciado($conn, $caminho)) {
+                removerArquivoUpload($caminho);
+            }
+        } catch (Throwable $erro) {
+            error_log('Não foi possível conferir/remover o upload ' . $caminho . ': ' . $erro->getMessage());
+        }
     }
 }

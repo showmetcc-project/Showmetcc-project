@@ -5,6 +5,7 @@ Os exemplos abaixo usam `curl.exe` no PowerShell. Ajuste a URL para a pasta/port
 ```powershell
 $BASE = 'http://localhost/SEU-DIRETORIO/api'
 $SITE = 'http://localhost/SEU-DIRETORIO'
+$RAIZ_PROJETO = 'C:\xampp\htdocs\SEU-DIRETORIO'
 $COOKIE_COMUM = "$env:TEMP\showme-comum.txt"
 $COOKIE_OUTRO_USUARIO = "$env:TEMP\showme-outro-usuario.txt"
 $COOKIE_ADMIN = "$env:TEMP\showme-admin.txt"
@@ -18,9 +19,20 @@ $FOTO_3 = 'C:\CAMINHO\foto3.webp'
 $VIDEO_1 = 'C:\CAMINHO\video1.mp4'
 $VIDEO_2 = 'C:\CAMINHO\video2.webm'
 $ARQUIVO_PHP = 'C:\CAMINHO\arquivo.php'
+$TEXTO_101 = 'x' * 101
+$VIDEO_MP4_CORROMPIDO = Join-Path $env:TEMP 'showme-mp4-corrompido.mp4'
+
+# MP4 com um box ftyp reconhecível, seguido de um box mdat truncado e sem moov.
+# Ele simula um arquivo que passa por uma checagem superficial de cabeçalho/MIME.
+$bytesMp4Corrompido = [byte[]](@(
+  0,0,0,24, 102,116,121,112, 105,115,111,109, 0,0,2,0,
+  105,115,111,109, 105,115,111,50,
+  0,0,0,20, 109,100,97,116, 1,2,3,4
+))
+[IO.File]::WriteAllBytes($VIDEO_MP4_CORROMPIDO, $bytesMp4Corrompido)
 ```
 
-Antes de testar mídias de avaliações, aplique manualmente a migração
+Antes de testar mídias de avaliações, importe a versão atual do schema único
 `assets/banco/showme.sql` no banco de desenvolvimento.
 Use arquivos pequenos: a aplicação limita fotos a 10 MB, vídeos a 30 MB e a requisição
 completa a 38 MB.
@@ -139,6 +151,24 @@ curl.exe -i -X POST "$BASE/usuarios/" `
   -d '{"nome":"Maria","email":"email-invalido","senha":"123"}'
 ```
 
+### POST /usuarios — nome acima de 100 caracteres retorna 400
+
+```powershell
+$USUARIO_LIMITE_JSON = @{
+  nome = $TEXTO_101
+  sobrenome = 'Teste'
+  email = 'limite.usuario@exemplo.com'
+  senha = 'senha123'
+} | ConvertTo-Json -Compress
+
+curl.exe -i -X POST "$BASE/usuarios/" `
+  -H "Content-Type: application/json" `
+  --data-raw $USUARIO_LIMITE_JSON
+```
+
+A resposta deve ser `400`, mencionar o limite de 100 caracteres e nenhum usuário deve
+ser gravado parcialmente no banco.
+
 ### POST /usuarios — tentativa de definir administrador é ignorada
 
 O cadastro abaixo envia `tipo_usuario: admin` de propósito. A resposta deve mostrar
@@ -194,6 +224,28 @@ cascata serão removidos e a sessão será encerrada.
 curl.exe -i -b $COOKIE_COMUM -X DELETE "$BASE/usuarios/ID_DE_OUTRO_USUARIO"
 curl.exe -i -b $COOKIE_CONTA_DESCARTAVEL -X DELETE "$BASE/usuarios/ID_DA_CONTA_DESCARTAVEL"
 ```
+
+### DELETE /usuarios/{id} — cascata também remove arquivos físicos
+
+Com a conta descartável, crie uma avaliação com mídia e uma solicitação pendente com
+foto. Antes do `DELETE`, anote os caminhos retornados pela API (ou consulte-os no banco)
+e confirme que ambos existem:
+
+```powershell
+$MIDIA_CONTA = Join-Path $RAIZ_PROJETO 'assets/uploads/avaliacoes/NOME_DO_ARQUIVO'
+$FOTO_SOLICITACAO_CONTA = Join-Path $RAIZ_PROJETO 'assets/uploads/eventos/NOME_DO_ARQUIVO'
+Test-Path -LiteralPath $MIDIA_CONTA
+Test-Path -LiteralPath $FOTO_SOLICITACAO_CONTA
+
+curl.exe -i -b $COOKIE_CONTA_DESCARTAVEL -X DELETE "$BASE/usuarios/ID_DA_CONTA_DESCARTAVEL"
+
+Test-Path -LiteralPath $MIDIA_CONTA
+Test-Path -LiteralPath $FOTO_SOLICITACAO_CONTA
+```
+
+Os dois primeiros `Test-Path` devem retornar `True`; depois da exclusão, devem retornar
+`False`. Se uma foto também estiver vinculada a um evento aprovado, ela permanece no
+disco porque o evento ainda a referencia.
 
 ## Eventos
 
@@ -259,11 +311,17 @@ curl.exe -i -b $COOKIE_COMUM "$BASE/eventos/?solicitacoes=pendente"
 curl.exe -i -b $COOKIE_COMUM -X POST "$BASE/eventos/" `
   -F "nome_evento=Festival Regional" `
   -F "local_evento=Praça Central" `
+  -F "rua_evento=Rua das Artes, 100" `
+  -F "cidade_evento=Sao Paulo" `
+  -F "uf=SP" `
+  -F "categoria_evento=Musica" `
+  -F "link_oficial=https://example.com/festival" `
   -F "data_evento=2026-12-20" `
   -F "horario_evento=20:00" `
   -F "gratuidade=true" `
   -F "descricao_evento=Evento cultural" `
   -F "descricao_artista=Artistas locais" `
+  -F "nome_artista_solicitado=Banda Exemplo" `
   -F "foto=@$FOTO_1"
 ```
 
@@ -274,6 +332,16 @@ curl.exe -i -X POST "$BASE/eventos/" `
   -F "nome_evento=Festival sem sessão" `
   -F "foto=@$FOTO_1"
 ```
+
+### POST /eventos — nome acima de 100 caracteres retorna 400
+
+```powershell
+curl.exe -i -b $COOKIE_COMUM -X POST "$BASE/eventos/" `
+  -F "nome_evento=$TEXTO_101" `
+  -F "foto=@$FOTO_1"
+```
+
+A resposta deve ser `400` antes de qualquer gravação ou salvamento da foto.
 
 ### POST /eventos — PHP disfarçado e vídeo são rejeitados com 400
 
@@ -299,12 +367,16 @@ curl.exe -i -b $COOKIE_ADMIN -X PUT "$BASE/eventos/ID_SOLICITACAO" `
   -H "Content-Type: application/json" `
   -d '{"acao":"editar_solicitacao","nome_evento":"Nome corrigido","local_evento":"Local corrigido","data_evento":"2026-12-21","horario_evento":"21:00","gratuidade":true,"descricao_evento":"Descrição corrigida","descricao_artista":"Artista corrigido"}'
 
+curl.exe -i -b $COOKIE_ADMIN -X PUT "$BASE/eventos/ID_SOLICITACAO" `
+  -H "Content-Type: application/json" `
+  -d '{"acao":"editar_solicitacao","rua_evento":"Rua Corrigida, 200","cidade_evento":"Sao Paulo","uf":"SP","categoria_evento":"Musica","link_oficial":"https://example.com/evento-corrigido","nome_artista_solicitado":"Artista Corrigido"}'
+
 curl.exe -i -b $COOKIE_COMUM -X PUT "$BASE/eventos/ID_SOLICITACAO" `
   -H "Content-Type: application/json" `
   -d '{"acao":"editar_solicitacao","nome_evento":"Alteração sem permissão"}'
 ```
 
-O primeiro comando deve retornar `200`; o segundo deve retornar `403`. Depois de aprovar
+Os dois primeiros comandos devem retornar `200`; o terceiro deve retornar `403`. Depois de aprovar
 ou recusar a solicitação, repetir `editar_solicitacao` deve retornar `409`.
 
 ### PUT /eventos/{id_solicitacao} — aprovar e recusar com sucesso
@@ -316,12 +388,119 @@ curl.exe -i -c $COOKIE_ADMIN -X POST "$BASE/sessoes/" `
 
 curl.exe -i -b $COOKIE_ADMIN -X PUT "$BASE/eventos/ID_SOLICITACAO" `
   -H "Content-Type: application/json" `
-  -d '{"acao":"moderar","status_solicitacao":"aprovado"}'
+  -d '{"acao":"aprovar"}'
 
 curl.exe -i -b $COOKIE_ADMIN -X PUT "$BASE/eventos/OUTRA_ID_SOLICITACAO" `
   -H "Content-Type: application/json" `
-  -d '{"acao":"moderar","status_solicitacao":"recusado"}'
+  -d '{"acao":"recusar"}'
 ```
+
+### Recusar solicitação — remove a foto física
+
+Antes de recusar uma solicitação pendente, copie o valor de `foto` retornado na criação e
+monte o caminho físico. Depois da recusa, o arquivo deve sumir sem alterar o sucesso da
+moderação; a coluna `foto` da solicitação fica `NULL` para não manter referência inválida.
+
+```powershell
+$FOTO_SOLICITACAO_RECUSADA = Join-Path $RAIZ_PROJETO 'assets/uploads/eventos/NOME_DO_ARQUIVO'
+Test-Path -LiteralPath $FOTO_SOLICITACAO_RECUSADA
+
+curl.exe -i -b $COOKIE_ADMIN -X PUT "$BASE/eventos/ID_SOLICITACAO_PENDENTE" `
+  -H "Content-Type: application/json" `
+  -d '{"acao":"recusar"}'
+
+Test-Path -LiteralPath $FOTO_SOLICITACAO_RECUSADA
+```
+
+Os resultados esperados do `Test-Path` são `True` antes e `False` depois. Confirmação
+opcional no banco: `SELECT status_solicitacao, foto FROM solicitacao WHERE
+id_solicitacao = ID_SOLICITACAO_PENDENTE;` deve retornar `recusado` e `foto = NULL`.
+
+### Aprovação completa com artista novo e artista já existente
+
+O primeiro `POST /eventos` da seção anterior deve criar uma solicitação com
+`nome_artista_solicitado=Banda Exemplo`. Anote `id_solicitacao` e aprove-a:
+
+```powershell
+curl.exe -i -b $COOKIE_ADMIN -X PUT "$BASE/eventos/ID_SOLICITACAO_ARTISTA_NOVO" `
+  -H "Content-Type: application/json" `
+  -d '{"acao":"aprovar"}'
+```
+
+A resposta deve trazer `id_evento`. Em seguida, crie outra solicitação completa usando
+o mesmo artista com diferenças de caixa e espaços. Isso testa a reutilização do artista:
+
+```powershell
+curl.exe -i -b $COOKIE_COMUM -X POST "$BASE/eventos/" `
+  -F "nome_evento=Festival Reuso de Artista" `
+  -F "local_evento=Teatro Municipal" `
+  -F "rua_evento=Rua do Teatro, 200" `
+  -F "cidade_evento=Campinas" `
+  -F "uf=SP" `
+  -F "categoria_evento=Musica" `
+  -F "link_oficial=https://example.com/festival-reuso" `
+  -F "data_evento=2026-12-22" `
+  -F "horario_evento=21:30" `
+  -F "gratuidade=false" `
+  -F "descricao_evento=Segundo evento completo" `
+  -F "descricao_artista=Mesmo artista do primeiro evento" `
+  -F "nome_artista_solicitado=  banda   exemplo  " `
+  -F "foto=@$FOTO_2"
+
+curl.exe -i -b $COOKIE_ADMIN -X PUT "$BASE/eventos/ID_SOLICITACAO_ARTISTA_EXISTENTE" `
+  -H "Content-Type: application/json" `
+  -d '{"acao":"aprovar"}'
+```
+
+Consulte os dois eventos. O JSON deve conter todos os campos promovidos,
+`id_solicitacao_origem`, `horario_evento`, `num_evento: null` e o mesmo artista:
+
+```powershell
+curl.exe -i "$BASE/eventos/ID_EVENTO_ARTISTA_NOVO"
+curl.exe -i "$BASE/eventos/ID_EVENTO_ARTISTA_EXISTENTE"
+```
+
+Confirmação adicional no MySQL/phpMyAdmin:
+
+```sql
+SELECT
+    e.id_evento,
+    e.id_solicitacao_origem,
+    e.num_evento,
+    e.local_evento,
+    e.rua_evento,
+    e.cidade_evento,
+    e.uf,
+    e.data_evento,
+    e.horario_evento,
+    e.categoria_evento,
+    e.link_oficial,
+    a.id_artista,
+    a.nome_artista
+FROM evento AS e
+INNER JOIN artista_evento AS ae ON ae.id_evento = e.id_evento
+INNER JOIN artista AS a ON a.id_artista = ae.id_artista
+WHERE e.id_evento IN (ID_EVENTO_ARTISTA_NOVO, ID_EVENTO_ARTISTA_EXISTENTE);
+
+SELECT LOWER(TRIM(nome_artista)) AS nome_normalizado, COUNT(*) AS quantidade
+FROM artista
+WHERE LOWER(TRIM(nome_artista)) = LOWER('Banda Exemplo')
+GROUP BY LOWER(TRIM(nome_artista));
+```
+
+O segundo `SELECT` deve retornar `quantidade = 1`, e o primeiro deve mostrar o mesmo
+`id_artista` ligado aos dois eventos.
+
+### Busca do evento aprovado por cidade, categoria e artista
+
+```powershell
+curl.exe -i -G "$BASE/eventos/" --data-urlencode "busca=Sao Paulo"
+curl.exe -i -G "$BASE/eventos/" --data-urlencode "busca=Musica"
+curl.exe -i -G "$BASE/eventos/" --data-urlencode "busca=banda exemplo"
+```
+
+Cada resposta deve incluir o evento aprovado correspondente, sem duplicá-lo quando mais
+de um critério combinar com o mesmo evento.
 
 ### PUT /eventos/{id_solicitacao} — erro 403
 
@@ -364,6 +543,41 @@ relações com artistas vinculados a ele serão removidos em cascata.
 curl.exe -i -b $COOKIE_COMUM -X DELETE "$BASE/eventos/ID_EVENTO"
 curl.exe -i -b $COOKIE_ADMIN -X DELETE "$BASE/eventos/ID_EVENTO_DESCARTAVEL"
 ```
+
+### DELETE /eventos/{id} — cascata também remove mídias das avaliações
+
+Crie uma avaliação com mídia no evento descartável, anote `caminho_arquivo` e confirme o
+arquivo antes e depois da exclusão administrativa:
+
+```powershell
+$MIDIA_EVENTO = Join-Path $RAIZ_PROJETO 'assets/uploads/avaliacoes/NOME_DO_ARQUIVO'
+Test-Path -LiteralPath $MIDIA_EVENTO
+
+curl.exe -i -b $COOKIE_ADMIN -X DELETE "$BASE/eventos/ID_EVENTO_DESCARTAVEL"
+
+Test-Path -LiteralPath $MIDIA_EVENTO
+```
+
+O primeiro `Test-Path` deve retornar `True` e o segundo, `False`. A imagem principal do
+evento só é apagada se nenhuma solicitação ou outro evento ainda apontar para o mesmo
+caminho.
+
+### GET /eventos — eventos cancelados ficam fora da listagem pública
+
+Use um evento descartável e altere seu status como administrador:
+
+```powershell
+curl.exe -i -b $COOKIE_ADMIN -X PUT "$BASE/eventos/ID_EVENTO_DESCARTAVEL" `
+  -H "Content-Type: application/json" `
+  -d '{"acao":"editar","status_evento":"cancelado"}'
+
+curl.exe -i "$BASE/eventos/"
+curl.exe -i -b $COOKIE_COMUM "$BASE/eventos/?incluir_cancelados=1"
+curl.exe -i -b $COOKIE_ADMIN "$BASE/eventos/?incluir_cancelados=1"
+```
+
+A listagem pública deve omitir o evento cancelado. A tentativa do usuário comum deve
+retornar `403`; a listagem administrativa deve retornar `200` e incluir o evento.
 
 ## Planejamentos
 
@@ -509,6 +723,24 @@ curl.exe -i -b $COOKIE_COMUM -X POST "$BASE/avaliacoes/" `
   -F "midias[]=@$VIDEO_2"
 ```
 
+### POST /avaliacoes — MP4 com container corrompido é rejeitado com 400
+
+O arquivo criado no bloco inicial possui um `ftyp` de MP4 suficiente para enganar uma
+checagem superficial, mas não contém a estrutura mínima válida (`moov` + `mdat`
+coerentes). A resposta esperada é `400` com a mensagem de estrutura de vídeo inválida.
+
+```powershell
+curl.exe -i -b $COOKIE_COMUM -X POST "$BASE/avaliacoes/" `
+  -F "id_evento=ID_EVENTO" `
+  -F "nota=5" `
+  -F "comentario=Teste de MP4 corrompido" `
+  -F "midias[]=@$VIDEO_MP4_CORROMPIDO;type=video/mp4"
+```
+
+A validação confirma a estrutura do container MP4/WebM, além de MIME e tamanho. Ela não
+substitui a decodificação integral de todos os frames; para essa garantia seria necessário
+instalar uma ferramenta externa como FFmpeg/ffprobe no servidor.
+
 ### POST /avaliacoes — avaliação duplicada retorna 409
 
 Depois do POST de sucesso acima, repita a criação com o mesmo usuário e evento. A resposta
@@ -573,6 +805,41 @@ curl.exe -i -b $COOKIE_COMUM -X DELETE "$BASE/avaliacoes/ID_AVALIACAO"
 curl.exe -i -b $COOKIE_COMUM -X DELETE "$BASE/avaliacoes/999999999"
 ```
 
+## Tipos e formatos das respostas JSON
+
+Prepare pelo menos um favorito, planejamento e avaliação com mídia para o usuário comum.
+Substitua os IDs e execute:
+
+```powershell
+$SESSAO_TIPOS = (curl.exe -sS -b $COOKIE_COMUM "$BASE/sessoes/") | ConvertFrom-Json
+$USUARIO_TIPOS = (curl.exe -sS -b $COOKIE_COMUM "$BASE/usuarios/ID_DO_PROPRIO_USUARIO") | ConvertFrom-Json
+$EVENTO_TIPOS = (curl.exe -sS "$BASE/eventos/ID_EVENTO") | ConvertFrom-Json
+$FAVORITO_TIPOS = (curl.exe -sS -b $COOKIE_COMUM "$BASE/favoritos/") | ConvertFrom-Json
+$PLANEJAMENTO_TIPOS = (curl.exe -sS -b $COOKIE_COMUM "$BASE/planejamento/") | ConvertFrom-Json
+$AVALIACAO_TIPOS = (curl.exe -sS "$BASE/avaliacoes/ID_AVALIACAO") | ConvertFrom-Json
+
+$SESSAO_TIPOS.usuario.id_user.GetType().Name
+$USUARIO_TIPOS.usuario.id_user.GetType().Name
+$EVENTO_TIPOS.evento.id_evento.GetType().Name
+$EVENTO_TIPOS.evento.gratuidade.GetType().Name
+$FAVORITO_TIPOS.favoritos[0].id_favorito.GetType().Name
+$FAVORITO_TIPOS.favoritos[0].gratuidade.GetType().Name
+$PLANEJAMENTO_TIPOS.planejamentos[0].id_rota.GetType().Name
+$PLANEJAMENTO_TIPOS.planejamentos[0].distancia_km.GetType().Name
+$AVALIACAO_TIPOS.avaliacao.id_avaliacao.GetType().Name
+$AVALIACAO_TIPOS.avaliacao.nota.GetType().Name
+$AVALIACAO_TIPOS.avaliacao.midias[0].id_midia.GetType().Name
+
+$EVENTO_TIPOS.evento.data_evento -match '^\d{4}-\d{2}-\d{2}$'
+$USUARIO_TIPOS.usuario.data_cadastro -match '^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}-03:00$'
+$AVALIACAO_TIPOS.avaliacao.midias[0].data_upload -match '^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}-03:00$'
+```
+
+Os IDs, notas e tempos devem aparecer como `Int32` ou `Int64`; booleanos como `Boolean`;
+`distancia_km` como número (`Decimal` ou `Double`); datas como `YYYY-MM-DD`; e datas/horas como ISO
+8601 com o fuso de São Paulo. Campos nulos continuam sendo `null` e não devem ser
+forçados para zero ou string vazia.
+
 ## Formulário de contato
 
 Antes do teste de sucesso, preencha `config/email.php` com as credenciais SMTP do
@@ -610,3 +877,24 @@ curl.exe -i -X OPTIONS "$BASE/sessoes/" `
   -H "Origin: http://localhost:5502" `
   -H "Access-Control-Request-Method: POST"
 ```
+
+## Falha de infraestrutura — conexão com o banco
+
+Faça este teste somente no ambiente local. Guarde o conteúdo atual de
+`config/conexao.php`, altere temporariamente o usuário ou a senha para um valor inválido e
+chame qualquer endpoint:
+
+```powershell
+curl.exe -i "$BASE/eventos/"
+```
+
+A resposta esperada é exatamente um status `500`, com `Content-Type: application/json`
+e sem nome do banco, host, usuário, senha ou mensagem do `mysqli` no corpo:
+
+```json
+{"erro":"Erro interno do servidor"}
+```
+
+Restaure imediatamente a credencial correta e repita o endpoint; ele deve voltar a
+responder normalmente. O detalhe técnico da falha deve aparecer apenas no log do PHP/
+Apache. Não faça commit da credencial temporariamente inválida nem de credenciais reais.

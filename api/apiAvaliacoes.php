@@ -1,32 +1,6 @@
 <?php
 
-header("Content-Type: application/json; charset=UTF-8");
-header("Access-Control-Allow-Origin: *");
-header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS");
-header("Access-Control-Allow-Headers: Content-Type");
-
-if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
-    http_response_code(200);
-    exit();
-}
-
-function responder($dados, $status = 200)
-{
-    http_response_code($status);
-    echo json_encode($dados, JSON_UNESCAPED_UNICODE);
-    exit();
-}
-
-function lerJson(): array
-{
-    $dados = json_decode(file_get_contents('php://input'), true);
-
-    if (!is_array($dados)) {
-        responder(['erro' => 'Corpo JSON inválido'], 400);
-    }
-
-    return $dados;
-}
+require_once __DIR__ . '/middleware/apiCommon.php';
 
 function validarAvaliacao(array $dados): array
 {
@@ -41,37 +15,20 @@ function validarAvaliacao(array $dados): array
         responder(['erro' => 'O comentário é obrigatório'], 400);
     }
 
-    $tamanhoComentario = function_exists('mb_strlen')
-        ? mb_strlen($comentario, 'UTF-8')
-        : strlen($comentario);
-
-    if ($tamanhoComentario > 1000) {
+    if (tamanhoTextoApi($comentario) > 1000) {
         responder(['erro' => 'O comentário deve ter no máximo 1000 caracteres'], 400);
     }
 
     return [(int) $nota, $comentario];
 }
 
-if (session_status() !== PHP_SESSION_ACTIVE) {
-    session_start();
-}
-
 require_once dirname(__DIR__) . '/config/conexao.php';
+require_once __DIR__ . '/middleware/apiHelper.php';
 require_once __DIR__ . '/middleware/verifica_login.php';
 require_once __DIR__ . '/middleware/uploadHelper.php';
 
 $metodo = $_SERVER['REQUEST_METHOD'];
-$id = null;
-
-if (array_key_exists('id', $_GET)) {
-    $idInformado = $_GET['id'];
-
-    if (!is_string($idInformado) || !ctype_digit($idInformado) || (int) $idInformado < 1) {
-        responder(['erro' => 'O ID deve ser um inteiro positivo'], 400);
-    }
-
-    $id = (int) $idInformado;
-}
+$id = obterIdApi();
 
 switch ($metodo) {
     case 'GET':
@@ -87,7 +44,7 @@ switch ($metodo) {
                      LIMIT 1'
                 );
                 $stmt->bind_param('i', $id);
-                $stmt->execute();
+                executarStatementApi($stmt);
                 $avaliacao = $stmt->get_result()->fetch_assoc();
                 $stmt->close();
 
@@ -95,10 +52,7 @@ switch ($metodo) {
                     responder(['erro' => 'Avaliação não encontrada'], 404);
                 }
 
-                $avaliacao['id_avaliacao'] = (int) $avaliacao['id_avaliacao'];
-                $avaliacao['id_evento'] = (int) $avaliacao['id_evento'];
-                $avaliacao['id_user'] = (int) $avaliacao['id_user'];
-                $avaliacao['nota'] = (int) $avaliacao['nota'];
+                $avaliacao = normalizarAvaliacaoApi($avaliacao);
                 $avaliacao['midias'] = [];
 
                 $stmt = $conn->prepare(
@@ -108,20 +62,17 @@ switch ($metodo) {
                      ORDER BY id_midia ASC'
                 );
                 $stmt->bind_param('i', $id);
-                $stmt->execute();
+                executarStatementApi($stmt);
                 $resultadoMidias = $stmt->get_result();
 
                 while ($midia = $resultadoMidias->fetch_assoc()) {
-                    $midia['id_midia'] = (int) $midia['id_midia'];
-                    $midia['id_avaliacao'] = (int) $midia['id_avaliacao'];
-                    $avaliacao['midias'][] = $midia;
+                    $avaliacao['midias'][] = normalizarMidiaAvaliacaoApi($midia);
                 }
                 $stmt->close();
 
                 responder(['avaliacao' => $avaliacao]);
             } catch (mysqli_sql_exception $erro) {
-                error_log('Falha ao carregar avaliação: ' . $erro->getMessage());
-                responder(['erro' => 'Não foi possível carregar a avaliação'], 500);
+                responderErroInfraestrutura('Falha ao carregar avaliação', $erro);
             }
         }
 
@@ -141,15 +92,12 @@ switch ($metodo) {
                  ORDER BY a.data_avaliacao DESC, a.id_avaliacao DESC'
             );
             $stmt->bind_param('i', $idEvento);
-            $stmt->execute();
+            executarStatementApi($stmt);
             $resultado = $stmt->get_result();
             $avaliacoes = [];
 
             while ($avaliacao = $resultado->fetch_assoc()) {
-                $avaliacao['id_avaliacao'] = (int) $avaliacao['id_avaliacao'];
-                $avaliacao['id_evento'] = (int) $avaliacao['id_evento'];
-                $avaliacao['id_user'] = (int) $avaliacao['id_user'];
-                $avaliacao['nota'] = (int) $avaliacao['nota'];
+                $avaliacao = normalizarAvaliacaoApi($avaliacao);
                 $avaliacao['midias'] = [];
                 $avaliacoes[] = $avaliacao;
             }
@@ -163,14 +111,13 @@ switch ($metodo) {
                  ORDER BY m.id_midia ASC'
             );
             $stmt->bind_param('i', $idEvento);
-            $stmt->execute();
+            executarStatementApi($stmt);
             $resultadoMidias = $stmt->get_result();
             $midiasPorAvaliacao = [];
 
             while ($midia = $resultadoMidias->fetch_assoc()) {
-                $idAvaliacao = (int) $midia['id_avaliacao'];
-                $midia['id_midia'] = (int) $midia['id_midia'];
-                $midia['id_avaliacao'] = $idAvaliacao;
+                $midia = normalizarMidiaAvaliacaoApi($midia);
+                $idAvaliacao = $midia['id_avaliacao'];
                 $midiasPorAvaliacao[$idAvaliacao][] = $midia;
             }
             $stmt->close();
@@ -182,8 +129,7 @@ switch ($metodo) {
 
             responder(['avaliacoes' => $avaliacoes]);
         } catch (mysqli_sql_exception $erro) {
-            error_log('Falha ao listar avaliações: ' . $erro->getMessage());
-            responder(['erro' => 'Não foi possível carregar as avaliações'], 500);
+            responderErroInfraestrutura('Falha ao listar avaliações', $erro);
         }
 
     case 'POST':
@@ -223,7 +169,7 @@ switch ($metodo) {
 
         $stmt = $conn->prepare('SELECT id_evento FROM evento WHERE id_evento = ? LIMIT 1');
         $stmt->bind_param('i', $idEvento);
-        $stmt->execute();
+        executarStatementApi($stmt);
         $stmt->store_result();
 
         if ($stmt->num_rows === 0) {
@@ -236,7 +182,7 @@ switch ($metodo) {
             'SELECT id_avaliacao FROM avaliacao WHERE id_user = ? AND id_evento = ? LIMIT 1'
         );
         $stmt->bind_param('ii', $idUsuario, $idEvento);
-        $stmt->execute();
+        executarStatementApi($stmt);
         $avaliacaoExistente = $stmt->get_result()->fetch_assoc();
 
         if ($avaliacaoExistente) {
@@ -266,7 +212,7 @@ switch ($metodo) {
             foreach ($midiasSalvas as $midia) {
                 removerArquivoUpload($midia['caminho_arquivo']);
             }
-            responder(['erro' => 'Não foi possível salvar as mídias da avaliação'], 500);
+            responderErroInfraestrutura('Falha ao salvar mídias da avaliação', $erro);
         }
 
         $conn->begin_transaction();
@@ -276,7 +222,7 @@ switch ($metodo) {
                 'INSERT INTO avaliacao (id_user, id_evento, nota, comentario) VALUES (?, ?, ?, ?)'
             );
             $stmt->bind_param('iiis', $idUsuario, $idEvento, $nota, $comentario);
-            $stmt->execute();
+            executarStatementApi($stmt);
             $idAvaliacao = $conn->insert_id;
             $stmt->close();
 
@@ -289,9 +235,12 @@ switch ($metodo) {
                 $tipoMidia = $midia['tipo_midia'];
                 $caminhoArquivo = $midia['caminho_arquivo'];
                 $stmtMidia->bind_param('iss', $idAvaliacao, $tipoMidia, $caminhoArquivo);
-                $stmtMidia->execute();
+                executarStatementApi($stmtMidia);
                 $midiasSalvas[$indiceMidia]['id_midia'] = $conn->insert_id;
                 $midiasSalvas[$indiceMidia]['id_avaliacao'] = $idAvaliacao;
+                $midiasSalvas[$indiceMidia] = normalizarMidiaAvaliacaoApi(
+                    $midiasSalvas[$indiceMidia]
+                );
             }
 
             $stmtMidia->close();
@@ -308,25 +257,27 @@ switch ($metodo) {
                 ], 409);
             }
 
-            error_log('Falha ao criar avaliação: ' . $erro->getMessage());
-            responder(['erro' => 'Não foi possível criar a avaliação'], 500);
+            responderErroInfraestrutura('Falha ao criar avaliação', $erro);
         } catch (Throwable $erro) {
             $conn->rollback();
             foreach ($midiasSalvas as $midia) {
                 removerArquivoUpload($midia['caminho_arquivo']);
             }
-            responder(['erro' => 'Não foi possível criar a avaliação'], 500);
+            responderErroInfraestrutura('Falha ao criar avaliação', $erro);
         }
+
+        $avaliacaoCriada = normalizarAvaliacaoApi([
+            'id_avaliacao' => $idAvaliacao,
+            'id_evento' => $idEvento,
+            'id_user' => $idUsuario,
+            'nota' => $nota,
+            'comentario' => $comentario,
+        ]);
+        $avaliacaoCriada['midias'] = $midiasSalvas;
 
         responder([
             'mensagem' => 'Avaliação criada com sucesso',
-            'avaliacao' => [
-                'id_avaliacao' => $idAvaliacao,
-                'id_evento' => $idEvento,
-                'nota' => $nota,
-                'comentario' => $comentario,
-                'midias' => $midiasSalvas
-            ]
+            'avaliacao' => $avaliacaoCriada
         ], 201);
 
     case 'PUT':
@@ -342,7 +293,7 @@ switch ($metodo) {
             'SELECT id_user, id_evento FROM avaliacao WHERE id_avaliacao = ? LIMIT 1'
         );
         $stmt->bind_param('i', $id);
-        $stmt->execute();
+        executarStatementApi($stmt);
         $avaliacao = $stmt->get_result()->fetch_assoc();
         $stmt->close();
 
@@ -359,12 +310,18 @@ switch ($metodo) {
             'UPDATE avaliacao SET nota = ?, comentario = ? WHERE id_avaliacao = ?'
         );
         $stmt->bind_param('isi', $nota, $comentario, $id);
-        $stmt->execute();
+        executarStatementApi($stmt);
         $stmt->close();
 
         responder([
             'mensagem' => 'Avaliação atualizada com sucesso',
-            'avaliacao' => ['id_avaliacao' => $id, 'nota' => $nota, 'comentario' => $comentario]
+            'avaliacao' => normalizarAvaliacaoApi([
+                'id_avaliacao' => $id,
+                'id_evento' => $avaliacao['id_evento'],
+                'id_user' => $avaliacao['id_user'],
+                'nota' => $nota,
+                'comentario' => $comentario,
+            ])
         ]);
 
     case 'DELETE':
@@ -377,7 +334,7 @@ switch ($metodo) {
             'SELECT id_user FROM avaliacao WHERE id_avaliacao = ? LIMIT 1'
         );
         $stmt->bind_param('i', $id);
-        $stmt->execute();
+        executarStatementApi($stmt);
         $avaliacao = $stmt->get_result()->fetch_assoc();
         $stmt->close();
 
@@ -394,7 +351,7 @@ switch ($metodo) {
             'SELECT caminho_arquivo FROM avaliacao_midia WHERE id_avaliacao = ?'
         );
         $stmt->bind_param('i', $id);
-        $stmt->execute();
+        executarStatementApi($stmt);
         $resultadoMidias = $stmt->get_result();
         $caminhosMidias = [];
 
@@ -405,7 +362,7 @@ switch ($metodo) {
 
         $stmt = $conn->prepare('DELETE FROM avaliacao WHERE id_avaliacao = ?');
         $stmt->bind_param('i', $id);
-        $stmt->execute();
+        executarStatementApi($stmt);
         $stmt->close();
 
         foreach ($caminhosMidias as $caminhoMidia) {

@@ -1,7 +1,7 @@
 .resultados-busca-main {
   min-height: 65vh;
   padding: 58px 20px 80px;
-  background: #f5f5f5;
+  background: #0a0a0a;
 }
 
 .resultados-busca-container {
@@ -15,24 +15,21 @@
 
 .resultados-busca-cabecalho h1 {
   margin-bottom: 8px;
-  color: #151515;
-  font-family: "Oswald", sans-serif;
+  color: #ffffff;
   font-size: clamp(28px, 4vw, 42px);
 }
 
 .resultados-busca-cabecalho p {
   margin: 0;
-  color: #666666;
+  color: #bdbdbd;
 }
 
 .resultados-busca-termo {
-  color: #e9009b;
+  color: #ff006e;
 }
 
 .resultados-busca-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-  gap: 24px;
+  display: flex;
   padding: 0;
   background: transparent;
   color: inherit;
@@ -46,23 +43,20 @@
   grid-column: 1 / -1;
   margin: 0;
   padding: 55px 20px;
-  border: 1px dashed #bcbcbc;
+  border: 1px dashed #333333;
   border-radius: 14px;
-  color: #666666;
+  color: #bdbdbd;
   text-align: center;
 }
 
 .estado-resultados-busca.erro {
-  border-color: #e9009b;
-  color: #a0006b;
+  border-color: #ff006e;
+  color: #ff006e;
 }
 
-@media (max-width: 575px) {
+@media (max-width: 575.98px) {
   .resultados-busca-main {
     padding: 38px 16px 60px;
   }
 
-  .resultados-busca-grid {
-    grid-template-columns: 1fr;
-  }
 }

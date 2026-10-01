@@ -15,7 +15,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 
     <link
-        href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,300;1,400;1,500;1,600;1,700;1,800&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Jost:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Anton&family=Archivo+Black&family=Bodoni+Moda:ital,opsz,wght@0,6..96,400..900;1,6..96,400..900&family=Libertinus+Serif+Display&family=Noto+Sans+JP:wght@100..900&family=Noto+Serif:ital,wght@0,100..900;1,100..900&family=Roboto+Condensed:ital,wght@0,100..900;1,100..900&family=Story+Script&family=Vend+Sans:ital,wght@0,300..700;1,300..700&display=swap"
+        href="https://fonts.googleapis.com/css2?family=Anton&family=Oswald:wght@400;500;600;700&family=Open+Sans:wght@300;400;500;600;700;800&family=Poppins:wght@300;400;500;600;700;800&family=Jost:wght@300;400;500;600;700;800&display=swap"
         rel="stylesheet">
 
     <!-- Vendor CSS -->
@@ -25,14 +25,23 @@
     <link href="assets/vendor/glightbox/css/glightbox.min.css" rel="stylesheet">
     <link href="assets/vendor/swiper/swiper-bundle.min.css" rel="stylesheet">
 
-    <!-- CSS -->
-    <link href="assets/css/main.css" rel="stylesheet">
+    <!-- CSS da página e, por último, o compartilhado do cabeçalho -->
     <link href="assets/css/usuario.css" rel="stylesheet">
+    <link href="assets/css/main.css" rel="stylesheet">
 </head>
 
-<body class="com-cabecalho-padrao">
+<body class="com-cabecalho-padrao cabecalho-tipo-c">
 
-    <?php require __DIR__ . '/cabecalho.php'; ?>
+    <?php
+    $tipoCabecalho = 'C';
+    $configuracaoCabecalho = [
+        'titulo_primario' => 'Meu',
+        'titulo_secundario' => 'Perfil',
+        'fallback' => 'inicio.php',
+        'acao' => 'logout',
+    ];
+    require __DIR__ . '/cabecalho.php';
+    ?>
 
     
     <div class="banner-wrap">
@@ -55,12 +64,12 @@
 
      
         <form
-            class="perfil-form"
+            class="perfil-form row g-4"
             id="perfilForm"
             data-endpoint="api/usuarios/<?= (int) $_SESSION['id_user'] ?>"
         >
 
-            <div class="grupo">
+            <div class="grupo col-12 col-md-6">
                 <label>Nome</label>
                 <div class="input-icon">
                     <i class="bi bi-person"></i>
@@ -68,7 +77,7 @@
                 </div>
             </div>
 
-            <div class="grupo">
+            <div class="grupo col-12 col-md-6">
                 <label>Sobrenome</label>
                 <div class="input-icon">
                     <i class="bi bi-person"></i>
@@ -76,7 +85,7 @@
                 </div>
             </div>
 
-            <div class="grupo full">
+            <div class="grupo full col-12">
                 <label>E-mail</label>
                 <div class="input-icon">
                     <i class="bi bi-envelope"></i>
@@ -84,7 +93,7 @@
                 </div>
             </div>
 
-            <p id="perfilFeedback" class="perfil-feedback" role="status" aria-live="polite" hidden></p>
+            <p id="perfilFeedback" class="perfil-feedback col-12" role="status" aria-live="polite" hidden></p>
 
         </form>
 
@@ -93,24 +102,30 @@
 
             <h2>Estatísticas</h2>
 
-            <div class="stats-grid">
+            <div class="stats-grid row g-4">
 
-                <div class="stat-card">
-                    <i class="bi bi-heart-fill stat-icon"></i>
-                    <h3>12</h3>
-                    <p>Eventos favoritados</p>
+                <div class="col-12 col-md-4">
+                    <div class="stat-card h-100">
+                        <i class="bi bi-heart-fill stat-icon"></i>
+                        <h3>12</h3>
+                        <p>Eventos favoritados</p>
+                    </div>
                 </div>
 
-                <div class="stat-card">
-                    <i class="bi bi-map-fill stat-icon"></i>
-                    <h3>5</h3>
-                    <p>Viagens planejadas</p>
+                <div class="col-12 col-md-4">
+                    <div class="stat-card h-100">
+                        <i class="bi bi-map-fill stat-icon"></i>
+                        <h3>5</h3>
+                        <p>Viagens planejadas</p>
+                    </div>
                 </div>
 
-                <div class="stat-card">
-                    <i class="bi bi-calendar-check-fill stat-icon"></i>
-                    <h3>8</h3>
-                    <p>Eventos cadastrados</p>
+                <div class="col-12 col-md-4">
+                    <div class="stat-card h-100">
+                        <i class="bi bi-calendar-check-fill stat-icon"></i>
+                        <h3>8</h3>
+                        <p>Eventos cadastrados</p>
+                    </div>
                 </div>
 
             </div>

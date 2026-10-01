@@ -3,6 +3,15 @@
 if (session_status() !== PHP_SESSION_ACTIVE) {
     session_start();
 }
+
+$secoesHome = [
+    ['id' => 'eventosMusicais', 'titulo' => 'Eventos Musicais', 'cor' => 'verde'],
+    ['id' => 'pertoVoce', 'titulo' => 'Perto de Você', 'cor' => 'rosa'],
+    ['id' => 'cinema', 'titulo' => 'Cinema', 'cor' => 'verde'],
+    ['id' => 'showsInternacionais', 'titulo' => 'Shows Internacionais', 'cor' => 'rosa'],
+    ['id' => 'showsNacionais', 'titulo' => 'Shows Nacionais', 'cor' => 'verde'],
+    ['id' => 'emBreve', 'titulo' => 'Em Breve', 'cor' => 'rosa'],
+];
 ?>
 <!doctype html>
 <html lang="pt-br">
@@ -20,10 +29,9 @@ if (session_status() !== PHP_SESSION_ACTIVE) {
     <link href="https://fonts.googleapis.com" rel="preconnect">
     <link href="https://fonts.gstatic.com" rel="preconnect" crossorigin>
     <link
-        href="https://fonts.googleapis.com/css2?family=Anton&family=Archivo+Black&family=Open+Sans:wght@300;400;500;600;700;800&family=Poppins:wght@300;400;500;600;700;800&family=Jost:wght@300;400;500;600;700;800&display=swap"
+        href="https://fonts.googleapis.com/css2?family=Anton&family=Oswald:wght@400;500;600;700&family=Open+Sans:wght@300;400;500;600;700;800&family=Poppins:wght@300;400;500;600;700;800&family=Jost:wght@300;400;500;600;700;800&display=swap"
         rel="stylesheet">
 
-    <link href="assets/css/main.css" rel="stylesheet">
     <link href="assets/css/inicio.css" rel="stylesheet">
     <link href="assets/css/cardsEvento.css" rel="stylesheet">
 
@@ -124,7 +132,7 @@ if (session_status() !== PHP_SESSION_ACTIVE) {
             color: #b42318;
         }
 
-        @media (max-width: 768px) {
+        @media (max-width: 767.98px) {
             .carrossel-eventos {
                 width: 100%;
                 padding-left: 20px;
@@ -142,99 +150,76 @@ if (session_status() !== PHP_SESSION_ACTIVE) {
             }
         }
     </style>
+    <link href="assets/css/main.css" rel="stylesheet">
 </head>
 
 <body class="com-cabecalho-padrao">
-    <?php require __DIR__ . '/cabecalho.php'; ?>
+    <?php
+    $tipoCabecalho = 'A';
+    require __DIR__ . '/cabecalho.php';
+    ?>
 
     <main class="inicio">
         <section class="banner-section">
-            <h2 class="titulo-home">Recomendamos para Você</h2>
+            <h2 class="titulo-home">Recomendados para Você</h2>
 
-            <div class="banner swiper">
-                <div class="swiper-wrapper">
-                    <div class="swiper-slide">
-                        <img src="assets/img/banner_site_565x235px.png" alt="Banner Principal">
-                    </div>
-                    <div class="swiper-slide">
-                        <img src="assets/img/banner.png" alt="Rock in Rio">
-                    </div>
-                    <div class="swiper-slide">
-                        <img src="assets/img/shrek.png" alt="Shrek: O Musical">
+            <div class="banner swiper" aria-live="polite" aria-busy="true">
+                <div class="swiper-wrapper" id="bannerEventos">
+                    <div class="swiper-slide banner-estado">
+                        <span class="spinner-border" aria-hidden="true"></span>
+                        <p>Carregando eventos em destaque...</p>
                     </div>
                 </div>
 
                 <div class="swiper-pagination"></div>
-                <div class="swiper-button-prev"></div>
-                <div class="swiper-button-next"></div>
+                <div class="swiper-button-prev" hidden></div>
+                <div class="swiper-button-next" hidden></div>
             </div>
         </section>
 
-        <section id="secaoRecomendados" class="eventos recomendados" aria-busy="true">
-            <h3>Recomendados para Você</h3>
+        <?php foreach ($secoesHome as $secao): ?>
+            <section
+                id="secao<?= htmlspecialchars($secao['id'], ENT_QUOTES, 'UTF-8') ?>"
+                class="eventos secao-eventos-home"
+                data-secao-categoria="<?= htmlspecialchars($secao['id'], ENT_QUOTES, 'UTF-8') ?>"
+                aria-busy="true">
+                <h3 class="titulo-secao-home titulo-<?= htmlspecialchars($secao['cor'], ENT_QUOTES, 'UTF-8') ?>">
+                    <?= htmlspecialchars($secao['titulo'], ENT_QUOTES, 'UTF-8') ?>
+                </h3>
 
-            <div class="carrossel-eventos">
-                <button
-                    type="button"
-                    class="btn-carrossel esquerda"
-                    data-carrossel="recomendados"
-                    data-direcao="-1"
-                    aria-label="Eventos recomendados anteriores"
-                    hidden>
-                    <i class="bi bi-chevron-left" aria-hidden="true"></i>
-                </button>
+                <div class="carrossel-eventos">
+                    <button
+                        type="button"
+                        class="btn-carrossel esquerda"
+                        data-carrossel="<?= htmlspecialchars($secao['id'], ENT_QUOTES, 'UTF-8') ?>"
+                        data-direcao="-1"
+                        aria-label="Eventos anteriores de <?= htmlspecialchars($secao['titulo'], ENT_QUOTES, 'UTF-8') ?>"
+                        hidden>
+                        <i class="bi bi-chevron-left" aria-hidden="true"></i>
+                    </button>
 
-                <div class="carrossel-wrapper" id="recomendados" aria-live="polite">
-                    <div class="sem-eventos estado-eventos">
-                        <span class="spinner-border" aria-hidden="true"></span>
-                        <p>Carregando eventos...</p>
+                    <div
+                        class="carrossel-wrapper"
+                        id="<?= htmlspecialchars($secao['id'], ENT_QUOTES, 'UTF-8') ?>"
+                        aria-live="polite">
+                        <div class="sem-eventos estado-eventos">
+                            <span class="spinner-border" aria-hidden="true"></span>
+                            <p>Carregando eventos...</p>
+                        </div>
                     </div>
+
+                    <button
+                        type="button"
+                        class="btn-carrossel direita"
+                        data-carrossel="<?= htmlspecialchars($secao['id'], ENT_QUOTES, 'UTF-8') ?>"
+                        data-direcao="1"
+                        aria-label="Próximos eventos de <?= htmlspecialchars($secao['titulo'], ENT_QUOTES, 'UTF-8') ?>"
+                        hidden>
+                        <i class="bi bi-chevron-right" aria-hidden="true"></i>
+                    </button>
                 </div>
-
-                <button
-                    type="button"
-                    class="btn-carrossel direita"
-                    data-carrossel="recomendados"
-                    data-direcao="1"
-                    aria-label="Próximos eventos recomendados"
-                    hidden>
-                    <i class="bi bi-chevron-right" aria-hidden="true"></i>
-                </button>
-            </div>
-        </section>
-
-        <section id="secaoOutrosEventos" class="eventos" aria-busy="true">
-            <h3>Eventos Musicais</h3>
-
-            <div class="carrossel-eventos">
-                <button
-                    type="button"
-                    class="btn-carrossel esquerda"
-                    data-carrossel="outrosEventos"
-                    data-direcao="-1"
-                    aria-label="Eventos anteriores"
-                    hidden>
-                    <i class="bi bi-chevron-left" aria-hidden="true"></i>
-                </button>
-
-                <div class="carrossel-wrapper" id="outrosEventos" aria-live="polite">
-                    <div class="sem-eventos estado-eventos">
-                        <span class="spinner-border" aria-hidden="true"></span>
-                        <p>Carregando eventos...</p>
-                    </div>
-                </div>
-
-                <button
-                    type="button"
-                    class="btn-carrossel direita"
-                    data-carrossel="outrosEventos"
-                    data-direcao="1"
-                    aria-label="Próximos eventos"
-                    hidden>
-                    <i class="bi bi-chevron-right" aria-hidden="true"></i>
-                </button>
-            </div>
-        </section>
+            </section>
+        <?php endforeach; ?>
     </main>
 
     <?php require __DIR__ . '/rodape.php'; ?>

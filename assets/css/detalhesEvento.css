@@ -20,8 +20,8 @@ body {
    CORES
 ========================== */
 
-.verde { color: #39ff14; }
-.rosa  { color: #ff4f9a; }
+.verde { color: #00ff00; }
+.rosa  { color: #ff006e; }
 
 /* ==========================
    WRAPPER
@@ -42,16 +42,16 @@ body {
     width: 46px;
     height: 46px;
     margin: 20px 0 0 20px;
-    border: 2px solid #39ff14;
+    border: 2px solid #00ff00;
     border-radius: 50%;
-    color: #39ff14;
+    color: #00ff00;
     font-size: 1.1rem;
     text-decoration: none;
     transition: .25s;
 }
 
 .btn-voltar:hover {
-    background: #39ff14;
+    background: #00dd00;
     color: #000;
 }
 
@@ -90,7 +90,7 @@ a {
 /* Badge */
 .badge-evento {
     display: inline-block;
-    background: #ff4f9a;
+    background: #ff006e;
     color: #000;
     font-size: 0.82rem;
     font-weight: 700;
@@ -101,7 +101,7 @@ a {
 
 /* Título */
 .titulo-evento {
-    font-size: 2.6rem;
+    font-size: clamp(1.8rem, 5vw, 2.6rem);
     font-weight: 800;
     line-height: 1.15;
     margin-bottom: 14px;
@@ -125,7 +125,7 @@ a {
 }
 
 .infos-rapidas i {
-    color: #39ff14;
+    color: #00ff00;
     font-size: 1rem;
 }
 
@@ -138,14 +138,14 @@ a {
 }
 
 .secao h2 {
-    color: #39ff14;
+    color: #00ff00;
     font-size: 1.25rem;
     font-weight: 700;
     margin-bottom: 14px;
 }
 
 .secao > p {
-    color: #d8d8d8;
+    color: #cccccc;
     line-height: 1.8;
     font-size: 0.95rem;
 }
@@ -153,7 +153,7 @@ a {
 /* Card interno (artista, local) */
 .card-showme {
     background: #141414;
-    border: 2px solid #39ff14;
+    border: 2px solid #00ff00;
     border-radius: 18px;
     padding: 22px 24px;
 }
@@ -182,7 +182,7 @@ a {
     margin-top: 18px;
     border: 2px dashed #2a2a2a;
     border-radius: 14px;
-    color: #39ff14;
+    color: #00ff00;
     font-size: 0.95rem;
 }
 
@@ -221,7 +221,7 @@ a {
 }
 
 .avaliacao-item small {
-    color: #666;
+    color: #aaa;
     font-size: 0.78rem;
 }
 
@@ -239,13 +239,13 @@ a {
 
 .avaliar-card {
     background: #141414;
-    border: 2px solid #39ff14;
+    border: 2px solid #00ff00;
     border-radius: 20px;
     padding: 28px;
 }
 
 .avaliar-card h2 {
-    color: #39ff14;
+    color: #00ff00;
     font-size: 1.15rem;
     margin-bottom: 18px;
 }
@@ -254,7 +254,7 @@ a {
     display: block;
     font-size: 0.9rem;
     font-weight: 600;
-    color: #ddd;
+    color: #ccc;
     margin-bottom: 8px;
     margin-top: 14px;
 }
@@ -302,7 +302,7 @@ a {
 
 .avaliar-card textarea:focus {
     outline: none;
-    border-color: #39ff14;
+    border-color: #00ff00;
 }
 
 .avaliar-card input[type="file"] {
@@ -311,7 +311,7 @@ a {
     border: 1px solid #383838;
     border-radius: 10px;
     background: #1a1a1a;
-    color: #ddd;
+    color: #ccc;
 }
 
 .avaliar-card input[type="file"]::file-selector-button {
@@ -319,7 +319,7 @@ a {
     padding: 8px 12px;
     border: 0;
     border-radius: 8px;
-    background: #39ff14;
+    background: #00ff00;
     color: #101010;
     font-weight: 700;
     cursor: pointer;
@@ -328,7 +328,7 @@ a {
 .avaliar-card form > small {
     display: block;
     margin-top: 7px;
-    color: #888;
+    color: #aaa;
 }
 
 /* Área de upload */
@@ -339,7 +339,7 @@ a {
     padding: 14px 20px;
     border: 2px dashed #333;
     border-radius: 14px;
-    color: #888;
+    color: #aaa;
     font-size: 0.9rem;
     cursor: pointer;
     transition: .25s;
@@ -350,8 +350,8 @@ a {
 .upload-area i { font-size: 1.2rem; }
 
 .upload-area:hover {
-    border-color: #39ff14;
-    color: #39ff14;
+    border-color: #00dd00;
+    color: #00dd00;
 }
 
 /* Botão enviar */
@@ -362,7 +362,7 @@ a {
     padding: 0 30px;
     border: none;
     border-radius: 14px;
-    background: #39ff14;
+    background: #00ff00;
     color: #000;
     font-weight: 700;
     font-size: 1rem;
@@ -372,7 +372,7 @@ a {
 
 .btn-enviar:hover {
     transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(57, 255, 20, .3);
+    box-shadow: 0 6px 20px rgba(0, 255, 0, .3);
 }
 
 /* ==========================
@@ -381,7 +381,7 @@ a {
 
 .ingresso-card {
     background: #0d0d0d;
-    border: 2px solid #ff4f9a;
+    border: 2px solid #ff006e;
     border-radius: 20px;
     padding: 24px;
     margin-bottom: 16px;
@@ -391,21 +391,21 @@ a {
 }
 
 .ingresso-card h3 {
-    color: #ff4f9a;
+    color: #ff006e;
     font-size: 1.2rem;
     font-weight: 700;
     margin: 0;
 }
 
 .ingresso-card p {
-    color: #bbb;
+    color: #bdbdbd;
     font-size: 0.88rem;
     margin: 0;
     line-height: 1.5;
 }
 
 .ingresso-card small {
-    color: #777;
+    color: #aaa;
     font-size: 0.8rem;
     text-align: center;
 }
@@ -415,7 +415,7 @@ a {
     height: 48px;
     border: none;
     border-radius: 12px;
-    background: #ff4f9a;
+    background: #ff006e;
     color: #000;
     font-weight: 700;
     font-size: 1rem;
@@ -425,7 +425,7 @@ a {
 
 .btn-comprar:hover {
     transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(255, 79, 154, .35);
+    box-shadow: 0 6px 20px rgba(255, 0, 110, .35);
 }
 
 /* Botões Favoritar / Planejar */
@@ -446,24 +446,24 @@ a {
 
 .btn-favoritar {
     background: transparent;
-    border: 2px solid #39ff14;
-    color: #39ff14;
+    border: 2px solid #00ff00;
+    color: #00ff00;
 }
 
 .btn-favoritar:hover {
-    background: #39ff14;
+    background: #00dd00;
     color: #000;
 }
 
 .btn-planejar {
-    background: #39ff14;
-    border: 2px solid #39ff14;
+    background: #00ff00;
+    border: 2px solid #00ff00;
     color: #000;
 }
 
 .btn-planejar:hover {
     transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(57, 255, 20, .3);
+    box-shadow: 0 6px 20px rgba(0, 255, 0, .3);
 }
 
 /* ==========================
@@ -477,21 +477,21 @@ a {
 }
 
 .footer a {
-  color: #0aff16;
+  color: #00ff00;
   text-decoration: none;
 }
 
 .footer-line {
   width: 100%;
   height: 1px;
-  background: #0aff16;
+  background: #00ff00;
   margin-bottom: 35px;
 }
 
 .footer h4 {
   font-family: "Oswald", sans-serif;
   letter-spacing: 1px;
-  color: #0aff16;
+  color: #00ff00;
   font-size: 18px;
   font-weight: 700;
   margin-bottom: 18px;
@@ -517,7 +517,7 @@ a {
 
 .footer .social-links a {
   font-family: "Oswald", sans-serif;
-  color: #ff00bf;
+  color: #ff006e;
   font-size: 22px;
   border: none;
   width: auto;
@@ -525,7 +525,7 @@ a {
 }
 
 .footer .social-links a:hover {
-  color: #0aff16;
+  color: #00dd00;
 }
 
 .footer-contact-form {
@@ -538,7 +538,7 @@ a {
 .footer-contact-form textarea {
   width: 100%;
   background: #111;
-  border: 1px solid #0aff16;
+  border: 1px solid #00ff00;
   color: white;
   padding: 12px;
   border-radius: 5px;
@@ -552,11 +552,11 @@ a {
 .footer-contact-form input:focus,
 .footer-contact-form textarea:focus {
   outline: none;
-  box-shadow: 0 0 5px #0aff16;
+  box-shadow: 0 0 5px #00ff00;
 }
 
 .footer-contact-form button {
-  background: #0aff16;
+  background: #00ff00;
   color: #000;
   border: none;
   padding: 12px;
@@ -585,13 +585,13 @@ a {
 }
 
 .footer-links ul a:hover {
-  color: #00ff66;
+  color: #00dd00;
 }
 
 .copyright-text {
   margin-top: 20px;
   font-size: 13px;
-  color: #ddd;
+  color: #ccc;
 }
 
 .footer .copyright {
@@ -599,7 +599,7 @@ a {
 }
 
 
-@media (max-width: 768px) {
+@media (max-width: 767.98px) {
 
   .footer-about,
   .footer-links {
@@ -618,16 +618,20 @@ a {
    RESPONSIVO
 ========================== */
 
-@media (max-width: 992px) {
-    /* Coluna direita sobe para cima do conteúdo */
-    .col-lg-4 { order: -1; }
+@media (max-width: 991.98px) {
+    /* A ordem do DOM mantém ingressos depois do conteúdo principal. */
+    .conteudo-principal > .row > .col-lg-4 { order: 0; }
 
-    .ingresso-card { margin-bottom: 12px; }
+    .ingresso-card { margin: 0 0 16px; }
 }
 
-@media (max-width: 768px) {
+@media (max-width: 767.98px) {
     .banner-evento { height: 260px; }
     .titulo-evento  { font-size: 1.8rem; }
     .infos-rapidas  { flex-direction: column; gap: 10px; }
-    .col-lg-4       { order: 0; }
+    .conteudo-principal { padding-right: 14px; padding-left: 14px; }
+    .avaliar-card { padding: 22px 18px; }
+    .acoes-avaliacao { flex-direction: column; }
+    .acoes-avaliacao a,
+    .acoes-avaliacao button { width: 100%; min-height: 44px; }
 }

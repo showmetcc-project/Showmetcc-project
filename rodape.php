@@ -1,9 +1,10 @@
 <footer id="footer" class="footer">
+  <span id="contato" class="ancora-secao" aria-hidden="true"></span>
   <div class="footer-line"></div>
 
   <div class="container footer-top">
     <div class="row gy-4">
-      <div class="col-lg-4 col-md-6 footer-about">
+      <div class="col-12 col-md-6 col-lg-4 footer-about">
         <h4 class="logo-footer">
           <span class="verde">Show</span><span class="rosa">Me</span>
         </h4>
@@ -15,7 +16,7 @@
         </div>
       </div>
 
-      <div class="col-lg-4 col-md-6">
+      <div class="col-12 col-md-6 col-lg-4 footer-contact-column">
         <h4>Entre em Contato</h4>
         <form class="footer-contact-form" action="forms/contact.php" method="post">
           <input
@@ -51,7 +52,7 @@
         </form>
       </div>
 
-      <div class="col-lg-4 col-md-12 footer-links">
+      <div class="col-12 col-lg-4 footer-links">
         <h4>Informações</h4>
         <ul>
           <li><a href="#">Termos de Uso</a></li>
@@ -66,4 +67,4 @@
 <script src="assets/js/contactForm.js" defer></script>
 <?php require_once __DIR__ . '/acessibilidade.php'; ?>
 <!-- Scroll Top -->
-<a href="#" id="scroll-top" class="scroll-top d-flex align-items-center justify-content-center"><iclass="bi bi-arrow-up-short"></i></a>
+<a href="#" id="scroll-top" class="scroll-top d-flex align-items-center justify-content-center" aria-label="Voltar ao topo"><i class="bi bi-arrow-up-short" aria-hidden="true"></i></a>

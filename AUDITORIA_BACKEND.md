@@ -64,8 +64,8 @@ Ponto para decisão futura: distância e tempo são calculados pelo cliente, e `
 | Avaliar eventos/locais | **Completo** | Foto+vídeo retornaram 201; listagem trouxe as duas mídias; detalhe, edição e exclusão retornaram 200; edição alheia 403; duplicata 409; seis arquivos e PHP disfarçado 400. A edição atual não troca mídias. |
 | Planejar eventos | **Completo** | POST 201, duplicata 409, GET e PUT 200. A página usa o evento e o planejamento reais. Ressalva: o cálculo da rota ocorre no navegador. |
 | Favoritar eventos | **Completo** | POST 201 e repetição 409; detalhes e cards usam toggle baseado no GET. |
-| Visualizar seus eventos (favoritos e planejados) | **Completo** | `favoritos.php` tem as duas abas; `assets/js/favoritos.js:151` e `:336` chamam os dois recursos e os testes retornaram os dados de evento necessários. |
-| Remover planejados | **Completo** | DELETE 200; a tela oferece “Desfazer planejamento” (`assets/js/favoritos.js:294-304`). |
+| Visualizar seus eventos (favoritos e planejados) | **Completo** | `meusEventos.php` reúne as abas; `assets/js/meusEventos.js` chama os recursos correspondentes e os testes retornaram os dados de evento necessários. |
+| Remover planejados | **Completo** | DELETE 200; a tela oferece “Desfazer planejamento” em `assets/js/meusEventos.js`. |
 | Remover favoritos | **Completo** | DELETE 200 e repetição 404; há ação nos cards e no toggle. |
 
 ### Ator Administrador

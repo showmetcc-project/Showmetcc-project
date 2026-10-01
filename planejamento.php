@@ -54,7 +54,7 @@ $idEvento = (int) $idInformado;
             'titulo_primario' => 'Planejamento',
             'titulo_secundario' => 'do Evento',
             'icone' => 'bi-signpost-split',
-            'fallback' => 'favoritos.php',
+            'fallback' => 'meusEventos.php',
         ];
         require __DIR__ . '/cabecalho.php';
         ?>
@@ -3540,7 +3540,7 @@ async function finalizarPlanejamento(eventoSubmit) {
         mensagem.append("Planejamento finalizado com sucesso. ");
 
         const linkPlanejados = document.createElement("a");
-        linkPlanejados.href = "favoritos.php?aba=planejados";
+        linkPlanejados.href = "meusEventos.php?aba=planejados";
         linkPlanejados.textContent = "Ver planejados ou desfazer";
         mensagem.append(linkPlanejados);
         botao.textContent = "Planejamento finalizado";
@@ -3551,7 +3551,7 @@ async function finalizarPlanejamento(eventoSubmit) {
 
         if (erro.message.includes("já possui")) {
             const linkPlanejados = document.createElement("a");
-            linkPlanejados.href = "favoritos.php?aba=planejados";
+            linkPlanejados.href = "meusEventos.php?aba=planejados";
             linkPlanejados.textContent = "Abrir meus planejados";
             mensagem.append(linkPlanejados);
         }

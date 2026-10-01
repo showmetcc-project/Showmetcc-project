@@ -150,8 +150,8 @@ $mostrarLogout = false;
                   <span>Cadastrar Evento</span>
                 </a>
               </li>
-              <li><a href="favoritos.php">Meus Eventos</a></li>
-              <li><a href="sobre.php">Institucional</a></li>
+              <li><a href="meusEventos.php">Meus Eventos</a></li>
+              <li><a href="institucional.php">Institucional</a></li>
               <li>
                 <a href="perfilUsuario.php" class="nav-usuario-direto" aria-label="Abrir perfil do usuário">
                   <i class="bi bi-person-circle" aria-hidden="true"></i>
@@ -171,18 +171,18 @@ $mostrarLogout = false;
                   <span>Cadastrar Evento</span>
                 </a>
               </li>
-              <li><a href="favoritos.php">Meus Eventos</a></li>
+              <li><a href="meusEventos.php">Meus Eventos</a></li>
               <li class="dropdown institucional-dropdown">
-                <a href="sobre.php#sobre">
+                <a href="institucional.php#sobre">
                   <span>Institucional</span>
                   <i class="bi bi-chevron-down toggle-dropdown" aria-hidden="true"></i>
                 </a>
                 <ul>
-                  <li><a href="sobre.php#sobre">Sobre</a></li>
-                  <li><a href="sobre.php#como-funciona">Como Funciona</a></li>
-                  <li><a href="sobre.php#fidelidade">Clube de Fidelidade</a></li>
-                  <li><a href="sobre.php#perguntas">Perguntas Frequentes</a></li>
-                  <li><a href="sobre.php#contato">Contato</a></li>
+                  <li><a href="institucional.php#sobre">Sobre</a></li>
+                  <li><a href="institucional.php#como-funciona">Como Funciona</a></li>
+                  <li><a href="institucional.php#fidelidade">Clube de Fidelidade</a></li>
+                  <li><a href="institucional.php#perguntas">Perguntas Frequentes</a></li>
+                  <li><a href="institucional.php#contato">Contato</a></li>
                 </ul>
               </li>
               <li>
@@ -216,8 +216,8 @@ $mostrarLogout = false;
                     <span>Cadastrar Evento</span>
                   </a>
                 </li>
-                <li><a href="favoritos.php">Meus Eventos</a></li>
-                <li><a href="sobre.php">Institucional</a></li>
+                <li><a href="meusEventos.php">Meus Eventos</a></li>
+                <li><a href="institucional.php">Institucional</a></li>
                 <li>
                   <a href="perfilUsuario.php" class="nav-usuario-direto" aria-label="Abrir perfil do usuário">
                     <i class="bi bi-person-circle" aria-hidden="true"></i>
@@ -237,10 +237,10 @@ $mostrarLogout = false;
                     <span>Cadastrar Evento</span>
                   </a>
                 </li>
-                <li><a href="favoritos.php">Meus Eventos</a></li>
+                <li><a href="meusEventos.php">Meus Eventos</a></li>
                 <li class="cabecalho-menu-institucional">
                   <div>
-                    <a href="sobre.php#sobre">Institucional</a>
+                    <a href="institucional.php#sobre">Institucional</a>
                     <button
                       type="button"
                       data-bs-toggle="collapse"
@@ -252,11 +252,11 @@ $mostrarLogout = false;
                     </button>
                   </div>
                   <ul class="collapse" id="submenuInstitucionalMobile">
-                    <li><a href="sobre.php#sobre">Sobre</a></li>
-                    <li><a href="sobre.php#como-funciona">Como Funciona</a></li>
-                    <li><a href="sobre.php#fidelidade">Clube de Fidelidade</a></li>
-                    <li><a href="sobre.php#perguntas">Perguntas Frequentes</a></li>
-                    <li><a href="sobre.php#contato">Contato</a></li>
+                    <li><a href="institucional.php#sobre">Sobre</a></li>
+                    <li><a href="institucional.php#como-funciona">Como Funciona</a></li>
+                    <li><a href="institucional.php#fidelidade">Clube de Fidelidade</a></li>
+                    <li><a href="institucional.php#perguntas">Perguntas Frequentes</a></li>
+                    <li><a href="institucional.php#contato">Contato</a></li>
                   </ul>
                 </li>
                 <li>
@@ -310,7 +310,7 @@ $mostrarLogout = false;
                 </a>
                 <ul>
                   <li><a href="cadastro-evento.php"><i class="bi bi-plus-circle"></i><span>Cadastrar evento</span></a></li>
-                  <li><a href="favoritos.php"><i class="bi bi-heart"></i><span>Favoritos</span></a></li>
+                  <li><a href="meusEventos.php"><i class="bi bi-heart"></i><span>Favoritos</span></a></li>
                   <li><a href="perfilUsuario.php"><i class="bi bi-person"></i><span>Meu perfil</span></a></li>
                   <li>
                     <button type="button" class="btn-logout-menu" id="btnLogout">

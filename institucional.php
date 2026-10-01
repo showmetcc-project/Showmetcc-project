@@ -27,7 +27,7 @@
   <link href="assets/vendor/swiper/swiper-bundle.min.css" rel="stylesheet">
 
   <!-- CSS específico da página -->
-  <link href="assets/css/sobre.css" rel="stylesheet">
+  <link href="assets/css/institucional.css" rel="stylesheet">
  
 
 

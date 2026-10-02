@@ -138,8 +138,6 @@
 
     </main>
 
-  <?php require __DIR__ . '/rodape.php'; ?>
-
 
 
     <!-- Scroll Top -->

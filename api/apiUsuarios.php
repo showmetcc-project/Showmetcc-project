@@ -3,11 +3,170 @@
 require_once __DIR__ . '/middleware/apiCommon.php';
 
 require_once dirname(__DIR__) . '/config/conexao.php';
+require_once dirname(__DIR__) . '/config/midiasPerfil.php';
 require_once __DIR__ . '/middleware/apiHelper.php';
 require_once __DIR__ . '/middleware/uploadHelper.php';
 
 $metodo = $_SERVER['REQUEST_METHOD'];
 $id = obterIdApi();
+
+/*
+|--------------------------------------------------------------------------
+| POST COM ID - PERSONALIZAR FOTO E BANNER
+|--------------------------------------------------------------------------
+*/
+
+if ($metodo === 'POST' && $id !== null) {
+    require_once __DIR__ . '/middleware/verifica_login.php';
+
+    $idLogado = exigirLogin();
+    if ($idLogado !== $id) {
+        responder(['erro' => 'Você só pode personalizar o próprio perfil'], 403);
+    }
+
+    $tipoConteudo = strtolower((string) ($_SERVER['CONTENT_TYPE'] ?? ''));
+    if (!str_starts_with($tipoConteudo, 'multipart/form-data')) {
+        responder(['erro' => 'Envie a personalização como multipart/form-data'], 400);
+    }
+
+    if (!isset($_POST['acao']) || !is_string($_POST['acao']) || $_POST['acao'] !== 'personalizar_midia') {
+        responder(['erro' => 'Ação de personalização inválida'], 400);
+    }
+
+    try {
+        validarTamanhoTotalUpload(22 * 1024 * 1024);
+        $arquivosPerfil = normalizarArquivosUpload($_FILES['foto_perfil'] ?? null);
+        $arquivosBanner = normalizarArquivosUpload($_FILES['foto_banner'] ?? null);
+    } catch (UploadInvalidoException $erro) {
+        responder(['erro' => $erro->getMessage()], 400);
+    }
+
+    if (count($arquivosPerfil) > 1 || count($arquivosBanner) > 1) {
+        responder(['erro' => 'Envie no máximo uma foto de perfil e um banner'], 400);
+    }
+
+    $perfilPronto = isset($_POST['foto_perfil_pronta']) && is_string($_POST['foto_perfil_pronta'])
+        ? trim($_POST['foto_perfil_pronta'])
+        : '';
+    $bannerPronto = isset($_POST['foto_banner_pronta']) && is_string($_POST['foto_banner_pronta'])
+        ? trim($_POST['foto_banner_pronta'])
+        : '';
+
+    if ($arquivosPerfil !== [] && $perfilPronto !== '') {
+        responder(['erro' => 'Escolha entre upload ou imagem pronta para a foto de perfil'], 400);
+    }
+
+    if ($arquivosBanner !== [] && $bannerPronto !== '') {
+        responder(['erro' => 'Escolha entre upload ou imagem pronta para o banner'], 400);
+    }
+
+    if ($perfilPronto !== '' && !midiaPerfilProntaPermitida('foto_perfil', $perfilPronto)) {
+        responder(['erro' => 'A foto de perfil pronta selecionada não é permitida'], 400);
+    }
+
+    if ($bannerPronto !== '' && !midiaPerfilProntaPermitida('foto_banner', $bannerPronto)) {
+        responder(['erro' => 'O banner pronto selecionado não é permitido'], 400);
+    }
+
+    if ($arquivosPerfil === [] && $arquivosBanner === [] && $perfilPronto === '' && $bannerPronto === '') {
+        responder(['erro' => 'Selecione uma foto de perfil ou um banner'], 400);
+    }
+
+    $stmt = $conn->prepare(
+        'SELECT foto_perfil, foto_banner
+         FROM usuario
+         WHERE id_user = ?
+         LIMIT 1'
+    );
+    $stmt->bind_param('i', $id);
+    executarStatementApi($stmt);
+    $midiaAtual = $stmt->get_result()->fetch_assoc();
+    $stmt->close();
+
+    if (!$midiaAtual) {
+        responder(['erro' => 'Usuário não encontrado'], 404);
+    }
+
+    $novaFotoPerfil = $midiaAtual['foto_perfil'];
+    $novoBanner = $midiaAtual['foto_banner'];
+    $novosUploads = [];
+    $transacaoIniciada = false;
+
+    try {
+        if ($arquivosPerfil !== []) {
+            $salva = salvarImagemRedimensionadaUpload($arquivosPerfil[0], 'perfis', 500, 500);
+            $novaFotoPerfil = $salva['caminho_arquivo'];
+            $novosUploads[] = $novaFotoPerfil;
+        } elseif ($perfilPronto !== '') {
+            $novaFotoPerfil = $perfilPronto;
+        }
+
+        if ($arquivosBanner !== []) {
+            $salva = salvarImagemRedimensionadaUpload($arquivosBanner[0], 'banners', 1600, 400);
+            $novoBanner = $salva['caminho_arquivo'];
+            $novosUploads[] = $novoBanner;
+        } elseif ($bannerPronto !== '') {
+            $novoBanner = $bannerPronto;
+        }
+
+        $conn->begin_transaction();
+        $transacaoIniciada = true;
+
+        $stmt = $conn->prepare(
+            'UPDATE usuario
+             SET foto_perfil = ?, foto_banner = ?
+             WHERE id_user = ?'
+        );
+        $stmt->bind_param('ssi', $novaFotoPerfil, $novoBanner, $id);
+        executarStatementApi($stmt);
+        $stmt->close();
+
+        $conn->commit();
+        $transacaoIniciada = false;
+    } catch (UploadInvalidoException $erro) {
+        if ($transacaoIniciada) {
+            $conn->rollback();
+        }
+        foreach ($novosUploads as $caminho) {
+            removerArquivoUpload($caminho);
+        }
+        responder(['erro' => $erro->getMessage()], 400);
+    } catch (Throwable $erro) {
+        if ($transacaoIniciada) {
+            $conn->rollback();
+        }
+        foreach ($novosUploads as $caminho) {
+            removerArquivoUpload($caminho);
+        }
+        throw $erro;
+    }
+
+    $anteriores = [];
+    if ($midiaAtual['foto_perfil'] && $midiaAtual['foto_perfil'] !== $novaFotoPerfil) {
+        $anteriores[] = $midiaAtual['foto_perfil'];
+    }
+    if ($midiaAtual['foto_banner'] && $midiaAtual['foto_banner'] !== $novoBanner) {
+        $anteriores[] = $midiaAtual['foto_banner'];
+    }
+    removerArquivosUploadSemReferencia($conn, $anteriores);
+
+    $stmt = $conn->prepare(
+        'SELECT id_user, nome_user, sobrenome, email_user, tipo_usuario,
+                foto_perfil, foto_banner, data_cadastro
+         FROM usuario
+         WHERE id_user = ?
+         LIMIT 1'
+    );
+    $stmt->bind_param('i', $id);
+    executarStatementApi($stmt);
+    $usuarioAtualizado = $stmt->get_result()->fetch_assoc();
+    $stmt->close();
+
+    responder([
+        'mensagem' => 'Foto e banner atualizados com sucesso',
+        'usuario' => normalizarUsuarioApi($usuarioAtualizado),
+    ]);
+}
 
 /*
 |--------------------------------------------------------------------------
@@ -141,7 +300,9 @@ if ($metodo === 'POST') {
         'nome_user' => $nome,
         'sobrenome' => $sobrenome,
         'email_user' => $email,
-        'tipo_usuario' => 'comum'
+        'tipo_usuario' => 'comum',
+        'foto_perfil' => null,
+        'foto_banner' => null
     ]);
 
     responder([
@@ -184,7 +345,7 @@ if ($metodo === 'GET') {
 
     $stmt = $conn->prepare(
         'SELECT id_user, nome_user, sobrenome, email_user,
-                tipo_usuario, data_cadastro
+                tipo_usuario, foto_perfil, foto_banner, data_cadastro
          FROM usuario
          WHERE id_user = ?
          LIMIT 1'
@@ -392,7 +553,7 @@ if ($metodo === 'PUT') {
 
     $stmt = $conn->prepare(
         'SELECT id_user, nome_user, sobrenome, email_user,
-                tipo_usuario, data_cadastro
+                tipo_usuario, foto_perfil, foto_banner, data_cadastro
          FROM usuario
          WHERE id_user = ?
          LIMIT 1'
@@ -434,6 +595,22 @@ if ($metodo === 'DELETE') {
     $conn->begin_transaction();
 
     try {
+        $stmt = $conn->prepare(
+            'SELECT foto_perfil, foto_banner
+             FROM usuario
+             WHERE id_user = ?
+             LIMIT 1'
+        );
+        $stmt->bind_param('i', $id);
+        executarStatementApi($stmt);
+        $midiaPerfil = $stmt->get_result()->fetch_assoc();
+        $stmt->close();
+
+        if ($midiaPerfil) {
+            $caminhosUploads[] = $midiaPerfil['foto_perfil'];
+            $caminhosUploads[] = $midiaPerfil['foto_banner'];
+        }
+
         $stmt = $conn->prepare(
             'SELECT am.caminho_arquivo
              FROM avaliacao_midia am

@@ -339,3 +339,4 @@ $mostrarLogout = false;
   <script src="assets/js/logout.js" defer></script>
 <?php endif; ?>
 <script src="assets/js/cabecalho.js" defer></script>
+<?php require_once __DIR__ . '/acessibilidade.php'; ?>

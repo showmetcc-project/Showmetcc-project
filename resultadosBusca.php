@@ -56,8 +56,6 @@ $termoBuscaEscapado = htmlspecialchars($termoBusca, ENT_QUOTES, 'UTF-8');
     </div>
   </main>
 
-  <?php require __DIR__ . '/rodape.php'; ?>
-
   <script src="assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
   <script src="assets/js/main.js"></script>
   <script src="assets/js/favoritosToggle.js"></script>

@@ -344,8 +344,6 @@
 
   </main>
 
-  <?php require __DIR__ . '/rodape.php'; ?>
-
   <!-- Preloader -->
   <div id="preloader"></div>
 

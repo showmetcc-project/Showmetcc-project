@@ -65,6 +65,5 @@
 </footer>
 
 <script src="assets/js/contactForm.js" defer></script>
-<?php require_once __DIR__ . '/acessibilidade.php'; ?>
 <!-- Scroll Top -->
 <a href="#" id="scroll-top" class="scroll-top d-flex align-items-center justify-content-center" aria-label="Voltar ao topo"><i class="bi bi-arrow-up-short" aria-hidden="true"></i></a>

@@ -12,6 +12,9 @@ CREATE TABLE usuario (
 
     google_id     VARCHAR(255) NULL,
 
+    foto_perfil   VARCHAR(255) NULL,
+    foto_banner   VARCHAR(255) NULL,
+
     tipo_usuario  ENUM('comum', 'admin') NOT NULL DEFAULT 'comum',
 
     data_cadastro DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,

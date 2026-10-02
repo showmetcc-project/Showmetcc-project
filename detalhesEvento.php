@@ -191,8 +191,6 @@ $usuarioAdmin = ($_SESSION['tipo_usuario'] ?? '') === 'admin';
         </div>
     </div>
 
-    <?php require __DIR__ . '/rodape.php'; ?>
-
     <script src="assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
     <script src="assets/vendor/aos/aos.js"></script>
     <script src="assets/js/main.js"></script>

@@ -15,7 +15,7 @@ Para executar localmente:
 
 1. Importe `assets/banco/showme.sql` no MySQL.
 2. Confira a conexão em `config/conexao.php` e crie os arquivos locais `config/email.php` e `config/google.php` a partir dos respectivos arquivos `.example.php`.
-3. Execute manualmente as migrações SQL pendentes de `database/migrations/` no banco de desenvolvimento.
+3. Habilite a extensão GD no `php.ini` (`extension=gd`) e reinicie o Apache; ela é usada para redimensionar e comprimir fotos de perfil e banners.
 4. Execute `composer install`.
 5. No VS Code, rode a tarefa **Iniciar servidor PHP do ShowMe** ou use `php -S 127.0.0.1:8000`.
 

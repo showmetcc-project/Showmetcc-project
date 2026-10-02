@@ -215,6 +215,38 @@ curl.exe -i -b $COOKIE_COMUM -X PUT "$BASE/usuarios/ID_DE_OUTRO_USUARIO" `
   -d '{"nome":"Alteração indevida"}'
 ```
 
+### POST /usuarios/{id} — personalização de foto e banner
+
+Escolha pronta válida:
+
+```powershell
+curl.exe -i -b $COOKIE_COMUM -X POST "$BASE/usuarios/ID_DO_PROPRIO_USUARIO" `
+  -F "acao=personalizar_midia" `
+  -F "foto_perfil_pronta=assets/img/prontos/perfil/vozes-destaque-01.webp" `
+  -F "foto_banner_pronta=assets/img/prontos/banner/grandes-palcos-01.webp"
+```
+
+Upload válido; os arquivos gravados devem resultar em 500x500 e 1600x400:
+
+```powershell
+curl.exe -i -b $COOKIE_COMUM -X POST "$BASE/usuarios/ID_DO_PROPRIO_USUARIO" `
+  -F "acao=personalizar_midia" `
+  -F "foto_perfil=@C:/caminho/foto.png;type=image/png" `
+  -F "foto_banner=@C:/caminho/banner.png;type=image/png"
+```
+
+Arquivo PHP disfarçado e caminho pronto fora da lista branca devem retornar 400:
+
+```powershell
+curl.exe -i -b $COOKIE_COMUM -X POST "$BASE/usuarios/ID_DO_PROPRIO_USUARIO" `
+  -F "acao=personalizar_midia" `
+  -F "foto_perfil=@C:/caminho/teste.php;filename=foto.jpg;type=image/jpeg"
+
+curl.exe -i -b $COOKIE_COMUM -X POST "$BASE/usuarios/ID_DO_PROPRIO_USUARIO" `
+  -F "acao=personalizar_midia" `
+  -F "foto_perfil_pronta=assets/img/arquivo-fora-do-catalogo.svg"
+```
+
 ### DELETE /usuarios/{id} — sucesso e erro 403
 
 Use uma conta descartável no teste de sucesso, pois a conta e seus relacionamentos em

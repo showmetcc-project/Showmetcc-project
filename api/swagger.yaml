@@ -150,6 +150,62 @@ paths:
           $ref: '#/components/responses/Proibido'
         '404':
           $ref: '#/components/responses/NaoEncontrado'
+    post:
+      tags: [Usuários]
+      summary: Personaliza a foto e o banner do próprio perfil
+      description: >-
+        Recebe upload recortado ou o caminho de uma fotografia pronta da lista branca.
+        Para cada tipo, envie o arquivo ou o campo *_pronta, nunca os dois. O servidor
+        valida o MIME real e redimensiona uploads para 500x500 ou 1600x400.
+      security:
+        - cookieAuth: []
+      parameters:
+        - $ref: '#/components/parameters/IdNaRota'
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [acao]
+              properties:
+                acao:
+                  type: string
+                  enum: [personalizar_midia]
+                foto_perfil:
+                  type: string
+                  format: binary
+                  description: JPG, PNG ou WebP; saída final em 500x500.
+                foto_banner:
+                  type: string
+                  format: binary
+                  description: JPG, PNG ou WebP; saída final em 1600x400.
+                foto_perfil_pronta:
+                  type: string
+                  description: Caminho de uma fotografia de perfil presente no catálogo oficial.
+                foto_banner_pronta:
+                  type: string
+                  description: Caminho de uma fotografia de banner presente no catálogo oficial.
+      responses:
+        '200':
+          description: Personalização atualizada
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  mensagem:
+                    type: string
+                  usuario:
+                    $ref: '#/components/schemas/Usuario'
+        '400':
+          $ref: '#/components/responses/RequisicaoInvalida'
+        '401':
+          $ref: '#/components/responses/NaoAutenticado'
+        '403':
+          $ref: '#/components/responses/Proibido'
+        '404':
+          $ref: '#/components/responses/NaoEncontrado'
     put:
       tags: [Usuários]
       summary: Atualiza o próprio perfil
@@ -900,6 +956,16 @@ components:
         tipo_usuario:
           type: string
           enum: [comum, admin]
+        foto_perfil:
+          type: string
+          nullable: true
+          readOnly: true
+          description: Caminho do upload processado ou do SVG pronto selecionado.
+        foto_banner:
+          type: string
+          nullable: true
+          readOnly: true
+          description: Caminho do upload processado ou do SVG pronto selecionado.
         data_cadastro:
           type: string
           format: date-time

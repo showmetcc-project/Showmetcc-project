@@ -402,6 +402,165 @@ function salvarArquivoUpload(array $arquivo, array $tiposAceitos, string $subpas
     ];
 }
 
+function salvarImagemRedimensionadaUpload(
+    array $arquivo,
+    string $subpasta,
+    int $larguraDestino,
+    int $alturaDestino,
+    int $qualidade = 86
+): array {
+    if (!extension_loaded('gd')) {
+        throw new RuntimeException('A extensão GD precisa estar habilitada para processar imagens');
+    }
+
+    if (!preg_match('/^[a-z0-9_-]+$/', $subpasta)) {
+        throw new InvalidArgumentException('Subpasta de upload inválida');
+    }
+
+    if ($larguraDestino < 1 || $alturaDestino < 1) {
+        throw new InvalidArgumentException('Dimensões de imagem inválidas');
+    }
+
+    $erro = (int) ($arquivo['error'] ?? UPLOAD_ERR_NO_FILE);
+    if ($erro !== UPLOAD_ERR_OK) {
+        $mensagens = [
+            UPLOAD_ERR_INI_SIZE => 'A imagem excede o limite configurado no servidor',
+            UPLOAD_ERR_FORM_SIZE => 'A imagem excede o limite permitido pelo formulário',
+            UPLOAD_ERR_PARTIAL => 'O upload da imagem foi interrompido',
+            UPLOAD_ERR_NO_FILE => 'Nenhuma imagem foi enviada',
+            UPLOAD_ERR_NO_TMP_DIR => 'A pasta temporária de upload não está disponível',
+            UPLOAD_ERR_CANT_WRITE => 'Não foi possível gravar a imagem temporária',
+            UPLOAD_ERR_EXTENSION => 'O upload foi bloqueado por uma extensão do servidor',
+        ];
+        throw new UploadInvalidoException($mensagens[$erro] ?? 'Falha desconhecida no upload');
+    }
+
+    $temporario = (string) ($arquivo['tmp_name'] ?? '');
+    $tamanho = (int) ($arquivo['size'] ?? 0);
+
+    if ($temporario === '' || !is_uploaded_file($temporario) || $tamanho < 1) {
+        throw new UploadInvalidoException('A imagem enviada é inválida');
+    }
+
+    if ($tamanho > 10 * 1024 * 1024) {
+        throw new UploadInvalidoException('A imagem não pode ultrapassar 10 MB');
+    }
+
+    $finfo = new finfo(FILEINFO_MIME_TYPE);
+    $mime = $finfo->file($temporario);
+    $mimesPermitidos = ['image/jpeg', 'image/png', 'image/webp'];
+
+    if (!is_string($mime) || !in_array($mime, $mimesPermitidos, true)) {
+        throw new UploadInvalidoException('Use uma imagem JPG, PNG ou WebP válida');
+    }
+
+    $dimensoes = @getimagesize($temporario);
+    if ($dimensoes === false) {
+        throw new UploadInvalidoException('O conteúdo enviado não é uma imagem válida');
+    }
+
+    $larguraOrigem = (int) ($dimensoes[0] ?? 0);
+    $alturaOrigem = (int) ($dimensoes[1] ?? 0);
+    if (
+        $larguraOrigem < 1
+        || $alturaOrigem < 1
+        || $larguraOrigem > 12000
+        || $alturaOrigem > 12000
+        || $larguraOrigem * $alturaOrigem > 40000000
+    ) {
+        throw new UploadInvalidoException('As dimensões da imagem não são permitidas');
+    }
+
+    $conteudo = @file_get_contents($temporario);
+    $origem = $conteudo === false ? false : @imagecreatefromstring($conteudo);
+    if ($origem === false) {
+        throw new UploadInvalidoException('Não foi possível decodificar a imagem enviada');
+    }
+
+    $destinoImagem = imagecreatetruecolor($larguraDestino, $alturaDestino);
+    if ($destinoImagem === false) {
+        imagedestroy($origem);
+        throw new RuntimeException('Não foi possível preparar a imagem final');
+    }
+
+    imagealphablending($destinoImagem, false);
+    imagesavealpha($destinoImagem, true);
+    $transparente = imagecolorallocatealpha($destinoImagem, 0, 0, 0, 127);
+    imagefill($destinoImagem, 0, 0, $transparente);
+
+    $proporcaoOrigem = $larguraOrigem / $alturaOrigem;
+    $proporcaoDestino = $larguraDestino / $alturaDestino;
+    $origemX = 0;
+    $origemY = 0;
+    $recorteLargura = $larguraOrigem;
+    $recorteAltura = $alturaOrigem;
+
+    if ($proporcaoOrigem > $proporcaoDestino) {
+        $recorteLargura = (int) round($alturaOrigem * $proporcaoDestino);
+        $origemX = (int) floor(($larguraOrigem - $recorteLargura) / 2);
+    } elseif ($proporcaoOrigem < $proporcaoDestino) {
+        $recorteAltura = (int) round($larguraOrigem / $proporcaoDestino);
+        $origemY = (int) floor(($alturaOrigem - $recorteAltura) / 2);
+    }
+
+    $redimensionou = imagecopyresampled(
+        $destinoImagem,
+        $origem,
+        0,
+        0,
+        $origemX,
+        $origemY,
+        $larguraDestino,
+        $alturaDestino,
+        $recorteLargura,
+        $recorteAltura
+    );
+    imagedestroy($origem);
+
+    if (!$redimensionou) {
+        imagedestroy($destinoImagem);
+        throw new RuntimeException('Não foi possível redimensionar a imagem');
+    }
+
+    $diretorioBase = dirname(__DIR__, 2) . DIRECTORY_SEPARATOR . 'assets' . DIRECTORY_SEPARATOR . 'uploads';
+    $diretorioDestino = $diretorioBase . DIRECTORY_SEPARATOR . $subpasta;
+
+    if (!is_dir($diretorioDestino) && !mkdir($diretorioDestino, 0755, true) && !is_dir($diretorioDestino)) {
+        imagedestroy($destinoImagem);
+        throw new RuntimeException('Não foi possível preparar o diretório de upload');
+    }
+
+    $usarWebp = function_exists('imagewebp');
+    $extensao = $usarWebp ? 'webp' : 'jpg';
+    $nomeAleatorio = bin2hex(random_bytes(16)) . '.' . $extensao;
+    $destino = $diretorioDestino . DIRECTORY_SEPARATOR . $nomeAleatorio;
+
+    if ($usarWebp) {
+        $salvou = imagewebp($destinoImagem, $destino, max(0, min(100, $qualidade)));
+    } else {
+        $fundo = imagecreatetruecolor($larguraDestino, $alturaDestino);
+        $preto = imagecolorallocate($fundo, 10, 10, 10);
+        imagefill($fundo, 0, 0, $preto);
+        imagealphablending($fundo, true);
+        imagecopy($fundo, $destinoImagem, 0, 0, 0, 0, $larguraDestino, $alturaDestino);
+        $salvou = imagejpeg($fundo, $destino, max(0, min(100, $qualidade)));
+        imagedestroy($fundo);
+    }
+
+    imagedestroy($destinoImagem);
+
+    if (!$salvou) {
+        throw new RuntimeException('Não foi possível salvar a imagem processada');
+    }
+
+    return [
+        'tipo_midia' => 'foto',
+        'caminho_arquivo' => "assets/uploads/{$subpasta}/{$nomeAleatorio}",
+        'largura' => $larguraDestino,
+        'altura' => $alturaDestino,
+    ];
+}
+
 function removerArquivoUpload(string $caminhoRelativo): bool
 {
     $caminhoNormalizado = str_replace('\\', '/', ltrim($caminhoRelativo, '/'));
@@ -443,12 +602,17 @@ function caminhoUploadAindaReferenciado(mysqli $conn, string $caminhoRelativo): 
     $consultas = [
         'SELECT 1 FROM avaliacao_midia WHERE caminho_arquivo = ? LIMIT 1',
         'SELECT 1 FROM solicitacao WHERE foto = ? LIMIT 1',
-        'SELECT 1 FROM evento WHERE imagem_evento = ? LIMIT 1'
+        'SELECT 1 FROM evento WHERE imagem_evento = ? LIMIT 1',
+        'SELECT 1 FROM usuario WHERE foto_perfil = ? OR foto_banner = ? LIMIT 1',
     ];
 
     foreach ($consultas as $sql) {
         $stmt = $conn->prepare($sql);
-        $stmt->bind_param('s', $caminhoRelativo);
+        if (substr_count($sql, '?') === 2) {
+            $stmt->bind_param('ss', $caminhoRelativo, $caminhoRelativo);
+        } else {
+            $stmt->bind_param('s', $caminhoRelativo);
+        }
         executarStatementApi($stmt);
         $stmt->store_result();
         $referenciado = $stmt->num_rows > 0;
@@ -466,7 +630,8 @@ function removerArquivosUploadSemReferencia(mysqli $conn, array $caminhos): void
 {
     $caminhosUnicos = array_unique(array_filter(
         $caminhos,
-        static fn($caminho): bool => is_string($caminho) && trim($caminho) !== ''
+        static fn($caminho): bool => is_string($caminho)
+            && str_starts_with(str_replace('\\', '/', ltrim(trim($caminho), '/')), 'assets/uploads/')
     ));
 
     foreach ($caminhosUnicos as $caminho) {

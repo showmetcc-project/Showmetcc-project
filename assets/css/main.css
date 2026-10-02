@@ -3722,6 +3722,20 @@ body {
   box-shadow: 0 8px 20px rgb(0 221 0 / 24%) !important;
 }
 
+/* No modo de edição do perfil, a ação principal passa a ser rosa. */
+button.btn-editar.salvar-alteracoes {
+  background: var(--showme-secondary) !important;
+  border-color: var(--showme-secondary) !important;
+  color: #ffffff !important;
+}
+
+button.btn-editar.salvar-alteracoes:hover {
+  background: var(--showme-secondary-hover) !important;
+  border-color: var(--showme-secondary-hover) !important;
+  color: #ffffff !important;
+  box-shadow: 0 8px 20px rgb(221 0 96 / 28%) !important;
+}
+
 .btn-planejamento,
 .btn-secundario,
 .btn-secondary {

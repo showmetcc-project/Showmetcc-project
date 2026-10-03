@@ -1,6 +1,6 @@
 <?php
 
-require_once __DIR__ . '/verifica_login.php';
+require_once __DIR__ . '/verificaLogin.php';
 
 function exigirAdmin(): int
 {

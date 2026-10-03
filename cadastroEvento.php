@@ -1,4 +1,4 @@
-<?php require_once __DIR__ . '/config/verifica_login.php'; ?>
+<?php require_once __DIR__ . '/config/verificaLogin.php'; ?>
 <!DOCTYPE html>
 <html lang="pt-BR">
 
@@ -26,7 +26,7 @@
   <link href="assets/vendor/swiper/swiper-bundle.min.css" rel="stylesheet">
 
   <!-- CSS da página -->
-  <link href="assets/css/cadastro-evento.css" rel="stylesheet">
+  <link href="assets/css/cadastroEvento.css" rel="stylesheet">
 
   <!-- CSS compartilhado por último para preservar os cabeçalhos -->
   <link href="assets/css/main.css" rel="stylesheet">

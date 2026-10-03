@@ -36,6 +36,7 @@ $atributosRequerLogin = !$usuarioLogado
   $tituloSecundario = $escaparCabecalho($configuracaoCabecalho['titulo_secundario'] ?? '');
   $acaoCabecalho = (string) ($configuracaoCabecalho['acao'] ?? '');
   $mostrarLogout = $acaoCabecalho === 'logout';
+  $mostrarBuscaComunidades = $acaoCabecalho === 'busca_comunidades';
   ?>
   <header id="header" data-usuario-logado="<?= $usuarioLogado ? '1' : '0' ?>" class="cabecalho-subpagina fixed-top">
     <div class="container-fluid container-xl cabecalho-subpagina-conteudo">
@@ -70,6 +71,18 @@ $atributosRequerLogin = !$usuarioLogado
           <i class="bi bi-box-arrow-right" aria-hidden="true"></i>
           <span>Sair</span>
         </button>
+      <?php elseif ($mostrarBuscaComunidades): ?>
+        <form class="cabecalho-busca-comunidades" role="search" novalidate>
+          <label class="visually-hidden" for="buscaComunidades">Buscar comunidades por evento</label>
+          <i class="bi bi-search" aria-hidden="true"></i>
+          <input
+            id="buscaComunidades"
+            type="search"
+            placeholder="Buscar comunidades por evento..."
+            autocomplete="off"
+            spellcheck="false"
+          >
+        </form>
       <?php endif; ?>
     </div>
   </header>
@@ -144,12 +157,13 @@ $atributosRequerLogin = !$usuarioLogado
           <ul>
             <?php if ($tipoCabecalho === 'A'): ?>
               <li>
-                <a href="cadastro-evento.php" class="nav-cadastrar-evento"<?= $atributosRequerLogin ?>>
+                <a href="cadastroEvento.php" class="nav-cadastrar-evento"<?= $atributosRequerLogin ?>>
                   <i class="bi bi-plus-lg" aria-hidden="true"></i>
                   <span>Cadastrar Evento</span>
                 </a>
               </li>
-              <li><a href="meusEventos.php"<?= $atributosRequerLogin ?>>Meus Eventos</a></li>
+              <li><a href="meusEventos.php"<?= $atributosRequerLogin ?>><i class="bi bi-calendar-event" aria-hidden="true"></i><span>Meus Eventos</span></a></li>
+              <li><a href="comunidade.php"<?= $atributosRequerLogin ?>><i class="bi bi-people" aria-hidden="true"></i><span>Comunidade</span></a></li>
               <li><a href="institucional.php">Institucional</a></li>
               <li>
                 <a
@@ -169,12 +183,13 @@ $atributosRequerLogin = !$usuarioLogado
                 </a>
               </li>
               <li>
-                <a href="cadastro-evento.php" class="nav-cadastrar-evento"<?= $atributosRequerLogin ?>>
+                <a href="cadastroEvento.php" class="nav-cadastrar-evento"<?= $atributosRequerLogin ?>>
                   <i class="bi bi-plus-lg" aria-hidden="true"></i>
                   <span>Cadastrar Evento</span>
                 </a>
               </li>
-              <li><a href="meusEventos.php"<?= $atributosRequerLogin ?>>Meus Eventos</a></li>
+              <li><a href="meusEventos.php"<?= $atributosRequerLogin ?>><i class="bi bi-calendar-event" aria-hidden="true"></i><span>Meus Eventos</span></a></li>
+              <li><a href="comunidade.php"<?= $atributosRequerLogin ?>><i class="bi bi-people" aria-hidden="true"></i><span>Comunidade</span></a></li>
               <li class="dropdown institucional-dropdown">
                 <a href="institucional.php#sobre">
                   <span>Institucional</span>
@@ -218,12 +233,13 @@ $atributosRequerLogin = !$usuarioLogado
             <ul>
               <?php if ($tipoCabecalho === 'A'): ?>
                 <li>
-                  <a href="cadastro-evento.php" class="nav-cadastrar-evento"<?= $atributosRequerLogin ?>>
+                  <a href="cadastroEvento.php" class="nav-cadastrar-evento"<?= $atributosRequerLogin ?>>
                     <i class="bi bi-plus-lg" aria-hidden="true"></i>
                     <span>Cadastrar Evento</span>
                   </a>
                 </li>
-                <li><a href="meusEventos.php"<?= $atributosRequerLogin ?>>Meus Eventos</a></li>
+                <li><a href="meusEventos.php"<?= $atributosRequerLogin ?>><i class="bi bi-calendar-event" aria-hidden="true"></i><span>Meus Eventos</span></a></li>
+                <li><a href="comunidade.php"<?= $atributosRequerLogin ?>><i class="bi bi-people" aria-hidden="true"></i><span>Comunidade</span></a></li>
                 <li><a href="institucional.php">Institucional</a></li>
                 <li>
                   <a
@@ -243,12 +259,13 @@ $atributosRequerLogin = !$usuarioLogado
                   </a>
                 </li>
                 <li>
-                  <a href="cadastro-evento.php" class="nav-cadastrar-evento"<?= $atributosRequerLogin ?>>
+                  <a href="cadastroEvento.php" class="nav-cadastrar-evento"<?= $atributosRequerLogin ?>>
                     <i class="bi bi-plus-lg" aria-hidden="true"></i>
                     <span>Cadastrar Evento</span>
                   </a>
                 </li>
-                <li><a href="meusEventos.php"<?= $atributosRequerLogin ?>>Meus Eventos</a></li>
+                <li><a href="meusEventos.php"<?= $atributosRequerLogin ?>><i class="bi bi-calendar-event" aria-hidden="true"></i><span>Meus Eventos</span></a></li>
+                <li><a href="comunidade.php"<?= $atributosRequerLogin ?>><i class="bi bi-people" aria-hidden="true"></i><span>Comunidade</span></a></li>
                 <li class="cabecalho-menu-institucional">
                   <div>
                     <a href="institucional.php#sobre">Institucional</a>
@@ -324,7 +341,7 @@ $atributosRequerLogin = !$usuarioLogado
                   <i class="bi bi-chevron-down toggle-dropdown"></i>
                 </a>
                 <ul>
-                  <li><a href="cadastro-evento.php"><i class="bi bi-plus-circle"></i><span>Cadastrar evento</span></a></li>
+                  <li><a href="cadastroEvento.php"><i class="bi bi-plus-circle"></i><span>Cadastrar evento</span></a></li>
                   <li><a href="meusEventos.php"><i class="bi bi-heart"></i><span>Favoritos</span></a></li>
                   <li><a href="perfilUsuario.php"><i class="bi bi-person"></i><span>Meu perfil</span></a></li>
                   <li>

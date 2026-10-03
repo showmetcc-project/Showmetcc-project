@@ -1,5 +1,5 @@
 <?php
-require_once __DIR__ . '/config/verifica_login.php';
+require_once __DIR__ . '/config/verificaLogin.php';
 
 $idInformado = $_GET['id'] ?? $_GET['id_evento'] ?? null;
 
@@ -338,7 +338,7 @@ $idEvento = (int) $idInformado;
 
                     <!-- ESTIMATIVA -->
 
-                    <div id="estimativaTransporte" style="display:none">
+                    <div id="estimativaTransporte" hidden>
                     </div>
 
 
@@ -509,7 +509,7 @@ $idEvento = (int) $idInformado;
 
                     <!-- INFORMAÇÕES -->
 
-                    <div class="informacoes-rota" id="informacoesRota" style="display:none">
+                    <div class="informacoes-rota" id="informacoesRota" hidden>
 
                         <div class="info-rota">
 
@@ -545,7 +545,7 @@ $idEvento = (int) $idInformado;
 
                     <!-- NAVEGAÇÃO -->
 
-                    <div class="navegacao-box" id="navegacaoBox" style="display:none">
+                    <div class="navegacao-box" id="navegacaoBox" hidden>
 
                         <h3>
 
@@ -670,7 +670,7 @@ $idEvento = (int) $idInformado;
 
                     <!-- OPÇÕES -->
 
-                    <div id="opcoesHospedagem" style="display:none">
+                    <div id="opcoesHospedagem" hidden>
 
 
                         <div class="orcamento-restante">
@@ -1958,8 +1958,7 @@ $idEvento = (int) $idInformado;
 
                 if (!transporteSelecionado) {
 
-                    box.style.display =
-                        "none";
+                    box.hidden = true;
 
 
                     return;
@@ -2051,8 +2050,7 @@ $idEvento = (int) $idInformado;
     `;
 
 
-                box.style.display =
-                    "block";
+                box.hidden = false;
 
 
                 /*
@@ -2107,8 +2105,7 @@ $idEvento = (int) $idInformado;
 
                 document.getElementById(
                         "opcoesHospedagem"
-                    ).style.display =
-                    "block";
+                    ).hidden = false;
 
 
                 atualizarHospedagem();
@@ -2133,8 +2130,7 @@ $idEvento = (int) $idInformado;
 
                 document.getElementById(
                         "opcoesHospedagem"
-                    ).style.display =
-                    "none";
+                    ).hidden = true;
 
 
                 document.getElementById(
@@ -2997,14 +2993,12 @@ $idEvento = (int) $idInformado;
 
                     document.getElementById(
                             "informacoesRota"
-                        ).style.display =
-                        "grid";
+                        ).hidden = false;
 
 
                     document.getElementById(
                             "navegacaoBox"
-                        ).style.display =
-                        "block";
+                        ).hidden = false;
 
 
                     document.getElementById(
@@ -3204,14 +3198,12 @@ $idEvento = (int) $idInformado;
 
                     document.getElementById(
                             "informacoesRota"
-                        ).style.display =
-                        "grid";
+                        ).hidden = false;
 
 
                     document.getElementById(
                             "navegacaoBox"
-                        ).style.display =
-                        "block";
+                        ).hidden = false;
 
 
                     rotaCalculada =

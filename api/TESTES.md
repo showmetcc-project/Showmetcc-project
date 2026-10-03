@@ -259,12 +259,12 @@ curl.exe -i -b $COOKIE_CONTA_DESCARTAVEL -X DELETE "$BASE/usuarios/ID_DA_CONTA_D
 
 ### DELETE /usuarios/{id} — cascata também remove arquivos físicos
 
-Com a conta descartável, crie uma avaliação com mídia e uma solicitação pendente com
+Com a conta descartável, publique uma foto na comunidade e crie uma solicitação pendente com
 foto. Antes do `DELETE`, anote os caminhos retornados pela API (ou consulte-os no banco)
 e confirme que ambos existem:
 
 ```powershell
-$MIDIA_CONTA = Join-Path $RAIZ_PROJETO 'assets/uploads/avaliacoes/NOME_DO_ARQUIVO'
+$MIDIA_CONTA = Join-Path $RAIZ_PROJETO 'assets/uploads/comunidade/NOME_DO_ARQUIVO'
 $FOTO_SOLICITACAO_CONTA = Join-Path $RAIZ_PROJETO 'assets/uploads/eventos/NOME_DO_ARQUIVO'
 Test-Path -LiteralPath $MIDIA_CONTA
 Test-Path -LiteralPath $FOTO_SOLICITACAO_CONTA
@@ -568,7 +568,7 @@ curl.exe -i -b $COOKIE_COMUM -X PUT "$BASE/eventos/ID_EVENTO" `
 
 ### DELETE /eventos/{id} — sucesso e erro 403
 
-Use um evento descartável para o caso de sucesso, pois favoritos, avaliações, rotas e
+Use um evento descartável para o caso de sucesso, pois favoritos, comunidades, rotas e
 relações com artistas vinculados a ele serão removidos em cascata.
 
 ```powershell
@@ -576,13 +576,13 @@ curl.exe -i -b $COOKIE_COMUM -X DELETE "$BASE/eventos/ID_EVENTO"
 curl.exe -i -b $COOKIE_ADMIN -X DELETE "$BASE/eventos/ID_EVENTO_DESCARTAVEL"
 ```
 
-### DELETE /eventos/{id} — cascata também remove mídias das avaliações
+### DELETE /eventos/{id} — cascata também remove mídias da comunidade
 
-Crie uma avaliação com mídia no evento descartável, anote `caminho_arquivo` e confirme o
+Publique uma foto na comunidade do evento descartável, anote `caminho_arquivo` e confirme o
 arquivo antes e depois da exclusão administrativa:
 
 ```powershell
-$MIDIA_EVENTO = Join-Path $RAIZ_PROJETO 'assets/uploads/avaliacoes/NOME_DO_ARQUIVO'
+$MIDIA_EVENTO = Join-Path $RAIZ_PROJETO 'assets/uploads/comunidade/NOME_DO_ARQUIVO'
 Test-Path -LiteralPath $MIDIA_EVENTO
 
 curl.exe -i -b $COOKIE_ADMIN -X DELETE "$BASE/eventos/ID_EVENTO_DESCARTAVEL"
@@ -709,137 +709,101 @@ curl.exe -i -b $COOKIE_COMUM -X DELETE "$BASE/favoritos/ID_FAVORITO"
 curl.exe -i -b $COOKIE_COMUM -X DELETE "$BASE/favoritos/999999999"
 ```
 
-## Avaliações
+## Comunidades
 
-### GET /avaliacoes?evento_id= — sucesso e erro 400
+Todos os endpoints exigem o cookie de sessão. Substitua `ID_EVENTO`, `ID_POST` e
+`ID_MIDIA` pelos IDs retornados durante os testes.
 
-A resposta de sucesso deve trazer `midias` como array em cada avaliação.
+### GET /comunidade-posts — resumo e feed
 
 ```powershell
-curl.exe -i "$BASE/avaliacoes/?evento_id=1"
-curl.exe -i "$BASE/avaliacoes/"
+curl.exe -i -b $COOKIE_COMUM "$BASE/comunidade-posts?resumo=1"
+curl.exe -i -b $COOKIE_COMUM "$BASE/comunidade-posts?evento_id=ID_EVENTO&categoria=Dica"
+curl.exe -i "$BASE/comunidade-posts?evento_id=ID_EVENTO"
 ```
 
-### GET /avaliacoes/{id} — sucesso e erro 404
+Os dois primeiros retornam `200`; a chamada sem sessão retorna `401`. O resumo separa
+eventos favoritados/planejados em `seus_eventos` e os demais em `todas_comunidades`.
 
-A resposta de sucesso traz a avaliação, o nome do evento e o array `midias`.
-
-```powershell
-curl.exe -i "$BASE/avaliacoes/ID_AVALIACAO"
-curl.exe -i "$BASE/avaliacoes/999999999"
-```
-
-### POST /avaliacoes — PHP disfarçado é rejeitado com 400
+### POST e DELETE /comunidade-posts
 
 ```powershell
-curl.exe -i -b $COOKIE_COMUM -X POST "$BASE/avaliacoes/" `
-  -F "id_evento=ID_EVENTO" `
-  -F "nota=5" `
-  -F "comentario=Teste de tipo real" `
-  -F "midias[]=@$ARQUIVO_PHP;filename=disfarce.jpg;type=image/jpeg"
-```
-
-### POST /avaliacoes — sucesso com 3 fotos e 2 vídeos
-
-Use um usuário que ainda não tenha avaliado o evento indicado.
-
-```powershell
-curl.exe -i -b $COOKIE_COMUM -X POST "$BASE/avaliacoes/" `
-  -F "id_evento=ID_EVENTO" `
-  -F "nota=5" `
-  -F "comentario=Excelente evento" `
-  -F "midias[]=@$FOTO_1" `
-  -F "midias[]=@$FOTO_2" `
-  -F "midias[]=@$FOTO_3" `
-  -F "midias[]=@$VIDEO_1" `
-  -F "midias[]=@$VIDEO_2"
-```
-
-### POST /avaliacoes — MP4 com container corrompido é rejeitado com 400
-
-O arquivo criado no bloco inicial possui um `ftyp` de MP4 suficiente para enganar uma
-checagem superficial, mas não contém a estrutura mínima válida (`moov` + `mdat`
-coerentes). A resposta esperada é `400` com a mensagem de estrutura de vídeo inválida.
-
-```powershell
-curl.exe -i -b $COOKIE_COMUM -X POST "$BASE/avaliacoes/" `
-  -F "id_evento=ID_EVENTO" `
-  -F "nota=5" `
-  -F "comentario=Teste de MP4 corrompido" `
-  -F "midias[]=@$VIDEO_MP4_CORROMPIDO;type=video/mp4"
-```
-
-A validação confirma a estrutura do container MP4/WebM, além de MIME e tamanho. Ela não
-substitui a decodificação integral de todos os frames; para essa garantia seria necessário
-instalar uma ferramenta externa como FFmpeg/ffprobe no servidor.
-
-### POST /avaliacoes — avaliação duplicada retorna 409
-
-Depois do POST de sucesso acima, repita a criação com o mesmo usuário e evento. A resposta
-deve informar que é necessário editar a avaliação existente e retornar seu
-`id_avaliacao`.
-
-```powershell
-curl.exe -i -b $COOKIE_COMUM -X POST "$BASE/avaliacoes/" `
-  -F "id_evento=ID_EVENTO" `
-  -F "nota=4" `
-  -F "comentario=Segunda avaliação do mesmo evento" `
-  -F "midias[]=@$FOTO_1"
-```
-
-### POST /avaliacoes — uma 6ª mídia é rejeitada com 400
-
-```powershell
-curl.exe -i -b $COOKIE_COMUM -X POST "$BASE/avaliacoes/" `
-  -F "id_evento=ID_EVENTO" `
-  -F "nota=5" `
-  -F "comentario=Mídias demais" `
-  -F "midias[]=@$FOTO_1" `
-  -F "midias[]=@$FOTO_2" `
-  -F "midias[]=@$FOTO_3" `
-  -F "midias[]=@$VIDEO_1" `
-  -F "midias[]=@$VIDEO_2" `
-  -F "midias[]=@$FOTO_1"
-```
-
-### POST /avaliacoes — nota inválida retorna 400
-
-```powershell
-curl.exe -i -b $COOKIE_COMUM -X POST "$BASE/avaliacoes/" `
-  -F "id_evento=ID_EVENTO" `
-  -F "nota=9" `
-  -F "comentario=Nota inválida" `
-  -F "midias[]=@$FOTO_1"
-```
-
-### PUT /avaliacoes/{id} — sucesso, erro 403 e erro 404
-
-O PUT altera somente `nota` e `comentario`; as mídias existentes permanecem associadas.
-
-```powershell
-curl.exe -i -b $COOKIE_COMUM -X PUT "$BASE/avaliacoes/ID_AVALIACAO" `
+curl.exe -i -b $COOKIE_COMUM -X POST "$BASE/comunidade-posts" `
   -H "Content-Type: application/json" `
-  -d '{"nota":4,"comentario":"Comentário atualizado"}'
+  -d '{"id_evento":ID_EVENTO,"categoria":"Dica","texto":"Chegue cedo para evitar filas."}'
 
-curl.exe -i -b $COOKIE_OUTRO_USUARIO -X PUT "$BASE/avaliacoes/ID_AVALIACAO" `
+curl.exe -i -b $COOKIE_COMUM -X POST "$BASE/comunidade-posts" `
   -H "Content-Type: application/json" `
-  -d '{"nota":3,"comentario":"Alteração sem permissão"}'
+  -d '{"id_evento":ID_EVENTO,"categoria":"","texto":"Sem categoria"}'
 
-curl.exe -i -b $COOKIE_COMUM -X PUT "$BASE/avaliacoes/999999999" `
-  -H "Content-Type: application/json" `
-  -d '{"nota":4,"comentario":"Avaliação inexistente"}'
+curl.exe -i -b $COOKIE_OUTRO_USUARIO -X DELETE "$BASE/comunidade-posts/ID_POST"
+curl.exe -i -b $COOKIE_COMUM -X DELETE "$BASE/comunidade-posts/ID_POST"
 ```
 
-### DELETE /avaliacoes/{id} — sucesso e erro 404
+Espere `201`, `400`, `403` e `200`, respectivamente.
+
+### POST /comunidade-respostas e /comunidade-curtidas
 
 ```powershell
-curl.exe -i -b $COOKIE_COMUM -X DELETE "$BASE/avaliacoes/ID_AVALIACAO"
-curl.exe -i -b $COOKIE_COMUM -X DELETE "$BASE/avaliacoes/999999999"
+curl.exe -i -b $COOKIE_COMUM -X POST "$BASE/comunidade-respostas" `
+  -H "Content-Type: application/json" `
+  -d '{"id_post":ID_POST,"texto":"Obrigado pela dica!"}'
+
+curl.exe -i -b $COOKIE_COMUM -X POST "$BASE/comunidade-curtidas" `
+  -H "Content-Type: application/json" -d '{"id_post":ID_POST}'
+curl.exe -i -b $COOKIE_COMUM -X POST "$BASE/comunidade-curtidas" `
+  -H "Content-Type: application/json" -d '{"id_post":ID_POST}'
 ```
+
+A segunda chamada de curtida desmarca a primeira sem criar duplicidade.
+
+### POST /comunidade-midias — foto válida e PHP disfarçado
+
+```powershell
+curl.exe -i -b $COOKIE_COMUM -X POST "$BASE/comunidade-midias" `
+  -F "id_evento=ID_EVENTO" -F "legenda=Vista do local" `
+  -F "permitir_download=1" -F "midia=@$FOTO_1"
+
+curl.exe -i -b $COOKIE_COMUM -X POST "$BASE/comunidade-midias" `
+  -F "id_evento=ID_EVENTO" `
+  -F "midia=@$ARQUIVO_PHP;filename=disfarce.jpg;type=image/jpeg"
+```
+
+Espere `201` para a imagem real e `400` para o PHP disfarçado.
+
+### GET e DELETE /comunidade-midias
+
+```powershell
+curl.exe -i -b $COOKIE_COMUM "$BASE/comunidade-midias?evento_id=ID_EVENTO"
+curl.exe -i -b $COOKIE_OUTRO_USUARIO -X DELETE "$BASE/comunidade-midias/ID_MIDIA"
+curl.exe -i -b $COOKIE_COMUM -X DELETE "$BASE/comunidade-midias/ID_MIDIA"
+```
+
+Confirme também que o último DELETE removeu o arquivo de `assets/uploads/comunidade/`.
+
+### POST /comunidade-denuncias — persistência
+
+```powershell
+curl.exe -i -b $COOKIE_OUTRO_USUARIO -X POST "$BASE/comunidade-denuncias" `
+  -H "Content-Type: application/json" `
+  -d '{"id_post":ID_POST,"motivo":"Conteúdo inadequado"}'
+
+curl.exe -i -b $COOKIE_OUTRO_USUARIO -X POST "$BASE/comunidade-denuncias" `
+  -H "Content-Type: application/json" `
+  -d '{"id_post":ID_POST,"id_midia":ID_MIDIA,"motivo":"Dois alvos"}'
+```
+
+Espere `201` e confirme a linha em `comunidade_denuncia`; a segunda chamada retorna `400`.
+
+### Eventos passados fora da descoberta
+
+Crie um evento ativo com `data_evento` anterior a hoje. Confirme que ele não aparece em
+`GET /eventos` nem em `GET /eventos?busca=...`, mas continua disponível em
+`GET /eventos/{id}` e nos endpoints da comunidade.
 
 ## Tipos e formatos das respostas JSON
 
-Prepare pelo menos um favorito, planejamento e avaliação com mídia para o usuário comum.
+Prepare pelo menos um favorito, planejamento, publicação e foto da comunidade para o usuário comum.
 Substitua os IDs e execute:
 
 ```powershell
@@ -848,7 +812,8 @@ $USUARIO_TIPOS = (curl.exe -sS -b $COOKIE_COMUM "$BASE/usuarios/ID_DO_PROPRIO_US
 $EVENTO_TIPOS = (curl.exe -sS "$BASE/eventos/ID_EVENTO") | ConvertFrom-Json
 $FAVORITO_TIPOS = (curl.exe -sS -b $COOKIE_COMUM "$BASE/favoritos/") | ConvertFrom-Json
 $PLANEJAMENTO_TIPOS = (curl.exe -sS -b $COOKIE_COMUM "$BASE/planejamento/") | ConvertFrom-Json
-$AVALIACAO_TIPOS = (curl.exe -sS "$BASE/avaliacoes/ID_AVALIACAO") | ConvertFrom-Json
+$POSTS_TIPOS = (curl.exe -sS -b $COOKIE_COMUM "$BASE/comunidade-posts?evento_id=ID_EVENTO") | ConvertFrom-Json
+$MIDIAS_TIPOS = (curl.exe -sS -b $COOKIE_COMUM "$BASE/comunidade-midias?evento_id=ID_EVENTO") | ConvertFrom-Json
 
 $SESSAO_TIPOS.usuario.id_user.GetType().Name
 $USUARIO_TIPOS.usuario.id_user.GetType().Name
@@ -858,16 +823,18 @@ $FAVORITO_TIPOS.favoritos[0].id_favorito.GetType().Name
 $FAVORITO_TIPOS.favoritos[0].gratuidade.GetType().Name
 $PLANEJAMENTO_TIPOS.planejamentos[0].id_rota.GetType().Name
 $PLANEJAMENTO_TIPOS.planejamentos[0].distancia_km.GetType().Name
-$AVALIACAO_TIPOS.avaliacao.id_avaliacao.GetType().Name
-$AVALIACAO_TIPOS.avaliacao.nota.GetType().Name
-$AVALIACAO_TIPOS.avaliacao.midias[0].id_midia.GetType().Name
+$POSTS_TIPOS.posts[0].id_post.GetType().Name
+$POSTS_TIPOS.posts[0].total_curtidas.GetType().Name
+$POSTS_TIPOS.posts[0].curtido_usuario.GetType().Name
+$MIDIAS_TIPOS.midias[0].id_midia.GetType().Name
+$MIDIAS_TIPOS.midias[0].permitir_download.GetType().Name
 
 $EVENTO_TIPOS.evento.data_evento -match '^\d{4}-\d{2}-\d{2}$'
 $USUARIO_TIPOS.usuario.data_cadastro -match '^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}-03:00$'
-$AVALIACAO_TIPOS.avaliacao.midias[0].data_upload -match '^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}-03:00$'
+$MIDIAS_TIPOS.midias[0].data_criacao -match '^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}-03:00$'
 ```
 
-Os IDs, notas e tempos devem aparecer como `Int32` ou `Int64`; booleanos como `Boolean`;
+Os IDs, contagens e tempos devem aparecer como `Int32` ou `Int64`; booleanos como `Boolean`;
 `distancia_km` como número (`Decimal` ou `Double`); datas como `YYYY-MM-DD`; e datas/horas como ISO
 8601 com o fuso de São Paulo. Campos nulos continuam sendo `null` e não devem ser
 forçados para zero ou string vazia.

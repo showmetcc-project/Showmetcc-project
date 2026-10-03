@@ -48,7 +48,7 @@
     <!-- Banner Inicio linha 858-->
     <section id="hero" class="hero section dark-background">
       <video autoplay muted loop width="100%">
-        <source src="assets/video/bannervideo.mp4" type="video/mp4">
+        <source src="assets/video/bannerVideo.mp4" type="video/mp4">
       </video>
       <div class="row gy-4">
         <div class="container">
@@ -227,7 +227,7 @@
               </div>
               <div class="steps-content">
                 <h3><span class="rosa">Compartilhe</span></h3>
-                <p>Veja avaliações de outros usuários e compartilhe suas experiências</p>
+                <p>Converse nas comunidades dos eventos e compartilhe suas experiências</p>
                 <div class="steps-features">
                   <div class="feature-item">
                     <i class="bi bi-check-circle"></i>
@@ -235,7 +235,7 @@
                   </div>
                   <div class="feature-item">
                     <i class="bi bi-check-circle"></i>
-                    <span>Avaliações Confiáveis</span>
+                    <span>Conversas por evento</span>
                   </div>
                   <div class="feature-item">
                     <i class="bi bi-check-circle"></i>

@@ -41,7 +41,7 @@ function validarPlanejamento(array $dados): array
 
 require_once dirname(__DIR__) . '/config/conexao.php';
 require_once __DIR__ . '/middleware/apiHelper.php';
-require_once __DIR__ . '/middleware/verifica_login.php';
+require_once __DIR__ . '/middleware/verificaLogin.php';
 
 $metodo = $_SERVER['REQUEST_METHOD'];
 $id = obterIdApi();

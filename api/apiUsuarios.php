@@ -17,7 +17,7 @@ $id = obterIdApi();
 */
 
 if ($metodo === 'POST' && $id !== null) {
-    require_once __DIR__ . '/middleware/verifica_login.php';
+    require_once __DIR__ . '/middleware/verificaLogin.php';
 
     $idLogado = exigirLogin();
     if ($idLogado !== $id) {
@@ -317,7 +317,7 @@ if ($metodo === 'POST') {
 |--------------------------------------------------------------------------
 */
 
-require_once __DIR__ . '/middleware/verifica_login.php';
+require_once __DIR__ . '/middleware/verificaLogin.php';
 
 /*
 |--------------------------------------------------------------------------
@@ -612,10 +612,9 @@ if ($metodo === 'DELETE') {
         }
 
         $stmt = $conn->prepare(
-            'SELECT am.caminho_arquivo
-             FROM avaliacao_midia am
-             INNER JOIN avaliacao a ON a.id_avaliacao = am.id_avaliacao
-             WHERE a.id_user = ?'
+            'SELECT caminho_arquivo
+             FROM comunidade_midia
+             WHERE id_usuario = ?'
         );
         $stmt->bind_param('i', $id);
         executarStatementApi($stmt);

@@ -13,7 +13,7 @@
     position: 'R'
   });
 </script>
-<script src="assets/js/accessibility.bundle.js"></script>
+<script src="assets/js/accessibilityBundle.js"></script>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;600;700&display=swap">
-<link rel="stylesheet" href="assets/css/showme-accessibility.css">
-<script src="assets/js/showme-accessibility.js"></script>
+<link rel="stylesheet" href="assets/css/showmeAccessibility.css">
+<script src="assets/js/showmeAccessibility.js"></script>

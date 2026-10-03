@@ -1,7 +1,7 @@
 (function () {
     'use strict';
 
-    const imagemPadraoCard = 'assets/img/banner_site_565x235px.png';
+    const imagemPadraoCard = 'assets/img/bannerEventoPadrao.png';
     const limiteBanner = 5;
     let bannerSwiper = null;
 

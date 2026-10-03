@@ -8,7 +8,7 @@
     const formularioEdicao = document.getElementById('formEditarSolicitacao');
     const mensagemEdicao = document.getElementById('mensagemEdicaoSolicitacao');
     const modalEdicao = new window.bootstrap.Modal(elementoModalEdicao);
-    const imagemPadrao = 'assets/img/banner_site_565x235px.png';
+    const imagemPadrao = 'assets/img/bannerEventoPadrao.png';
     let solicitacoes = [];
     let filtroAtual = 'todas';
 

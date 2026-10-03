@@ -1,8 +1,7 @@
 <?php
-require_once __DIR__ . '/config/verifica_login.php';
+require_once __DIR__ . '/config/verificaLogin.php';
 
 $idUsuarioSessao = isset($_SESSION['id_user']) ? (int) $_SESSION['id_user'] : 0;
-$usuarioAdmin = ($_SESSION['tipo_usuario'] ?? '') === 'admin';
 ?>
 <!DOCTYPE html>
 <html lang="pt-BR">
@@ -24,36 +23,12 @@ $usuarioAdmin = ($_SESSION['tipo_usuario'] ?? '') === 'admin';
     <link href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" rel="stylesheet">
     <link href="assets/css/detalhesEvento.css" rel="stylesheet">
 
-    <style>
-        .banner-evento { width: 100%; max-height: 420px; overflow: hidden; position: relative; }
-        .banner-evento img { width: 100%; height: 100%; object-fit: cover; display: block; }
-        .badge-gratuidade { display: inline-block; padding: 7px 15px; border-radius: 20px; font-size: 14px; font-weight: 700; margin-bottom: 12px; }
-        .badge-gratuidade.gratuito { background: #00ff00; color: #111; }
-        .badge-gratuidade.pago { background: #ff006e; color: #fff; }
-        #mapaEventoBanco { width: 100%; height: 300px; border-radius: 14px; overflow: hidden; margin-top: 20px; }
-        .avaliacao-item { padding: 18px; margin-bottom: 15px; border-radius: 12px; background: rgba(255, 255, 255, .04); }
-        .avaliacao-topo { display: flex; justify-content: space-between; align-items: flex-start; gap: 15px; }
-        .avaliacao-corpo { flex: 1; min-width: 0; }
-        .estrelas-exibir { white-space: nowrap; font-size: 18px; }
-        .artista-item { margin-bottom: 18px; }
-        .artista-item:last-child { margin-bottom: 0; }
-        .imagem-artista { width: 70px; height: 70px; object-fit: cover; border-radius: 50%; margin-right: 15px; }
-        .estado-detalhes { min-height: 45vh; padding: 90px 20px; text-align: center; color: #d8d8d8; }
-        .estado-detalhes.erro { color: #ff006e; }
-        .midias-avaliacao { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; margin-top: 14px; }
-        .midia-avaliacao { width: 100%; height: 150px; border-radius: 10px; background: #080808; object-fit: cover; }
-        .acoes-avaliacao { display: flex; gap: 10px; margin-top: 12px; }
-        .acoes-avaliacao a, .acoes-avaliacao button { padding: 6px 12px; border: 1px solid #00ff00; border-radius: 8px; background: transparent; color: #00ff00; font-size: .82rem; }
-        .acoes-avaliacao button { border-color: #ff006e; color: #ff006e; }
-        @media (max-width: 767.98px) { .avaliacao-topo { flex-wrap: wrap; } }
-    </style>
     <link href="assets/css/main.css" rel="stylesheet">
 </head>
 
 <body
     class="cabecalho-tipo-d"
-    data-user-id="<?= $idUsuarioSessao ?>"
-    data-user-admin="<?= $usuarioAdmin ? 'true' : 'false' ?>">
+    data-user-id="<?= $idUsuarioSessao ?>">
     <?php
     $tipoCabecalho = 'D';
     $configuracaoCabecalho = ['fallback' => 'inicio.php'];
@@ -68,12 +43,13 @@ $usuarioAdmin = ($_SESSION['tipo_usuario'] ?? '') === 'admin';
 
         <div id="conteudoEvento" hidden>
             <div class="banner-evento">
-                <img id="imagemEvento" src="assets/img/banner_site_565x235px.png" alt="">
+                <img id="imagemEvento" src="assets/img/bannerEventoPadrao.png" alt="">
             </div>
 
             <div class="container conteudo-principal">
                 <span id="badgeGratuidade" class="badge-gratuidade"></span>
                 <span id="badgeCategoria" class="badge-evento" hidden></span>
+                <span id="badgeEncerrado" class="badge-evento-encerrado" hidden>Evento encerrado</span>
                 <h1 id="tituloEvento" class="titulo-evento"></h1>
 
                 <div class="infos-rapidas">
@@ -103,63 +79,15 @@ $usuarioAdmin = ($_SESSION['tipo_usuario'] ?? '') === 'admin';
                             </div>
                         </section>
 
-                        <section class="secao" id="avaliacoes">
-                            <h2>Avaliações</h2>
-                            <div id="listaAvaliacoes" class="lista-avaliacoes" aria-live="polite">
-                                <p>Carregando avaliações...</p>
+                        <section class="secao comunidade-convite">
+                            <div>
+                                <h2>Converse com a comunidade</h2>
+                                <p>Troque dicas, combine trajetos e veja fotos compartilhadas por outras pessoas.</p>
                             </div>
-                        </section>
-
-                        <section class="secao avaliar-card">
-                            <?php if ($idUsuarioSessao > 0): ?>
-                                <div id="mensagemAvaliacao" class="alert d-none" role="alert"></div>
-                                <form id="formAvaliacao" enctype="multipart/form-data" hidden>
-                                    <h2>Avaliar este evento/local</h2>
-                                    <input type="hidden" name="id_evento" id="idEventoAvaliacao">
-
-                                    <label>Sua nota:</label>
-                                    <div class="estrelas-input" id="estrelasInput">
-                                        <?php for ($nota = 1; $nota <= 5; $nota++): ?>
-                                            <i
-                                                class="bi bi-star estrela"
-                                                data-valor="<?= $nota ?>"
-                                                role="button"
-                                                tabindex="0"
-                                                aria-label="<?= $nota ?> estrela<?= $nota > 1 ? 's' : '' ?>"></i>
-                                        <?php endfor; ?>
-                                    </div>
-                                    <input type="hidden" name="nota" id="nota" value="">
-
-                                    <label for="comentario">Seu comentário:</label>
-                                    <textarea
-                                        name="comentario"
-                                        id="comentario"
-                                        maxlength="1000"
-                                        placeholder="Conte a sua experiência aqui..."
-                                        required></textarea>
-
-                                    <label for="midiasAvaliacao">Fotos e vídeos:</label>
-                                    <input
-                                        type="file"
-                                        name="midias[]"
-                                        id="midiasAvaliacao"
-                                        accept="image/jpeg,image/png,image/webp,video/mp4,video/webm"
-                                        multiple
-                                        required>
-                                    <small>Envie de 1 a 5 arquivos: JPG, PNG, WebP, MP4 ou WebM.</small>
-
-                                    <button type="submit" class="btn-enviar" id="btnEnviarAvaliacao">Enviar avaliação</button>
-                                </form>
-                            <?php else: ?>
-                                <div class="login-avaliacao">
-                                    <h2>Avaliar este evento/local</h2>
-                                    <p>Você precisa estar logado para avaliar este evento.</p>
-                                    <a href="login.php" class="btn-enviar">
-                                        <i class="bi bi-box-arrow-in-right" aria-hidden="true"></i>
-                                        Entrar para avaliar
-                                    </a>
-                                </div>
-                            <?php endif; ?>
+                            <a id="linkComunidade" href="comunidadeEvento.php" class="btn-acessar-comunidade">
+                                <i class="bi bi-chat-dots" aria-hidden="true"></i>
+                                Acessar comunidade
+                            </a>
                         </section>
                     </div>
 

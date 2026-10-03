@@ -1,5 +1,5 @@
 <?php
-require_once __DIR__ . '/config/verifica_login.php';
+require_once __DIR__ . '/config/verificaLogin.php';
 require_once __DIR__ . '/config/midiasPerfil.php';
 
 $catalogoMidiasPerfil = catalogoMidiasPerfil();

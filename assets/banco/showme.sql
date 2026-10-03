@@ -129,32 +129,69 @@ CREATE TABLE rota (
     UNIQUE KEY uk_rota (id_user, id_evento)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-CREATE TABLE avaliacao (
-    id_avaliacao    INT PRIMARY KEY AUTO_INCREMENT,
-    id_user         INT NOT NULL,
-    id_evento       INT NOT NULL,
-    nota            INT NOT NULL,
-    comentario      VARCHAR(1000),
-    data_avaliacao  DATE NOT NULL DEFAULT (CURRENT_DATE),
+CREATE TABLE comunidade_post (
+    id_post       INT PRIMARY KEY AUTO_INCREMENT,
+    id_evento     INT NOT NULL,
+    id_usuario    INT NOT NULL,
+    categoria     ENUM('Duvida', 'Dica', 'Transporte', 'Hospedagem', 'Companhia', 'Relato') NOT NULL,
+    texto         TEXT NOT NULL,
+    data_criacao  DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
-    FOREIGN KEY (id_user)
-        REFERENCES usuario(id_user)
-        ON DELETE CASCADE,
-
-    FOREIGN KEY (id_evento)
-        REFERENCES evento(id_evento)
-        ON DELETE CASCADE,
-    CONSTRAINT chk_avaliacao_nota CHECK (nota BETWEEN 1 AND 5),
-    UNIQUE KEY uk_avaliacao (id_user, id_evento)
+    FOREIGN KEY (id_evento) REFERENCES evento(id_evento) ON DELETE CASCADE,
+    FOREIGN KEY (id_usuario) REFERENCES usuario(id_user) ON DELETE CASCADE,
+    INDEX idx_comunidade_post_evento_data (id_evento, data_criacao)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-CREATE TABLE avaliacao_midia (
-    id_midia        INT PRIMARY KEY AUTO_INCREMENT,
-    id_avaliacao    INT NOT NULL,
-    tipo_midia      ENUM('foto', 'video') NOT NULL,
-    caminho_arquivo VARCHAR(255) NOT NULL,
-    data_upload     DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (id_avaliacao) REFERENCES avaliacao(id_avaliacao) ON DELETE CASCADE
+CREATE TABLE comunidade_resposta (
+    id_resposta   INT PRIMARY KEY AUTO_INCREMENT,
+    id_post       INT NOT NULL,
+    id_usuario    INT NOT NULL,
+    texto         TEXT NOT NULL,
+    data_criacao  DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (id_post) REFERENCES comunidade_post(id_post) ON DELETE CASCADE,
+    FOREIGN KEY (id_usuario) REFERENCES usuario(id_user) ON DELETE CASCADE,
+    INDEX idx_comunidade_resposta_post_data (id_post, data_criacao)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE comunidade_curtida (
+    id_post       INT NOT NULL,
+    id_usuario    INT NOT NULL,
+
+    PRIMARY KEY (id_post, id_usuario),
+    FOREIGN KEY (id_post) REFERENCES comunidade_post(id_post) ON DELETE CASCADE,
+    FOREIGN KEY (id_usuario) REFERENCES usuario(id_user) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE comunidade_midia (
+    id_midia          INT PRIMARY KEY AUTO_INCREMENT,
+    id_evento         INT NOT NULL,
+    id_usuario        INT NOT NULL,
+    caminho_arquivo   VARCHAR(255) NOT NULL,
+    legenda           VARCHAR(255) NULL,
+    permitir_download TINYINT(1) NOT NULL DEFAULT 0,
+    data_criacao      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (id_evento) REFERENCES evento(id_evento) ON DELETE CASCADE,
+    FOREIGN KEY (id_usuario) REFERENCES usuario(id_user) ON DELETE CASCADE,
+    INDEX idx_comunidade_midia_evento_data (id_evento, data_criacao)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE comunidade_denuncia (
+    id_denuncia   INT PRIMARY KEY AUTO_INCREMENT,
+    id_post       INT NULL,
+    id_midia      INT NULL,
+    id_usuario    INT NOT NULL,
+    motivo        VARCHAR(100) NOT NULL,
+    data_criacao  DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (id_post) REFERENCES comunidade_post(id_post) ON DELETE CASCADE,
+    FOREIGN KEY (id_midia) REFERENCES comunidade_midia(id_midia) ON DELETE CASCADE,
+    FOREIGN KEY (id_usuario) REFERENCES usuario(id_user) ON DELETE CASCADE,
+    CONSTRAINT chk_comunidade_denuncia_alvo CHECK (
+        (id_post IS NOT NULL AND id_midia IS NULL)
+        OR (id_post IS NULL AND id_midia IS NOT NULL)
+    )
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE solicitacao (

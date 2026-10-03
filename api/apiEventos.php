@@ -41,8 +41,8 @@ function atualizarTextoOpcional(array $dados, string $campo, $valorAtual): ?stri
 
 require_once dirname(__DIR__) . '/config/conexao.php';
 require_once __DIR__ . '/middleware/apiHelper.php';
-require_once __DIR__ . '/middleware/verifica_login.php';
-require_once __DIR__ . '/middleware/verifica_admin.php';
+require_once __DIR__ . '/middleware/verificaLogin.php';
+require_once __DIR__ . '/middleware/verificaAdmin.php';
 require_once __DIR__ . '/middleware/uploadHelper.php';
 
 $metodo = $_SERVER['REQUEST_METHOD'];
@@ -219,7 +219,7 @@ switch ($metodo) {
 
             $filtroStatusBusca = $incluirCancelados
                 ? ''
-                : "e.status_evento = 'ativo' AND ";
+                : "e.status_evento = 'ativo' AND e.data_evento >= CURDATE() AND ";
             $sqlBusca = "SELECT DISTINCT $camposEventoComAlias
                          FROM evento e
                          LEFT JOIN artista_evento ae ON ae.id_evento = e.id_evento
@@ -264,7 +264,9 @@ switch ($metodo) {
 
             $stmt->close();
         } else {
-            $filtroStatus = $incluirCancelados ? '' : " WHERE status_evento = 'ativo'";
+            $filtroStatus = $incluirCancelados
+                ? ''
+                : " WHERE status_evento = 'ativo' AND data_evento >= CURDATE()";
             $resultado = $conn->query(
                 "SELECT $camposEvento FROM evento$filtroStatus ORDER BY data_evento ASC"
             );
@@ -1034,10 +1036,9 @@ switch ($metodo) {
             $caminhosUploads[] = $evento['imagem_evento'];
 
             $stmt = $conn->prepare(
-                'SELECT am.caminho_arquivo
-                 FROM avaliacao_midia am
-                 INNER JOIN avaliacao a ON a.id_avaliacao = am.id_avaliacao
-                 WHERE a.id_evento = ?'
+                'SELECT caminho_arquivo
+                 FROM comunidade_midia
+                 WHERE id_evento = ?'
             );
             $stmt->bind_param('i', $id);
             executarStatementApi($stmt);

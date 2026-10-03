@@ -621,6 +621,33 @@ h5, h6 {
   gap: 7px;
 }
 
+.header.cabecalho-home .cabecalho-nav-desktop > ul > li > a,
+.header.cabecalho-institucional .cabecalho-nav-desktop > ul > li > a,
+.header.cabecalho-home .cabecalho-menu-mobile a,
+.header.cabecalho-institucional .cabecalho-menu-mobile a {
+  gap: 7px;
+}
+
+.header.cabecalho-home .cabecalho-nav-desktop > ul > li > a > i,
+.header.cabecalho-institucional .cabecalho-nav-desktop > ul > li > a > i,
+.header.cabecalho-home .cabecalho-menu-mobile a > i,
+.header.cabecalho-institucional .cabecalho-menu-mobile a > i {
+  width: 1.15em;
+  flex: 0 0 1.15em;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+  font-size: 1.05rem;
+  line-height: 1;
+  vertical-align: middle;
+}
+
+.header.cabecalho-home .bi-people,
+.header.cabecalho-institucional .bi-people {
+  font-size: 1.1rem !important;
+}
+
 .cabecalho-subpagina {
   box-sizing: border-box;
   width: 100%;
@@ -862,6 +889,54 @@ h5, h6 {
 .cabecalho-acao-sair:focus-visible {
   color: var(--showme-secondary-hover);
   outline: 0;
+}
+
+.cabecalho-busca-comunidades {
+  width: min(390px, 38vw);
+  min-width: 220px;
+  flex: 0 1 390px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-left: auto;
+  padding: 0 14px;
+  border: 1px solid #333333;
+  border-radius: 14px;
+  background: #1a1a1a;
+  color: #bdbdbd;
+}
+
+.cabecalho-busca-comunidades:focus-within {
+  border-color: var(--cabecalho-verde);
+  box-shadow: 0 0 0 3px rgb(0 255 0 / 12%);
+}
+
+.cabecalho-busca-comunidades input {
+  width: 100%;
+  min-width: 0;
+  min-height: 44px;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: #ffffff;
+  font-family: var(--cabecalho-fonte);
+}
+
+.cabecalho-busca-comunidades input::placeholder {
+  color: #aaaaaa;
+}
+
+@media (max-width: 575.98px) {
+  .cabecalho-busca-comunidades {
+    width: min(48vw, 220px);
+    min-width: 0;
+    flex-basis: min(48vw, 220px);
+    padding: 0 10px;
+  }
+
+  .cabecalho-busca-comunidades input {
+    font-size: .82rem;
+  }
 }
 
 .cabecalho-minimo .voltar-home-auth {
@@ -2234,6 +2309,18 @@ body.ods-modal-aberto {
   overflow: hidden;
 }
 
+.ods-modal-3 {
+  --ods-cor: #4C9F38;
+}
+
+.ods-modal-4 {
+  --ods-cor: #C5192D;
+}
+
+.ods-modal-10 {
+  --ods-cor: #DD1367;
+}
+
 .ods-modal {
   --ods-tamanho: min(520px, calc(100vw - 32px), calc(100dvh - 32px));
   width: var(--ods-tamanho);
@@ -2367,22 +2454,22 @@ body.ods-modal-aberto {
 }
 
 .work-process .icone-etapa-descubra {
-  --icone-imagem: url("../img/services/2.png");
+  --icone-imagem: url("../img/services/odsEducacaoQualidade.png");
   --icone-cor: #00ff00;
 }
 
 .work-process .icone-etapa-planeje {
-  --icone-imagem: url("../img/services/3.png");
+  --icone-imagem: url("../img/services/odsReducaoDesigualdades.png");
   --icone-cor: #ff006e;
 }
 
 .work-process .icone-etapa-rotas {
-  --icone-imagem: url("../img/services/4.png");
+  --icone-imagem: url("../img/services/odsCidadesSustentaveis.png");
   --icone-cor: #00ff00;
 }
 
 .work-process .icone-etapa-compartilhe {
-  --icone-imagem: url("../img/services/1.png");
+  --icone-imagem: url("../img/services/odsSaudeBemEstar.png");
   --icone-cor: #ff006e;
 }
 
@@ -3771,9 +3858,7 @@ body {
 .card-showme,
 .stat-card,
 .card-planejamento,
-.avaliar-card,
 .ingresso-card,
-.editar-avaliacao-card,
 .estado-edicao,
 .login-card,
 .cadastro-card,
@@ -3865,12 +3950,6 @@ button.btn-editar.salvar-alteracoes:hover {
 .custom-input,
 .footer-contact-form input,
 .footer-contact-form textarea,
-.avaliar-card input,
-.avaliar-card select,
-.avaliar-card textarea,
-.editar-avaliacao-card input,
-.editar-avaliacao-card select,
-.editar-avaliacao-card textarea,
 .campos-planejamento-api input,
 .campos-planejamento-api select,
 .origem-rota input {
@@ -3896,12 +3975,6 @@ main form textarea {
 .custom-input:focus,
 .footer-contact-form input:focus,
 .footer-contact-form textarea:focus,
-.avaliar-card input:focus,
-.avaliar-card select:focus,
-.avaliar-card textarea:focus,
-.editar-avaliacao-card input:focus,
-.editar-avaliacao-card select:focus,
-.editar-avaliacao-card textarea:focus,
 .campos-planejamento-api input:focus,
 .campos-planejamento-api select:focus,
 .origem-rota input:focus {

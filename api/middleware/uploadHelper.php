@@ -600,7 +600,7 @@ function removerArquivoUpload(string $caminhoRelativo): bool
 function caminhoUploadAindaReferenciado(mysqli $conn, string $caminhoRelativo): bool
 {
     $consultas = [
-        'SELECT 1 FROM avaliacao_midia WHERE caminho_arquivo = ? LIMIT 1',
+        'SELECT 1 FROM comunidade_midia WHERE caminho_arquivo = ? LIMIT 1',
         'SELECT 1 FROM solicitacao WHERE foto = ? LIMIT 1',
         'SELECT 1 FROM evento WHERE imagem_evento = ? LIMIT 1',
         'SELECT 1 FROM usuario WHERE foto_perfil = ? OR foto_banner = ? LIMIT 1',

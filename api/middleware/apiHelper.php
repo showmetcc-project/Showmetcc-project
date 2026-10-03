@@ -140,21 +140,44 @@ function normalizarPlanejamentoApi(array $planejamento): array
     );
 }
 
-function normalizarAvaliacaoApi(array $avaliacao): array
+function normalizarPostComunidadeApi(array $post): array
 {
     return normalizarRegistroApi(
-        $avaliacao,
-        ['id_avaliacao', 'id_evento', 'id_user', 'nota']
+        $post,
+        ['id_post', 'id_evento', 'id_usuario', 'total_curtidas'],
+        ['curtido_usuario'],
+        [],
+        ['data_criacao']
     );
 }
 
-function normalizarMidiaAvaliacaoApi(array $midia): array
+function normalizarRespostaComunidadeApi(array $resposta): array
+{
+    return normalizarRegistroApi(
+        $resposta,
+        ['id_resposta', 'id_post', 'id_usuario'],
+        [],
+        [],
+        ['data_criacao']
+    );
+}
+
+function normalizarMidiaComunidadeApi(array $midia): array
 {
     return normalizarRegistroApi(
         $midia,
-        ['id_midia', 'id_avaliacao'],
+        ['id_midia', 'id_evento', 'id_usuario'],
+        ['permitir_download'],
         [],
-        [],
-        ['data_upload']
+        ['data_criacao']
+    );
+}
+
+function normalizarResumoComunidadeApi(array $evento): array
+{
+    return normalizarRegistroApi(
+        $evento,
+        ['id_evento', 'total_posts'],
+        ['evento_do_usuario']
     );
 }

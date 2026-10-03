@@ -22,7 +22,7 @@ document.querySelectorAll('.aba').forEach(btn => {
 
 const listaFavoritos = document.getElementById('favoritos');
 const contadorFavoritos = document.getElementById('contadorFavoritos');
-const imagemPadrao = 'assets/img/banner_site_565x235px.png';
+const imagemPadrao = 'assets/img/bannerEventoPadrao.png';
 
 async function lerRespostaJson(resposta) {
     const texto = await resposta.text();
@@ -251,7 +251,7 @@ function criarCardPlanejado(planejamento) {
     card.className = 'card-evento';
 
     const imagem = document.createElement('img');
-    imagem.src = planejamento.imagem_evento || 'assets/img/banner_site_565x235px.png';
+    imagem.src = planejamento.imagem_evento || 'assets/img/bannerEventoPadrao.png';
     imagem.alt = planejamento.nome_evento;
 
     const info = document.createElement('div');

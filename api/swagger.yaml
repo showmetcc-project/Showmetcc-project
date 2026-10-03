@@ -3,7 +3,7 @@ info:
   title: API REST ShowMe
   version: 1.0.0
   description: >-
-    API em PHP puro para usuários, sessões, eventos, favoritos, planejamentos e avaliações.
+    API em PHP puro para usuários, sessões, eventos, favoritos, planejamentos e comunidades.
     Campos DATE usam YYYY-MM-DD; campos DATETIME usam ISO 8601/RFC 3339 com o fuso
     America/Sao_Paulo, por exemplo 2026-09-21T14:30:00-03:00.
 
@@ -17,7 +17,7 @@ tags:
   - name: Eventos
   - name: Favoritos
   - name: Planejamentos
-  - name: Avaliações
+  - name: Comunidades
 
 paths:
   /sessoes:
@@ -272,7 +272,7 @@ paths:
     get:
       tags: [Eventos]
       summary: Lista eventos públicos ou solicitações para moderação
-      description: Sem parâmetros, lista somente eventos ativos. Com busca, filtra eventos ativos por nome, cidade, categoria ou artista. Com solicitacoes, consulta a tabela de solicitações e exige uma sessão de administrador; esse parâmetro não pode ser combinado com busca, limite ou incluir_cancelados.
+      description: Sem parâmetros, lista somente eventos ativos com data igual ou posterior a hoje. Com busca, aplica o mesmo recorte de data e filtra por nome, cidade, categoria ou artista. Com solicitacoes, consulta a tabela de solicitações e exige uma sessão de administrador; esse parâmetro não pode ser combinado com busca, limite ou incluir_cancelados.
       parameters:
         - name: busca
           in: query
@@ -364,7 +364,7 @@ paths:
     get:
       tags: [Eventos]
       summary: Consulta um evento aprovado
-      description: Por padrão, eventos cancelados retornam 404. Um administrador pode consultá-los com incluir_cancelados=1.
+      description: Eventos passados continuam acessíveis por ID. Por padrão, eventos cancelados retornam 404; um administrador pode consultá-los com incluir_cancelados=1.
       parameters:
         - $ref: '#/components/parameters/IdNaRota'
         - name: incluir_cancelados
@@ -672,150 +672,116 @@ paths:
         '404':
           $ref: '#/components/responses/NaoEncontrado'
 
-  /avaliacoes:
+  /comunidade-posts:
     get:
-      tags: [Avaliações]
-      summary: Lista avaliações de um evento
+      tags: [Comunidades]
+      summary: Lista publicações de um evento ou o resumo das comunidades
+      security: [{cookieAuth: []}]
       parameters:
-        - name: evento_id
-          in: query
-          required: true
-          schema:
-            type: integer
-            minimum: 1
+        - {name: evento_id, in: query, schema: {type: integer, minimum: 1}}
+        - {name: categoria, in: query, schema: {type: string, enum: [Duvida, Dica, Transporte, Hospedagem, Companhia, Relato]}}
+        - {name: resumo, in: query, schema: {type: integer, enum: [1]}}
       responses:
-        '200':
-          description: Lista de avaliações
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  avaliacoes:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/Avaliacao'
-        '400':
-          $ref: '#/components/responses/RequisicaoInvalida'
+        '200': {description: Publicações ou comunidades retornadas}
+        '400': {$ref: '#/components/responses/RequisicaoInvalida'}
+        '401': {$ref: '#/components/responses/NaoAutenticado'}
     post:
-      tags: [Avaliações]
-      summary: Cria uma avaliação
-      description: Exige de 1 a 5 mídias no total. Cada arquivo pode ser uma foto JPG, PNG ou WebP (até 10 MB) ou um vídeo MP4 ou WebM (até 30 MB). A requisição completa não pode ultrapassar 38 MB.
-      security:
-        - cookieAuth: []
+      tags: [Comunidades]
+      summary: Cria uma publicação
+      security: [{cookieAuth: []}]
       requestBody:
         required: true
         content:
-          multipart/form-data:
-            schema:
-              $ref: '#/components/schemas/AvaliacaoEntrada'
+          application/json:
+            schema: {$ref: '#/components/schemas/ComunidadePostEntrada'}
       responses:
-        '201':
-          description: Avaliação criada
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  mensagem:
-                    type: string
-                  avaliacao:
-                    $ref: '#/components/schemas/Avaliacao'
-        '400':
-          $ref: '#/components/responses/RequisicaoInvalida'
-        '401':
-          $ref: '#/components/responses/NaoAutenticado'
-        '404':
-          $ref: '#/components/responses/NaoEncontrado'
-        '409':
-          description: Usuário já avaliou o evento
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  erro:
-                    type: string
-                  id_avaliacao:
-                    type: integer
-                    description: ID da avaliação existente, quando identificado antes da inserção.
-
-  /avaliacoes/{id}:
-    get:
-      tags: [Avaliações]
-      summary: Busca uma avaliação pelo ID
-      description: Retorna os dados da avaliação, o nome do evento e todas as mídias associadas.
-      parameters:
-        - $ref: '#/components/parameters/IdNaRota'
+        '201': {description: Publicação criada}
+        '400': {$ref: '#/components/responses/RequisicaoInvalida'}
+        '401': {$ref: '#/components/responses/NaoAutenticado'}
+  /comunidade-posts/{id}:
+    delete:
+      tags: [Comunidades]
+      summary: Exclui uma publicação do próprio autor
+      security: [{cookieAuth: []}]
+      parameters: [{$ref: '#/components/parameters/IdNaRota'}]
       responses:
-        '200':
-          description: Avaliação encontrada
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  avaliacao:
-                    $ref: '#/components/schemas/Avaliacao'
-        '400':
-          $ref: '#/components/responses/RequisicaoInvalida'
-        '404':
-          $ref: '#/components/responses/NaoEncontrado'
-    put:
-      tags: [Avaliações]
-      summary: Atualiza uma avaliação
-      description: Permitido para o autor da avaliação ou para um administrador. Este endpoint edita somente nota e comentário e preserva as mídias definidas na criação.
-      security:
-        - cookieAuth: []
-      parameters:
-        - $ref: '#/components/parameters/IdNaRota'
+        '200': {description: Publicação excluída}
+        '403': {$ref: '#/components/responses/Proibido'}
+        '404': {$ref: '#/components/responses/NaoEncontrado'}
+  /comunidade-respostas:
+    post:
+      tags: [Comunidades]
+      summary: Responde a uma publicação (um nível)
+      security: [{cookieAuth: []}]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/ComunidadeRespostaEntrada'}
+      responses:
+        '201': {description: Resposta criada}
+        '400': {$ref: '#/components/responses/RequisicaoInvalida'}
+  /comunidade-curtidas:
+    post:
+      tags: [Comunidades]
+      summary: Alterna a curtida do usuário em uma publicação
+      security: [{cookieAuth: []}]
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/AvaliacaoAtualizacao'
+              type: object
+              required: [id_post]
+              properties: {id_post: {type: integer, minimum: 1}}
       responses:
-        '200':
-          description: Avaliação atualizada
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  mensagem:
-                    type: string
-                  avaliacao:
-                    $ref: '#/components/schemas/Avaliacao'
-        '400':
-          $ref: '#/components/responses/RequisicaoInvalida'
-        '401':
-          $ref: '#/components/responses/NaoAutenticado'
-        '403':
-          $ref: '#/components/responses/Proibido'
-        '404':
-          $ref: '#/components/responses/NaoEncontrado'
-    delete:
-      tags: [Avaliações]
-      summary: Remove uma avaliação
-      description: Permitido para o autor da avaliação ou para um administrador.
-      security:
-        - cookieAuth: []
+        '200': {description: Estado e total de curtidas atualizados}
+        '404': {$ref: '#/components/responses/NaoEncontrado'}
+  /comunidade-denuncias:
+    post:
+      tags: [Comunidades]
+      summary: Denuncia uma publicação ou foto
+      description: Exatamente um entre id_post e id_midia deve ser informado.
+      security: [{cookieAuth: []}]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/ComunidadeDenunciaEntrada'}
+      responses:
+        '201': {description: Denúncia persistida}
+        '400': {$ref: '#/components/responses/RequisicaoInvalida'}
+  /comunidade-midias:
+    get:
+      tags: [Comunidades]
+      summary: Lista fotos da galeria de um evento
+      security: [{cookieAuth: []}]
       parameters:
-        - $ref: '#/components/parameters/IdNaRota'
+        - {name: evento_id, in: query, required: true, schema: {type: integer, minimum: 1}}
       responses:
-        '200':
-          description: Avaliação removida
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Mensagem'
-        '401':
-          $ref: '#/components/responses/NaoAutenticado'
-        '403':
-          $ref: '#/components/responses/Proibido'
-        '404':
-          $ref: '#/components/responses/NaoEncontrado'
+        '200': {description: Galeria retornada}
+    post:
+      tags: [Comunidades]
+      summary: Publica uma foto na galeria
+      security: [{cookieAuth: []}]
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema: {$ref: '#/components/schemas/ComunidadeMidiaEntrada'}
+      responses:
+        '201': {description: Foto publicada}
+        '400': {$ref: '#/components/responses/RequisicaoInvalida'}
+  /comunidade-midias/{id}:
+    delete:
+      tags: [Comunidades]
+      summary: Exclui a foto e o arquivo físico do próprio autor
+      security: [{cookieAuth: []}]
+      parameters: [{$ref: '#/components/parameters/IdNaRota'}]
+      responses:
+        '200': {description: Foto excluída}
+        '403': {$ref: '#/components/responses/Proibido'}
+        '404': {$ref: '#/components/responses/NaoEncontrado'}
 
 components:
   securitySchemes:
@@ -1451,80 +1417,60 @@ components:
               type: string
               nullable: true
 
-    AvaliacaoEntrada:
+    ComunidadePostEntrada:
       type: object
-      required: [id_evento, nota, comentario, midias]
+      required: [id_evento, categoria, texto]
       properties:
         id_evento:
           type: integer
-        nota:
+          minimum: 1
+        categoria:
+          type: string
+          enum: [Duvida, Dica, Transporte, Hospedagem, Companhia, Relato]
+        texto:
+          type: string
+          maxLength: 5000
+
+    ComunidadeRespostaEntrada:
+      type: object
+      required: [id_post, texto]
+      properties:
+        id_post:
           type: integer
           minimum: 1
-          maximum: 5
-        comentario:
+        texto:
           type: string
-          maxLength: 1000
-        midias:
-          type: array
-          minItems: 1
-          maxItems: 5
-          items:
-            type: string
-            format: binary
+          maxLength: 3000
 
-    AvaliacaoAtualizacao:
+    ComunidadeDenunciaEntrada:
       type: object
-      required: [nota, comentario]
+      required: [motivo]
       properties:
-        nota:
+        id_post:
           type: integer
           minimum: 1
-          maximum: 5
-        comentario:
-          type: string
-          maxLength: 1000
-
-    Avaliacao:
-      type: object
-      properties:
-        id_avaliacao:
-          type: integer
-        id_evento:
-          type: integer
-        id_user:
-          type: integer
-        nota:
-          type: integer
-          minimum: 1
-          maximum: 5
-        comentario:
-          type: string
-        data_avaliacao:
-          type: string
-          format: date
-        nome_user:
-          type: string
-        sobrenome:
-          type: string
-        nome_evento:
-          type: string
-        midias:
-          type: array
-          items:
-            $ref: '#/components/schemas/AvaliacaoMidia'
-
-    AvaliacaoMidia:
-      type: object
-      properties:
+          nullable: true
         id_midia:
           type: integer
-        id_avaliacao:
+          minimum: 1
+          nullable: true
+        motivo:
+          type: string
+          maxLength: 100
+
+    ComunidadeMidiaEntrada:
+      type: object
+      required: [id_evento, midia]
+      properties:
+        id_evento:
           type: integer
-        tipo_midia:
+          minimum: 1
+        midia:
           type: string
-          enum: [foto, video]
-        caminho_arquivo:
+          format: binary
+          description: Foto JPG, PNG ou WebP com no máximo 10 MB.
+        legenda:
           type: string
-        data_upload:
-          type: string
-          format: date-time
+          maxLength: 255
+        permitir_download:
+          type: boolean

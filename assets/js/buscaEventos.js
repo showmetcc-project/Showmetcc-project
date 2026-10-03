@@ -10,7 +10,7 @@
       return;
     }
 
-    const imagemPadrao = 'assets/img/banner_site_565x235px.png';
+    const imagemPadrao = 'assets/img/bannerEventoPadrao.png';
     let temporizador = null;
     let requisicaoAtual = null;
 

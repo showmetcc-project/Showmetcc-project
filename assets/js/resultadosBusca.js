@@ -7,7 +7,7 @@
   if (!grade || !resumo) return;
 
   const termo = new URLSearchParams(window.location.search).get('busca')?.trim() || '';
-  const imagemPadrao = 'assets/img/banner_site_565x235px.png';
+  const imagemPadrao = 'assets/img/bannerEventoPadrao.png';
 
   function caminhoImagem(caminho) {
     const valor = String(caminho || '').trim();

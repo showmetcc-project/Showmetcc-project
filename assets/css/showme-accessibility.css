@@ -38,14 +38,14 @@ body ._access-menu {
   --_access-menu-right: var(--showme-access-panel-right);
   --_access-menu-top: var(--showme-access-panel-top);
   --_access-menu-bottom: auto;
-  --_access-menu-width: min(340px, calc(100% - var(--showme-access-panel-right) - 10px));
+  --_access-menu-width: min(420px, calc(100% - var(--showme-access-panel-right) - 10px));
   --_access-menu-min-width: 0;
   --_access-menu-background-color: var(--background-color);
   --_access-menu-color: var(--default-color);
   --_access-menu-border: 1px solid var(--showme-secondary, #ff006e);
   --_access-menu-font-family: var(--default-font);
   --_access-menu-header-color: var(--showme-secondary, #ff006e);
-  --_access-menu-header-margin: 44px 8px 12px;
+  --_access-menu-header-margin: 0;
   --_access-menu-item-color: var(--default-color);
   --_access-menu-item-button-background: var(--background-color);
   --_access-menu-item-button-border: 1px solid var(--default-color);
@@ -60,7 +60,7 @@ body ._access-menu {
   --_access-menu-item-active-icon-color: var(--background-color);
   --_access-menu-div-active-color: var(--background-color);
   --_access-menu-div-active-background-color: var(--showme-secondary, #ff006e);
-  --_access-menu-z-index: 999;
+  --_access-menu-z-index: 1100;
   --_access-menu-transition-duration: 0s;
   --_access-scrollbar-background-color: var(--background-color);
   --_access-scrollbar-track-background-color: var(--background-color);
@@ -68,6 +68,7 @@ body ._access-menu {
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
+  max-width: 420px;
   max-height: calc(100vh - var(--showme-access-panel-top) - 10px);
   max-height: calc(100dvh - var(--showme-access-panel-top) - 10px);
   overflow: hidden;
@@ -104,10 +105,354 @@ body ._access-menu ._menu-btn {
   color: var(--showme-secondary, #ff006e);
 }
 
+/* Estrutura visual ShowMe aplicada sobre os controles funcionais da biblioteca. */
+body ._access-menu .showme-access-cabecalho {
+  display: flex;
+  min-height: 68px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin: 0;
+  padding: 12px 14px 12px 18px;
+  border-bottom: 1px solid #333333;
+  background: #0a0a0a;
+  text-align: left;
+}
+
+body ._access-menu .showme-access-cabecalho-lado,
+body ._access-menu .showme-access-cabecalho-centro {
+  display: flex;
+  flex: 1 1 0;
+  min-width: 0;
+  align-items: center;
+}
+
+body ._access-menu .showme-access-cabecalho-centro {
+  justify-content: center;
+  text-align: center;
+}
+
+body ._access-menu .showme-access-cabecalho-direita {
+  justify-content: flex-end;
+}
+
+body ._access-menu .showme-access-titulo {
+  min-width: 0;
+  color: #ffffff;
+  font-family: 'Anton', 'Oswald', sans-serif;
+  font-size: clamp(17px, 2vw, 22px);
+  font-weight: 400;
+  line-height: 1.15;
+}
+
+body ._access-menu .showme-access-cabecalho ._menu-btn {
+  position: static;
+  inset: auto;
+  display: inline-flex;
+  min-height: 40px;
+  align-items: center;
+  justify-content: center;
+  padding: 7px 10px;
+  border: 1px solid #3a3a3a;
+  border-radius: 10px;
+  background: #141414;
+  color: #ffffff;
+  font-family: var(--default-font, 'Open Sans', sans-serif) !important;
+  font-size: 13px !important;
+  font-weight: 700;
+  line-height: 1;
+  transform: none;
+  transition: border-color .2s ease, background-color .2s ease, color .2s ease, box-shadow .2s ease;
+}
+
+body ._access-menu .showme-access-cabecalho ._menu-reset-btn:hover,
+body ._access-menu .showme-access-cabecalho ._menu-reset-btn:focus-visible,
+body ._access-menu .showme-access-cabecalho ._menu-close-btn:hover,
+body ._access-menu .showme-access-cabecalho ._menu-close-btn:focus-visible {
+  border-color: #ff006e;
+  background: #232323;
+  color: #ff006e;
+  box-shadow: 0 0 14px rgb(255 0 110 / 34%);
+  transform: none;
+}
+
+body ._access-menu .showme-access-cabecalho ._menu-close-btn {
+  width: 40px;
+  padding: 0;
+  color: #bdbdbd;
+  font-size: 16px !important;
+}
+
+body ._access-menu ul.showme-access-grid {
+  display: grid;
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: repeat(5, minmax(104px, auto));
+  gap: 10px;
+  padding: 14px;
+  overflow-x: hidden;
+}
+
+body ._access-menu ul.showme-access-grid > li.showme-access-card {
+  position: relative;
+  width: 100%;
+  min-width: 0;
+  min-height: 104px;
+  margin: 0;
+  overflow: hidden;
+  border: 1px solid #3a3a3a;
+  border-radius: 14px;
+  background: #121212;
+  color: #ffffff;
+  transition: border-color .2s ease, box-shadow .2s ease, transform .2s ease;
+}
+
+body ._access-menu ul.showme-access-grid > li.showme-access-card:hover,
+body ._access-menu ul.showme-access-grid > li.showme-access-card:focus-within {
+  border-color: #ff006e;
+  box-shadow: 0 0 14px rgb(255 0 110 / 22%);
+}
+
+body ._access-menu .showme-access-coluna-1 { grid-column: 1; }
+body ._access-menu .showme-access-coluna-2 { grid-column: 2; }
+body ._access-menu .showme-access-linha-1 { grid-row: 1; }
+body ._access-menu .showme-access-linha-2 { grid-row: 2; }
+body ._access-menu .showme-access-linha-3 { grid-row: 3; }
+body ._access-menu .showme-access-linha-4 { grid-row: 4; }
+body ._access-menu .showme-access-linha-5 { grid-row: 5; }
+
+body ._access-menu li.showme-access-controle {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 14px;
+}
+
+body ._access-menu .showme-access-controle-nome {
+  color: #ffffff;
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+body ._access-menu .showme-access-stepper {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 7px;
+}
+
+body ._access-menu ul li button.showme-access-stepper-botao,
+body ._access-menu ul li button.showme-access-stepper-botao.active {
+  position: static;
+  width: 40px;
+  min-width: 40px;
+  height: 40px;
+  padding: 0;
+  border: 1px solid #4a4a4a;
+  border-radius: 10px;
+  background: #141414;
+  color: #ffffff;
+  font-family: var(--default-font, 'Open Sans', sans-serif);
+  font-size: 22px !important;
+  font-weight: 700;
+  line-height: 1;
+  text-align: center;
+  text-indent: 0;
+}
+
+body ._access-menu ul li button.showme-access-stepper-botao::before {
+  content: none;
+}
+
+body ._access-menu ul li button.showme-access-stepper-botao:hover,
+body ._access-menu ul li button.showme-access-stepper-botao:focus-visible {
+  border-color: #ff006e;
+  background: #232323;
+  color: #ff006e;
+}
+
+body ._access-menu ul li.showme-access-recurso > button,
+body ._access-menu ul li.showme-access-recurso > button.active,
+body ._access-menu ul li.showme-access-recurso > button:hover,
+body ._access-menu ul li.showme-access-recurso > button.active:hover {
+  width: 100%;
+  height: 100%;
+  min-height: 90px;
+  padding: 44px 38px 13px 14px;
+  border: 0;
+  background: transparent;
+  color: #ffffff;
+  font-size: 14px !important;
+  font-weight: 700;
+  line-height: 1.25 !important;
+  text-align: left;
+  text-indent: 0;
+}
+
+body ._access-menu ul li.showme-access-recurso > button::before {
+  top: 13px;
+  left: 14px;
+  width: 26px;
+  height: 26px;
+  color: #ffffff;
+  font-size: 22px !important;
+  line-height: 26px;
+  transform: none;
+}
+
+body ._access-menu ul li.showme-access-recurso > button svg {
+  display: none;
+}
+
+body ._access-menu ul li.showme-access-recurso[data-showme-acao='readingGuide'] > button::before { content: '━'; }
+body ._access-menu ul li.showme-access-recurso[data-showme-acao='underlineLinks'] > button::before { content: 'U'; text-decoration: underline; }
+body ._access-menu ul li.showme-access-recurso[data-showme-acao='invertColors'] > button::before { content: '◐'; }
+body ._access-menu ul li.showme-access-recurso[data-showme-acao='grayHues'] > button::before { content: '◑'; }
+body ._access-menu ul li.showme-access-recurso[data-showme-acao='bigCursor'] > button::before { content: '⌖'; }
+body ._access-menu ul li.showme-access-recurso[data-showme-acao='disableAnimations'] > button::before { content: '⏸'; }
+body ._access-menu ul li.showme-access-recurso[data-showme-acao='fonteDislexia'] > button::before {
+  content: 'Aa';
+  font-family: 'Lexend', sans-serif;
+  font-size: 18px !important;
+  font-weight: 700;
+}
+
+body ._access-menu ul.showme-access-grid > li.showme-access-ativo {
+  border-color: #00ff00;
+  background: #00ff00;
+  color: #000000;
+  box-shadow: none;
+}
+
+body ._access-menu ul.showme-access-grid > li.showme-access-controle.showme-access-ativo {
+  border-color: #00ff00;
+  background: #00ff00;
+  color: #000000;
+  box-shadow: none;
+}
+
+body ._access-menu ul.showme-access-grid > li.showme-access-ativo::after {
+  content: '✓';
+  position: absolute;
+  top: 9px;
+  right: 9px;
+  padding: 0;
+  background: transparent;
+  color: #000000;
+  font-size: 17px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+body ._access-menu ul.showme-access-grid > li.showme-access-controle.showme-access-ativo::after {
+  top: 7px;
+  right: 7px;
+  background: transparent;
+  color: #000000;
+}
+
+body ._access-menu ul li.showme-access-recurso.showme-access-ativo > button::before {
+  color: #000000;
+  text-shadow: none;
+}
+
+body ._access-menu ul li.showme-access-recurso.showme-access-ativo > button,
+body ._access-menu ul li.showme-access-recurso.showme-access-ativo > button.active,
+body ._access-menu ul li.showme-access-recurso.showme-access-ativo > button:hover,
+body ._access-menu ul li.showme-access-recurso.showme-access-ativo > button.active:hover,
+body ._access-menu li.showme-access-controle.showme-access-ativo .showme-access-controle-nome {
+  color: #000000;
+}
+
+body ._access-menu li.showme-access-controle.showme-access-ativo .showme-access-stepper-botao,
+body ._access-menu li.showme-access-controle.showme-access-ativo .showme-access-stepper-botao.active {
+  border-color: #000000;
+  background: transparent;
+  color: #000000;
+}
+
+body ._access-menu li.showme-access-controle.showme-access-ativo .showme-access-stepper-botao:hover,
+body ._access-menu li.showme-access-controle.showme-access-ativo .showme-access-stepper-botao:focus-visible {
+  background: #000000;
+  color: #00ff00;
+}
+
+html.showme-fonte-dislexia body,
+html.showme-fonte-dislexia body *:not(._access):not(.bi):not([class^='bi-']):not([class*=' bi-']) {
+  font-family: 'Lexend', 'Open Sans', Arial, sans-serif !important;
+}
+
 body ._access-icon:focus-visible,
 body ._access-menu button:focus-visible {
   outline: 2px solid var(--default-color);
   outline-offset: 2px;
+}
+
+@media (max-width: 575.98px) {
+  body ._access-menu {
+    --_access-menu-right: 10px;
+    --_access-menu-width: auto;
+    right: 10px !important;
+    left: 10px !important;
+    width: auto !important;
+    max-width: calc(100vw - 20px) !important;
+    min-width: 0 !important;
+  }
+
+  body ._access-menu .showme-access-cabecalho {
+    gap: 8px;
+    padding: 10px;
+  }
+
+  body ._access-menu .showme-access-titulo {
+    font-size: 16px;
+  }
+
+  body ._access-menu .showme-access-cabecalho ._menu-btn {
+    min-height: 38px;
+    padding: 6px 7px;
+    font-size: 12px !important;
+  }
+
+  body ._access-menu .showme-access-cabecalho ._menu-close-btn {
+    width: 38px;
+  }
+
+  body ._access-menu ul.showme-access-grid {
+    gap: 8px;
+    padding: 10px;
+  }
+
+  body ._access-menu ul.showme-access-grid > li.showme-access-card {
+    min-height: 100px;
+  }
+
+  body ._access-menu li.showme-access-controle {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 11px;
+  }
+
+  body ._access-menu ul li button.showme-access-stepper-botao,
+  body ._access-menu ul li button.showme-access-stepper-botao.active {
+    width: 36px;
+    min-width: 36px;
+    height: 36px;
+  }
+
+  body ._access-menu ul li.showme-access-recurso > button,
+  body ._access-menu ul li.showme-access-recurso > button.active,
+  body ._access-menu ul li.showme-access-recurso > button:hover,
+  body ._access-menu ul li.showme-access-recurso > button.active:hover {
+    min-height: 98px;
+    padding: 43px 26px 10px 10px;
+    font-size: 13px !important;
+  }
 }
 
 @media (max-width: 1199.98px) {

@@ -1,5 +1,5 @@
 <div class="ods-modais" aria-live="polite">
-  <dialog id="modalOds3" class="ods-modal" style="--ods-cor: #009b08;" aria-labelledby="tituloModalOds3">
+  <dialog id="modalOds3" class="ods-modal" style="--ods-cor: #4C9F38;" aria-labelledby="tituloModalOds3">
     <div class="ods-modal-conteudo">
       <button type="button" class="ods-modal-fechar" data-fechar-ods aria-label="Fechar modal">
         <i class="bi bi-x-lg" aria-hidden="true"></i>
@@ -9,7 +9,7 @@
     </div>
   </dialog>
 
-  <dialog id="modalOds4" class="ods-modal" style="--ods-cor: #ff0000;" aria-labelledby="tituloModalOds4">
+  <dialog id="modalOds4" class="ods-modal" style="--ods-cor: #C5192D;" aria-labelledby="tituloModalOds4">
     <div class="ods-modal-conteudo">
       <button type="button" class="ods-modal-fechar" data-fechar-ods aria-label="Fechar modal">
         <i class="bi bi-x-lg" aria-hidden="true"></i>
@@ -19,13 +19,13 @@
     </div>
   </dialog>
 
-  <dialog id="modalOds16" class="ods-modal" style="--ods-cor: #0080ff;" aria-labelledby="tituloModalOds16">
+  <dialog id="modalOds10" class="ods-modal" style="--ods-cor: #DD1367;" aria-labelledby="tituloModalOds10">
     <div class="ods-modal-conteudo">
       <button type="button" class="ods-modal-fechar" data-fechar-ods aria-label="Fechar modal">
         <i class="bi bi-x-lg" aria-hidden="true"></i>
       </button>
-      <h2 id="tituloModalOds16">ODS 16 — Paz, Justiça e Instituições Efetivas</h2>
-      <p>Texto sobre Paz, Justiça e Instituições Efetivas em breve.</p>
+      <h2 id="tituloModalOds10">ODS 10 — Redução das Desigualdades</h2>
+      <p>Texto sobre Redução das Desigualdades em breve.</p>
     </div>
   </dialog>
 </div>

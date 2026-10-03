@@ -36,7 +36,7 @@ $googleClientId = is_array($googleConfig) ? trim((string) ($googleConfig['client
 
 <body>
 
-  <a href="index.php" class="voltar-home-auth" data-voltar-fallback="index.php" aria-label="Voltar para a página anterior" title="Voltar">
+  <a href="institucional.php" class="voltar-home-auth" data-voltar-fallback="institucional.php" aria-label="Voltar para a página anterior" title="Voltar">
     <i class="bi bi-arrow-left"></i>
   </a>
 

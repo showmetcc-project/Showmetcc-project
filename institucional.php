@@ -116,9 +116,9 @@
           </div>
 
           <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="300">
-            <button type="button" id="ods16" class="service-item ods-card" data-ods-modal="modalOds16" aria-controls="modalOds16" aria-haspopup="dialog">
-              <h4>ODS 16</h4>
-              <p>Paz, Justiça e Instituições Efetivas</p>
+            <button type="button" id="ods10" class="service-item ods-card" data-ods-modal="modalOds10" aria-controls="modalOds10" aria-haspopup="dialog">
+              <h4>ODS 10</h4>
+              <p>Redução das Desigualdades</p>
             </button>
           </div>
         </div>

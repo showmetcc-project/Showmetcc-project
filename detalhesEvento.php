@@ -1,8 +1,5 @@
 <?php
-
-if (session_status() !== PHP_SESSION_ACTIVE) {
-    session_start();
-}
+require_once __DIR__ . '/config/verifica_login.php';
 
 $idUsuarioSessao = isset($_SESSION['id_user']) ? (int) $_SESSION['id_user'] : 0;
 $usuarioAdmin = ($_SESSION['tipo_usuario'] ?? '') === 'admin';

@@ -1,0 +1,4 @@
+DirectoryIndex institucional.php
+
+RewriteEngine On
+RewriteRule ^cadastrarEvento\.php$ cadastro-evento.php [END]

@@ -23,7 +23,7 @@
             });
 
             if (resposta.ok || resposta.status === 401) {
-                window.location.replace('index.php');
+                window.location.replace('institucional.php');
                 return;
             }
 

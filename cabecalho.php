@@ -14,11 +14,6 @@ $configuracaoCabecalho = isset($configuracaoCabecalho) && is_array($configuracao
     ? $configuracaoCabecalho
     : [];
 
-// Os novos tipos A e B ainda não possuem uma versão aprovada para visitantes.
-if (!$usuarioLogado && in_array($tipoCabecalho, ['A', 'B'], true)) {
-    $tipoCabecalho = 'LEGADO';
-}
-
 $escaparCabecalho = static fn ($valor): string => htmlspecialchars(
     (string) $valor,
     ENT_QUOTES,
@@ -27,6 +22,9 @@ $escaparCabecalho = static fn ($valor): string => htmlspecialchars(
 
 $mostrarBusca = $tipoCabecalho === 'A' || $tipoCabecalho === 'LEGADO';
 $mostrarLogout = false;
+$atributosRequerLogin = !$usuarioLogado
+    ? ' data-requer-login="true" aria-haspopup="dialog"'
+    : '';
 ?>
 
 <?php if ($tipoCabecalho === 'C'): ?>
@@ -39,7 +37,7 @@ $mostrarLogout = false;
   $acaoCabecalho = (string) ($configuracaoCabecalho['acao'] ?? '');
   $mostrarLogout = $acaoCabecalho === 'logout';
   ?>
-  <header id="header" class="cabecalho-subpagina fixed-top">
+  <header id="header" data-usuario-logado="<?= $usuarioLogado ? '1' : '0' ?>" class="cabecalho-subpagina fixed-top">
     <div class="container-fluid container-xl cabecalho-subpagina-conteudo">
       <div class="cabecalho-subpagina-identidade">
         <?php if ($mostrarVoltar): ?>
@@ -78,7 +76,7 @@ $mostrarLogout = false;
 
 <?php elseif ($tipoCabecalho === 'D'): ?>
   <?php $fallbackVoltar = $escaparCabecalho($configuracaoCabecalho['fallback'] ?? 'inicio.php'); ?>
-  <nav class="cabecalho-minimo" aria-label="Navegação de retorno">
+  <nav id="header" data-usuario-logado="<?= $usuarioLogado ? '1' : '0' ?>" class="cabecalho-minimo" aria-label="Navegação de retorno">
     <button
       type="button"
       class="voltar-home-auth"
@@ -92,9 +90,10 @@ $mostrarLogout = false;
 <?php else: ?>
   <header
     id="header"
+    data-usuario-logado="<?= $usuarioLogado ? '1' : '0' ?>"
     class="header d-flex align-items-center fixed-top <?= $tipoCabecalho === 'A' ? 'cabecalho-home' : ($tipoCabecalho === 'B' ? 'cabecalho-institucional' : 'cabecalho-legado') ?>">
     <div class="container-fluid container-xl position-relative cabecalho-navbar-conteudo">
-      <a href="<?= $usuarioLogado ? 'inicio.php' : 'index.php' ?>" class="logo d-flex align-items-center" aria-label="ShowMe - página inicial">
+      <a href="<?= $usuarioLogado ? 'inicio.php' : 'institucional.php' ?>" class="logo d-flex align-items-center" aria-label="ShowMe - página inicial">
         <img src="assets/img/showme.png" alt="ShowMe">
       </a>
 
@@ -145,17 +144,21 @@ $mostrarLogout = false;
           <ul>
             <?php if ($tipoCabecalho === 'A'): ?>
               <li>
-                <a href="cadastro-evento.php" class="nav-cadastrar-evento">
+                <a href="cadastro-evento.php" class="nav-cadastrar-evento"<?= $atributosRequerLogin ?>>
                   <i class="bi bi-plus-lg" aria-hidden="true"></i>
                   <span>Cadastrar Evento</span>
                 </a>
               </li>
-              <li><a href="meusEventos.php">Meus Eventos</a></li>
+              <li><a href="meusEventos.php"<?= $atributosRequerLogin ?>>Meus Eventos</a></li>
               <li><a href="institucional.php">Institucional</a></li>
               <li>
-                <a href="perfilUsuario.php" class="nav-usuario-direto" aria-label="Abrir perfil do usuário">
+                <a
+                  href="<?= $usuarioLogado ? 'perfilUsuario.php' : 'login.php' ?>"
+                  class="nav-usuario-direto"
+                  <?= !$usuarioLogado ? 'data-abrir-modal-entrada="true" aria-haspopup="dialog"' : '' ?>
+                  aria-label="<?= $usuarioLogado ? 'Abrir perfil do usuário' : 'Escolher forma de login' ?>">
                   <i class="bi bi-person-circle" aria-hidden="true"></i>
-                  <span>Usuário</span>
+                  <span><?= $usuarioLogado ? 'Usuário' : 'Login/Cadastro' ?></span>
                 </a>
               </li>
             <?php else: ?>
@@ -166,12 +169,12 @@ $mostrarLogout = false;
                 </a>
               </li>
               <li>
-                <a href="cadastro-evento.php" class="nav-cadastrar-evento">
+                <a href="cadastro-evento.php" class="nav-cadastrar-evento"<?= $atributosRequerLogin ?>>
                   <i class="bi bi-plus-lg" aria-hidden="true"></i>
                   <span>Cadastrar Evento</span>
                 </a>
               </li>
-              <li><a href="meusEventos.php">Meus Eventos</a></li>
+              <li><a href="meusEventos.php"<?= $atributosRequerLogin ?>>Meus Eventos</a></li>
               <li class="dropdown institucional-dropdown">
                 <a href="institucional.php#sobre">
                   <span>Institucional</span>
@@ -186,9 +189,13 @@ $mostrarLogout = false;
                 </ul>
               </li>
               <li>
-                <a href="perfilUsuario.php" class="nav-usuario-direto" aria-label="Abrir perfil do usuário">
+                <a
+                  href="<?= $usuarioLogado ? 'perfilUsuario.php' : 'login.php' ?>"
+                  class="nav-usuario-direto"
+                  <?= !$usuarioLogado ? 'data-abrir-modal-entrada="true" aria-haspopup="dialog"' : '' ?>
+                  aria-label="<?= $usuarioLogado ? 'Abrir perfil do usuário' : 'Escolher forma de login' ?>">
                   <i class="bi bi-person-circle" aria-hidden="true"></i>
-                  <span>Usuário</span>
+                  <span><?= $usuarioLogado ? 'Usuário' : 'Login/Cadastro' ?></span>
                 </a>
               </li>
             <?php endif; ?>
@@ -211,17 +218,21 @@ $mostrarLogout = false;
             <ul>
               <?php if ($tipoCabecalho === 'A'): ?>
                 <li>
-                  <a href="cadastro-evento.php" class="nav-cadastrar-evento">
+                  <a href="cadastro-evento.php" class="nav-cadastrar-evento"<?= $atributosRequerLogin ?>>
                     <i class="bi bi-plus-lg" aria-hidden="true"></i>
                     <span>Cadastrar Evento</span>
                   </a>
                 </li>
-                <li><a href="meusEventos.php">Meus Eventos</a></li>
+                <li><a href="meusEventos.php"<?= $atributosRequerLogin ?>>Meus Eventos</a></li>
                 <li><a href="institucional.php">Institucional</a></li>
                 <li>
-                  <a href="perfilUsuario.php" class="nav-usuario-direto" aria-label="Abrir perfil do usuário">
+                  <a
+                    href="<?= $usuarioLogado ? 'perfilUsuario.php' : 'login.php' ?>"
+                    class="nav-usuario-direto"
+                    <?= !$usuarioLogado ? 'data-abrir-modal-entrada="true" aria-haspopup="dialog"' : '' ?>
+                    aria-label="<?= $usuarioLogado ? 'Abrir perfil do usuário' : 'Escolher forma de login' ?>">
                     <i class="bi bi-person-circle" aria-hidden="true"></i>
-                    <span>Usuário</span>
+                    <span><?= $usuarioLogado ? 'Usuário' : 'Login/Cadastro' ?></span>
                   </a>
                 </li>
               <?php else: ?>
@@ -232,12 +243,12 @@ $mostrarLogout = false;
                   </a>
                 </li>
                 <li>
-                  <a href="cadastro-evento.php" class="nav-cadastrar-evento">
+                  <a href="cadastro-evento.php" class="nav-cadastrar-evento"<?= $atributosRequerLogin ?>>
                     <i class="bi bi-plus-lg" aria-hidden="true"></i>
                     <span>Cadastrar Evento</span>
                   </a>
                 </li>
-                <li><a href="meusEventos.php">Meus Eventos</a></li>
+                <li><a href="meusEventos.php"<?= $atributosRequerLogin ?>>Meus Eventos</a></li>
                 <li class="cabecalho-menu-institucional">
                   <div>
                     <a href="institucional.php#sobre">Institucional</a>
@@ -260,9 +271,13 @@ $mostrarLogout = false;
                   </ul>
                 </li>
                 <li>
-                  <a href="perfilUsuario.php" class="nav-usuario-direto" aria-label="Abrir perfil do usuário">
+                  <a
+                    href="<?= $usuarioLogado ? 'perfilUsuario.php' : 'login.php' ?>"
+                    class="nav-usuario-direto"
+                    <?= !$usuarioLogado ? 'data-abrir-modal-entrada="true" aria-haspopup="dialog"' : '' ?>
+                    aria-label="<?= $usuarioLogado ? 'Abrir perfil do usuário' : 'Escolher forma de login' ?>">
                     <i class="bi bi-person-circle" aria-hidden="true"></i>
-                    <span>Usuário</span>
+                    <span><?= $usuarioLogado ? 'Usuário' : 'Login/Cadastro' ?></span>
                   </a>
                 </li>
               <?php endif; ?>
@@ -296,7 +311,7 @@ $mostrarLogout = false;
 
         <nav id="navmenu" class="navmenu">
           <ul>
-            <li><a href="<?= $usuarioLogado ? 'inicio.php' : 'index.php#hero' ?>">Início</a></li>
+            <li><a href="<?= $usuarioLogado ? 'inicio.php' : 'institucional.php#hero' ?>">Início</a></li>
             <li><a href="#about">Sobre Nós</a></li>
             <li><a href="#work-process">Como Funciona</a></li>
             <li><a href="#faq-2">Perguntas</a></li>
@@ -330,6 +345,34 @@ $mostrarLogout = false;
       <?php endif; ?>
     </div>
   </header>
+<?php endif; ?>
+
+<?php if (!$usuarioLogado): ?>
+  <dialog class="modal-acesso" id="modalEscolhaLogin" aria-labelledby="modalEscolhaLoginTitulo">
+    <div class="modal-acesso-conteudo">
+      <button type="button" class="modal-acesso-fechar" data-fechar-modal aria-label="Fechar">
+        <i class="bi bi-x-lg" aria-hidden="true"></i>
+      </button>
+      <h2 id="modalEscolhaLoginTitulo">Como deseja entrar?</h2>
+      <div class="modal-acesso-acoes">
+        <a href="login.php" class="modal-acesso-botao modal-acesso-botao-primario">Sou usuário</a>
+        <a href="loginAdmin.php" class="modal-acesso-botao modal-acesso-botao-secundario">Sou administrador</a>
+      </div>
+    </div>
+  </dialog>
+
+  <dialog class="modal-acesso" id="modalLoginNecessario" aria-labelledby="modalLoginNecessarioTitulo">
+    <div class="modal-acesso-conteudo">
+      <button type="button" class="modal-acesso-fechar" data-fechar-modal aria-label="Fechar">
+        <i class="bi bi-x-lg" aria-hidden="true"></i>
+      </button>
+      <h2 id="modalLoginNecessarioTitulo">Você precisa estar logado para continuar</h2>
+      <div class="modal-acesso-acoes">
+        <a href="login.php" class="modal-acesso-botao modal-acesso-botao-primario">Entrar</a>
+        <a href="cadastro.php" class="modal-acesso-botao modal-acesso-botao-secundario">Criar conta</a>
+      </div>
+    </div>
+  </dialog>
 <?php endif; ?>
 
 <?php if ($mostrarBusca): ?>

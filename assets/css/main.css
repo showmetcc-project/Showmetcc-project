@@ -675,7 +675,122 @@ h5, h6 {
 
 .cabecalho-voltar {
   cursor: pointer;
-  transition: background-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
+  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+}
+
+/* Modais de entrada e bloqueio de ações para visitantes. */
+.modal-acesso {
+  width: min(420px, calc(100% - 32px));
+  max-width: 420px;
+  padding: 0;
+  overflow: visible;
+  border: 2px solid var(--showme-primary, #00ff00);
+  border-radius: 20px;
+  background: #0a0a0a;
+  color: #ffffff;
+  box-shadow: 0 22px 70px rgb(0 0 0 / 72%);
+}
+
+.modal-acesso::backdrop {
+  background: rgb(0 0 0 / 76%);
+  backdrop-filter: blur(3px);
+}
+
+.modal-acesso-conteudo {
+  position: relative;
+  padding: 34px 28px 28px;
+  text-align: center;
+}
+
+.modal-acesso h2 {
+  max-width: 330px;
+  margin: 0 auto 24px;
+  color: #ffffff;
+  font-family: 'Anton', 'Oswald', sans-serif;
+  font-size: clamp(24px, 4vw, 32px);
+  font-weight: 400;
+  line-height: 1.15;
+}
+
+.modal-acesso-fechar {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  display: inline-flex;
+  width: 44px;
+  height: 44px;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 1px solid #333333;
+  border-radius: 50%;
+  background: #141414;
+  color: #ffffff;
+  transition: border-color .2s ease, color .2s ease, box-shadow .2s ease;
+}
+
+.modal-acesso-fechar:hover,
+.modal-acesso-fechar:focus-visible {
+  border-color: #ff006e;
+  color: #ff006e;
+  box-shadow: 0 0 14px rgb(255 0 110 / 28%);
+}
+
+.modal-acesso-acoes {
+  display: flex;
+  gap: 12px;
+}
+
+.modal-acesso-botao {
+  display: inline-flex;
+  flex: 1 1 0;
+  min-height: 48px;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 14px;
+  border: 1px solid transparent;
+  border-radius: 14px;
+  font-weight: 700;
+  line-height: 1.2;
+  text-align: center;
+  transition: transform .2s ease, box-shadow .2s ease, background-color .2s ease;
+}
+
+.modal-acesso-botao-primario {
+  background: #00ff00;
+  color: #000000;
+}
+
+.modal-acesso-botao-primario:hover,
+.modal-acesso-botao-primario:focus-visible {
+  background: #00dd00;
+  color: #000000;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgb(0 255 0 / 22%);
+}
+
+.modal-acesso-botao-secundario {
+  border-color: #ff006e;
+  background: #ff006e;
+  color: #ffffff;
+}
+
+.modal-acesso-botao-secundario:hover,
+.modal-acesso-botao-secundario:focus-visible {
+  background: #dd0060;
+  color: #ffffff;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgb(255 0 110 / 24%);
+}
+
+@media (max-width: 575.98px) {
+  .modal-acesso-conteudo {
+    padding: 56px 20px 22px;
+  }
+
+  .modal-acesso-acoes {
+    flex-direction: column;
+  }
 }
 
 .cabecalho-voltar:hover,
@@ -684,7 +799,6 @@ h5, h6 {
   background: var(--cabecalho-verde-hover);
   color: #000000;
   outline: 0;
-  transform: translateX(-2px);
 }
 
 .cabecalho-subpagina-icone {
@@ -2037,35 +2151,35 @@ section,
 }
 
 #ods3 {
-  --ods-cor: #009b08;
-  background-color: #009b08;
+  --ods-cor: #4C9F38;
+  background-color: #4C9F38;
 }
 #ods3:hover {
   box-shadow:
-    0 0 10px #008C07,
-    0 0 20px #02c40b;
+    0 0 10px #4C9F38,
+    0 0 20px #4C9F38;
 }
 
 
 #ods4 {
-  --ods-cor: #ff0000;
-  background-color: #FF0000;
+  --ods-cor: #C5192D;
+  background-color: #C5192D;
 }
 #ods4:hover {
   box-shadow:
-    0 0 10px #FF0000,
-    0 0 20px #ff0000;
+    0 0 10px #C5192D,
+    0 0 20px #C5192D;
 }
 
-#ods16 {
-  --ods-cor: #0080ff;
-  background-color: #0080FF;
+#ods10 {
+  --ods-cor: #DD1367 ;
+  background-color: #DD1367 ;
 }
 
-#ods16:hover {
+#ods10:hover {
   box-shadow:
-    0 0 10px #0080FF,
-    0 0 20px #0000ff;
+    0 0 10px #DD1367 ,
+    0 0 20px #DD1367 ;
 }
 
 

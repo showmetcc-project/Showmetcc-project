@@ -44,7 +44,6 @@
             maxlength="5000"
             required
           ></textarea>
-          <p class="footer-contact-feedback" role="status" aria-live="polite" hidden></p>
           <button type="submit">
             <i class="bi bi-envelope"></i>
             <span>Enviar</span>

@@ -200,6 +200,17 @@ curl.exe -i -b $COOKIE_COMUM "$BASE/usuarios/ID_DO_PROPRIO_USUARIO"
 curl.exe -i -b $COOKIE_COMUM "$BASE/usuarios/ID_DE_OUTRO_USUARIO"
 ```
 
+No retorno de sucesso, confira que `estatisticas` contém inteiros não negativos e compare
+os valores com as contagens do mesmo usuário no banco:
+
+```powershell
+$PERFIL = curl.exe -sS -b $COOKIE_COMUM "$BASE/usuarios/ID_DO_PROPRIO_USUARIO" | ConvertFrom-Json
+$PERFIL.estatisticas | ConvertTo-Json
+
+# Campos esperados:
+# eventos_favoritados, viagens_planejadas e eventos_cadastrados
+```
+
 ### PUT /usuarios/{id} — sucesso e erro 403
 
 O primeiro comando atualiza o próprio perfil. Mesmo enviando `tipo_usuario`, esse campo
@@ -897,3 +908,38 @@ e sem nome do banco, host, usuário, senha ou mensagem do `mysqli` no corpo:
 Restaure imediatamente a credencial correta e repita o endpoint; ele deve voltar a
 responder normalmente. O detalhe técnico da falha deve aparecer apenas no log do PHP/
 Apache. Não faça commit da credencial temporariamente inválida nem de credenciais reais.
+
+# Google Agenda
+
+Pré-requisitos: criar `config/googleCalendar.php` com uma credencial OAuth 2.0 do tipo
+Aplicativo da Web, habilitar a Calendar API e autenticar no ShowMe. Os comandos abaixo
+reutilizam `$BASE` e `$COOKIE_COMUM`, definidos no início deste documento.
+
+```powershell
+# Estado desconectado/conectado
+curl.exe -i -b $COOKIE_COMUM "$BASE/google-calendar"
+
+# Erro: rota protegida sem sessão (esperado 401 em JSON)
+curl.exe -i "$BASE/google-calendar"
+
+# Depois de autorizar pelo Perfil, verificar conflito (substitua o ID)
+curl.exe -i -b $COOKIE_COMUM -H "Content-Type: application/json" `
+  -d '{"acao":"verificar_conflito","id_evento":1,"tempo_estimado":60}' `
+  "$BASE/google-calendar"
+
+# Exportar planejamento uma única vez (substitua id_rota)
+curl.exe -i -b $COOKIE_COMUM -H "Content-Type: application/json" `
+  -d '{"acao":"exportar","id_rota":1}' `
+  "$BASE/google-calendar"
+
+# Repetir o comando anterior deve informar que o evento já existia, sem duplicá-lo.
+
+# Desconectar
+curl.exe -i -b $COOKIE_COMUM -X DELETE "$BASE/google-calendar"
+```
+
+Teste manual OAuth: no Perfil, clicar em **Conectar Google Agenda**, confirmar que a
+tela pede os dois escopos, concluir o consentimento e verificar no banco se
+`access_token`, `refresh_token` e `expira_em` foram persistidos. Para validar renovação,
+definir temporariamente `expira_em` no passado, chamar o status de conflito e confirmar
+que o novo token e a nova expiração foram gravados. Restaurar qualquer dado alterado.

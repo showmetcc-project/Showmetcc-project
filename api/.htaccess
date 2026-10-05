@@ -2,6 +2,10 @@ RewriteEngine On
 
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^google-calendar/?$ apiGoogleCalendar.php [QSA,L]
+
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
 RewriteRule ^comunidade-posts/(\d+)/?$ apiComunidadePosts.php?id=$1 [QSA,L]
 
 RewriteCond %{REQUEST_FILENAME} !-f

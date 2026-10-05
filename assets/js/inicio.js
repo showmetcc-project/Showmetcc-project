@@ -4,6 +4,8 @@
     const imagemPadraoCard = 'assets/img/bannerEventoPadrao.png';
     const limiteBanner = 5;
     let bannerSwiper = null;
+    let requisicaoBusca = null;
+    const carrosseisCategorias = new Map();
 
     const secoesCategorias = [
         {id: 'eventosMusicais', termos: ['musica', 'musical', 'show', 'festival', 'concerto']},
@@ -248,27 +250,194 @@
         return estado;
     }
 
+    function criarEstadoBusca(mensagem, erro = false) {
+        const estado = criarEstado(mensagem, erro);
+        estado.classList.add('resultados-busca-home-estado');
+        return estado;
+    }
+
+    function alternarVisaoHome(exibirBusca) {
+        document.querySelectorAll('[data-visao-home="normal"]').forEach((elemento) => {
+            elemento.hidden = exibirBusca;
+        });
+
+        const resultados = document.getElementById('resultadosBuscaHome');
+
+        if (resultados) {
+            resultados.hidden = !exibirBusca;
+        }
+    }
+
+    function mostrarVisaoNormal() {
+        requisicaoBusca?.abort();
+        requisicaoBusca = null;
+        alternarVisaoHome(false);
+        document.title = 'ShowMe';
+    }
+
+    function atualizarCabecalhoBusca(termo, quantidade = null) {
+        const termoElemento = document.getElementById('termoBuscaHome');
+        const resumo = document.getElementById('resumoBuscaHome');
+
+        if (termoElemento) {
+            termoElemento.textContent = `“${termo}”`;
+        }
+
+        if (resumo) {
+            resumo.textContent = quantidade === null
+                ? 'Buscando eventos...'
+                : `${quantidade} ${quantidade === 1 ? 'evento encontrado' : 'eventos encontrados'}`;
+        }
+    }
+
+    async function buscarEventosNaHome(termoInformado) {
+        const termo = String(termoInformado || '').trim();
+
+        if (!termo) {
+            mostrarVisaoNormal();
+            return;
+        }
+
+        const grade = document.getElementById('resultadosBuscaHomeGrid');
+
+        if (!grade) {
+            return;
+        }
+
+        requisicaoBusca?.abort();
+        requisicaoBusca = new AbortController();
+        const controleDaBusca = requisicaoBusca;
+        alternarVisaoHome(true);
+        atualizarCabecalhoBusca(termo);
+        document.title = `Busca: ${termo} | ShowMe`;
+        grade.setAttribute('aria-busy', 'true');
+
+        const carregando = document.createElement('div');
+        carregando.className = 'resultados-busca-home-estado';
+        carregando.innerHTML = '<span class="spinner-border" aria-hidden="true"></span><p>Buscando eventos...</p>';
+        grade.replaceChildren(carregando);
+
+        try {
+            const parametros = new URLSearchParams({busca: termo});
+            const resposta = await fetch(`api/eventos?${parametros.toString()}`, {
+                headers: {Accept: 'application/json'},
+                signal: controleDaBusca.signal
+            });
+            const dados = await resposta.json();
+
+            if (!resposta.ok) {
+                throw new Error(dados.erro || 'Não foi possível concluir a busca.');
+            }
+
+            const eventos = Array.isArray(dados.eventos) ? dados.eventos : [];
+            atualizarCabecalhoBusca(termo, eventos.length);
+
+            if (eventos.length === 0) {
+                grade.replaceChildren(criarEstadoBusca(`Nenhum evento encontrado para “${termo}”. Tente outra busca.`));
+                return;
+            }
+
+            grade.replaceChildren(...eventos.map(criarCardEvento));
+        } catch (erro) {
+            if (erro.name !== 'AbortError') {
+                console.error('Falha na busca de eventos:', erro);
+                grade.replaceChildren(criarEstadoBusca('Não foi possível buscar os eventos agora. Tente novamente.', true));
+                atualizarCabecalhoBusca(termo, 0);
+            }
+        } finally {
+            if (requisicaoBusca === controleDaBusca) {
+                grade.setAttribute('aria-busy', 'false');
+            }
+        }
+    }
+
     function atualizarNavegacao(idCarrossel, possuiEventos) {
         document.querySelectorAll(`[data-carrossel="${idCarrossel}"]`).forEach((botao) => {
             botao.hidden = !possuiEventos;
         });
     }
 
-    function renderizarCarrossel(idCarrossel, eventos, mensagemVazia) {
+    function destruirCarrosselCategoria(idCarrossel) {
+        const instancia = carrosseisCategorias.get(idCarrossel);
+        if (instancia) {
+            instancia.destroy(true, true);
+            carrosseisCategorias.delete(idCarrossel);
+        }
+    }
+
+    function iniciarCarrosselCategoria(idCarrossel, quantidade) {
+        const carrossel = document.getElementById(idCarrossel);
+        if (!carrossel || quantidade < 2 || typeof window.Swiper !== 'function') return;
+
+        const botaoAnterior = document.querySelector(`[data-carrossel="${idCarrossel}"][data-direcao="-1"]`);
+        const botaoProximo = document.querySelector(`[data-carrossel="${idCarrossel}"][data-direcao="1"]`);
+
+        const instancia = new window.Swiper(carrossel, {
+            slidesPerView: 'auto',
+            centeredSlides: true,
+            spaceBetween: 16,
+            grabCursor: true,
+            loop: true,
+            rewind: false,
+            loopAdditionalSlides: Math.min(quantidade, 3),
+            watchSlidesProgress: true,
+            keyboard: {
+                enabled: true,
+                onlyInViewport: true
+            },
+            a11y: {
+                enabled: true
+            }
+        });
+
+        /* Os controles ficam fora do elemento Swiper para permanecerem visíveis
+           mesmo quando a biblioteca entende que todos os slides cabem na tela. */
+        botaoAnterior.onclick = () => instancia.slidePrev();
+        botaoProximo.onclick = () => instancia.slideNext();
+
+        carrosseisCategorias.set(idCarrossel, instancia);
+    }
+
+    function renderizarCarrossel(idCarrossel, eventos, mensagemVazia, erro = false) {
         const carrossel = document.getElementById(idCarrossel);
 
         if (!carrossel) {
             return;
         }
 
+        destruirCarrosselCategoria(idCarrossel);
+        let trilho = carrossel.querySelector('.swiper-wrapper');
+        if (!trilho) {
+            trilho = document.createElement('div');
+            trilho.className = 'swiper-wrapper';
+            carrossel.replaceChildren(trilho);
+        }
+
         if (eventos.length === 0) {
-            carrossel.replaceChildren(criarEstado(mensagemVazia));
+            const slideEstado = document.createElement('div');
+            slideEstado.className = 'swiper-slide estado-carrossel';
+            slideEstado.append(criarEstado(mensagemVazia, erro));
+            trilho.replaceChildren(slideEstado);
             atualizarNavegacao(idCarrossel, false);
             return;
         }
 
-        carrossel.replaceChildren(...eventos.map(criarCardEvento));
+        /* O Swiper precisa de slides suficientes para manter vizinhos nos dois
+           lados e fechar o ciclo. Com listas curtas, repita a sequência visual. */
+        const eventosVisuais = eventos.length > 1 && eventos.length < 5
+            ? [...eventos, ...eventos]
+            : eventos;
+
+        const slides = eventosVisuais.map((evento) => {
+            const slide = document.createElement('div');
+            slide.className = 'swiper-slide';
+            slide.append(criarCardEvento(evento));
+            return slide;
+        });
+
+        trilho.replaceChildren(...slides);
         atualizarNavegacao(idCarrossel, eventos.length > 1);
+        window.requestAnimationFrame(() => iniciarCarrosselCategoria(idCarrossel, slides.length));
     }
 
     function eventoPertenceASecao(evento, secao) {
@@ -287,8 +456,7 @@
         mostrarBannerVazio(mensagem);
 
         secoesCategorias.forEach((secao) => {
-            document.getElementById(secao.id)?.replaceChildren(criarEstado(mensagem, true));
-            atualizarNavegacao(secao.id, false);
+            renderizarCarrossel(secao.id, [], mensagem, true);
         });
     }
 
@@ -327,19 +495,10 @@
         }
     }
 
-    function iniciarBotoesCarrossel() {
-        document.querySelectorAll('[data-carrossel][data-direcao]').forEach((botao) => {
-            botao.addEventListener('click', function () {
-                const carrossel = document.getElementById(this.dataset.carrossel);
-                const direcao = Number(this.dataset.direcao);
-
-                if (carrossel && Number.isFinite(direcao)) {
-                    carrossel.scrollBy({left: 330 * direcao, behavior: 'smooth'});
-                }
-            });
-        });
-    }
-
-    iniciarBotoesCarrossel();
     carregarEventos();
+    window.addEventListener('showme:busca-home', function (evento) {
+        buscarEventosNaHome(evento.detail?.termo || '');
+    });
+
+    buscarEventosNaHome(new URL(window.location.href).searchParams.get('busca') || '');
 }());

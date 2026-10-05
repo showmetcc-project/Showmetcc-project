@@ -5,6 +5,8 @@
     const formulario = document.querySelector('.busca-cabecalho');
     const campo = document.getElementById('buscaCabecalho');
     const sugestoes = document.getElementById('sugestoesBusca');
+    const botaoLimpar = formulario?.querySelector('[data-limpar-busca]');
+    const estaNaHome = Boolean(document.querySelector('main.inicio'));
 
     if (!formulario || !campo || !sugestoes) {
       return;
@@ -21,12 +23,7 @@
         return imagemPadrao;
       }
 
-      if (
-        /^(?:https?:)?\/\//i.test(valor)
-        || valor.startsWith('/')
-        || valor.includes('/')
-        || valor.includes('\\')
-      ) {
+      if (/^(?:https?:)?\/\//i.test(valor) || valor.startsWith('/') || valor.includes('/') || valor.includes('\\')) {
         return valor;
       }
 
@@ -36,6 +33,36 @@
     function ocultarSugestoes() {
       sugestoes.hidden = true;
       sugestoes.replaceChildren();
+    }
+
+    function atualizarBotaoLimpar() {
+      if (botaoLimpar) {
+        botaoLimpar.hidden = campo.value.length === 0;
+      }
+    }
+
+    function emitirBusca(termo) {
+      window.dispatchEvent(new CustomEvent('showme:busca-home', { detail: { termo } }));
+    }
+
+    function urlDaBusca(termo) {
+      const url = new URL('inicio.php', window.location.href);
+
+      if (termo) {
+        url.searchParams.set('busca', termo);
+      }
+
+      return url;
+    }
+
+    function aplicarBuscaNaHome(termo, registrarHistorico = true) {
+      const buscaAtual = new URL(window.location.href).searchParams.get('busca')?.trim() || '';
+
+      if (registrarHistorico && buscaAtual !== termo) {
+        window.history.pushState({ busca: termo }, '', urlDaBusca(termo));
+      }
+
+      emitirBusca(termo);
     }
 
     function mostrarMensagem(mensagem) {
@@ -79,10 +106,7 @@
     }
 
     async function buscarSugestoes(termo) {
-      if (requisicaoAtual) {
-        requisicaoAtual.abort();
-      }
-
+      requisicaoAtual?.abort();
       requisicaoAtual = new AbortController();
       const parametros = new URLSearchParams({ busca: termo, limite: '5' });
 
@@ -120,11 +144,10 @@
     campo.addEventListener('input', function () {
       const termo = campo.value.trim();
       window.clearTimeout(temporizador);
+      atualizarBotaoLimpar();
 
       if (!termo) {
-        if (requisicaoAtual) {
-          requisicaoAtual.abort();
-        }
+        requisicaoAtual?.abort();
         ocultarSugestoes();
         return;
       }
@@ -142,15 +165,41 @@
 
     formulario.addEventListener('submit', function (evento) {
       const termo = campo.value.trim();
+      campo.value = termo;
+      atualizarBotaoLimpar();
+      ocultarSugestoes();
 
-      if (!termo) {
-        evento.preventDefault();
-        ocultarSugestoes();
-        campo.focus();
+      if (!estaNaHome) {
         return;
       }
 
+      evento.preventDefault();
+      aplicarBuscaNaHome(termo);
+    });
+
+    botaoLimpar?.addEventListener('click', function () {
+      campo.value = '';
+      requisicaoAtual?.abort();
+      ocultarSugestoes();
+      atualizarBotaoLimpar();
+
+      if (estaNaHome) {
+        aplicarBuscaNaHome('');
+      }
+
+      campo.focus();
+    });
+
+    window.addEventListener('popstate', function () {
+      if (!estaNaHome) {
+        return;
+      }
+
+      const termo = new URL(window.location.href).searchParams.get('busca')?.trim() || '';
       campo.value = termo;
+      atualizarBotaoLimpar();
+      ocultarSugestoes();
+      aplicarBuscaNaHome(termo, false);
     });
 
     document.addEventListener('click', function (evento) {
@@ -158,6 +207,8 @@
         ocultarSugestoes();
       }
     });
+
+    atualizarBotaoLimpar();
   }
 
   if (document.readyState === 'loading') {

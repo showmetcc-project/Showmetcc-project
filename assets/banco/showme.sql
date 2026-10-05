@@ -46,6 +46,18 @@ CREATE TABLE artista (
     UNIQUE KEY uk_artista_nome (nome_artista)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+CREATE TABLE google_calendar_token (
+    id_usuario   INT PRIMARY KEY,
+    access_token TEXT NOT NULL,
+    refresh_token TEXT NOT NULL,
+    expira_em    DATETIME NOT NULL,
+    data_conexao DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (id_usuario)
+        REFERENCES usuario(id_user)
+        ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 CREATE TABLE evento (
     id_evento          INT PRIMARY KEY AUTO_INCREMENT,
     id_solicitacao_origem INT NULL UNIQUE,

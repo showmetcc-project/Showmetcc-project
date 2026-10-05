@@ -22,6 +22,9 @@ $escaparCabecalho = static fn ($valor): string => htmlspecialchars(
 
 $mostrarBusca = $tipoCabecalho === 'A' || $tipoCabecalho === 'LEGADO';
 $mostrarLogout = false;
+$buscaComunidadesNavbar = $mostrarBusca
+    && (($configuracaoCabecalho['acao'] ?? '') === 'busca_comunidades');
+$menuComunidades = ($configuracaoCabecalho['contexto'] ?? '') === 'comunidades';
 $atributosRequerLogin = !$usuarioLogado
     ? ' data-requer-login="true" aria-haspopup="dialog"'
     : '';
@@ -124,24 +127,36 @@ $atributosRequerLogin = !$usuarioLogado
           </button>
 
           <div class="cabecalho-busca-area collapse d-md-flex" id="buscaCabecalhoArea">
-            <form class="busca-cabecalho" action="resultadosBusca.php" method="get" role="search">
+            <form
+              class="busca-cabecalho<?= $buscaComunidadesNavbar ? ' busca-comunidades-navbar' : '' ?>"
+              <?= $buscaComunidadesNavbar ? '' : 'action="inicio.php" method="get"' ?>
+              role="search"
+              <?= $buscaComunidadesNavbar ? 'novalidate' : '' ?>>
               <div class="busca-cabecalho-campo">
                 <input
-                  id="buscaCabecalho"
-                  name="busca"
+                  id="<?= $buscaComunidadesNavbar ? 'buscaComunidades' : 'buscaCabecalho' ?>"
+                  <?= $buscaComunidadesNavbar ? '' : 'name="busca"' ?>
                   type="search"
-                  value="<?= $termoBuscaCabecalho ?>"
-                  placeholder="Buscar eventos..."
-                  aria-label="Buscar eventos por nome, cidade, categoria ou artista"
-                  aria-controls="sugestoesBusca"
-                  aria-autocomplete="list"
+                  value="<?= $buscaComunidadesNavbar ? '' : $termoBuscaCabecalho ?>"
+                  placeholder="<?= $buscaComunidadesNavbar ? 'Buscar comunidades por evento...' : 'Buscar eventos...' ?>"
+                  aria-label="<?= $buscaComunidadesNavbar ? 'Buscar comunidades por nome do evento' : 'Buscar eventos por nome, cidade, categoria ou artista' ?>"
+                  <?= $buscaComunidadesNavbar ? '' : 'aria-controls="sugestoesBusca" aria-autocomplete="list"' ?>
                   autocomplete="off"
                   spellcheck="false"
                 >
-                <button type="submit" aria-label="Confirmar busca">
+                <button
+                  type="button"
+                  class="busca-cabecalho-limpar"
+                  data-limpar-busca
+                  aria-label="Limpar busca"
+                  hidden>
+                  <i class="bi bi-x-lg" aria-hidden="true"></i>
+                </button>
+                <button type="submit" class="busca-cabecalho-enviar" aria-label="Confirmar busca">
                   <i class="bi bi-search" aria-hidden="true"></i>
                 </button>
               </div>
+              <?php if (!$buscaComunidadesNavbar): ?>
               <div
                 id="sugestoesBusca"
                 class="sugestoes-busca"
@@ -149,6 +164,7 @@ $atributosRequerLogin = !$usuarioLogado
                 aria-label="Sugestões de eventos"
                 hidden
               ></div>
+              <?php endif; ?>
             </form>
           </div>
         <?php endif; ?>
@@ -163,25 +179,34 @@ $atributosRequerLogin = !$usuarioLogado
                 </a>
               </li>
               <li><a href="meusEventos.php"<?= $atributosRequerLogin ?>><i class="bi bi-calendar-event" aria-hidden="true"></i><span>Meus Eventos</span></a></li>
-              <li><a href="comunidade.php"<?= $atributosRequerLogin ?>><i class="bi bi-people" aria-hidden="true"></i><span>Comunidade</span></a></li>
+              <?php if ($menuComunidades): ?>
+                <li><a href="inicio.php" class="nav-inicio"><i class="bi bi-house-door" aria-hidden="true"></i><span>Início</span></a></li>
+              <?php else: ?>
+                <li><a href="comunidade.php"<?= $atributosRequerLogin ?>><i class="bi bi-people" aria-hidden="true"></i><span>Comunidade</span></a></li>
+              <?php endif; ?>
               <li><a href="institucional.php">Institucional</a></li>
-              <li>
-                <a
-                  href="<?= $usuarioLogado ? 'perfilUsuario.php' : 'login.php' ?>"
-                  class="nav-usuario-direto"
-                  <?= !$usuarioLogado ? 'data-abrir-modal-entrada="true" aria-haspopup="dialog"' : '' ?>
-                  aria-label="<?= $usuarioLogado ? 'Abrir perfil do usuário' : 'Escolher forma de login' ?>">
-                  <i class="bi bi-person-circle" aria-hidden="true"></i>
-                  <span><?= $usuarioLogado ? 'Usuário' : 'Login/Cadastro' ?></span>
-                </a>
-              </li>
+              <?php if ($usuarioLogado): ?>
+                <li>
+                  <a href="perfilUsuario.php" class="nav-usuario-direto" aria-label="Abrir perfil do usuário">
+                    <i class="bi bi-person-circle" aria-hidden="true"></i>
+                    <span>Usuário</span>
+                  </a>
+                </li>
+              <?php else: ?>
+                <li class="dropdown entrada-dropdown">
+                  <button type="button" class="nav-usuario-direto" aria-haspopup="true" aria-label="Abrir opções de login e cadastro">
+                    <i class="bi bi-person-circle" aria-hidden="true"></i>
+                    <span>Login/Cadastro</span>
+                    <i class="bi bi-chevron-down toggle-dropdown" aria-hidden="true"></i>
+                  </button>
+                  <ul>
+                    <li><a href="login.php"><i class="bi bi-person" aria-hidden="true"></i><span>Sou usuário</span></a></li>
+                    <li><a href="loginAdmin.php"><i class="bi bi-shield-lock" aria-hidden="true"></i><span>Sou administrador</span></a></li>
+                    <li><a href="cadastro.php"><i class="bi bi-person-plus" aria-hidden="true"></i><span>Criar conta</span></a></li>
+                  </ul>
+                </li>
+              <?php endif; ?>
             <?php else: ?>
-              <li>
-                <a href="inicio.php" class="nav-inicio">
-                  <i class="bi bi-house-door" aria-hidden="true"></i>
-                  <span>Início</span>
-                </a>
-              </li>
               <li>
                 <a href="cadastroEvento.php" class="nav-cadastrar-evento"<?= $atributosRequerLogin ?>>
                   <i class="bi bi-plus-lg" aria-hidden="true"></i>
@@ -189,6 +214,12 @@ $atributosRequerLogin = !$usuarioLogado
                 </a>
               </li>
               <li><a href="meusEventos.php"<?= $atributosRequerLogin ?>><i class="bi bi-calendar-event" aria-hidden="true"></i><span>Meus Eventos</span></a></li>
+              <li>
+                <a href="inicio.php" class="nav-inicio">
+                  <i class="bi bi-house-door" aria-hidden="true"></i>
+                  <span>Início</span>
+                </a>
+              </li>
               <li><a href="comunidade.php"<?= $atributosRequerLogin ?>><i class="bi bi-people" aria-hidden="true"></i><span>Comunidade</span></a></li>
               <li class="dropdown institucional-dropdown">
                 <a href="institucional.php#sobre">
@@ -203,16 +234,27 @@ $atributosRequerLogin = !$usuarioLogado
                   <li><a href="institucional.php#contato">Contato</a></li>
                 </ul>
               </li>
-              <li>
-                <a
-                  href="<?= $usuarioLogado ? 'perfilUsuario.php' : 'login.php' ?>"
-                  class="nav-usuario-direto"
-                  <?= !$usuarioLogado ? 'data-abrir-modal-entrada="true" aria-haspopup="dialog"' : '' ?>
-                  aria-label="<?= $usuarioLogado ? 'Abrir perfil do usuário' : 'Escolher forma de login' ?>">
-                  <i class="bi bi-person-circle" aria-hidden="true"></i>
-                  <span><?= $usuarioLogado ? 'Usuário' : 'Login/Cadastro' ?></span>
-                </a>
-              </li>
+              <?php if ($usuarioLogado): ?>
+                <li>
+                  <a href="perfilUsuario.php" class="nav-usuario-direto" aria-label="Abrir perfil do usuário">
+                    <i class="bi bi-person-circle" aria-hidden="true"></i>
+                    <span>Usuário</span>
+                  </a>
+                </li>
+              <?php else: ?>
+                <li class="dropdown entrada-dropdown">
+                  <button type="button" class="nav-usuario-direto" aria-haspopup="true" aria-label="Abrir opções de login e cadastro">
+                    <i class="bi bi-person-circle" aria-hidden="true"></i>
+                    <span>Login/Cadastro</span>
+                    <i class="bi bi-chevron-down toggle-dropdown" aria-hidden="true"></i>
+                  </button>
+                  <ul>
+                    <li><a href="login.php"><i class="bi bi-person" aria-hidden="true"></i><span>Sou usuário</span></a></li>
+                    <li><a href="loginAdmin.php"><i class="bi bi-shield-lock" aria-hidden="true"></i><span>Sou administrador</span></a></li>
+                    <li><a href="cadastro.php"><i class="bi bi-person-plus" aria-hidden="true"></i><span>Criar conta</span></a></li>
+                  </ul>
+                </li>
+              <?php endif; ?>
             <?php endif; ?>
           </ul>
         </nav>
@@ -239,25 +281,40 @@ $atributosRequerLogin = !$usuarioLogado
                   </a>
                 </li>
                 <li><a href="meusEventos.php"<?= $atributosRequerLogin ?>><i class="bi bi-calendar-event" aria-hidden="true"></i><span>Meus Eventos</span></a></li>
-                <li><a href="comunidade.php"<?= $atributosRequerLogin ?>><i class="bi bi-people" aria-hidden="true"></i><span>Comunidade</span></a></li>
+                <?php if ($menuComunidades): ?>
+                  <li><a href="inicio.php" class="nav-inicio"><i class="bi bi-house-door" aria-hidden="true"></i><span>Início</span></a></li>
+                <?php else: ?>
+                  <li><a href="comunidade.php"<?= $atributosRequerLogin ?>><i class="bi bi-people" aria-hidden="true"></i><span>Comunidade</span></a></li>
+                <?php endif; ?>
                 <li><a href="institucional.php">Institucional</a></li>
-                <li>
-                  <a
-                    href="<?= $usuarioLogado ? 'perfilUsuario.php' : 'login.php' ?>"
-                    class="nav-usuario-direto"
-                    <?= !$usuarioLogado ? 'data-abrir-modal-entrada="true" aria-haspopup="dialog"' : '' ?>
-                    aria-label="<?= $usuarioLogado ? 'Abrir perfil do usuário' : 'Escolher forma de login' ?>">
-                    <i class="bi bi-person-circle" aria-hidden="true"></i>
-                    <span><?= $usuarioLogado ? 'Usuário' : 'Login/Cadastro' ?></span>
-                  </a>
-                </li>
+                <?php if ($usuarioLogado): ?>
+                  <li>
+                    <a href="perfilUsuario.php" class="nav-usuario-direto" aria-label="Abrir perfil do usuário">
+                      <i class="bi bi-person-circle" aria-hidden="true"></i>
+                      <span>Usuário</span>
+                    </a>
+                  </li>
+                <?php else: ?>
+                  <li class="cabecalho-menu-entrada">
+                    <button
+                      type="button"
+                      class="nav-usuario-direto"
+                      data-bs-toggle="collapse"
+                      data-bs-target="#submenuEntradaMobile"
+                      aria-controls="submenuEntradaMobile"
+                      aria-expanded="false">
+                      <i class="bi bi-person-circle" aria-hidden="true"></i>
+                      <span>Login/Cadastro</span>
+                      <i class="bi bi-chevron-down" aria-hidden="true"></i>
+                    </button>
+                    <ul class="collapse" id="submenuEntradaMobile">
+                      <li><a href="login.php"><i class="bi bi-person" aria-hidden="true"></i><span>Sou usuário</span></a></li>
+                      <li><a href="loginAdmin.php"><i class="bi bi-shield-lock" aria-hidden="true"></i><span>Sou administrador</span></a></li>
+                      <li><a href="cadastro.php"><i class="bi bi-person-plus" aria-hidden="true"></i><span>Criar conta</span></a></li>
+                    </ul>
+                  </li>
+                <?php endif; ?>
               <?php else: ?>
-                <li>
-                  <a href="inicio.php" class="nav-inicio">
-                    <i class="bi bi-house-door" aria-hidden="true"></i>
-                    <span>Início</span>
-                  </a>
-                </li>
                 <li>
                   <a href="cadastroEvento.php" class="nav-cadastrar-evento"<?= $atributosRequerLogin ?>>
                     <i class="bi bi-plus-lg" aria-hidden="true"></i>
@@ -265,6 +322,12 @@ $atributosRequerLogin = !$usuarioLogado
                   </a>
                 </li>
                 <li><a href="meusEventos.php"<?= $atributosRequerLogin ?>><i class="bi bi-calendar-event" aria-hidden="true"></i><span>Meus Eventos</span></a></li>
+                <li>
+                  <a href="inicio.php" class="nav-inicio">
+                    <i class="bi bi-house-door" aria-hidden="true"></i>
+                    <span>Início</span>
+                  </a>
+                </li>
                 <li><a href="comunidade.php"<?= $atributosRequerLogin ?>><i class="bi bi-people" aria-hidden="true"></i><span>Comunidade</span></a></li>
                 <li class="cabecalho-menu-institucional">
                   <div>
@@ -287,16 +350,33 @@ $atributosRequerLogin = !$usuarioLogado
                     <li><a href="institucional.php#contato">Contato</a></li>
                   </ul>
                 </li>
-                <li>
-                  <a
-                    href="<?= $usuarioLogado ? 'perfilUsuario.php' : 'login.php' ?>"
-                    class="nav-usuario-direto"
-                    <?= !$usuarioLogado ? 'data-abrir-modal-entrada="true" aria-haspopup="dialog"' : '' ?>
-                    aria-label="<?= $usuarioLogado ? 'Abrir perfil do usuário' : 'Escolher forma de login' ?>">
-                    <i class="bi bi-person-circle" aria-hidden="true"></i>
-                    <span><?= $usuarioLogado ? 'Usuário' : 'Login/Cadastro' ?></span>
-                  </a>
-                </li>
+                <?php if ($usuarioLogado): ?>
+                  <li>
+                    <a href="perfilUsuario.php" class="nav-usuario-direto" aria-label="Abrir perfil do usuário">
+                      <i class="bi bi-person-circle" aria-hidden="true"></i>
+                      <span>Usuário</span>
+                    </a>
+                  </li>
+                <?php else: ?>
+                  <li class="cabecalho-menu-entrada">
+                    <button
+                      type="button"
+                      class="nav-usuario-direto"
+                      data-bs-toggle="collapse"
+                      data-bs-target="#submenuEntradaMobile"
+                      aria-controls="submenuEntradaMobile"
+                      aria-expanded="false">
+                      <i class="bi bi-person-circle" aria-hidden="true"></i>
+                      <span>Login/Cadastro</span>
+                      <i class="bi bi-chevron-down" aria-hidden="true"></i>
+                    </button>
+                    <ul class="collapse" id="submenuEntradaMobile">
+                      <li><a href="login.php"><i class="bi bi-person" aria-hidden="true"></i><span>Sou usuário</span></a></li>
+                      <li><a href="loginAdmin.php"><i class="bi bi-shield-lock" aria-hidden="true"></i><span>Sou administrador</span></a></li>
+                      <li><a href="cadastro.php"><i class="bi bi-person-plus" aria-hidden="true"></i><span>Criar conta</span></a></li>
+                    </ul>
+                  </li>
+                <?php endif; ?>
               <?php endif; ?>
             </ul>
           </nav>
@@ -304,7 +384,7 @@ $atributosRequerLogin = !$usuarioLogado
 
       <?php else: ?>
         <?php if ($mostrarBusca): ?>
-          <form class="busca-cabecalho" action="resultadosBusca.php" method="get" role="search">
+          <form class="busca-cabecalho" action="inicio.php" method="get" role="search">
             <div class="busca-cabecalho-campo">
               <input
                 id="buscaCabecalho"
@@ -318,7 +398,15 @@ $atributosRequerLogin = !$usuarioLogado
                 autocomplete="off"
                 spellcheck="false"
               >
-              <button type="submit" aria-label="Confirmar busca">
+              <button
+                type="button"
+                class="busca-cabecalho-limpar"
+                data-limpar-busca
+                aria-label="Limpar busca"
+                hidden>
+                <i class="bi bi-x-lg" aria-hidden="true"></i>
+              </button>
+              <button type="submit" class="busca-cabecalho-enviar" aria-label="Confirmar busca">
                 <i class="bi bi-search" aria-hidden="true"></i>
               </button>
             </div>
@@ -365,19 +453,6 @@ $atributosRequerLogin = !$usuarioLogado
 <?php endif; ?>
 
 <?php if (!$usuarioLogado): ?>
-  <dialog class="modal-acesso" id="modalEscolhaLogin" aria-labelledby="modalEscolhaLoginTitulo">
-    <div class="modal-acesso-conteudo">
-      <button type="button" class="modal-acesso-fechar" data-fechar-modal aria-label="Fechar">
-        <i class="bi bi-x-lg" aria-hidden="true"></i>
-      </button>
-      <h2 id="modalEscolhaLoginTitulo">Como deseja entrar?</h2>
-      <div class="modal-acesso-acoes">
-        <a href="login.php" class="modal-acesso-botao modal-acesso-botao-primario">Sou usuário</a>
-        <a href="loginAdmin.php" class="modal-acesso-botao modal-acesso-botao-secundario">Sou administrador</a>
-      </div>
-    </div>
-  </dialog>
-
   <dialog class="modal-acesso" id="modalLoginNecessario" aria-labelledby="modalLoginNecessarioTitulo">
     <div class="modal-acesso-conteudo">
       <button type="button" class="modal-acesso-fechar" data-fechar-modal aria-label="Fechar">
@@ -392,7 +467,7 @@ $atributosRequerLogin = !$usuarioLogado
   </dialog>
 <?php endif; ?>
 
-<?php if ($mostrarBusca): ?>
+<?php if ($mostrarBusca && !$buscaComunidadesNavbar): ?>
   <script src="assets/js/buscaEventos.js" defer></script>
 <?php endif; ?>
 <?php if ($mostrarLogout): ?>

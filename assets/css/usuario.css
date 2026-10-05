@@ -251,6 +251,97 @@ body {
     color: #ff006e;
 }
 
+/* Integração pontual com o Google Agenda */
+.integracao-agenda {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    padding: 20px;
+    margin-bottom: 18px;
+    border: 2px solid #00ff00;
+    border-radius: 20px;
+    background: #141414;
+}
+
+.integracao-agenda-icone {
+    display: grid;
+    place-items: center;
+    width: 52px;
+    height: 52px;
+    flex: 0 0 52px;
+    border-radius: 15px;
+    background: rgba(0, 255, 0, .1);
+    color: #00ff00;
+    font-size: 25px;
+}
+
+.integracao-agenda-conteudo {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.integracao-agenda h2 {
+    margin: 0 0 4px;
+    color: #fff;
+    font-size: clamp(22px, 3vw, 30px);
+}
+
+.integracao-agenda p {
+    margin: 0;
+    color: #bdbdbd;
+}
+
+.integracao-agenda .perfil-feedback {
+    margin-top: 10px;
+}
+
+.integracao-agenda-acoes {
+    display: flex;
+    justify-content: flex-end;
+}
+
+.btn-conectar-agenda,
+.btn-desconectar-agenda {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 44px;
+    padding: 10px 17px;
+    border-radius: 12px;
+    font-weight: 700;
+    text-decoration: none;
+    transition: transform .2s ease, box-shadow .2s ease, background .2s ease;
+}
+
+.btn-conectar-agenda {
+    gap: 8px;
+    border: 0;
+    background: #00ff00;
+    color: #000;
+}
+
+.btn-desconectar-agenda {
+    border: 1px solid #ff006e;
+    background: #232323;
+    color: #fff;
+}
+
+.btn-conectar-agenda:hover,
+.btn-desconectar-agenda:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 18px rgba(255, 0, 110, .22);
+}
+
+.btn-desconectar-agenda:hover {
+    background: #dd0060;
+    color: #fff;
+}
+
+.btn-conectar-agenda[hidden],
+.btn-desconectar-agenda[hidden] {
+    display: none;
+}
+
 /* ==========================
    ESTATÍSTICAS
 ========================== */
@@ -454,6 +545,22 @@ body {
 }
 
 @media (max-width: 767.98px) {
+    .integracao-agenda {
+        align-items: flex-start;
+        flex-wrap: wrap;
+        padding: 16px;
+    }
+
+    .integracao-agenda-conteudo {
+        flex: 1 1 calc(100% - 70px);
+    }
+
+    .integracao-agenda-acoes,
+    .btn-conectar-agenda,
+    .btn-desconectar-agenda {
+        width: 100%;
+    }
+
 
     .footer-about,
     .footer-links {
@@ -918,17 +1025,18 @@ body.recorte-aberto {
     z-index: 8;
     top: 18px;
     right: 24px;
-    display: inline-flex;
-    min-height: 44px;
+    display: grid;
+    width: 46px;
+    height: 46px;
+    min-height: 46px;
     align-items: center;
     justify-content: center;
-    gap: 8px;
-    padding: 10px 16px;
+    padding: 0;
     border: 1px solid rgba(255, 255, 255, .28);
-    border-radius: 12px;
+    border-radius: 50%;
     background: rgba(10, 10, 10, .88);
     color: #ffffff;
-    font-weight: 700;
+    font-size: 1.1rem;
     backdrop-filter: blur(8px);
     transition: transform .2s ease, border-color .2s ease, box-shadow .2s ease;
 }
@@ -981,56 +1089,6 @@ body.recorte-aberto {
     background: #dd0060;
     color: #ffffff;
     transform: scale(1.06);
-}
-
-.menu-contextual-midia {
-    position: absolute;
-    z-index: 30;
-    width: 170px;
-    padding: 7px;
-    border: 1px solid #333333;
-    border-radius: 14px;
-    background: #141414;
-    box-shadow: 0 14px 32px rgba(0, 0, 0, .45);
-}
-
-.menu-contextual-midia[hidden] {
-    display: none;
-}
-
-.menu-contextual-banner {
-    top: 70px;
-    right: 24px;
-}
-
-.menu-contextual-avatar {
-    top: calc(100% + 10px);
-    left: 18px;
-}
-
-.menu-contextual-midia button {
-    display: flex;
-    width: 100%;
-    min-height: 44px;
-    align-items: center;
-    gap: 10px;
-    padding: 9px 11px;
-    border: 0;
-    border-radius: 9px;
-    background: transparent;
-    color: #ffffff;
-    text-align: left;
-}
-
-.menu-contextual-midia button i {
-    color: #00ff00;
-}
-
-.menu-contextual-midia button:hover,
-.menu-contextual-midia button:focus-visible {
-    outline: 0;
-    background: #232323;
-    color: #ffffff;
 }
 
 .perfil-modal .modal-dialog {
@@ -1252,10 +1310,6 @@ body.recorte-aberto {
     white-space: nowrap;
 }
 
-.feedback-personalizacao {
-    margin-top: 18px;
-}
-
 .personalizacao-modal.salvando-midia .modal-body {
     cursor: wait;
     opacity: .65;
@@ -1365,16 +1419,6 @@ body.lightbox-aberto {
     .btn-alterar-banner {
         top: 12px;
         right: 12px;
-        padding-inline: 13px;
-    }
-
-    .menu-contextual-banner {
-        top: 64px;
-        right: 12px;
-    }
-
-    .menu-contextual-avatar {
-        left: 0;
     }
 
     .personalizacao-modal .modal-dialog,
@@ -1410,10 +1454,6 @@ body.lightbox-aberto {
 }
 
 @media (max-width: 420px) {
-    .btn-alterar-banner {
-        font-size: .84rem;
-    }
-
     .avatar-area {
         left: 18px;
     }

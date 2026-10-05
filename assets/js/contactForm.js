@@ -8,7 +8,6 @@
       return;
     }
 
-    const feedback = formulario.querySelector('.footer-contact-feedback');
     const botao = formulario.querySelector('button[type="submit"]');
     const textoBotao = botao?.querySelector('span');
 
@@ -19,8 +18,6 @@
         return;
       }
 
-      feedback.hidden = true;
-      feedback.className = 'footer-contact-feedback';
       botao.disabled = true;
 
       if (textoBotao) {
@@ -46,14 +43,12 @@
           throw new Error(dados.erro || 'Não foi possível enviar a mensagem.');
         }
 
-        feedback.textContent = 'Mensagem enviada com sucesso!';
-        feedback.classList.add('sucesso');
-        feedback.hidden = false;
         formulario.reset();
+        window.ShowMeUI.toast('Mensagem enviada com sucesso!', {variante: 'sucesso'});
       } catch (erro) {
-        feedback.textContent = erro.message;
-        feedback.classList.add('erro');
-        feedback.hidden = false;
+        window.ShowMeUI.toast(erro.message || 'Não foi possível enviar a mensagem.', {
+          variante: 'erro'
+        });
       } finally {
         botao.disabled = false;
 

@@ -45,7 +45,7 @@ $secoesHome = [
     ?>
 
     <main class="inicio">
-        <section class="banner-section">
+        <section class="banner-section" data-visao-home="normal">
             <h2 class="titulo-home">Recomendados para Você</h2>
 
             <div class="banner swiper" aria-live="polite" aria-busy="true">
@@ -62,11 +62,28 @@ $secoesHome = [
             </div>
         </section>
 
+        <section
+            id="resultadosBuscaHome"
+            class="resultados-busca-home"
+            aria-live="polite"
+            hidden>
+            <header class="resultados-busca-home-cabecalho">
+                <h2>Resultados para <span id="termoBuscaHome"></span></h2>
+                <p id="resumoBuscaHome"></p>
+            </header>
+
+            <div
+                id="resultadosBuscaHomeGrid"
+                class="resultados-busca-home-grid"
+                aria-busy="false"></div>
+        </section>
+
         <?php foreach ($secoesHome as $secao): ?>
             <section
                 id="secao<?= htmlspecialchars($secao['id'], ENT_QUOTES, 'UTF-8') ?>"
                 class="eventos secao-eventos-home"
                 data-secao-categoria="<?= htmlspecialchars($secao['id'], ENT_QUOTES, 'UTF-8') ?>"
+                data-visao-home="normal"
                 aria-busy="true">
                 <h3 class="titulo-secao-home titulo-<?= htmlspecialchars($secao['cor'], ENT_QUOTES, 'UTF-8') ?>">
                     <?= htmlspecialchars($secao['titulo'], ENT_QUOTES, 'UTF-8') ?>
@@ -84,12 +101,16 @@ $secoesHome = [
                     </button>
 
                     <div
-                        class="carrossel-wrapper"
+                        class="carrossel-wrapper swiper"
                         id="<?= htmlspecialchars($secao['id'], ENT_QUOTES, 'UTF-8') ?>"
                         aria-live="polite">
-                        <div class="sem-eventos estado-eventos">
-                            <span class="spinner-border" aria-hidden="true"></span>
-                            <p>Carregando eventos...</p>
+                        <div class="swiper-wrapper">
+                            <div class="swiper-slide estado-carrossel">
+                                <div class="sem-eventos estado-eventos">
+                                    <span class="spinner-border" aria-hidden="true"></span>
+                                    <p>Carregando eventos...</p>
+                                </div>
+                            </div>
                         </div>
                     </div>
 

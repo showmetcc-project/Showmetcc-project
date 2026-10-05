@@ -88,7 +88,7 @@
         const idEvento = Number(botao.dataset.favoritoEvento);
 
         if (!Number.isInteger(idEvento) || idEvento < 1) {
-            window.alert('Não foi possível identificar este evento.');
+            window.ShowMeUI.toast('Não foi possível identificar este evento.', {variante: 'erro'});
             return;
         }
 
@@ -102,7 +102,9 @@
         }
 
         if (autenticado !== true) {
-            window.alert('Não foi possível consultar sua sessão. Tente novamente.');
+            window.ShowMeUI.toast('Não foi possível consultar sua sessão. Tente novamente.', {
+                variante: 'erro'
+            });
             return;
         }
 
@@ -137,7 +139,7 @@
             }
             atualizarEvento(idEvento);
         } catch (erro) {
-            window.alert(erro.message);
+            window.ShowMeUI.toast(erro.message, {variante: 'erro'});
         } finally {
             botoes.forEach((item) => { item.disabled = false; });
         }

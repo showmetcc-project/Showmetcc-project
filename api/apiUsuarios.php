@@ -344,10 +344,23 @@ if ($metodo === 'GET') {
     }
 
     $stmt = $conn->prepare(
-        'SELECT id_user, nome_user, sobrenome, email_user,
-                tipo_usuario, foto_perfil, foto_banner, data_cadastro
-         FROM usuario
-         WHERE id_user = ?
+        'SELECT u.id_user, u.nome_user, u.sobrenome, u.email_user,
+                u.tipo_usuario, u.foto_perfil, u.foto_banner, u.data_cadastro,
+                (SELECT COUNT(*) FROM rota r WHERE r.id_user = u.id_user) AS viagens_planejadas,
+                (SELECT COUNT(*)
+                   FROM evento e
+                   INNER JOIN solicitacao s
+                           ON s.id_solicitacao = e.id_solicitacao_origem
+                  WHERE s.id_user = u.id_user) AS eventos_cadastrados,
+                ((SELECT COUNT(*)
+                    FROM comunidade_post cp
+                   WHERE cp.id_usuario = u.id_user)
+                 +
+                 (SELECT COUNT(*)
+                    FROM comunidade_midia cm
+                   WHERE cm.id_usuario = u.id_user)) AS publicacoes_comunidade
+         FROM usuario u
+         WHERE u.id_user = ?
          LIMIT 1'
     );
 
@@ -364,8 +377,21 @@ if ($metodo === 'GET') {
         ], 404);
     }
 
+    $estatisticas = [
+        'viagens_planejadas' => (int) $usuario['viagens_planejadas'],
+        'eventos_cadastrados' => (int) $usuario['eventos_cadastrados'],
+        'publicacoes_comunidade' => (int) $usuario['publicacoes_comunidade'],
+    ];
+
+    unset(
+        $usuario['viagens_planejadas'],
+        $usuario['eventos_cadastrados'],
+        $usuario['publicacoes_comunidade']
+    );
+
     responder([
-        'usuario' => normalizarUsuarioApi($usuario)
+        'usuario' => normalizarUsuarioApi($usuario),
+        'estatisticas' => $estatisticas,
     ]);
 }
 

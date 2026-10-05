@@ -14,13 +14,12 @@
     <link href="assets/css/comunidade.css" rel="stylesheet">
     <link href="assets/css/main.css" rel="stylesheet">
 </head>
-<body class="com-cabecalho-padrao cabecalho-tipo-c pagina-comunidades">
+<body class="com-cabecalho-padrao pagina-comunidades">
 <?php
-$tipoCabecalho = 'C';
+$tipoCabecalho = 'A';
 $configuracaoCabecalho = [
-    'titulo_primario' => 'Comunidade',
-    'fallback' => 'inicio.php',
     'acao' => 'busca_comunidades',
+    'contexto' => 'comunidades',
 ];
 require __DIR__ . '/cabecalho.php';
 ?>
@@ -44,6 +43,7 @@ require __DIR__ . '/cabecalho.php';
         </div>
     </section>
 </main>
+<?php require __DIR__ . '/rodape.php'; ?>
 <script src="assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
 <script src="assets/js/main.js"></script>
 <script src="assets/js/comunidade.js"></script>

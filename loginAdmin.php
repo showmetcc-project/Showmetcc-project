@@ -38,6 +38,10 @@ if (session_status() !== PHP_SESSION_ACTIVE) {
 
 <body class="index-page com-cabecalho-padrao">
 
+  <a href="institucional.php" class="voltar-home-auth" data-voltar-fallback="institucional.php" aria-label="Voltar para a página anterior" title="Voltar">
+    <i class="bi bi-arrow-left" aria-hidden="true"></i>
+  </a>
+
   <main class="main-login">
 
     <div class="login-wrapper">
@@ -128,6 +132,9 @@ if (session_status() !== PHP_SESSION_ACTIVE) {
       }
     });
   </script>
+
+  <script src="assets/js/cabecalho.js" defer></script>
+  <?php require_once __DIR__ . '/acessibilidade.php'; ?>
 
 </body>
 </html>

@@ -1,10 +1,10 @@
 /* Paleta de main.css; seletores conferidos no bundle accessibility.
    VLibras atual: #vlibras-access-wrapper > shadowRoot > #vlibras-button.
-   O botao fechado mede 40px e fica em calc(50vh - 20px), a 10px da direita.
+   O botao fechado mede 40px e fica centralizado verticalmente, a 10px da direita.
    O JS mede o retangulo real; estes valores tambem servem como fallback. */
 :root {
   --showme-access-right: 10px;
-  --showme-access-top: calc(50vh + 24px);
+  --showme-access-top: calc(64vh + 28px);
   --showme-access-panel-right: 60px;
   --showme-access-panel-top: 94px;
 }

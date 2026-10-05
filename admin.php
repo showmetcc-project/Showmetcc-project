@@ -24,6 +24,7 @@
         'titulo_primario' => 'Painel',
         'titulo_secundario' => 'Admin',
         'mostrar_voltar' => false,
+        'acao' => 'logout',
     ];
     require __DIR__ . '/cabecalho.php';
     ?>
@@ -67,7 +68,6 @@
             <div class="stats-barra" aria-hidden="true"></div>
         </section>
 
-        <div id="mensagemAdmin" class="alert d-none" role="alert" aria-live="assertive"></div>
 
         <section
             id="listaSolicitacoes"
@@ -91,7 +91,6 @@
                     </div>
 
                     <div class="modal-body">
-                        <div id="mensagemEdicaoSolicitacao" class="alert d-none" role="alert"></div>
                         <input type="hidden" id="idSolicitacaoEdicao">
 
                         <div class="row g-3">

@@ -98,15 +98,23 @@ body {
 ========================== */
 
 .abas {
+    display: flex;
+    align-items: stretch;
+    gap: 10px;
+    border-bottom: 1px solid #333;
     margin-bottom: 30px;
 }
 
 .aba {
-    height: 58px;
-    border-radius: 14px;
-    border: 2px solid #00ff00;
+    flex: 1 1 0;
+    min-width: 0;
+    min-height: 48px;
+    padding: 10px 16px;
+    border: 0;
+    border-bottom: 3px solid transparent;
+    border-radius: 0;
     background: transparent;
-    color: #00ff00;
+    color: #aaa;
     font-size: 1rem;
     font-weight: 700;
     cursor: pointer;
@@ -118,38 +126,22 @@ body {
 }
 
 .aba:hover {
-    background: rgba(0, 255, 0, .08);
+    color: #fff;
+    background: rgba(255, 255, 255, .035);
 }
 
-/* Aba ativa: Favoritos → verde sólido */
-.aba.ativa[data-tab="favoritos"] {
-    background: #00ff00;
-    color: #000;
+.aba.ativa {
+    background: transparent;
+    color: #00ff00;
     border-color: #00ff00;
 }
 
-/* Aba ativa: Planejados → pink sólido */
-.aba.ativa[data-tab="planejados"] {
-    background: #ff006e;
-    color: #000;
-    border-color: #ff006e;
+.aba:focus-visible {
+    outline: 2px solid #ff006e;
+    outline-offset: 3px;
 }
 
-/* Aba inativa de planejados tem borda pink */
-.aba[data-tab="planejados"]:not(.ativa) {
-    border-color: #ff006e;
-    color: #ff006e;
-}
-
-.aba[data-tab="planejados"]:not(.ativa):hover {
-    background: rgba(255, 0, 110, .08);
-}
-
-.aba.ativa[data-tab="calendario"] {
-    background: #00ff00;
-    color: #000;
-    border-color: #00ff00;
-}
+.aba-rotulo { white-space: nowrap; }
 
 /* ==========================
    CONTEÚDO / VISIBILIDADE
@@ -569,6 +561,7 @@ body {
 ========================== */
 
 .card-evento {
+    position: relative;
     display: grid;
     grid-template-columns: 200px 1fr auto;
     align-items: center;
@@ -897,16 +890,36 @@ body {
 
 }
 
+#planejados .card-evento.evento-encerrado > img {
+    filter: grayscale(100%);
+    opacity: .72;
+}
+
+.badge-evento-encerrado {
+    position: absolute;
+    z-index: 4;
+    top: 12px;
+    left: 12px;
+    padding: 6px 11px;
+    border: 1px solid #ff006e;
+    border-radius: 999px;
+    background: rgba(10, 10, 10, .9);
+    color: #ffffff;
+    font-size: .75rem;
+    font-weight: 700;
+    line-height: 1.2;
+}
+
 @media (max-width: 767.98px) {
 
     .abas {
-        --bs-gutter-x: .5rem;
+        gap: 2px;
     }
 
     .aba {
-        height: 52px;
+        min-height: 48px;
         gap: 4px;
-        padding: 4px;
+        padding: 8px 4px;
         font-size: clamp(.68rem, 2vw, .82rem);
         white-space: nowrap;
     }

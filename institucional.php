@@ -126,7 +126,39 @@
 
     </section><!-- /Services Section -->
 
-    <?php require __DIR__ . '/odsModais.php'; ?>
+    <!-- Os diálogos pertencem somente à página Institucional. Mantê-los aqui deixa
+         a estrutura e o conteúdo das ODS próximos dos cartões que os acionam. -->
+    <div class="ods-modais" aria-live="polite">
+      <dialog id="modalOds3" class="ods-modal ods-modal-3" aria-labelledby="tituloModalOds3">
+        <div class="ods-modal-conteudo">
+          <button type="button" class="ods-modal-fechar" data-fechar-ods aria-label="Fechar modal">
+            <i class="bi bi-x-lg" aria-hidden="true"></i>
+          </button>
+          <h2 id="tituloModalOds3">ODS 3 — Saúde e Bem-Estar</h2>
+          <p>A ODS 3 busca assegurar uma vida saudável e promover a saúde mental e o bem-estar para todas as pessoas. O ShowMe contribui para esse objetivo ao incentivar o acesso a experiências culturais e de lazer, reconhecendo a cultura como parte importante da qualidade de vida e do bem-estar.</p>
+        </div>
+      </dialog>
+
+      <dialog id="modalOds4" class="ods-modal ods-modal-4" aria-labelledby="tituloModalOds4">
+        <div class="ods-modal-conteudo">
+          <button type="button" class="ods-modal-fechar" data-fechar-ods aria-label="Fechar modal">
+            <i class="bi bi-x-lg" aria-hidden="true"></i>
+          </button>
+          <h2 id="tituloModalOds4">ODS 4 — Educação de Qualidade</h2>
+          <p>A ODS 4 promove uma educação inclusiva e de qualidade, destacando também a valorização da diversidade cultural e da contribuição da cultura para o desenvolvimento sustentável. O ShowMe se relaciona a esse propósito ao ampliar o contato com diferentes manifestações culturais e favorecer sua valorização e reconhecimento.</p>
+        </div>
+      </dialog>
+
+      <dialog id="modalOds10" class="ods-modal ods-modal-10" aria-labelledby="tituloModalOds10">
+        <div class="ods-modal-conteudo">
+          <button type="button" class="ods-modal-fechar" data-fechar-ods aria-label="Fechar modal">
+            <i class="bi bi-x-lg" aria-hidden="true"></i>
+          </button>
+          <h2 id="tituloModalOds10">ODS 10 — Redução das Desigualdades</h2>
+          <p>A ODS 10 busca promover a inclusão social e a igualdade de oportunidades, reduzindo desigualdades entre diferentes grupos e regiões. O ShowMe contribui para esse objetivo ao buscar tornar o acesso à cultura mais democrático, reduzindo barreiras de informação e planejamento que podem dificultar a participação em eventos culturais.</p>
+        </div>
+      </dialog>
+    </div>
 
     <!-- Work Process Section -->
     <section id="work-process" class="work-process section">

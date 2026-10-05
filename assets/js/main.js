@@ -239,3 +239,156 @@
   document.addEventListener('scroll', navmenuScrollspy);
 
 })();
+
+/**
+ * Feedback compartilhado do ShowMe.
+ * confirmar() resolve true/false; toast() exibe uma notificação temporária.
+ */
+(function () {
+  'use strict';
+
+  let modalAtual = null;
+  let resolverModal = null;
+  let focoAnterior = null;
+
+  function garantirContainerToasts() {
+    let container = document.getElementById('showmeToastContainer');
+    if (container) return container;
+
+    container = document.createElement('div');
+    container.id = 'showmeToastContainer';
+    container.className = 'showme-toast-container';
+    container.setAttribute('aria-live', 'polite');
+    container.setAttribute('aria-atomic', 'false');
+    document.body.append(container);
+    return container;
+  }
+
+  function toast(mensagem, opcoes = {}) {
+    const variante = opcoes.variante === 'erro' ? 'erro' : 'sucesso';
+    const duracao = Math.max(1500, Number(opcoes.duracao) || 4000);
+    const notificacao = document.createElement('div');
+    notificacao.className = `showme-toast showme-toast-${variante}`;
+    notificacao.setAttribute('role', variante === 'erro' ? 'alert' : 'status');
+
+    const icone = document.createElement('i');
+    icone.className = variante === 'erro'
+      ? 'bi bi-exclamation-circle-fill'
+      : 'bi bi-check-circle-fill';
+    icone.setAttribute('aria-hidden', 'true');
+
+    const texto = document.createElement('p');
+    texto.textContent = String(mensagem || '');
+
+    const fechar = document.createElement('button');
+    fechar.type = 'button';
+    fechar.className = 'showme-toast-fechar';
+    fechar.setAttribute('aria-label', 'Fechar notificação');
+    fechar.innerHTML = '<i class="bi bi-x-lg" aria-hidden="true"></i>';
+
+    let temporizador = null;
+    const remover = () => {
+      if (!notificacao.isConnected) return;
+      window.clearTimeout(temporizador);
+      notificacao.classList.add('showme-toast-saindo');
+      notificacao.addEventListener('animationend', () => notificacao.remove(), {once: true});
+    };
+
+    fechar.addEventListener('click', remover);
+    notificacao.append(icone, texto, fechar);
+    garantirContainerToasts().append(notificacao);
+    temporizador = window.setTimeout(remover, duracao);
+    return notificacao;
+  }
+
+  function finalizarConfirmacao(resultado) {
+    if (!modalAtual) return;
+    const modal = modalAtual;
+    const resolver = resolverModal;
+    modalAtual = null;
+    resolverModal = null;
+    modal.classList.add('showme-confirmacao-saindo');
+    modal.addEventListener('animationend', () => modal.remove(), {once: true});
+    document.body.classList.remove('showme-modal-aberto');
+    focoAnterior?.focus?.();
+    resolver?.(resultado);
+  }
+
+  function confirmar(opcoes = {}) {
+    if (modalAtual) finalizarConfirmacao(false);
+
+    const variante = opcoes.variante === 'importante' ? 'importante' : 'destrutiva';
+    const tituloId = `showmeConfirmacaoTitulo-${Date.now()}`;
+    focoAnterior = document.activeElement;
+
+    const overlay = document.createElement('div');
+    overlay.className = `showme-confirmacao-overlay showme-confirmacao-${variante}`;
+    overlay.setAttribute('role', 'dialog');
+    overlay.setAttribute('aria-modal', 'true');
+    overlay.setAttribute('aria-labelledby', tituloId);
+
+    const caixa = document.createElement('div');
+    caixa.className = 'showme-confirmacao';
+
+    const icone = document.createElement('i');
+    icone.className = variante === 'destrutiva'
+      ? 'bi bi-exclamation-triangle-fill showme-confirmacao-icone'
+      : 'bi bi-question-circle-fill showme-confirmacao-icone';
+    icone.setAttribute('aria-hidden', 'true');
+
+    const titulo = document.createElement('h2');
+    titulo.id = tituloId;
+    titulo.textContent = String(opcoes.titulo || 'Confirmar ação');
+
+    const texto = document.createElement('p');
+    texto.textContent = String(opcoes.texto || 'Deseja continuar?');
+
+    const acoes = document.createElement('div');
+    acoes.className = 'showme-confirmacao-acoes';
+
+    const cancelar = document.createElement('button');
+    cancelar.type = 'button';
+    cancelar.className = 'showme-confirmacao-cancelar';
+    cancelar.textContent = String(opcoes.cancelarTexto || 'Cancelar');
+
+    const confirmarBotao = document.createElement('button');
+    confirmarBotao.type = 'button';
+    confirmarBotao.className = 'showme-confirmacao-confirmar';
+    confirmarBotao.textContent = String(opcoes.confirmarTexto || 'Confirmar');
+
+    cancelar.addEventListener('click', () => finalizarConfirmacao(false));
+    confirmarBotao.addEventListener('click', () => finalizarConfirmacao(true));
+    overlay.addEventListener('click', (evento) => {
+      if (evento.target === overlay) finalizarConfirmacao(false);
+    });
+    overlay.addEventListener('keydown', (evento) => {
+      if (evento.key === 'Escape') {
+        evento.preventDefault();
+        finalizarConfirmacao(false);
+      }
+      if (evento.key === 'Tab') {
+        const controles = [cancelar, confirmarBotao];
+        const indice = controles.indexOf(document.activeElement);
+        const proximo = evento.shiftKey
+          ? (indice <= 0 ? controles.length - 1 : indice - 1)
+          : (indice >= controles.length - 1 ? 0 : indice + 1);
+        evento.preventDefault();
+        controles[proximo].focus();
+      }
+    });
+
+    acoes.append(cancelar, confirmarBotao);
+    caixa.append(icone, titulo, texto, acoes);
+    overlay.append(caixa);
+    document.body.append(overlay);
+    document.body.classList.add('showme-modal-aberto');
+    modalAtual = overlay;
+
+    return new Promise((resolver) => {
+      resolverModal = resolver;
+      window.requestAnimationFrame(() => cancelar.focus());
+    });
+  }
+
+  window.ShowMeUI = Object.freeze({confirmar, toast});
+})();

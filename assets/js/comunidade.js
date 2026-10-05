@@ -4,6 +4,7 @@
     const alvoSeusEventos = document.getElementById('comunidadesUsuario');
     const alvoTodasComunidades = document.getElementById('todasComunidades');
     const campoBusca = document.getElementById('buscaComunidades');
+    const botaoLimparBusca = document.querySelector('.busca-comunidades-navbar [data-limpar-busca]');
     let seusEventos = [];
     let todasComunidades = [];
 
@@ -51,6 +52,7 @@
 
     function filtrarComunidades() {
         const termo = normalizar(campoBusca?.value);
+        if (botaoLimparBusca) botaoLimparBusca.hidden = termo === '';
         const filtrar = (eventos) => termo === ''
             ? eventos
             : eventos.filter((evento) => normalizar(evento.nome_evento).includes(termo));
@@ -69,6 +71,11 @@
 
     campoBusca?.addEventListener('input', filtrarComunidades);
     campoBusca?.closest('form')?.addEventListener('submit', (evento) => evento.preventDefault());
+    botaoLimparBusca?.addEventListener('click', () => {
+        campoBusca.value = '';
+        filtrarComunidades();
+        campoBusca.focus();
+    });
 
     fetch('api/comunidade-posts?resumo=1', {headers:{Accept:'application/json'}})
         .then(async (resposta) => { const dados = await resposta.json(); if (!resposta.ok) throw new Error(dados.erro || 'Não foi possível carregar as comunidades.'); return dados; })

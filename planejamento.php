@@ -1086,6 +1086,18 @@ $idEvento = (int) $idInformado;
 
                         <p id="mensagemPlanejamento" class="mensagem-planejamento-api" aria-live="polite"></p>
 
+                        <div id="acoesGoogleAgenda" class="acoes-google-agenda" hidden>
+                            <p id="statusGoogleAgendaPlanejamento"></p>
+                            <button id="btnAdicionarGoogleAgenda" type="button" hidden>
+                                <i class="bi bi-calendar-plus" aria-hidden="true"></i>
+                                Adicionar ao Google Agenda
+                            </button>
+                            <a id="btnConectarGoogleAgendaPlanejamento" href="googleCalendarConectar.php?retorno=planejamento.php%3Fid%3D<?= $idEvento ?>" hidden>
+                                <i class="bi bi-google" aria-hidden="true"></i>
+                                Conectar Google Agenda
+                            </a>
+                        </div>
+
                         <div class="botoes">
                             <button type="button" onclick="voltarEtapa(4)">Voltar</button>
                             <button id="botaoFinalizarPlanejamento" type="submit">Finalizar planejamento</button>
@@ -1100,6 +1112,22 @@ $idEvento = (int) $idInformado;
 
             </div>
         </main>
+
+        <dialog id="modalConflitoAgenda" class="modal-conflito-agenda" aria-labelledby="tituloConflitoAgenda">
+            <form method="dialog">
+                <button class="fechar-conflito-agenda" value="cancelar" aria-label="Fechar aviso">
+                    <i class="bi bi-x-lg" aria-hidden="true"></i>
+                </button>
+                <i class="bi bi-calendar-x icone-conflito-agenda" aria-hidden="true"></i>
+                <h2 id="tituloConflitoAgenda">Conflito no Google Agenda</h2>
+                <p>Há outro compromisso no período deste evento, considerando também o tempo de deslocamento.</p>
+                <ul id="listaConflitosAgenda"></ul>
+                <div class="acoes-conflito-agenda">
+                    <button type="submit" value="cancelar">Cancelar</button>
+                    <button type="submit" value="finalizar">Finalizar mesmo assim</button>
+                </div>
+            </form>
+        </dialog>
 
 
 
@@ -1131,6 +1159,7 @@ $idEvento = (int) $idInformado;
                 rua: '',
                 local: '',
                 data: '',
+                horario: '',
                 endereco: ''
             };
 
@@ -1155,6 +1184,7 @@ $idEvento = (int) $idInformado;
                     rua: eventoApi.rua_evento || '',
                     local: eventoApi.local_evento || '',
                     data: eventoApi.data_evento || '',
+                    horario: eventoApi.horario_evento || '',
                     endereco: [eventoApi.local_evento, enderecoComUf].filter(Boolean).join(' - ')
                 });
 
@@ -1393,7 +1423,7 @@ $idEvento = (int) $idInformado;
 
                     if (numero > etapaAtual + 1) {
 
-                        alert(
+                        notificarErroPlanejamento(
                             "Conclua as etapas anteriores antes de continuar."
                         );
 
@@ -1417,7 +1447,7 @@ $idEvento = (int) $idInformado;
 
                     if (!orcamento || orcamento <= 0) {
 
-                        alert(
+                        notificarErroPlanejamento(
                             "Informe seu orçamento antes de continuar."
                         );
 
@@ -1428,7 +1458,7 @@ $idEvento = (int) $idInformado;
 
                     if (orcamento < custoIngresso) {
 
-                        alert(
+                        notificarErroPlanejamento(
                             `O orçamento precisa ser de pelo menos R$ ${custoIngresso.toFixed(2)}.`
                         );
 
@@ -1456,7 +1486,7 @@ $idEvento = (int) $idInformado;
 
                     if (!transporteSelecionado) {
 
-                        alert(
+                        notificarErroPlanejamento(
                             "Escolha um meio de transporte antes de continuar."
                         );
 
@@ -1465,7 +1495,7 @@ $idEvento = (int) $idInformado;
 
                     if (!transporte || transporte <= 0) {
 
-                        alert(
+                        notificarErroPlanejamento(
                             "Informe o valor do transporte antes de continuar."
                         );
 
@@ -1481,7 +1511,7 @@ $idEvento = (int) $idInformado;
 
                     if (custoIngresso + transporte > orcamento) {
 
-                        alert(
+                        notificarErroPlanejamento(
                             "O valor do ingresso + transporte ultrapassa seu orçamento."
                         );
 
@@ -1504,7 +1534,7 @@ $idEvento = (int) $idInformado;
 
                     if (!origem) {
 
-                        alert(
+                        notificarErroPlanejamento(
                             "Defina seu ponto de partida para calcular a rota."
                         );
 
@@ -1513,7 +1543,7 @@ $idEvento = (int) $idInformado;
 
                     if (!rotaCalculada) {
 
-                        alert(
+                        notificarErroPlanejamento(
                             "Calcule a rota antes de continuar."
                         );
 
@@ -1549,7 +1579,7 @@ $idEvento = (int) $idInformado;
 
                     if (!hospedagemDecidida) {
 
-                        alert(
+                        notificarErroPlanejamento(
                             "Escolha se deseja hospedagem antes de continuar."
                         );
 
@@ -1572,7 +1602,7 @@ $idEvento = (int) $idInformado;
 
                         if (!hospedagem || hospedagem <= 0) {
 
-                            alert(
+                            notificarErroPlanejamento(
                                 "Informe o valor da hospedagem antes de continuar."
                             );
 
@@ -1700,7 +1730,7 @@ $idEvento = (int) $idInformado;
                     numeroAtual + 1
                 ) {
 
-                    alert(
+                    notificarErroPlanejamento(
                         "Conclua as etapas anteriores antes de continuar."
                     );
 
@@ -3251,7 +3281,7 @@ $idEvento = (int) $idInformado;
                     !destino
                 ) {
 
-                    alert(
+                    notificarErroPlanejamento(
                         "Calcule uma rota primeiro."
                     );
 
@@ -3321,7 +3351,7 @@ function abrirWaze() {
         !destino
     ) {
 
-        alert(
+        notificarErroPlanejamento(
             "Calcule uma rota primeiro."
         );
 
@@ -3472,46 +3502,188 @@ function atualizarResumo() {
    FINALIZAR
 ========================================================= */
 
-async function finalizarPlanejamento(eventoSubmit) {
+let idRotaGoogleAgenda = null;
+let statusGoogleAgenda = null;
 
-    eventoSubmit.preventDefault();
+function notificarErroPlanejamento(mensagem) {
+    window.ShowMeUI.toast(mensagem, {variante: 'erro'});
+}
 
+async function lerRespostaJson(resposta) {
+    const texto = await resposta.text();
+    try {
+        return texto ? JSON.parse(texto) : {};
+    } catch (_) {
+        throw new Error('O servidor retornou uma resposta inválida.');
+    }
+}
 
-    if (
+async function obterStatusGoogleAgenda() {
+    const resposta = await fetch('api/google-calendar', {headers: {Accept: 'application/json'}});
+    const dados = await lerRespostaJson(resposta);
 
-        !etapaConcluida[1] ||
-
-        !etapaConcluida[2] ||
-
-        !etapaConcluida[3] ||
-
-        !etapaConcluida[4]
-
-    ) {
-
-
-        alert("Conclua todas as etapas antes de finalizar.");
-
-
-        return;
-
+    if (resposta.status === 401) {
+        window.location.href = 'login.php';
+        return null;
+    }
+    if (!resposta.ok) {
+        throw new Error(dados.erro || 'Não foi possível consultar o Google Agenda.');
     }
 
+    statusGoogleAgenda = dados;
+    return dados;
+}
 
-    const mensagem = document.getElementById("mensagemPlanejamento");
-    const botao = document.getElementById("botaoFinalizarPlanejamento");
-    const meioTransporte = document.getElementById("meioTransportePlanejamento").value;
-    const distancia = document.getElementById("distanciaPlanejamento").value;
-    const tempo = document.getElementById("tempoPlanejamento").value;
+async function exibirAcoesGoogleAgenda(idRota) {
+    idRotaGoogleAgenda = Number(idRota);
+    const caixa = document.getElementById('acoesGoogleAgenda');
+    const texto = document.getElementById('statusGoogleAgendaPlanejamento');
+    const botaoAdicionar = document.getElementById('btnAdicionarGoogleAgenda');
+    const botaoConectar = document.getElementById('btnConectarGoogleAgendaPlanejamento');
+    caixa.hidden = false;
 
-    mensagem.textContent = "Salvando planejamento...";
-    mensagem.classList.remove("erro");
+    try {
+        const status = await obterStatusGoogleAgenda();
+        const conectado = Boolean(status?.conectado);
+        texto.textContent = conectado
+            ? 'Planejamento pronto para ser adicionado à sua agenda.'
+            : 'Conecte o Google Agenda para exportar este planejamento.';
+        botaoAdicionar.hidden = !conectado;
+        botaoConectar.hidden = conectado || !status?.configurado;
+
+        if (!status?.configurado) {
+            texto.textContent = 'Google Agenda ainda não foi configurado neste ambiente.';
+        }
+    } catch (erro) {
+        texto.textContent = erro.message;
+        botaoAdicionar.hidden = true;
+        botaoConectar.hidden = true;
+    }
+}
+
+async function carregarPlanejamentoExistente() {
+    const resposta = await fetch('api/planejamento/', {headers: {Accept: 'application/json'}});
+    const dados = await lerRespostaJson(resposta);
+
+    if (!resposta.ok) {
+        return;
+    }
+
+    const existente = (dados.planejamentos || []).find(
+        (planejamento) => Number(planejamento.id_evento) === Number(evento.id)
+    );
+
+    if (existente) {
+        document.getElementById('botaoFinalizarPlanejamento').textContent = 'Planejamento finalizado';
+        await exibirAcoesGoogleAgenda(existente.id_rota);
+    }
+}
+
+function confirmarFinalizacaoComConflito(conflitos) {
+    const modal = document.getElementById('modalConflitoAgenda');
+    const lista = document.getElementById('listaConflitosAgenda');
+    lista.replaceChildren(...conflitos.map((conflito) => {
+        const item = document.createElement('li');
+        item.textContent = conflito.titulo;
+        return item;
+    }));
+
+    if (typeof modal.showModal !== 'function') {
+        return window.ShowMeUI.confirmar({
+            titulo: 'Conflito no Google Agenda',
+            texto: 'Há outro compromisso no período deste evento, considerando também o tempo de deslocamento.',
+            confirmarTexto: 'Finalizar mesmo assim',
+            cancelarTexto: 'Cancelar',
+            variante: 'importante'
+        });
+    }
+
+    modal.showModal();
+    return new Promise((resolver) => {
+        modal.addEventListener('close', () => resolver(modal.returnValue === 'finalizar'), {once: true});
+    });
+}
+
+async function verificarConflitoGoogleAgenda(tempo) {
+    const status = statusGoogleAgenda || await obterStatusGoogleAgenda();
+    if (!status?.conectado) {
+        return true;
+    }
+
+    const resposta = await fetch('api/google-calendar', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json', Accept: 'application/json'},
+        body: JSON.stringify({
+            acao: 'verificar_conflito',
+            id_evento: evento.id,
+            tempo_estimado: Number(tempo)
+        })
+    });
+    const dados = await lerRespostaJson(resposta);
+
+    if (!resposta.ok) {
+        throw new Error(dados.erro || 'Não foi possível verificar conflitos na agenda.');
+    }
+
+    return dados.conflito
+        ? confirmarFinalizacaoComConflito(dados.conflitos || [])
+        : true;
+}
+
+async function adicionarAoGoogleAgenda() {
+    const botao = document.getElementById('btnAdicionarGoogleAgenda');
+    const texto = document.getElementById('statusGoogleAgendaPlanejamento');
+    botao.disabled = true;
+    texto.textContent = 'Adicionando ao Google Agenda...';
+
+    try {
+        const resposta = await fetch('api/google-calendar', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json', Accept: 'application/json'},
+            body: JSON.stringify({acao: 'exportar', id_rota: idRotaGoogleAgenda})
+        });
+        const dados = await lerRespostaJson(resposta);
+        if (!resposta.ok) {
+            throw new Error(dados.erro || 'Não foi possível adicionar o evento à agenda.');
+        }
+
+        texto.textContent = dados.mensagem;
+        botao.hidden = true;
+    } catch (erro) {
+        texto.textContent = erro.message;
+        botao.disabled = false;
+    }
+}
+
+async function finalizarPlanejamento(eventoSubmit) {
+    eventoSubmit.preventDefault();
+
+    if (!etapaConcluida[1] || !etapaConcluida[2] || !etapaConcluida[3] || !etapaConcluida[4]) {
+        window.ShowMeUI.toast('Conclua todas as etapas antes de finalizar.', {variante: 'erro'});
+        return;
+    }
+
+    const mensagem = document.getElementById('mensagemPlanejamento');
+    const botao = document.getElementById('botaoFinalizarPlanejamento');
+    const meioTransporte = document.getElementById('meioTransportePlanejamento').value;
+    const distancia = document.getElementById('distanciaPlanejamento').value;
+    const tempo = document.getElementById('tempoPlanejamento').value;
+    mensagem.textContent = 'Verificando sua agenda...';
+    mensagem.classList.remove('erro');
     botao.disabled = true;
 
     try {
-        const resposta = await fetch("api/planejamento/", {
-            method: "POST",
-            headers: {"Content-Type": "application/json"},
+        const deveFinalizar = await verificarConflitoGoogleAgenda(tempo);
+        if (!deveFinalizar) {
+            mensagem.textContent = 'Planejamento não finalizado.';
+            botao.disabled = false;
+            return;
+        }
+
+        mensagem.textContent = 'Salvando planejamento...';
+        const resposta = await fetch('api/planejamento/', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json', Accept: 'application/json'},
             body: JSON.stringify({
                 id_evento: evento.id,
                 meio_transporte: meioTransporte,
@@ -3519,38 +3691,39 @@ async function finalizarPlanejamento(eventoSubmit) {
                 tempo_estimado: tempo
             })
         });
-        const dados = await resposta.json();
+        const dados = await lerRespostaJson(resposta);
 
-        if (!resposta.ok) {
-            throw new Error(dados.erro || "Não foi possível finalizar o planejamento.");
+        if (!resposta.ok && !(resposta.status === 409 && dados.id_rota)) {
+            throw new Error(dados.erro || 'Não foi possível finalizar o planejamento.');
         }
 
+        const idRota = dados.planejamento?.id_rota || dados.id_rota;
         atualizarResumo();
         mensagem.replaceChildren();
-        mensagem.append("Planejamento finalizado com sucesso. ");
+        mensagem.append(resposta.status === 409
+            ? 'Este evento já possui um planejamento finalizado. '
+            : 'Planejamento finalizado com sucesso. ');
 
-        const linkPlanejados = document.createElement("a");
-        linkPlanejados.href = "meusEventos.php?aba=planejados";
-        linkPlanejados.textContent = "Ver planejados ou desfazer";
+        const linkPlanejados = document.createElement('a');
+        linkPlanejados.href = 'meusEventos.php?aba=planejados';
+        linkPlanejados.textContent = 'Ver planejados ou desfazer';
         mensagem.append(linkPlanejados);
-        botao.textContent = "Planejamento finalizado";
-    } catch (erro) {
-        mensagem.replaceChildren();
-        mensagem.append(erro.message + " ");
-        mensagem.classList.add("erro");
+        botao.textContent = 'Planejamento finalizado';
 
-        if (erro.message.includes("já possui")) {
-            const linkPlanejados = document.createElement("a");
-            linkPlanejados.href = "meusEventos.php?aba=planejados";
-            linkPlanejados.textContent = "Abrir meus planejados";
-            mensagem.append(linkPlanejados);
+        if (resposta.status !== 409) {
+            window.ShowMeUI.toast('Planejamento salvo com sucesso!', {variante: 'sucesso'});
         }
 
+        await exibirAcoesGoogleAgenda(idRota);
+    } catch (erro) {
+        mensagem.textContent = erro.message;
+        mensagem.classList.add('erro');
         botao.disabled = false;
     }
-
 }
 
+document.getElementById('btnAdicionarGoogleAgenda')
+    .addEventListener('click', adicionarAoGoogleAgenda);
 
 /* =========================================================
    ESCAPAR HTML
@@ -3637,6 +3810,7 @@ document
 async function inicializarPlanejamento() {
     try {
         await carregarEvento();
+        await carregarPlanejamentoExistente();
     } catch (erro) {
         document.getElementById("tituloEvento").textContent = erro.message;
         document.getElementById("botaoFinalizarPlanejamento").disabled = true;

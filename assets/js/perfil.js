@@ -43,6 +43,9 @@
   const lightboxImagem = document.getElementById('lightboxMidiaImagem');
   const lightboxFallback = document.getElementById('lightboxMidiaFallback');
   const fecharLightbox = document.getElementById('fecharLightboxMidia');
+  const googleAgendaStatus = document.getElementById('googleAgendaStatus');
+  const botaoConectarGoogleAgenda = document.getElementById('btnConectarGoogleAgenda');
+  const botaoDesconectarGoogleAgenda = document.getElementById('btnDesconectarGoogleAgenda');
 
   let usuarioAtual = null;
   let cropper = null;
@@ -65,10 +68,6 @@
     }
     elemento.hidden = true;
     elemento.textContent = '';
-  }
-
-  function feedbackDaMidia(tipo) {
-    return document.querySelector(`[data-feedback-midia="${tipo}"]`);
   }
 
   async function lerJson(resposta) {
@@ -130,6 +129,15 @@
     atualizarGaleriaSelecionada();
   }
 
+  function renderizarEstatisticas(estatisticas) {
+    const valores = estatisticas && typeof estatisticas === 'object' ? estatisticas : {};
+
+    document.querySelectorAll('[data-estatistica]').forEach((elemento) => {
+      const valor = Number(valores[elemento.dataset.estatistica]);
+      elemento.textContent = Number.isInteger(valor) && valor >= 0 ? String(valor) : '0';
+    });
+  }
+
   function definirModoEdicao(ativo) {
     editandoPerfil = ativo;
     formVisualizacao.classList.toggle('modo-edicao', ativo);
@@ -185,26 +193,18 @@
 
       renderizarPerfil(dados.usuario);
       definirModoEdicao(false);
-      mostrarFeedback(feedbackPagina, 'Perfil atualizado com sucesso.', 'sucesso');
+      esconderFeedback(feedbackPagina);
+      window.ShowMeUI.toast('Perfil atualizado com sucesso.', {variante: 'sucesso'});
     } catch (erro) {
-      mostrarFeedback(feedbackPagina, erro.message, 'erro');
+      window.ShowMeUI.toast(erro.message || 'Não foi possível atualizar o perfil.', {
+        variante: 'erro'
+      });
     } finally {
       botaoEditarPerfil.disabled = false;
     }
   }
 
-  function fecharMenusMidia() {
-    document.querySelectorAll('[data-menu-midia]').forEach((menu) => {
-      menu.hidden = true;
-    });
-    document.querySelectorAll('[data-abrir-menu-midia]').forEach((controle) => {
-      controle.setAttribute('aria-expanded', 'false');
-    });
-  }
-
   function abrirEditorMidia(tipo) {
-    fecharMenusMidia();
-    esconderFeedback(feedbackDaMidia(tipo));
     const input = document.querySelector(`[data-input-upload-midia="${tipo}"]`);
     if (input) {
       input.value = '';
@@ -227,7 +227,6 @@
   }
 
   async function salvarMidia(tipo, {blob = null, caminho = null} = {}) {
-    const feedback = feedbackDaMidia(tipo);
     const formulario = new FormData();
     formulario.append('acao', 'personalizar_midia');
 
@@ -241,7 +240,6 @@
     }
 
     definirMidiaProcessando(tipo, true);
-    esconderFeedback(feedback);
 
     try {
       const resposta = await fetch(endpoint, {
@@ -259,10 +257,15 @@
       }
 
       renderizarPerfil(dados.usuario);
-      mostrarFeedback(feedbackPagina, tipo === 'foto_perfil' ? 'Foto de perfil atualizada.' : 'Banner atualizado.', 'sucesso');
       modaisMidia[tipo]?.hide();
+      window.ShowMeUI.toast(
+        tipo === 'foto_perfil' ? 'Foto de perfil atualizada.' : 'Banner atualizado.',
+        {variante: 'sucesso'}
+      );
     } catch (erro) {
-      mostrarFeedback(feedback, erro.message, 'erro');
+      window.ShowMeUI.toast(erro.message || 'Não foi possível salvar a imagem.', {
+        variante: 'erro'
+      });
     } finally {
       definirMidiaProcessando(tipo, false);
       const input = document.querySelector(`[data-input-upload-midia="${tipo}"]`);
@@ -286,19 +289,18 @@
   }
 
   function abrirRecorte(tipo, arquivo) {
-    const feedback = feedbackDaMidia(tipo);
     const tiposPermitidos = ['image/jpeg', 'image/png', 'image/webp'];
 
     if (!tiposPermitidos.includes(arquivo.type)) {
-      mostrarFeedback(feedback, 'Use uma imagem JPG, PNG ou WebP.', 'erro');
+      window.ShowMeUI.toast('Use uma imagem JPG, PNG ou WebP.', {variante: 'erro'});
       return;
     }
     if (arquivo.size > 10 * 1024 * 1024) {
-      mostrarFeedback(feedback, 'A imagem não pode ultrapassar 10 MB.', 'erro');
+      window.ShowMeUI.toast('A imagem não pode ultrapassar 10 MB.', {variante: 'erro'});
       return;
     }
     if (typeof window.Cropper !== 'function') {
-      mostrarFeedback(feedback, 'O editor de recorte não pôde ser carregado.', 'erro');
+      window.ShowMeUI.toast('O editor de recorte não pôde ser carregado.', {variante: 'erro'});
       return;
     }
 
@@ -320,7 +322,7 @@
     };
     recorteImagem.onerror = () => {
       fecharRecorte();
-      mostrarFeedback(feedback, 'Não foi possível abrir a imagem selecionada.', 'erro');
+      window.ShowMeUI.toast('Não foi possível abrir a imagem selecionada.', {variante: 'erro'});
     };
     recorteImagem.src = urlArquivoRecorte;
   }
@@ -359,14 +361,15 @@
       await salvarMidia(tipo, {blob});
     } catch (erro) {
       fecharRecorte();
-      mostrarFeedback(feedbackDaMidia(tipo), erro.message, 'erro');
+      window.ShowMeUI.toast(erro.message || 'Não foi possível gerar a imagem recortada.', {
+        variante: 'erro'
+      });
     } finally {
       confirmarRecorte.disabled = false;
     }
   }
 
   function abrirLightbox(tipo) {
-    fecharMenusMidia();
     const caminho = usuarioAtual?.[tipo] || null;
     lightbox.dataset.tipo = tipo;
     lightboxImagem.hidden = !caminho;
@@ -402,9 +405,86 @@
         throw new Error(dados.erro || 'Não foi possível carregar o perfil.');
       }
       renderizarPerfil(dados.usuario);
+      renderizarEstatisticas(dados.estatisticas);
     } catch (erro) {
       emailPrincipal.textContent = erro.message;
       mostrarFeedback(feedbackPagina, erro.message, 'erro');
+    }
+  }
+
+  function renderizarStatusGoogleAgenda(dados) {
+    const conectado = Boolean(dados.conectado);
+    googleAgendaStatus.textContent = conectado
+      ? 'Google Agenda conectado.'
+      : 'Conecte sua agenda para verificar conflitos e exportar planejamentos.';
+    botaoConectarGoogleAgenda.hidden = conectado;
+    botaoDesconectarGoogleAgenda.hidden = !conectado;
+
+    if (!dados.configurado && !conectado) {
+      googleAgendaStatus.textContent = 'Google Agenda ainda não foi configurado neste ambiente.';
+      botaoConectarGoogleAgenda.hidden = true;
+    }
+  }
+
+  async function carregarStatusGoogleAgenda() {
+    if (!googleAgendaStatus) {
+      return;
+    }
+
+    try {
+      const resposta = await fetch('api/google-calendar', {headers: {Accept: 'application/json'}});
+      const dados = await lerJson(resposta);
+
+      if (tratarSessaoExpirada(resposta)) {
+        return;
+      }
+      if (!resposta.ok) {
+        throw new Error(dados.erro || 'Não foi possível consultar o Google Agenda.');
+      }
+
+      renderizarStatusGoogleAgenda(dados);
+
+      const retornoAgenda = new URLSearchParams(window.location.search).get('calendar');
+      const mensagensRetorno = {
+        conectado: ['Google Agenda conectado com sucesso.', 'sucesso'],
+        cancelado: ['A conexão com o Google Agenda foi cancelada.', 'erro'],
+        estado_invalido: ['A autorização expirou ou não pôde ser validada. Tente novamente.', 'erro'],
+        erro: ['Não foi possível concluir a conexão com o Google Agenda.', 'erro'],
+        configuracao: ['Configure a credencial OAuth do Google Agenda antes de conectar.', 'erro']
+      };
+
+      if (mensagensRetorno[retornoAgenda]) {
+        const [mensagem, tipo] = mensagensRetorno[retornoAgenda];
+        window.ShowMeUI.toast(mensagem, {variante: tipo === 'sucesso' ? 'sucesso' : 'erro'});
+      }
+    } catch (erro) {
+      googleAgendaStatus.textContent = erro.message;
+    }
+  }
+
+  async function desconectarGoogleAgenda() {
+    botaoDesconectarGoogleAgenda.disabled = true;
+
+    try {
+      const resposta = await fetch('api/google-calendar', {
+        method: 'DELETE',
+        headers: {Accept: 'application/json'}
+      });
+      const dados = await lerJson(resposta);
+
+      if (tratarSessaoExpirada(resposta)) {
+        return;
+      }
+      if (!resposta.ok) {
+        throw new Error(dados.erro || 'Não foi possível desconectar o Google Agenda.');
+      }
+
+      renderizarStatusGoogleAgenda({configurado: true, conectado: false});
+      window.ShowMeUI.toast(dados.mensagem, {variante: 'sucesso'});
+    } catch (erro) {
+      window.ShowMeUI.toast(erro.message, {variante: 'erro'});
+    } finally {
+      botaoDesconectarGoogleAgenda.disabled = false;
     }
   }
 
@@ -417,6 +497,8 @@
     salvarDadosPerfil();
   });
 
+  botaoDesconectarGoogleAgenda?.addEventListener('click', desconectarGoogleAgenda);
+
   formVisualizacao.addEventListener('submit', (evento) => {
     evento.preventDefault();
     if (editandoPerfil) {
@@ -424,25 +506,10 @@
     }
   });
 
-  document.querySelectorAll('[data-abrir-menu-midia]').forEach((controle) => {
+  document.querySelectorAll('[data-abrir-editor-midia]').forEach((controle) => {
     controle.addEventListener('click', (evento) => {
       evento.stopPropagation();
-      const tipo = controle.dataset.abrirMenuMidia;
-      const menu = document.querySelector(`[data-menu-midia="${tipo}"]`);
-      const vaiAbrir = menu?.hidden ?? false;
-      fecharMenusMidia();
-      if (menu && vaiAbrir) {
-        menu.hidden = false;
-        controle.setAttribute('aria-expanded', 'true');
-        menu.querySelector('button')?.focus();
-      }
-    });
-  });
-
-  document.querySelectorAll('[data-abrir-editor-midia], [data-editar-midia]').forEach((controle) => {
-    controle.addEventListener('click', (evento) => {
-      evento.stopPropagation();
-      abrirEditorMidia(controle.dataset.abrirEditorMidia || controle.dataset.editarMidia);
+      abrirEditorMidia(controle.dataset.abrirEditorMidia);
     });
   });
 
@@ -451,10 +518,6 @@
       evento.stopPropagation();
       abrirLightbox(controle.dataset.visualizarMidia);
     });
-  });
-
-  document.querySelectorAll('[data-menu-midia]').forEach((menu) => {
-    menu.addEventListener('click', (evento) => evento.stopPropagation());
   });
 
   document.querySelectorAll('[data-input-upload-midia]').forEach((input) => {
@@ -488,12 +551,10 @@
     }
   });
 
-  document.addEventListener('click', fecharMenusMidia);
   document.addEventListener('keydown', (evento) => {
     if (evento.key !== 'Escape') {
       return;
     }
-    fecharMenusMidia();
     if (!lightbox.hidden) {
       fecharVisualizacao();
     }
@@ -510,7 +571,6 @@
 
   Object.entries(elementosModalMidia).forEach(([tipo, modal]) => {
     modal?.addEventListener('hidden.bs.modal', () => {
-      esconderFeedback(feedbackDaMidia(tipo));
       if (alvoRecorte === tipo) {
         fecharRecorte();
       }
@@ -518,4 +578,5 @@
   });
 
   carregarPerfil();
+  carregarStatusGoogleAgenda();
 }());

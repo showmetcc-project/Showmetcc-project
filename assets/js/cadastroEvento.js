@@ -3,22 +3,15 @@
 
     const formulario = document.getElementById('formEvento');
     const inputFoto = document.getElementById('imagemEvento');
-    const mensagem = document.getElementById('mensagemEvento');
     const botaoEnviar = document.getElementById('botaoEnviarEvento');
     const tiposFotoAceitos = ['image/jpeg', 'image/png', 'image/webp'];
     const limiteFoto = 10 * 1024 * 1024;
 
-    if (!formulario || !inputFoto || !mensagem || !botaoEnviar) {
+    if (!formulario || !inputFoto || !botaoEnviar) {
         return;
     }
 
     formulario.dataset.apiConectada = 'true';
-
-    function mostrarMensagem(texto, tipo) {
-        mensagem.textContent = texto;
-        mensagem.className = `alert alert-${tipo}`;
-        mensagem.scrollIntoView({behavior: 'smooth', block: 'center'});
-    }
 
     async function lerRespostaJson(resposta) {
         try {
@@ -48,8 +41,6 @@
 
     formulario.addEventListener('submit', async function (evento) {
         evento.preventDefault();
-        mensagem.className = 'alert d-none';
-
         if (!formulario.checkValidity()) {
             formulario.reportValidity();
             return;
@@ -76,13 +67,18 @@
             }
 
             formulario.reset();
-            mostrarMensagem('Solicitação enviada, aguardando aprovação.', 'success');
+            window.ShowMeUI.toast(
+                'Evento enviado para moderação! Você será notificado quando for aprovado.',
+                {variante: 'sucesso', duracao: 5000}
+            );
 
             window.setTimeout(function () {
                 window.location.href = 'perfilUsuario.php';
-            }, 1500);
+            }, 5200);
         } catch (erro) {
-            mostrarMensagem(erro.message || 'Não foi possível enviar o evento.', 'danger');
+            window.ShowMeUI.toast(erro.message || 'Não foi possível enviar o evento.', {
+                variante: 'erro'
+            });
             botaoEnviar.disabled = false;
             botaoEnviar.textContent = 'Enviar para análise';
         }

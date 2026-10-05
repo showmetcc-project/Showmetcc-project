@@ -704,6 +704,121 @@
               opacity: .65;
               transform: none;
           }
+
+          .acoes-google-agenda {
+              display: flex;
+              align-items: center;
+              justify-content: space-between;
+              gap: 14px;
+              margin: 16px 0;
+              padding: 14px;
+              border: 1px solid rgba(255, 0, 110, .5);
+              border-radius: 12px;
+              background: rgba(255, 0, 110, .06);
+          }
+
+          .acoes-google-agenda[hidden] {
+              display: none;
+          }
+
+          .acoes-google-agenda p {
+              margin: 0;
+              color: #fff;
+              font-size: 13px;
+          }
+
+          .acoes-google-agenda button,
+          .acoes-google-agenda a {
+              display: inline-flex;
+              align-items: center;
+              justify-content: center;
+              gap: 8px;
+              min-height: 44px;
+              padding: 10px 15px;
+              border: 0;
+              border-radius: 10px;
+              background: var(--verde);
+              color: #000;
+              font-weight: 700;
+              text-decoration: none;
+          }
+
+          .acoes-google-agenda button[hidden],
+          .acoes-google-agenda a[hidden] {
+              display: none;
+          }
+
+          .modal-conflito-agenda {
+              width: min(92vw, 520px);
+              padding: 0;
+              border: 2px solid var(--rosa);
+              border-radius: 20px;
+              background: #141414;
+              color: #fff;
+          }
+
+          .modal-conflito-agenda::backdrop {
+              background: rgba(0, 0, 0, .78);
+          }
+
+          .modal-conflito-agenda form {
+              position: relative;
+              padding: 28px;
+          }
+
+          .modal-conflito-agenda h2 {
+              margin: 8px 0 10px;
+              color: var(--rosa);
+              font-size: 27px;
+          }
+
+          .modal-conflito-agenda p,
+          .modal-conflito-agenda li {
+              color: #ccc;
+          }
+
+          .modal-conflito-agenda ul {
+              max-height: 150px;
+              margin: 16px 0;
+              overflow-y: auto;
+          }
+
+          .icone-conflito-agenda {
+              color: var(--rosa);
+              font-size: 30px;
+          }
+
+          .fechar-conflito-agenda {
+              position: absolute;
+              top: 14px;
+              right: 14px;
+              min-width: 44px;
+              min-height: 44px;
+              border: 0;
+              background: transparent;
+              color: #fff;
+          }
+
+          .acoes-conflito-agenda {
+              display: flex;
+              justify-content: flex-end;
+              gap: 10px;
+          }
+
+          .acoes-conflito-agenda button {
+              min-height: 44px;
+              padding: 10px 14px;
+              border: 1px solid #333;
+              border-radius: 10px;
+              background: #232323;
+              color: #fff;
+              font-weight: 700;
+          }
+
+          .acoes-conflito-agenda button[value="finalizar"] {
+              border-color: var(--rosa);
+              background: var(--rosa);
+          }
           /* =========================================================
                DICAS
                ========================================================= */
@@ -879,6 +994,17 @@
           }
           
           @media (max-width: 767.98px) {
+              .acoes-google-agenda,
+              .acoes-conflito-agenda {
+                  align-items: stretch;
+                  flex-direction: column;
+              }
+
+              .acoes-google-agenda button,
+              .acoes-google-agenda a,
+              .acoes-conflito-agenda button {
+                  width: 100%;
+              }
               .header-planejamento-section {
                   padding: 20px;
               }

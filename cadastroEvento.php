@@ -54,8 +54,6 @@
                 Preencha as informações abaixo. Nossa equipe analisará e aprovará seu evento.
             </p>
 
-            <div id="mensagemEvento" class="alert d-none" role="alert"></div>
-
             <form
                 id="formEvento"
                 action="api/eventos/"

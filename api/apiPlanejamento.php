@@ -57,7 +57,7 @@ switch ($metodo) {
         $stmt = $conn->prepare(
             'SELECT r.id_rota, r.id_evento, r.meio_transporte, r.distancia_km,
                     r.tempo_estimado, e.nome_evento, e.local_evento,
-                    e.cidade_evento, e.uf, e.data_evento, e.imagem_evento,
+                    e.cidade_evento, e.uf, e.data_evento, e.horario_evento, e.imagem_evento,
                     e.gratuidade, e.status_evento
              FROM rota r
              INNER JOIN evento e ON e.id_evento = r.id_evento

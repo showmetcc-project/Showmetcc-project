@@ -12,6 +12,18 @@
             return;
         }
 
+        const deveSair = await window.ShowMeUI.confirmar({
+            titulo: 'Sair da conta',
+            texto: 'Tem certeza que deseja sair?',
+            confirmarTexto: 'Sair',
+            cancelarTexto: 'Cancelar',
+            variante: 'destrutiva'
+        });
+
+        if (!deveSair) {
+            return;
+        }
+
         this.disabled = true;
         this.setAttribute('aria-busy', 'true');
 
@@ -37,7 +49,9 @@
 
             throw new Error(dados.erro || 'Não foi possível encerrar a sessão.');
         } catch (erro) {
-            window.alert(erro.message || 'Não foi possível encerrar a sessão.');
+            window.ShowMeUI.toast(erro.message || 'Não foi possível encerrar a sessão.', {
+                variante: 'erro'
+            });
             this.disabled = false;
             this.removeAttribute('aria-busy');
         }

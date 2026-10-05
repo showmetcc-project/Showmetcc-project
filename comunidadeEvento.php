@@ -17,25 +17,32 @@ $idUsuarioSessao = (int) ($_SESSION['id_user'] ?? 0);
     <link href="assets/css/comunidade.css" rel="stylesheet">
     <link href="assets/css/main.css" rel="stylesheet">
 </head>
-<body class="com-cabecalho-padrao cabecalho-tipo-c pagina-comunidade-evento" data-user-id="<?= $idUsuarioSessao ?>">
+<body class="cabecalho-tipo-d pagina-comunidade-evento" data-user-id="<?= $idUsuarioSessao ?>">
 <?php
-$tipoCabecalho = 'C';
+$tipoCabecalho = 'D';
 $configuracaoCabecalho = [
-    'titulo_primario' => 'Comunidade',
-    'titulo_secundario' => 'do evento',
-    'icone' => 'bi-people',
     'fallback' => 'comunidade.php',
 ];
 require __DIR__ . '/cabecalho.php';
 ?>
-<main class="container comunidade-evento-main">
-    <div id="estadoComunidade" class="comunidade-estado" role="status">Carregando comunidade...</div>
+<main class="comunidade-evento-main">
+    <div id="estadoComunidade" class="container comunidade-estado" role="status">Carregando comunidade...</div>
     <div id="conteudoComunidade" hidden>
-        <section class="comunidade-evento-hero">
+        <div class="comunidade-evento-banner">
             <img id="imagemComunidadeEvento" src="assets/img/bannerEventoPadrao.png" alt="">
-            <div><p>Comunidade do evento</p><h2 id="nomeComunidadeEvento"></h2><span id="dataComunidadeEvento"></span></div>
+        </div>
+        <section class="container comunidade-evento-identidade">
+            <p>Comunidade do evento</p>
+            <h1 id="nomeComunidadeEvento"></h1>
+            <div class="comunidade-evento-infos" aria-label="Informações do evento">
+                <span id="dataComunidadeEvento"><i class="bi bi-calendar3" aria-hidden="true"></i><span></span></span>
+                <span id="localComunidadeEvento" hidden><i class="bi bi-geo-alt-fill" aria-hidden="true"></i><span></span></span>
+                <span id="categoriaComunidadeEvento" hidden><i class="bi bi-tags-fill" aria-hidden="true"></i><span></span></span>
+                <span id="precoComunidadeEvento" hidden><i class="bi bi-currency-dollar" aria-hidden="true"></i><span></span></span>
+            </div>
         </section>
 
+        <div class="container comunidade-evento-conteudo">
         <div class="comunidade-abas" role="tablist">
             <button type="button" class="ativa" data-aba-comunidade="publicacoes" role="tab" aria-selected="true"><i class="bi bi-chat-dots"></i> Publicações</button>
             <button type="button" data-aba-comunidade="galeria" role="tab" aria-selected="false"><i class="bi bi-images"></i> Galeria</button>
@@ -59,11 +66,12 @@ require __DIR__ . '/cabecalho.php';
 
         <section id="abaGaleria" class="comunidade-painel" hidden>
             <div class="comunidade-galeria-topo">
-                <div><h2>Galeria da comunidade</h2><p>Veja e compartilhe imagens do local e do evento.</p></div>
+                <div><h2>Galeria da Galera</h2><p>Veja e compartilhe imagens do local e do evento.</p></div>
                 <button type="button" class="btn-showme btn-adicionar-midia" data-bs-toggle="modal" data-bs-target="#modalMidia"><i class="bi bi-image"></i> Adicionar mídia</button>
             </div>
             <div id="galeriaComunidade" class="comunidade-galeria" aria-live="polite"></div>
         </section>
+        </div>
     </div>
 </main>
 
@@ -75,7 +83,6 @@ require __DIR__ . '/cabecalho.php';
       <select id="categoriaPublicacao" name="categoria" required><option value="">Selecione</option><option value="Duvida">Dúvida</option><option value="Dica">Dica</option><option value="Transporte">Transporte</option><option value="Hospedagem">Hospedagem</option><option value="Companhia">Companhia</option><option value="Relato">Relato</option></select>
       <label for="textoPublicacao">O que você quer compartilhar?</label>
       <textarea id="textoPublicacao" name="texto" rows="5" maxlength="5000" required></textarea>
-      <p id="mensagemPublicacao" class="comunidade-feedback" aria-live="polite"></p>
     </div><div class="modal-footer"><button id="btnPublicar" class="btn-showme" type="submit" disabled>Publicar</button></div></form>
   </div></div>
 </div>
@@ -89,7 +96,6 @@ require __DIR__ . '/cabecalho.php';
       <p id="nomeArquivoMidia" class="arquivo-selecionado"></p>
       <label for="legendaMidia">Legenda (opcional)</label><input id="legendaMidia" name="legenda" maxlength="255">
       <label class="comunidade-checkbox"><input name="permitir_download" type="checkbox" value="1"> Permitir que outras pessoas baixem esta imagem</label>
-      <p id="mensagemMidia" class="comunidade-feedback" aria-live="polite"></p>
     </div><div class="modal-footer"><button class="btn-showme" type="submit">Publicar foto</button></div></form>
   </div></div>
 </div>

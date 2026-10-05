@@ -111,7 +111,15 @@ function criarCardFavorito(favorito) {
     excluir.setAttribute('aria-label', `Remover ${favorito.nome_evento || 'evento'} dos favoritos`);
     excluir.innerHTML = '<i class="bi bi-trash3"></i>';
     excluir.addEventListener('click', async () => {
-        if (!window.confirm('Deseja remover este evento dos favoritos?')) {
+        const deveRemover = await window.ShowMeUI.confirmar({
+            titulo: 'Remover favorito',
+            texto: 'Deseja remover este evento dos favoritos?',
+            confirmarTexto: 'Remover',
+            cancelarTexto: 'Cancelar',
+            variante: 'destrutiva'
+        });
+
+        if (!deveRemover) {
             return;
         }
 
@@ -139,8 +147,9 @@ function criarCardFavorito(favorito) {
             if (!listaFavoritos.querySelector('.card-evento')) {
                 mostrarFavoritosVazios();
             }
+            window.ShowMeUI.toast('Evento removido dos favoritos.', {variante: 'sucesso'});
         } catch (erro) {
-            window.alert(erro.message);
+            window.ShowMeUI.toast(erro.message, {variante: 'erro'});
         } finally {
             excluir.disabled = false;
         }
@@ -209,6 +218,19 @@ function formatarDataEvento(data) {
     return dataLocal.toLocaleDateString('pt-BR');
 }
 
+function chaveHojeLocal() {
+    const hoje = new Date();
+    const ano = hoje.getFullYear();
+    const mes = String(hoje.getMonth() + 1).padStart(2, '0');
+    const dia = String(hoje.getDate()).padStart(2, '0');
+    return `${ano}-${mes}-${dia}`;
+}
+
+function planejamentoEstaAtivo(planejamento) {
+    const dataEvento = String(planejamento.data_evento || '').slice(0, 10);
+    return /^\d{4}-\d{2}-\d{2}$/.test(dataEvento) && dataEvento >= chaveHojeLocal();
+}
+
 function criarInformacao(icone, texto) {
     const linha = document.createElement('p');
     const elementoIcone = document.createElement('i');
@@ -222,7 +244,15 @@ function textoDeslocamento(planejamento) {
 }
 
 async function excluirPlanejamento(planejamento) {
-    if (!window.confirm(`Deseja remover o planejamento de ${planejamento.nome_evento || 'este evento'}?`)) {
+    const deveRemover = await window.ShowMeUI.confirmar({
+        titulo: 'Remover planejamento',
+        texto: 'Tem certeza que deseja remover esse planejamento? Essa ação não pode ser desfeita.',
+        confirmarTexto: 'Remover',
+        cancelarTexto: 'Cancelar',
+        variante: 'destrutiva'
+    });
+
+    if (!deveRemover) {
         return false;
     }
 
@@ -241,14 +271,16 @@ async function excluirPlanejamento(planejamento) {
     }
 
     await carregarPlanejados();
+    window.ShowMeUI.toast('Planejamento removido.', {variante: 'sucesso'});
     return true;
 }
 
 function criarCardPlanejado(planejamento) {
     const coluna = document.createElement('div');
     const card = document.createElement('div');
+    const eventoEncerrado = !planejamentoEstaAtivo(planejamento);
     coluna.className = 'col-12';
-    card.className = 'card-evento';
+    card.className = `card-evento${eventoEncerrado ? ' evento-encerrado' : ''}`;
 
     const imagem = document.createElement('img');
     imagem.src = planejamento.imagem_evento || 'assets/img/bannerEventoPadrao.png';
@@ -291,7 +323,9 @@ function criarCardPlanejado(planejamento) {
         const meioTransporte = novoMeio.trim();
 
         if (!meioTransporte || meioTransporte.length > 30) {
-            alert('Informe um meio de transporte com até 30 caracteres.');
+            window.ShowMeUI.toast('Informe um meio de transporte com até 30 caracteres.', {
+                variante: 'erro'
+            });
             return;
         }
 
@@ -309,8 +343,9 @@ function criarCardPlanejado(planejamento) {
 
             planejamento.meio_transporte = meioTransporte;
             deslocamento.lastChild.textContent = textoDeslocamento(planejamento);
+            window.ShowMeUI.toast('Planejamento atualizado.', {variante: 'sucesso'});
         } catch (erro) {
-            alert(erro.message);
+            window.ShowMeUI.toast(erro.message, {variante: 'erro'});
         }
     });
 
@@ -335,13 +370,21 @@ function criarCardPlanejado(planejamento) {
         try {
             await excluirPlanejamento(planejamento);
         } catch (erro) {
-            alert(erro.message);
+            window.ShowMeUI.toast(erro.message, {variante: 'erro'});
         } finally {
             excluir.disabled = false;
         }
     });
 
     acoes.append(tipo, excluir);
+
+    if (eventoEncerrado) {
+        const encerrado = document.createElement('span');
+        encerrado.className = 'badge-evento-encerrado';
+        encerrado.textContent = 'Evento encerrado';
+        card.append(encerrado);
+    }
+
     card.append(imagem, info, acoes);
     coluna.append(card);
     return coluna;
@@ -362,7 +405,7 @@ async function carregarPlanejados() {
 
         planejamentosCarregados = Array.isArray(dados.planejamentos) ? dados.planejamentos : [];
         listaPlanejados.replaceChildren();
-        contadorPlanejados.textContent = planejamentosCarregados.length;
+        contadorPlanejados.textContent = planejamentosCarregados.filter(planejamentoEstaAtivo).length;
 
         if (!planejamentosCarregados.length) {
             const vazio = document.createElement('p');
@@ -483,7 +526,7 @@ function criarDetalhePlanejamento(planejamento) {
         try {
             await excluirPlanejamento(planejamento);
         } catch (erro) {
-            window.alert(erro.message);
+            window.ShowMeUI.toast(erro.message, {variante: 'erro'});
         } finally {
             excluir.disabled = false;
         }

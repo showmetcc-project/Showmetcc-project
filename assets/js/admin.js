@@ -3,10 +3,8 @@
 
     const lista = document.getElementById('listaSolicitacoes');
     const campoBusca = document.getElementById('buscaSolicitacao');
-    const mensagem = document.getElementById('mensagemAdmin');
     const elementoModalEdicao = document.getElementById('modalEditarSolicitacao');
     const formularioEdicao = document.getElementById('formEditarSolicitacao');
-    const mensagemEdicao = document.getElementById('mensagemEdicaoSolicitacao');
     const modalEdicao = new window.bootstrap.Modal(elementoModalEdicao);
     const imagemPadrao = 'assets/img/bannerEventoPadrao.png';
     let solicitacoes = [];
@@ -84,8 +82,9 @@
     }
 
     function mostrarMensagem(texto, tipo = 'danger') {
-        mensagem.textContent = texto;
-        mensagem.className = `alert alert-${tipo}`;
+        window.ShowMeUI.toast(texto, {
+            variante: tipo === 'success' ? 'sucesso' : 'erro'
+        });
     }
 
     function criarCampo(rotulo, valor) {
@@ -150,8 +149,17 @@
             return;
         }
 
-        const verbo = status === 'aprovado' ? 'aprovar' : 'recusar';
-        if (!window.confirm(`Deseja ${verbo} a solicitação de “${solicitacao.nome_evento}”?`)) {
+        const deveModerar = await window.ShowMeUI.confirmar({
+            titulo: status === 'aprovado' ? 'Aprovar evento' : 'Reprovar evento',
+            texto: status === 'aprovado'
+                ? `Deseja aprovar “${solicitacao.nome_evento}” e publicá-lo como evento?`
+                : `Deseja reprovar “${solicitacao.nome_evento}”? A solicitação deixará de ficar pendente.`,
+            confirmarTexto: status === 'aprovado' ? 'Aprovar' : 'Reprovar',
+            cancelarTexto: 'Cancelar',
+            variante: status === 'aprovado' ? 'importante' : 'destrutiva'
+        });
+
+        if (!deveModerar) {
             return;
         }
 
@@ -185,9 +193,11 @@
             solicitacao.id_evento = dados.solicitacao.id_evento;
             atualizarContadores();
             renderizarSolicitacoes();
-            mostrarMensagem(
-                `Solicitação ${status === 'aprovado' ? 'aprovada' : 'recusada'} com sucesso.`,
-                'success'
+            window.ShowMeUI.toast(
+                status === 'aprovado'
+                    ? 'Evento aprovado com sucesso.'
+                    : 'Evento reprovado com sucesso.',
+                {variante: 'sucesso'}
             );
         } catch (erro) {
             mostrarMensagem(erro.message);
@@ -217,8 +227,6 @@
         document.getElementById('descricaoEventoEdicao').value = solicitacao.descricao_evento || '';
         document.getElementById('descricaoArtistaEdicao').value = solicitacao.descricao_artista || '';
         document.getElementById('nomeArtistaSolicitadoEdicao').value = solicitacao.nome_artista_solicitado || '';
-        mensagemEdicao.className = 'alert d-none';
-        mensagemEdicao.replaceChildren();
         modalEdicao.show();
     }
 
@@ -274,10 +282,12 @@
 
             modalEdicao.hide();
             renderizarSolicitacoes();
-            mostrarMensagem('Correções salvas. A solicitação já pode ser aprovada.', 'success');
+            window.ShowMeUI.toast(
+                'Alterações salvas. A solicitação já pode ser aprovada.',
+                {variante: 'sucesso'}
+            );
         } catch (erro) {
-            mensagemEdicao.textContent = erro.message;
-            mensagemEdicao.className = 'alert alert-danger';
+            window.ShowMeUI.toast(erro.message, {variante: 'erro'});
         } finally {
             botaoSalvar.disabled = false;
         }

@@ -63,8 +63,6 @@ function renderizarModalPersonalizacao(
                             </section>
                         <?php endforeach; ?>
                     </div>
-
-                    <p class="perfil-feedback feedback-personalizacao" data-feedback-midia="<?= htmlspecialchars($tipo, ENT_QUOTES, 'UTF-8') ?>" role="status" aria-live="polite" hidden></p>
                 </div>
             </div>
         </div>
@@ -119,30 +117,20 @@ function renderizarModalPersonalizacao(
 
     
     <div class="banner-wrap">
-        <button type="button" class="banner" id="perfilBanner" data-abrir-menu-midia="foto_banner" aria-label="Abrir opções do banner" aria-haspopup="menu" aria-expanded="false"></button>
+        <button type="button" class="banner" id="perfilBanner" data-visualizar-midia="foto_banner" aria-label="Ampliar banner atual"></button>
 
-        <button type="button" class="btn-alterar-banner" data-abrir-editor-midia="foto_banner">
-            <i class="bi bi-camera" aria-hidden="true"></i>
-            Alterar banner
+        <button type="button" class="btn-alterar-banner" data-abrir-editor-midia="foto_banner" aria-label="Alterar banner" title="Alterar banner">
+            <i class="bi bi-camera-fill" aria-hidden="true"></i>
         </button>
 
-        <div class="menu-contextual-midia menu-contextual-banner" data-menu-midia="foto_banner" role="menu" hidden>
-            <button type="button" data-visualizar-midia="foto_banner" role="menuitem"><i class="bi bi-eye" aria-hidden="true"></i>Ver imagem</button>
-            <button type="button" data-editar-midia="foto_banner" role="menuitem"><i class="bi bi-pencil" aria-hidden="true"></i>Editar</button>
-        </div>
-
         <div class="avatar-area">
-            <button type="button" class="avatar" id="perfilAvatar" data-abrir-menu-midia="foto_perfil" aria-label="Abrir opções da foto de perfil" aria-haspopup="menu" aria-expanded="false">
+            <button type="button" class="avatar" id="perfilAvatar" data-visualizar-midia="foto_perfil" aria-label="Ampliar foto de perfil atual">
                 <img id="perfilAvatarImagem" alt="Foto de perfil" hidden>
                 <i class="bi bi-person" id="perfilAvatarPlaceholder" aria-hidden="true"></i>
             </button>
             <button type="button" class="btn-camera-avatar" data-abrir-editor-midia="foto_perfil" aria-label="Alterar foto de perfil">
                 <i class="bi bi-camera-fill" aria-hidden="true"></i>
             </button>
-            <div class="menu-contextual-midia menu-contextual-avatar" data-menu-midia="foto_perfil" role="menu" hidden>
-                <button type="button" data-visualizar-midia="foto_perfil" role="menuitem"><i class="bi bi-eye" aria-hidden="true"></i>Ver imagem</button>
-                <button type="button" data-editar-midia="foto_perfil" role="menuitem"><i class="bi bi-pencil" aria-hidden="true"></i>Editar</button>
-            </div>
         </div>
     </div>
 
@@ -193,6 +181,23 @@ function renderizarModalPersonalizacao(
         </form>
 
         <!-- ESTATÍSTICAS -->
+        <section class="integracao-agenda" aria-labelledby="tituloGoogleAgenda">
+            <div class="integracao-agenda-icone" aria-hidden="true">
+                <i class="bi bi-calendar2-check"></i>
+            </div>
+            <div class="integracao-agenda-conteudo">
+                <h2 id="tituloGoogleAgenda">Google Agenda</h2>
+                <p id="googleAgendaStatus">Verificando conexão...</p>
+            </div>
+            <div class="integracao-agenda-acoes">
+                <a class="btn-conectar-agenda" id="btnConectarGoogleAgenda" href="googleCalendarConectar.php?retorno=perfilUsuario.php" hidden>
+                    <i class="bi bi-google" aria-hidden="true"></i>
+                    Conectar Google Agenda
+                </a>
+                <button class="btn-desconectar-agenda" id="btnDesconectarGoogleAgenda" type="button" hidden>Desconectar</button>
+            </div>
+        </section>
+
         <section class="estatisticas">
 
             <h2>Estatísticas</h2>
@@ -201,25 +206,25 @@ function renderizarModalPersonalizacao(
 
                 <div class="col-12 col-md-4">
                     <div class="stat-card h-100">
-                        <i class="bi bi-heart-fill stat-icon"></i>
-                        <h3>12</h3>
-                        <p>Eventos favoritados</p>
+                        <i class="bi bi-plus-lg stat-icon"></i>
+                        <h3 data-estatistica="eventos_cadastrados" aria-live="polite">&mdash;</h3>
+                        <p>Eventos cadastrados</p>
                     </div>
                 </div>
 
                 <div class="col-12 col-md-4">
                     <div class="stat-card h-100">
                         <i class="bi bi-map-fill stat-icon"></i>
-                        <h3>5</h3>
+                        <h3 data-estatistica="viagens_planejadas" aria-live="polite">&mdash;</h3>
                         <p>Viagens planejadas</p>
                     </div>
                 </div>
 
                 <div class="col-12 col-md-4">
                     <div class="stat-card h-100">
-                        <i class="bi bi-calendar-check-fill stat-icon"></i>
-                        <h3>8</h3>
-                        <p>Eventos cadastrados</p>
+                        <i class="bi bi-chat-square-text-fill stat-icon"></i>
+                        <h3 data-estatistica="publicacoes_comunidade" aria-live="polite">&mdash;</h3>
+                        <p>Publicações na Comunidade</p>
                     </div>
                 </div>
 

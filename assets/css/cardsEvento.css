@@ -10,7 +10,7 @@
 
 .card-evento:hover {
   border-color: #ff006e;
-  transform: translateY(-6px) scale(1.02);
+  transform: translateY(-4px);
   box-shadow: 0 10px 30px rgba(255, 0, 110, 0.18);
 }
 
@@ -104,7 +104,7 @@
   width: 42px;
   height: 42px;
   padding: 0;
-  border: 2px solid #ffffff;
+  border: 0;
   border-radius: 50%;
   background: rgba(5, 5, 5, 0.82);
   background: #ff006e;
@@ -116,14 +116,17 @@
 
 .btn-toggle-favorito:hover,
 .btn-toggle-favorito:focus-visible {
-  border-color: #dd0060;
   background: #dd0060;
   color: #ffffff;
   transform: scale(1.06);
 }
 
+.btn-toggle-favorito:focus-visible {
+  outline: 2px solid #ff006e;
+  outline-offset: 2px;
+}
+
 .btn-toggle-favorito[aria-pressed="true"] {
-  border-color: #ff006e;
   background: #141414;
   color: #ff006e;
 }

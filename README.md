@@ -14,7 +14,7 @@ O ShowMe ainda não possui uma publicação compatível com PHP e MySQL. O antig
 Para executar localmente:
 
 1. Importe `assets/banco/showme.sql` no MySQL.
-2. Confira a conexão em `config/conexao.php` e crie os arquivos locais `config/email.php` e `config/google.php` a partir dos respectivos arquivos `.example.php`.
+2. Confira a conexão em `config/conexao.php` e crie os arquivos locais `config/email.php`, `config/google.php` e `config/googleCalendar.php` a partir dos respectivos arquivos `.example.php`.
 3. Habilite a extensão GD no `php.ini` (`extension=gd`) e reinicie o Apache; ela é usada para redimensionar e comprimir fotos de perfil e banners.
 4. Execute `composer install`.
 5. No VS Code, rode a tarefa **Iniciar servidor PHP do ShowMe** ou use `php -S 127.0.0.1:8000`.
@@ -47,6 +47,17 @@ definição do fluxo web; já o segredo não deve ser enviado ao navegador nem c
 ![License](https://img.shields.io/badge/license-MIT-FF3CAC?style=for-the-badge)
 
 </div>
+
+---
+
+## Configuração do Google Agenda
+
+1. No Google Cloud, ative a **Google Calendar API** e configure a tela de consentimento em modo de teste, incluindo os e-mails de teste.
+2. Crie uma credencial OAuth 2.0 do tipo **Aplicativo da Web**. Uma chave de conta de serviço não autoriza a agenda pessoal de cada usuário.
+3. Cadastre `http://localhost/Showmetcc-project/googleCalendarCallback.php` como URI de redirecionamento autorizada (ajuste o host/pasta se o projeto estiver em outro endereço).
+4. Copie `config/googleCalendar.example.php` para `config/googleCalendar.php` e preencha `client_id`, `client_secret` e `redirect_uri`. O arquivo real é ignorado pelo Git.
+
+A integração solicita os escopos `calendar.readonly` e `calendar.events` com acesso offline. Ela consulta conflitos apenas ao finalizar um planejamento e exporta sob demanda; não existe sincronização contínua.
 
 ---
 

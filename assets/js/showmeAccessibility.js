@@ -17,13 +17,236 @@
       return;
     }
 
+    /*
+     * A biblioteca original soma valores fixos em pixels a praticamente todos os
+     * elementos da página. Um único clique podia acrescentar 10px a textos, botões,
+     * ícones e componentes de tamanho fixo, desmontando o layout. Estes adaptadores
+     * mantêm a API e a persistência da biblioteca, mas usam passos proporcionais,
+     * limites seguros e somente elementos realmente tipográficos.
+     */
+    var seletorTipografico = [
+      'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p', 'a', 'button', 'label',
+      'input', 'textarea', 'select', 'option', 'li', 'dt', 'dd', 'blockquote',
+      'figcaption', 'caption', 'th', 'td', 'small', 'strong', 'em'
+    ].join(',');
+    var limiteAjusteMinimo = -2;
+    var limiteAjusteMaximo = 3;
+
+    function limitarNivel(valor) {
+      return Math.max(limiteAjusteMinimo, Math.min(limiteAjusteMaximo, valor));
+    }
+
+    function elementoPodeSerAjustado(elemento) {
+      if (!(elemento instanceof HTMLElement)) {
+        return false;
+      }
+
+      var campoComTexto = elemento.matches('input, textarea, select, option');
+      var possuiTexto = Boolean((elemento.textContent || '').trim());
+
+      return (campoComTexto || possuiTexto)
+        && !elemento.closest('._access-menu, [vw], #vlibras-access-wrapper, script, style, svg')
+        && !elemento.matches('.bi, [class^="bi-"], [class*=" bi-"]');
+    }
+
+    function elementosTipograficos() {
+      return Array.prototype.filter.call(
+        document.querySelectorAll(seletorTipografico),
+        elementoPodeSerAjustado
+      );
+    }
+
+    function guardarValorOriginal(elemento, propriedade, chaveBase, chaveInline, normalizador) {
+      if (elemento.dataset[chaveBase] !== undefined) {
+        return;
+      }
+
+      var calculado = window.getComputedStyle(elemento)[propriedade];
+      elemento.dataset[chaveBase] = String(normalizador(calculado, elemento));
+      elemento.dataset[chaveInline] = elemento.style[propriedade] || '';
+    }
+
+    function restaurarValorOriginal(elemento, propriedade, chaveBase, chaveInline) {
+      if (elemento.dataset[chaveBase] === undefined) {
+        return;
+      }
+
+      elemento.style[propriedade] = elemento.dataset[chaveInline] || '';
+      delete elemento.dataset[chaveBase];
+      delete elemento.dataset[chaveInline];
+    }
+
+    function aplicarTamanhoTexto(nivel) {
+      var elementos = elementosTipograficos();
+
+      if (nivel === 0) {
+        document.querySelectorAll('[data-showme-a11y-font-base]').forEach(function (elemento) {
+          restaurarValorOriginal(elemento, 'fontSize', 'showmeA11yFontBase', 'showmeA11yFontInline');
+        });
+        return;
+      }
+
+      /* Primeiro captura todos os tamanhos, depois altera. Assim um link dentro de
+         um parágrafo não recebe o fator duas vezes por herança. */
+      elementos.forEach(function (elemento) {
+        guardarValorOriginal(
+          elemento,
+          'fontSize',
+          'showmeA11yFontBase',
+          'showmeA11yFontInline',
+          function (valor) { return parseFloat(valor) || 16; }
+        );
+      });
+
+      var fator = 1 + (nivel * 0.075);
+      elementos.forEach(function (elemento) {
+        var base = parseFloat(elemento.dataset.showmeA11yFontBase) || 16;
+        elemento.style.fontSize = Math.max(11, base * fator).toFixed(2) + 'px';
+      });
+    }
+
+    function aplicarEspacamento(nivel) {
+      var elementos = elementosTipograficos();
+
+      if (nivel === 0) {
+        document.querySelectorAll('[data-showme-a11y-letter-base]').forEach(function (elemento) {
+          restaurarValorOriginal(elemento, 'letterSpacing', 'showmeA11yLetterBase', 'showmeA11yLetterInline');
+          restaurarValorOriginal(elemento, 'wordSpacing', 'showmeA11yWordBase', 'showmeA11yWordInline');
+        });
+        return;
+      }
+
+      elementos.forEach(function (elemento) {
+        guardarValorOriginal(
+          elemento,
+          'letterSpacing',
+          'showmeA11yLetterBase',
+          'showmeA11yLetterInline',
+          function (valor) { return valor === 'normal' ? 0 : (parseFloat(valor) || 0); }
+        );
+        guardarValorOriginal(
+          elemento,
+          'wordSpacing',
+          'showmeA11yWordBase',
+          'showmeA11yWordInline',
+          function (valor) { return valor === 'normal' ? 0 : (parseFloat(valor) || 0); }
+        );
+      });
+
+      elementos.forEach(function (elemento) {
+        var tamanhoFonte = parseFloat(window.getComputedStyle(elemento).fontSize) || 16;
+        var letras = parseFloat(elemento.dataset.showmeA11yLetterBase) || 0;
+        var palavras = parseFloat(elemento.dataset.showmeA11yWordBase) || 0;
+        elemento.style.letterSpacing = (letras + (tamanhoFonte * 0.025 * nivel)).toFixed(2) + 'px';
+        elemento.style.wordSpacing = (palavras + (tamanhoFonte * 0.05 * nivel)).toFixed(2) + 'px';
+      });
+    }
+
+    function aplicarAlturaLinha(nivel) {
+      var elementos = elementosTipograficos();
+
+      if (nivel === 0) {
+        document.querySelectorAll('[data-showme-a11y-line-base]').forEach(function (elemento) {
+          restaurarValorOriginal(elemento, 'lineHeight', 'showmeA11yLineBase', 'showmeA11yLineInline');
+        });
+        return;
+      }
+
+      elementos.forEach(function (elemento) {
+        guardarValorOriginal(
+          elemento,
+          'lineHeight',
+          'showmeA11yLineBase',
+          'showmeA11yLineInline',
+          function (valor, alvo) {
+            var fonte = parseFloat(window.getComputedStyle(alvo).fontSize) || 16;
+            return valor === 'normal' ? 1.2 : ((parseFloat(valor) || fonte * 1.2) / fonte);
+          }
+        );
+      });
+
+      elementos.forEach(function (elemento) {
+        var base = parseFloat(elemento.dataset.showmeA11yLineBase) || 1.2;
+        elemento.style.lineHeight = Math.max(1, base + (nivel * 0.1)).toFixed(2);
+      });
+    }
+
+    function instalarAjustesTipograficos() {
+      var prototipo = window.Accessibility.prototype;
+
+      if (prototipo.showmeAjustesTipograficos) {
+        return;
+      }
+
+      prototipo.alterTextSize = function (aumentar) {
+        this._sessionState.textSize = limitarNivel(
+          Number(this._sessionState.textSize || 0) + (aumentar ? 1 : -1)
+        );
+        aplicarTamanhoTexto(this._sessionState.textSize);
+        this.onChange(true);
+      };
+      prototipo.alterTextSpace = function (aumentar) {
+        this._sessionState.textSpace = limitarNivel(
+          Number(this._sessionState.textSpace || 0) + (aumentar ? 1 : -1)
+        );
+        aplicarEspacamento(this._sessionState.textSpace);
+        this.onChange(true);
+      };
+      prototipo.alterLineHeight = function (aumentar) {
+        this._sessionState.lineHeight = limitarNivel(
+          Number(this._sessionState.lineHeight || 0) + (aumentar ? 1 : -1)
+        );
+        aplicarAlturaLinha(this._sessionState.lineHeight);
+        this.onChange(true);
+      };
+      prototipo.resetTextSize = function () {
+        this._sessionState.textSize = 0;
+        aplicarTamanhoTexto(0);
+        this.onChange(true);
+      };
+      prototipo.resetTextSpace = function () {
+        this._sessionState.textSpace = 0;
+        aplicarEspacamento(0);
+        this.onChange(true);
+      };
+      prototipo.resetLineHeight = function () {
+        this._sessionState.lineHeight = 0;
+        aplicarAlturaLinha(0);
+        this.onChange(true);
+      };
+      prototipo.showmeAjustesTipograficos = true;
+    }
+
+    instalarAjustesTipograficos();
+
     // O VLibras atual usa Shadow DOM; mantenha suporte ao markup anterior.
-    var vlibrasHost = document.getElementById('vlibras-access-wrapper');
-    var vlibrasButton = vlibrasHost && vlibrasHost.shadowRoot
-      ? vlibrasHost.shadowRoot.querySelector('#vlibras-button')
-      : document.querySelector('[vw-access-button]');
+    // Desloque somente o contêiner de 40x40; alterar o botão interno o deforma.
+    var vlibrasHost = null;
+    var vlibrasButton = null;
     var header = document.querySelector('#header');
     var root = document.documentElement;
+
+    function prepararPosicaoVLibras() {
+      vlibrasHost = document.getElementById('vlibras-access-wrapper');
+
+      if (vlibrasHost && vlibrasHost.shadowRoot) {
+        vlibrasButton = vlibrasHost.shadowRoot.querySelector('#vlibras-button');
+
+        if (vlibrasButton && !vlibrasHost.shadowRoot.getElementById('showme-vlibras-offset')) {
+          var estiloPosicao = document.createElement('style');
+          estiloPosicao.id = 'showme-vlibras-offset';
+          estiloPosicao.textContent = '#vlibras-access { top: calc(64vh - 20px) !important; }';
+          vlibrasHost.shadowRoot.appendChild(estiloPosicao);
+        }
+
+        return Boolean(vlibrasButton);
+      }
+
+      vlibrasButton = document.querySelector('[vw-access-button]');
+      return Boolean(vlibrasButton);
+    }
+
+    prepararPosicaoVLibras();
 
     function positionWidgets() {
       if (vlibrasButton) {
@@ -33,8 +256,9 @@
           var viewportWidth = document.documentElement.clientWidth;
           var rightOffset = Math.max(0, viewportWidth - rect.right);
           root.style.setProperty('--showme-access-right', rightOffset + 'px');
-          // O centro do VLibras e 50vh; nao use o top intermediario da animacao de resize.
-          root.style.setProperty('--showme-access-top', 'calc(50vh + ' + (rect.height / 2 + 4) + 'px)');
+          /* Os dois widgets compartilham uma âncora fixa abaixo do centro da viewport.
+             Não use o top transitório do VLibras durante as animações. */
+          root.style.setProperty('--showme-access-top', 'calc(64vh + ' + (rect.height - 12) + 'px)');
           root.style.setProperty('--showme-access-panel-right', (viewportWidth - rect.left + 10) + 'px');
         }
       }
@@ -52,6 +276,18 @@
       if (vlibrasButton) observer.observe(vlibrasButton);
       if (header) observer.observe(header);
     }
+
+    var tentativasVLibras = 0;
+    var aguardarVLibras = window.setInterval(function () {
+      tentativasVLibras += 1;
+      if (prepararPosicaoVLibras()) {
+        positionWidgets();
+        if (typeof observer !== 'undefined') observer.observe(vlibrasButton);
+        window.clearInterval(aguardarVLibras);
+      } else if (tentativasVLibras >= 30) {
+        window.clearInterval(aguardarVLibras);
+      }
+    }, 100);
 
     function personalizarMenu(instancia) {
       var menu = document.querySelector('._access-menu');
@@ -357,9 +593,63 @@
       textToSpeechLang: 'pt-BR',
       speechToTextLang: 'pt-BR',
       session: { persistent: true },
-      textPixelMode: true,
-      textSizeFactor: 10
+      textPixelMode: false
     });
+
+    function sincronizarFiltrosEmDialogos() {
+      var estado = window.showMeAccessibility.sessionState || {};
+      var filtro = estado.invertColors
+        ? 'invert(1)'
+        : (estado.grayHues ? 'grayscale(1)' : '');
+
+      document.querySelectorAll('dialog').forEach(function (dialogo) {
+        if (filtro) {
+          if (dialogo.dataset.showmeFiltroOriginal === undefined) {
+            dialogo.dataset.showmeFiltroOriginal = dialogo.style.filter || '';
+          }
+          dialogo.style.filter = filtro;
+          return;
+        }
+
+        if (dialogo.dataset.showmeFiltroOriginal !== undefined) {
+          dialogo.style.filter = dialogo.dataset.showmeFiltroOriginal;
+          delete dialogo.dataset.showmeFiltroOriginal;
+        }
+      });
+    }
+
+    /* Elementos inseridos via fetch/modal depois do carregamento também recebem os
+       ajustes ativos, sem observar mudanças de style e criar um ciclo de mutações. */
+    var atualizacaoTipograficaPendente = false;
+    var observadorConteudo = new MutationObserver(function (alteracoes) {
+      var adicionouConteudo = alteracoes.some(function (alteracao) {
+        return alteracao.addedNodes.length > 0;
+      });
+
+      if (!adicionouConteudo || atualizacaoTipograficaPendente) {
+        return;
+      }
+
+      atualizacaoTipograficaPendente = true;
+      window.requestAnimationFrame(function () {
+        var estado = window.showMeAccessibility.sessionState || {};
+        if (estado.textSize) aplicarTamanhoTexto(Number(estado.textSize));
+        if (estado.textSpace) aplicarEspacamento(Number(estado.textSpace));
+        if (estado.lineHeight) aplicarAlturaLinha(Number(estado.lineHeight));
+        sincronizarFiltrosEmDialogos();
+        atualizacaoTipograficaPendente = false;
+      });
+    });
+    observadorConteudo.observe(document.body, { childList: true, subtree: true });
+
+    /* <dialog> entra na top layer do navegador e pode escapar do filtro aplicado ao
+       elemento <html>. Espelhar o estado nele mantém ODS e demais diálogos coerentes. */
+    var observadorFiltro = new MutationObserver(sincronizarFiltrosEmDialogos);
+    observadorFiltro.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['style']
+    });
+    sincronizarFiltrosEmDialogos();
 
     var tentativasPersonalizacao = 0;
     var aguardarMenu = window.setInterval(function () {

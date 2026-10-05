@@ -96,7 +96,8 @@
         const aviso = document.getElementById('avisoIngressos');
         link.hidden = true; aviso.hidden = true;
         if (eventoEncerrado) { texto.textContent = 'As vendas foram encerradas para este evento.'; return; }
-        texto.textContent = evento.gratuidade ? 'Este evento é gratuito.' : 'Este evento é pago. Consulte o canal oficial.';
+        if (evento.gratuidade) { texto.textContent = 'Este evento é gratuito.'; return; }
+        texto.textContent = 'Este evento é pago. Consulte o canal oficial.';
         if (!evento.link_oficial) return;
         try {
             const url = new URL(evento.link_oficial, location.href);
@@ -113,12 +114,13 @@
         const gratuidade = document.getElementById('badgeGratuidade');
         gratuidade.className = `badge-gratuidade ${evento.gratuidade ? 'gratuito' : 'pago'}`;
         gratuidade.textContent = evento.gratuidade ? 'Gratuito' : 'Pago';
-        const categoria = document.getElementById('badgeCategoria'); categoria.textContent = evento.categoria_evento || ''; categoria.hidden = !evento.categoria_evento;
         document.getElementById('badgeEncerrado').hidden = !eventoEncerrado;
         document.getElementById('tituloEvento').textContent = evento.nome_evento || 'Evento sem nome';
         document.querySelector('#infoData span').textContent = formatarData(evento.data_evento);
         document.querySelector('#infoCidade span').textContent = localidade(evento);
         const local = document.getElementById('infoLocal'); local.querySelector('span').textContent = evento.local_evento || ''; local.hidden = !evento.local_evento;
+        const categoria = document.getElementById('infoCategoria'); categoria.querySelector('span').textContent = evento.categoria_evento || ''; categoria.hidden = !evento.categoria_evento;
+        const preco = document.getElementById('infoPreco'); preco.querySelector('span').textContent = String(evento.faixa_preco || '').trim() || 'Consulte valores'; preco.hidden = Boolean(evento.gratuidade);
         document.getElementById('descricaoEvento').textContent = evento.descricao_evento || 'Este evento ainda não possui uma descrição cadastrada.';
         renderizarArtistas(evento.artistas);
         document.getElementById('nomeLocal').textContent = evento.local_evento || 'Local não informado';
@@ -158,7 +160,9 @@
                     : await fetch('api/favoritos/', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({id_evento: idEvento})});
                 const dados = await lerJson(resposta); if (!resposta.ok) throw new Error(dados.erro || 'Não foi possível alterar o favorito.');
                 favoritoAtual = favoritoAtual ? null : dados.favorito; atualizarFavorito();
-            } catch (erro) { alert(erro.message); } finally { this.disabled = eventoEncerrado; }
+            } catch (erro) {
+                window.ShowMeUI.toast(erro.message, {variante: 'erro'});
+            } finally { this.disabled = eventoEncerrado; }
         });
     }
     async function carregarPagina() {

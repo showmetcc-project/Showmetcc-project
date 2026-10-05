@@ -48,7 +48,6 @@ $idUsuarioSessao = isset($_SESSION['id_user']) ? (int) $_SESSION['id_user'] : 0;
 
             <div class="container conteudo-principal">
                 <span id="badgeGratuidade" class="badge-gratuidade"></span>
-                <span id="badgeCategoria" class="badge-evento" hidden></span>
                 <span id="badgeEncerrado" class="badge-evento-encerrado" hidden>Evento encerrado</span>
                 <h1 id="tituloEvento" class="titulo-evento"></h1>
 
@@ -56,6 +55,8 @@ $idUsuarioSessao = isset($_SESSION['id_user']) ? (int) $_SESSION['id_user'] : 0;
                     <span id="infoData"><i class="bi bi-calendar3" aria-hidden="true"></i><span></span></span>
                     <span id="infoCidade"><i class="bi bi-geo-alt-fill" aria-hidden="true"></i><span></span></span>
                     <span id="infoLocal"><i class="bi bi-building" aria-hidden="true"></i><span></span></span>
+                    <span id="infoCategoria" hidden><i class="bi bi-tags-fill" aria-hidden="true"></i><span></span></span>
+                    <span id="infoPreco" hidden><i class="bi bi-currency-dollar" aria-hidden="true"></i><span></span></span>
                 </div>
 
                 <div class="row mt-4 g-4">
@@ -92,6 +93,7 @@ $idUsuarioSessao = isset($_SESSION['id_user']) ? (int) $_SESSION['id_user'] : 0;
                     </div>
 
                     <div class="col-lg-4">
+                        <aside class="detalhes-lateral-sticky" aria-label="Ações do evento">
                         <div class="ingresso-card">
                             <h3>Ingressos</h3>
                             <p id="textoIngressos"></p>
@@ -110,6 +112,7 @@ $idUsuarioSessao = isset($_SESSION['id_user']) ? (int) $_SESSION['id_user'] : 0;
                             <i class="bi bi-briefcase" aria-hidden="true"></i>
                             Planejar viagem
                         </a>
+                        </aside>
                     </div>
                 </div>
             </div>

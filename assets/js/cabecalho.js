@@ -42,7 +42,6 @@
   });
 
   const usuarioLogado = cabecalhoFixo?.dataset.usuarioLogado === '1';
-  const modalEscolhaLogin = document.getElementById('modalEscolhaLogin');
   const modalLoginNecessario = document.getElementById('modalLoginNecessario');
 
   function abrirModal(modal) {
@@ -86,13 +85,6 @@
       return;
     }
 
-    const escolhaLogin = evento.target.closest('[data-abrir-modal-entrada]');
-    if (escolhaLogin) {
-      evento.preventDefault();
-      abrirModal(modalEscolhaLogin);
-      return;
-    }
-
     if (usuarioLogado) return;
 
     const link = evento.target.closest('a[href]');
@@ -104,7 +96,7 @@
     }
   });
 
-  [modalEscolhaLogin, modalLoginNecessario].forEach((modal) => {
+  [modalLoginNecessario].forEach((modal) => {
     modal?.addEventListener('click', (evento) => {
       if (evento.target === modal) fecharModal(modal);
     });

@@ -65,7 +65,7 @@
         curtir.setAttribute('aria-label', post.curtido_usuario ? 'Descurtir publicação':'Curtir publicação');
         curtir.onclick = async () => {
             curtir.disabled=true;
-            try { const r=await fetch('api/comunidade-curtidas',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id_post:post.id_post})}); const d=await json(r); if(!r.ok) throw new Error(d.erro); post.curtido_usuario=d.curtido; post.total_curtidas=d.total_curtidas; renderizarPosts(); } catch(e){alert(e.message||'Falha ao curtir.'); curtir.disabled=false;}
+            try { const r=await fetch('api/comunidade-curtidas',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id_post:post.id_post})}); const d=await json(r); if(!r.ok) throw new Error(d.erro); post.curtido_usuario=d.curtido; post.total_curtidas=d.total_curtidas; renderizarPosts(); } catch(e){window.ShowMeUI.toast(e.message||'Falha ao curtir.',{variante:'erro'}); curtir.disabled=false;}
         };
         const responder = botao('bi-reply','Responder');
         acoes.append(curtir, responder);
@@ -80,18 +80,19 @@
         const input=document.createElement('input'); input.required=true; input.maxLength=3000; input.placeholder='Escreva uma resposta...'; input.setAttribute('aria-label','Resposta');
         const enviar=botao('bi-send','Enviar'); enviar.type='submit'; form.append(input,enviar);
         responder.onclick=()=>{ form.hidden=!form.hidden; if(!form.hidden) input.focus(); };
-        form.onsubmit=async(evento)=>{evento.preventDefault(); const valor=input.value.trim(); if(!valor)return; enviar.disabled=true; try{const r=await fetch('api/comunidade-respostas',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id_post:post.id_post,texto:valor})});const d=await json(r);if(!r.ok)throw new Error(d.erro);await carregarPosts();}catch(e){alert(e.message||'Falha ao responder.');enviar.disabled=false;}};
+        form.onsubmit=async(evento)=>{evento.preventDefault(); const valor=input.value.trim(); if(!valor)return; enviar.disabled=true; try{const r=await fetch('api/comunidade-respostas',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id_post:post.id_post,texto:valor})});const d=await json(r);if(!r.ok)throw new Error(d.erro);await carregarPosts();window.ShowMeUI.toast('Resposta publicada.',{variante:'sucesso'});}catch(e){window.ShowMeUI.toast(e.message||'Falha ao responder.',{variante:'erro'});enviar.disabled=false;}};
         artigo.append(topo,texto,acoes,respostas,form); return artigo;
     }
     async function excluirPost(id) {
-        if (!confirm('Excluir esta publicação e suas respostas?')) return;
+        const deveExcluir = await window.ShowMeUI.confirmar({titulo:'Excluir publicação',texto:'Excluir esta publicação e suas respostas? Esta ação não pode ser desfeita.',confirmarTexto:'Excluir',cancelarTexto:'Cancelar',variante:'destrutiva'});
+        if (!deveExcluir) return;
         const resposta=await fetch(`api/comunidade-posts/${id}`,{method:'DELETE'}); const dados=await json(resposta);
-        if(!resposta.ok){alert(dados.erro||'Não foi possível excluir.');return;} await carregarPosts();
+        if(!resposta.ok){window.ShowMeUI.toast(dados.erro||'Não foi possível excluir.',{variante:'erro'});return;} await carregarPosts();window.ShowMeUI.toast('Publicação excluída.',{variante:'sucesso'});
     }
     async function denunciarConteudo(alvo) {
         const motivo=prompt('Informe o motivo da denúncia:'); if(!motivo||!motivo.trim())return;
         const resposta=await fetch('api/comunidade-denuncias',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({...alvo,motivo:motivo.trim()})});
-        const dados=await json(resposta); alert(resposta.ok?'Denúncia registrada para revisão.':(dados.erro||'Não foi possível denunciar.'));
+        const dados=await json(resposta); window.ShowMeUI.toast(resposta.ok?'Denúncia registrada para revisão.':(dados.erro||'Não foi possível denunciar.'),{variante:resposta.ok?'sucesso':'erro'});
     }
     async function carregarGaleria() {
         const alvo=document.getElementById('galeriaComunidade'); alvo.innerHTML='<p class="comunidade-estado">Carregando galeria...</p>';
@@ -116,21 +117,24 @@
         if(Number(midia.id_usuario)!==idUsuario){const denunciar=botao('bi-flag','Denunciar');denunciar.onclick=()=>denunciarConteudo({id_midia:midia.id_midia});acoes.append(denunciar);}
         dialog.showModal();
     }
-    async function excluirMidia(id) { if(!confirm('Excluir esta foto permanentemente?'))return;const r=await fetch(`api/comunidade-midias/${id}`,{method:'DELETE'});const d=await json(r);if(!r.ok){alert(d.erro||'Não foi possível excluir.');return;}await carregarGaleria(); }
+    async function excluirMidia(id) { const deveExcluir=await window.ShowMeUI.confirmar({titulo:'Excluir foto',texto:'Excluir esta foto permanentemente? Esta ação não pode ser desfeita.',confirmarTexto:'Excluir',cancelarTexto:'Cancelar',variante:'destrutiva'});if(!deveExcluir)return;const r=await fetch(`api/comunidade-midias/${id}`,{method:'DELETE'});const d=await json(r);if(!r.ok){window.ShowMeUI.toast(d.erro||'Não foi possível excluir.',{variante:'erro'});return;}await carregarGaleria();window.ShowMeUI.toast('Foto excluída.',{variante:'sucesso'}); }
     async function carregarEvento() {
         if(!Number.isInteger(idEvento)||idEvento<1)throw new Error('Informe um evento válido na URL.');
         const r=await fetch(`api/eventos/${idEvento}`);const d=await json(r);if(!r.ok||!d.evento)throw new Error(d.erro||'Evento não encontrado.');const evento=d.evento;
-        document.title=`Comunidade — ${evento.nome_evento} - ShowMe`;document.getElementById('nomeComunidadeEvento').textContent=evento.nome_evento;document.getElementById('dataComunidadeEvento').textContent=evento.data_evento?new Intl.DateTimeFormat('pt-BR',{dateStyle:'long'}).format(new Date(`${evento.data_evento}T12:00:00`)):'';
+        document.title=`Comunidade — ${evento.nome_evento} - ShowMe`;document.getElementById('nomeComunidadeEvento').textContent=evento.nome_evento;
+        document.querySelector('#dataComunidadeEvento span').textContent=evento.data_evento?new Intl.DateTimeFormat('pt-BR',{dateStyle:'long'}).format(new Date(`${evento.data_evento}T12:00:00`)):'';
+        const local=document.getElementById('localComunidadeEvento');const textoLocal=[evento.local_evento,evento.cidade_evento,evento.uf].filter(Boolean).join(' — ');local.querySelector('span').textContent=textoLocal;local.hidden=!textoLocal;
+        const categoria=document.getElementById('categoriaComunidadeEvento');categoria.querySelector('span').textContent=evento.categoria_evento||'';categoria.hidden=!evento.categoria_evento;
+        const preco=document.getElementById('precoComunidadeEvento');preco.querySelector('span').textContent=String(evento.faixa_preco||'').trim()||'Consulte valores';preco.hidden=Boolean(evento.gratuidade);
         const img=document.getElementById('imagemComunidadeEvento');img.src=caminho(evento.imagem_evento);img.alt=evento.nome_evento;img.onerror=()=>{img.onerror=null;img.src=fallback;};
-        const titulo=document.querySelector('.cabecalho-titulo');if(titulo){titulo.setAttribute('aria-label',`Comunidade ${evento.nome_evento}`);titulo.innerHTML='';const a=document.createElement('span');a.className='cabecalho-titulo-verde parte-1';a.textContent='Comunidade';const b=document.createElement('span');b.className='cabecalho-titulo-rosa parte-2';b.textContent=evento.nome_evento;titulo.append(a,b);}
         document.getElementById('estadoComunidade').hidden=true;document.getElementById('conteudoComunidade').hidden=false;
     }
     function iniciarInterface() {
         document.querySelectorAll('[data-aba-comunidade]').forEach((botaoAba)=>botaoAba.addEventListener('click',()=>{document.querySelectorAll('[data-aba-comunidade]').forEach((b)=>{const ativo=b===botaoAba;b.classList.toggle('ativa',ativo);b.setAttribute('aria-selected',String(ativo));});const galeria=botaoAba.dataset.abaComunidade==='galeria';document.getElementById('abaPublicacoes').classList.toggle('ativa',!galeria);document.getElementById('abaPublicacoes').hidden=galeria;document.getElementById('abaGaleria').classList.toggle('ativa',galeria);document.getElementById('abaGaleria').hidden=!galeria;if(galeria)carregarGaleria();}));
         document.querySelectorAll('[data-categoria]').forEach((b)=>b.addEventListener('click',()=>{categoriaAtual=b.dataset.categoria;document.querySelectorAll('[data-categoria]').forEach((x)=>x.classList.toggle('ativo',x===b));carregarPosts();}));
         const form=document.getElementById('formPublicacao'),categoria=document.getElementById('categoriaPublicacao'),texto=document.getElementById('textoPublicacao'),publicar=document.getElementById('btnPublicar');const validar=()=>{publicar.disabled=!(categoria.value&&texto.value.trim());};categoria.addEventListener('change',validar);texto.addEventListener('input',validar);
-        form.addEventListener('submit',async(e)=>{e.preventDefault();publicar.disabled=true;const r=await fetch('api/comunidade-posts',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id_evento:idEvento,categoria:categoria.value,texto:texto.value.trim()})});const d=await json(r);if(!r.ok){document.getElementById('mensagemPublicacao').textContent=d.erro||'Não foi possível publicar.';validar();return;}form.reset();validar();bootstrap.Modal.getOrCreateInstance(document.getElementById('modalPublicacao')).hide();await carregarPosts();});
-        const arquivo=document.getElementById('arquivoMidia');arquivo.addEventListener('change',()=>document.getElementById('nomeArquivoMidia').textContent=arquivo.files[0]?.name||'');document.getElementById('formMidia').addEventListener('submit',async(e)=>{e.preventDefault();const form=e.currentTarget,data=new FormData(form);data.set('id_evento',String(idEvento));const botaoSubmit=form.querySelector('button[type=submit]');botaoSubmit.disabled=true;const r=await fetch('api/comunidade-midias',{method:'POST',body:data});const d=await json(r);if(!r.ok){document.getElementById('mensagemMidia').textContent=d.erro||'Não foi possível publicar a foto.';botaoSubmit.disabled=false;return;}form.reset();document.getElementById('nomeArquivoMidia').textContent='';bootstrap.Modal.getOrCreateInstance(document.getElementById('modalMidia')).hide();botaoSubmit.disabled=false;await carregarGaleria();});
+        form.addEventListener('submit',async(e)=>{e.preventDefault();publicar.disabled=true;const r=await fetch('api/comunidade-posts',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id_evento:idEvento,categoria:categoria.value,texto:texto.value.trim()})});const d=await json(r);if(!r.ok){window.ShowMeUI.toast(d.erro||'Não foi possível publicar.',{variante:'erro'});validar();return;}form.reset();validar();bootstrap.Modal.getOrCreateInstance(document.getElementById('modalPublicacao')).hide();await carregarPosts();window.ShowMeUI.toast('Publicação criada.',{variante:'sucesso'});});
+        const arquivo=document.getElementById('arquivoMidia');arquivo.addEventListener('change',()=>document.getElementById('nomeArquivoMidia').textContent=arquivo.files[0]?.name||'');document.getElementById('formMidia').addEventListener('submit',async(e)=>{e.preventDefault();const form=e.currentTarget,data=new FormData(form);data.set('id_evento',String(idEvento));const botaoSubmit=form.querySelector('button[type=submit]');botaoSubmit.disabled=true;const r=await fetch('api/comunidade-midias',{method:'POST',body:data});const d=await json(r);if(!r.ok){window.ShowMeUI.toast(d.erro||'Não foi possível publicar a foto.',{variante:'erro'});botaoSubmit.disabled=false;return;}form.reset();document.getElementById('nomeArquivoMidia').textContent='';bootstrap.Modal.getOrCreateInstance(document.getElementById('modalMidia')).hide();botaoSubmit.disabled=false;await carregarGaleria();window.ShowMeUI.toast('Foto publicada na galeria.',{variante:'sucesso'});});
         const lightbox=document.getElementById('lightboxComunidade');lightbox.querySelector('[data-fechar-lightbox]').onclick=()=>lightbox.close();lightbox.addEventListener('click',(e)=>{if(e.target===lightbox)lightbox.close();});
     }
     iniciarInterface();

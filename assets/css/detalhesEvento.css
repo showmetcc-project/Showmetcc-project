@@ -19,7 +19,7 @@ body {
 .banner-evento {
     position: relative;
     width: 100%;
-    max-height: 420px;
+    max-height: none;
     overflow: hidden;
 }
 
@@ -108,9 +108,9 @@ body {
 
 .banner-evento {
     width: 100%;
-    height: 480px;
+    height: min(480px, 56vh);
     overflow: hidden;
-    margin: 15px 0 0;
+    margin: 0;
 }
 
 .banner-evento img {
@@ -118,6 +118,18 @@ body {
     height: 100%;
     object-fit: cover;
     display: block;
+}
+
+.banner-evento::after {
+    content: "";
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 1;
+    height: clamp(90px, 16vw, 150px);
+    background: linear-gradient(to bottom, rgba(10, 10, 10, 0) 0%, #0a0a0a 100%);
+    pointer-events: none;
 }
 
 /* ==========================
@@ -279,6 +291,12 @@ a {
 .badge-evento-encerrado { display: inline-block; margin: 0 0 12px 8px; padding: 7px 15px; border-radius: 999px; background: #333; color: #fff; font-weight: 700; }
 .acao-desabilitada, .btn-acao:disabled { opacity: .45; pointer-events: none; cursor: not-allowed; filter: grayscale(1); }
 
+.detalhes-lateral-sticky {
+    position: sticky;
+    top: 24px;
+    align-self: flex-start;
+}
+
 .ingresso-card {
     background: #0d0d0d;
     border: 2px solid #ff006e;
@@ -311,6 +329,9 @@ a {
 }
 
 .btn-comprar {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     width: 100%;
     height: 48px;
     border: none;
@@ -321,6 +342,9 @@ a {
     font-size: 1rem;
     cursor: pointer;
     transition: .25s;
+    line-height: 1.2;
+    text-align: center;
+    text-decoration: none;
 }
 
 .btn-comprar:hover {
@@ -522,13 +546,17 @@ a {
     /* A ordem do DOM mantém ingressos depois do conteúdo principal. */
     .conteudo-principal > .row > .col-lg-4 { order: 0; }
 
+    .detalhes-lateral-sticky { position: static; }
+
     .ingresso-card { margin: 0 0 16px; }
 }
 
+.btn-comprar[hidden] { display: none !important; }
+
 @media (max-width: 767.98px) {
-    .banner-evento { height: 260px; }
+    .banner-evento { height: min(320px, 42vh); }
     .titulo-evento  { font-size: 1.8rem; }
-    .infos-rapidas  { flex-direction: column; gap: 10px; }
+    .infos-rapidas  { flex-direction: row; gap: 10px 16px; }
     .conteudo-principal { padding-right: 14px; padding-left: 14px; }
     .comunidade-convite { align-items: stretch; flex-direction: column; padding: 18px; }
     .btn-acessar-comunidade { width: 100%; }

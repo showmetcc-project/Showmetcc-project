@@ -17,6 +17,7 @@ tags:
   - name: Eventos
   - name: Favoritos
   - name: Planejamentos
+  - name: Google Agenda
   - name: Comunidades
 
 paths:
@@ -136,7 +137,7 @@ paths:
         - $ref: '#/components/parameters/IdNaRota'
       responses:
         '200':
-          description: Perfil encontrado
+          description: Perfil encontrado, incluindo as contagens reais de atividades do usuário
           content:
             application/json:
               schema:
@@ -144,6 +145,8 @@ paths:
                 properties:
                   usuario:
                     $ref: '#/components/schemas/Usuario'
+                  estatisticas:
+                    $ref: '#/components/schemas/EstatisticasPerfil'
         '401':
           $ref: '#/components/responses/NaoAutenticado'
         '403':
@@ -566,6 +569,7 @@ paths:
           $ref: '#/components/responses/NaoAutenticado'
         '404':
           $ref: '#/components/responses/NaoEncontrado'
+
     delete:
       tags: [Planejamentos]
       summary: Desfaz um planejamento do usuário atual
@@ -588,6 +592,74 @@ paths:
         '404':
           $ref: '#/components/responses/NaoEncontrado'
 
+  /google-calendar:
+    get:
+      tags: [Google Agenda]
+      summary: Consulta o estado da conexão do usuário com o Google Agenda
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: Estado atual da integração
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  configurado:
+                    type: boolean
+                  conectado:
+                    type: boolean
+                  data_conexao:
+                    type: string
+                    format: date-time
+                    nullable: true
+        '401':
+          $ref: '#/components/responses/NaoAutenticado'
+    post:
+      tags: [Google Agenda]
+      summary: Verifica conflito ou exporta um planejamento
+      description: >-
+        verificar_conflito consulta a agenda somente nesta requisição. exportar cria
+        um evento único, com ID determinístico, sem sincronização posterior.
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - $ref: '#/components/schemas/GoogleAgendaConflitoEntrada'
+                - $ref: '#/components/schemas/GoogleAgendaExportacaoEntrada'
+      responses:
+        '200':
+          description: Resultado da checagem ou evento já exportado anteriormente
+        '201':
+          description: Evento criado no Google Agenda
+        '400':
+          $ref: '#/components/responses/RequisicaoInvalida'
+        '401':
+          $ref: '#/components/responses/NaoAutenticado'
+        '404':
+          $ref: '#/components/responses/NaoEncontrado'
+        '409':
+          description: Google Agenda ainda não conectado para exportação
+        '502':
+          description: Falha de comunicação com o Google Agenda
+        '503':
+          description: Integração ainda não configurada no servidor
+    delete:
+      tags: [Google Agenda]
+      summary: Desconecta a agenda do usuário atual
+      description: Tenta revogar o token no Google e remove o token armazenado localmente.
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: Integração desconectada
+        '401':
+          $ref: '#/components/responses/NaoAutenticado'
   /favoritos:
     get:
       tags: [Favoritos]
@@ -935,6 +1007,24 @@ components:
         data_cadastro:
           type: string
           format: date-time
+
+    EstatisticasPerfil:
+      type: object
+      readOnly: true
+      required: [publicacoes_comunidade, viagens_planejadas, eventos_cadastrados]
+      properties:
+        publicacoes_comunidade:
+          type: integer
+          minimum: 0
+          description: Total de publicações de texto e fotos enviadas pelo usuário nas comunidades; respostas não entram na contagem.
+        viagens_planejadas:
+          type: integer
+          minimum: 0
+          description: Total histórico de planejamentos finalizados pelo usuário, inclusive de eventos já encerrados.
+        eventos_cadastrados:
+          type: integer
+          minimum: 0
+          description: Eventos efetivamente publicados a partir de solicitações cadastradas pelo usuário.
 
     Evento:
       type: object
@@ -1322,6 +1412,32 @@ components:
           minimum: 1
           description: Tempo em minutos.
 
+    GoogleAgendaConflitoEntrada:
+      type: object
+      required: [acao, id_evento, tempo_estimado]
+      properties:
+        acao:
+          type: string
+          enum: [verificar_conflito]
+        id_evento:
+          type: integer
+          minimum: 1
+        tempo_estimado:
+          type: integer
+          minimum: 0
+          description: Minutos de deslocamento incluídos antes do início do evento.
+
+    GoogleAgendaExportacaoEntrada:
+      type: object
+      required: [acao, id_rota]
+      properties:
+        acao:
+          type: string
+          enum: [exportar]
+        id_rota:
+          type: integer
+          minimum: 1
+
     PlanejamentoAtualizacao:
       type: object
       minProperties: 1
@@ -1373,6 +1489,10 @@ components:
             data_evento:
               type: string
               format: date
+              nullable: true
+            horario_evento:
+              type: string
+              format: time
               nullable: true
             imagem_evento:
               type: string

@@ -98,7 +98,7 @@
       const uf = String(evento.uf || '').trim();
       local.textContent = cidade
         ? `${cidade}${uf ? ` - ${uf}` : ''}`
-        : (evento.local_evento || 'Local não informado');
+        : (evento.endereco_evento || 'Endereço não informado');
 
       textos.append(nome, local);
       link.append(imagem, textos);

@@ -21,7 +21,11 @@ if ($idPost === false || $texto === '') {
 if (tamanhoTextoApi($texto) > 3000) {
     responder(['erro' => 'texto deve ter no máximo 3000 caracteres'], 400);
 }
-$stmt = $conn->prepare('SELECT 1 FROM comunidade_post WHERE id_post = ? LIMIT 1');
+$stmt = $conn->prepare(
+    "SELECT 1 FROM comunidade_post
+     WHERE id_post = ? AND status_post = 'ativo'
+     LIMIT 1"
+);
 $stmt->bind_param('i', $idPost);
 executarStatementApi($stmt);
 $stmt->store_result();

@@ -32,10 +32,53 @@ function validarPlanejamento(array $dados): array
         responder(['erro' => 'tempo_estimado deve ser um inteiro positivo em minutos'], 400);
     }
 
+    $origem = trim((string) ($dados['origem'] ?? ''));
+    if (tamanhoTextoApi($origem) > 255) {
+        responder(['erro' => 'origem deve ter até 255 caracteres'], 400);
+    }
+
+    $valores = [];
+    foreach (['orcamento_total', 'custo_ingresso', 'custo_transporte', 'custo_hospedagem'] as $campo) {
+        $informado = $dados[$campo] ?? 0;
+        if (!is_numeric($informado)) {
+            responder(['erro' => "$campo deve ser um número não negativo"], 400);
+        }
+        $valor = round((float) $informado, 2);
+        if ($valor < 0 || $valor > 99999999.99) {
+            responder(['erro' => "$campo deve ser um número não negativo válido"], 400);
+        }
+        $valores[$campo] = $valor;
+    }
+
+    $hospedagem = filter_var(
+        $dados['hospedagem_necessaria'] ?? false,
+        FILTER_VALIDATE_BOOLEAN,
+        FILTER_NULL_ON_FAILURE
+    );
+    if ($hospedagem === null) {
+        responder(['erro' => 'hospedagem_necessaria deve ser true ou false'], 400);
+    }
+
+    $nomeHospedagem = trim((string) ($dados['nome_hospedagem'] ?? ''));
+    if (tamanhoTextoApi($nomeHospedagem) > 100) {
+        responder(['erro' => 'nome_hospedagem deve ter até 100 caracteres'], 400);
+    }
+    if (!$hospedagem) {
+        $nomeHospedagem = '';
+        $valores['custo_hospedagem'] = 0.0;
+    }
+
     return [
         'meio_transporte' => $meioTransporte,
         'distancia_km' => $distancia,
         'tempo_estimado' => (int) $tempo,
+        'origem' => $origem === '' ? null : $origem,
+        'orcamento_total' => $valores['orcamento_total'],
+        'custo_ingresso' => $valores['custo_ingresso'],
+        'custo_transporte' => $valores['custo_transporte'],
+        'hospedagem_necessaria' => $hospedagem ? 1 : 0,
+        'nome_hospedagem' => $nomeHospedagem === '' ? null : $nomeHospedagem,
+        'custo_hospedagem' => $valores['custo_hospedagem'],
     ];
 }
 
@@ -46,7 +89,7 @@ require_once __DIR__ . '/middleware/verificaLogin.php';
 $metodo = $_SERVER['REQUEST_METHOD'];
 $id = obterIdApi();
 
-$idUsuario = exigirLogin();
+$idUsuario = exigirUsuarioComum();
 
 switch ($metodo) {
     case 'GET':
@@ -56,9 +99,14 @@ switch ($metodo) {
 
         $stmt = $conn->prepare(
             'SELECT r.id_rota, r.id_evento, r.meio_transporte, r.distancia_km,
-                    r.tempo_estimado, e.nome_evento, e.local_evento,
-                    e.cidade_evento, e.uf, e.data_evento, e.horario_evento, e.imagem_evento,
-                    e.gratuidade, e.status_evento
+                    r.tempo_estimado, r.origem, r.orcamento_total, r.custo_ingresso,
+                    r.custo_transporte, r.hospedagem_necessaria, r.nome_hospedagem,
+                    r.custo_hospedagem,
+                    (r.custo_ingresso + r.custo_transporte + r.custo_hospedagem) AS investimento_total,
+                    e.nome_evento, e.cep_evento, e.endereco_evento,
+                    e.numero_endereco, e.cidade_evento, e.uf, e.data_evento, e.horario_evento,
+                    e.imagem_evento, e.gratuidade, e.valor_ingresso_minimo,
+                    e.valor_ingresso_maximo, e.status_evento
              FROM rota r
              INNER JOIN evento e ON e.id_evento = r.id_evento
              WHERE r.id_user = ?
@@ -122,16 +170,25 @@ switch ($metodo) {
 
         $stmt = $conn->prepare(
             'INSERT INTO rota
-                (id_user, id_evento, meio_transporte, distancia_km, tempo_estimado)
-             VALUES (?, ?, ?, ?, ?)'
+                (id_user, id_evento, meio_transporte, distancia_km, tempo_estimado,
+                 origem, orcamento_total, custo_ingresso, custo_transporte,
+                 hospedagem_necessaria, nome_hospedagem, custo_hospedagem)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
         );
         $stmt->bind_param(
-            'iisdi',
+            'iisdisdddisd',
             $idUsuario,
             $idEvento,
             $planejamento['meio_transporte'],
             $planejamento['distancia_km'],
-            $planejamento['tempo_estimado']
+            $planejamento['tempo_estimado'],
+            $planejamento['origem'],
+            $planejamento['orcamento_total'],
+            $planejamento['custo_ingresso'],
+            $planejamento['custo_transporte'],
+            $planejamento['hospedagem_necessaria'],
+            $planejamento['nome_hospedagem'],
+            $planejamento['custo_hospedagem']
         );
 
         try {
@@ -152,10 +209,7 @@ switch ($metodo) {
         $planejamentoCriado = normalizarPlanejamentoApi([
             'id_rota' => $idRota,
             'id_evento' => $idEvento,
-            'meio_transporte' => $planejamento['meio_transporte'],
-            'distancia_km' => $planejamento['distancia_km'],
-            'tempo_estimado' => $planejamento['tempo_estimado'],
-        ]);
+        ] + $planejamento);
 
         responder([
             'mensagem' => 'Planejamento finalizado com sucesso',
@@ -168,7 +222,11 @@ switch ($metodo) {
         }
 
         $dados = lerJson();
-        $camposEditaveis = ['meio_transporte', 'distancia_km', 'tempo_estimado'];
+        $camposEditaveis = [
+            'meio_transporte', 'distancia_km', 'tempo_estimado', 'origem',
+            'orcamento_total', 'custo_ingresso', 'custo_transporte',
+            'hospedagem_necessaria', 'nome_hospedagem', 'custo_hospedagem'
+        ];
         $possuiCampoEditavel = false;
 
         foreach ($camposEditaveis as $campo) {
@@ -183,7 +241,9 @@ switch ($metodo) {
         }
 
         $stmt = $conn->prepare(
-            'SELECT meio_transporte, distancia_km, tempo_estimado
+            'SELECT meio_transporte, distancia_km, tempo_estimado, origem,
+                    orcamento_total, custo_ingresso, custo_transporte,
+                    hospedagem_necessaria, nome_hospedagem, custo_hospedagem
              FROM rota WHERE id_rota = ? AND id_user = ? LIMIT 1'
         );
         $stmt->bind_param('ii', $id, $idUsuario);
@@ -199,18 +259,34 @@ switch ($metodo) {
             'meio_transporte' => $dados['meio_transporte'] ?? $atual['meio_transporte'],
             'distancia_km' => $dados['distancia_km'] ?? $atual['distancia_km'],
             'tempo_estimado' => $dados['tempo_estimado'] ?? $atual['tempo_estimado'],
+            'origem' => $dados['origem'] ?? $atual['origem'],
+            'orcamento_total' => $dados['orcamento_total'] ?? $atual['orcamento_total'],
+            'custo_ingresso' => $dados['custo_ingresso'] ?? $atual['custo_ingresso'],
+            'custo_transporte' => $dados['custo_transporte'] ?? $atual['custo_transporte'],
+            'hospedagem_necessaria' => $dados['hospedagem_necessaria'] ?? $atual['hospedagem_necessaria'],
+            'nome_hospedagem' => $dados['nome_hospedagem'] ?? $atual['nome_hospedagem'],
+            'custo_hospedagem' => $dados['custo_hospedagem'] ?? $atual['custo_hospedagem'],
         ]);
 
         $stmt = $conn->prepare(
             'UPDATE rota
-             SET meio_transporte = ?, distancia_km = ?, tempo_estimado = ?
+             SET meio_transporte = ?, distancia_km = ?, tempo_estimado = ?, origem = ?,
+                 orcamento_total = ?, custo_ingresso = ?, custo_transporte = ?,
+                 hospedagem_necessaria = ?, nome_hospedagem = ?, custo_hospedagem = ?
              WHERE id_rota = ? AND id_user = ?'
         );
         $stmt->bind_param(
-            'sdiii',
+            'sdisdddisdii',
             $planejamento['meio_transporte'],
             $planejamento['distancia_km'],
             $planejamento['tempo_estimado'],
+            $planejamento['origem'],
+            $planejamento['orcamento_total'],
+            $planejamento['custo_ingresso'],
+            $planejamento['custo_transporte'],
+            $planejamento['hospedagem_necessaria'],
+            $planejamento['nome_hospedagem'],
+            $planejamento['custo_hospedagem'],
             $id,
             $idUsuario
         );

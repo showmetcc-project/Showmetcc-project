@@ -1,5 +1,5 @@
 <?php
-require_once __DIR__ . '/config/verificaLogin.php';
+require_once __DIR__ . '/config/verificaUsuarioComum.php';
 
 $idInformado = $_GET['id'] ?? $_GET['id_evento'] ?? null;
 
@@ -206,9 +206,9 @@ $idEvento = (int) $idInformado;
                     <input type="number" id="orcamento" placeholder="500" min="0" required>
 
 
-                    <div class="alerta">
+                    <div class="alerta" id="custoMinimoEvento">
 
-                        Custo mínimo estimado: R$ 265 (Ingresso)
+                        Carregando o valor de acesso ao evento...
 
                     </div>
 
@@ -241,11 +241,7 @@ $idEvento = (int) $idInformado;
 
 
                     <p id="textoDestinoTransporte">
-
-                        Pesquise opções de transporte para
-                        <?= htmlspecialchars($cidade) ?>,
-                            <?= htmlspecialchars($uf) ?> e informe o valor escolhido.
-
+                        Carregando o destino do evento...
                     </p>
 
 
@@ -268,69 +264,59 @@ $idEvento = (int) $idInformado;
                     <div class="opcoes">
 
 
-                        <button class="opcao" onclick="selecionarTransporte('Ônibus')">
-
-                    🚌
-
-                    <strong>
-                        Ônibus
-                    </strong>
-
-                    <small>
-                        Passagens rodoviárias
-                    </small>
-
-                </button>
+                        <div class="opcao-transporte-card">
+                            <button type="button" class="opcao" data-transporte="Ônibus" aria-pressed="false" onclick="selecionarTransporte('Ônibus')">
+                                <i class="bi bi-bus-front icone-opcao" aria-hidden="true"></i>
+                                <strong>Ônibus</strong>
+                                <small>Passagens rodoviárias</small>
+                            </button>
+                            <a class="link-pesquisa-transporte" data-link-transporte="Ônibus" href="#" target="_blank" rel="noopener noreferrer">
+                                <i class="bi bi-box-arrow-up-right" aria-hidden="true"></i>
+                                Pesquisar passagens
+                            </a>
+                        </div>
 
 
 
-                        <button class="opcao" onclick="selecionarTransporte('Carro')">
-
-                    🚗
-
-                    <strong>
-                        Carro
-                    </strong>
-
-                    <small>
-                        Viagem de carro
-                    </small>
-
-                </button>
+                        <div class="opcao-transporte-card">
+                            <button type="button" class="opcao" data-transporte="Carro" aria-pressed="false" onclick="selecionarTransporte('Carro')">
+                                <i class="bi bi-car-front icone-opcao" aria-hidden="true"></i>
+                                <strong>Carro</strong>
+                                <small>Viagem de carro</small>
+                            </button>
+                            <a class="link-pesquisa-transporte" data-link-transporte="Carro" href="#" target="_blank" rel="noopener noreferrer">
+                                <i class="bi bi-box-arrow-up-right" aria-hidden="true"></i>
+                                Abrir rota
+                            </a>
+                        </div>
 
 
 
-                        <button class="opcao" onclick="selecionarTransporte('Avião')">
-
-                    ✈️
-
-                    <strong>
-                        Avião
-                    </strong>
-
-                    <small>
-                        Passagens aéreas
-                    </small>
-
-                </button>
+                        <div class="opcao-transporte-card">
+                            <button type="button" class="opcao" data-transporte="Avião" aria-pressed="false" onclick="selecionarTransporte('Avião')">
+                                <i class="bi bi-airplane icone-opcao" aria-hidden="true"></i>
+                                <strong>Avião</strong>
+                                <small>Passagens aéreas</small>
+                            </button>
+                            <a class="link-pesquisa-transporte" data-link-transporte="Avião" href="#" target="_blank" rel="noopener noreferrer">
+                                <i class="bi bi-box-arrow-up-right" aria-hidden="true"></i>
+                                Pesquisar voos
+                            </a>
+                        </div>
 
 
 
-                        <button class="opcao" onclick="selecionarTransporte('Uber')">
-
-                    🚕
-
-
-                    <strong>
-                        Uber
-                    </strong>
-
-
-                    <small>
-                        Viagem de carro
-                    </small>
-
-                </button>
+                        <div class="opcao-transporte-card">
+                            <button type="button" class="opcao" data-transporte="Uber" aria-pressed="false" onclick="selecionarTransporte('Uber')">
+                                <i class="bi bi-taxi-front icone-opcao" aria-hidden="true"></i>
+                                <strong>Uber</strong>
+                                <small>Transporte por aplicativo</small>
+                            </button>
+                            <a class="link-pesquisa-transporte" data-link-transporte="Uber" href="#" target="_blank" rel="noopener noreferrer">
+                                <i class="bi bi-box-arrow-up-right" aria-hidden="true"></i>
+                                Abrir Uber
+                            </a>
+                        </div>
 
 
                     </div>
@@ -342,19 +328,11 @@ $idEvento = (int) $idInformado;
                     </div>
 
 
-                    <label>
-                Valor do transporte escolhido (R$)
-            </label>
-
-
-                    <input type="number" id="transporte" value="0" min="0">
-
-
-                    <p id="transporteSelecionado">
-
-                        Nenhum transporte selecionado.
-
-                    </p>
+                    <div class="campo-valor-planejamento">
+                        <label for="transporte">Valor do transporte escolhido (R$)</label>
+                        <input type="number" id="transporte" value="0" min="0" step="0.01" inputmode="decimal">
+                        <p id="transporteSelecionado">Nenhum transporte selecionado.</p>
+                    </div>
 
 
                     <div class="botoes">
@@ -543,6 +521,22 @@ $idEvento = (int) $idInformado;
                     </div>
 
 
+                    <div class="dados-rota-planejamento">
+                        <h3><i class="bi bi-signpost-split" aria-hidden="true"></i> Dados da rota</h3>
+                        <p>Carro e Uber são preenchidos automaticamente. Para ônibus ou avião, informe a estimativa consultada no aplicativo de navegação.</p>
+                        <div class="campos-rota-planejamento">
+                            <div>
+                                <label for="distanciaPlanejamento">Distância (km)</label>
+                                <input id="distanciaPlanejamento" type="number" min="0.01" max="99999999.99" step="0.01" placeholder="Ex.: 125,5" required>
+                            </div>
+                            <div>
+                                <label for="tempoPlanejamento">Tempo estimado (minutos)</label>
+                                <input id="tempoPlanejamento" type="number" min="1" step="1" placeholder="Ex.: 150" required>
+                            </div>
+                        </div>
+                    </div>
+
+
                     <!-- NAVEGAÇÃO -->
 
                     <div class="navegacao-box" id="navegacaoBox" hidden>
@@ -570,6 +564,8 @@ $idEvento = (int) $idInformado;
 
                         Google Maps
 
+                        <i class="bi bi-box-arrow-up-right icone-link-externo" aria-hidden="true"></i>
+
                     </button>
 
 
@@ -578,6 +574,8 @@ $idEvento = (int) $idInformado;
                         <i class="bi bi-car-front"></i>
 
                         Waze
+
+                        <i class="bi bi-box-arrow-up-right icone-link-externo" aria-hidden="true"></i>
 
                     </button>
 
@@ -635,9 +633,9 @@ $idEvento = (int) $idInformado;
                     <div class="opcoes hospedagem-escolha">
 
 
-                        <button class="opcao" onclick="mostrarHospedagem()">
+                        <button type="button" id="opcaoHospedagemSim" class="opcao" aria-pressed="false" onclick="mostrarHospedagem()">
 
-                    🏨
+                    <i class="bi bi-building icone-opcao" aria-hidden="true"></i>
 
                     <strong>
                         Sim, preciso de hospedagem
@@ -650,9 +648,9 @@ $idEvento = (int) $idInformado;
                 </button>
 
 
-                        <button class="opcao" onclick="semHospedagem()">
+                        <button type="button" id="opcaoHospedagemNao" class="opcao" aria-pressed="false" onclick="semHospedagem()">
 
-                    🏠
+                    <i class="bi bi-house-check icone-opcao" aria-hidden="true"></i>
 
                     <strong>
                         Não, já tenho onde ficar
@@ -688,6 +686,11 @@ $idEvento = (int) $idInformado;
                             Hospedagens próximas ao evento:
                         </h3>
 
+                        <p class="fonte-hospedagem">
+                            <i class="bi bi-info-circle" aria-hidden="true"></i>
+                            Sugestões de estabelecimentos cadastrados no OpenStreetMap, consultadas pela API Overpass em um raio de 5 km. A lista não informa preços nem disponibilidade.
+                        </p>
+
 
                         <div id="resultadoHospedagem">
 
@@ -698,85 +701,51 @@ $idEvento = (int) $idInformado;
                         </div>
 
 
+                        <h3>Pesquise preços e disponibilidade:</h3>
+
                         <div class="opcoes">
+                            <div class="opcao-hospedagem-card">
+                                <button type="button" class="opcao" data-hospedagem="Booking.com" aria-pressed="false" onclick="selecionarHospedagem('Booking.com')">
+                                    <i class="bi bi-building icone-opcao" aria-hidden="true"></i>
+                                    <strong>Booking.com</strong>
+                                    <small>Hotéis e pousadas</small>
+                                </button>
+                                <a class="link-pesquisa-hospedagem" data-link-hospedagem="Booking.com" href="https://www.booking.com/" target="_blank" rel="noopener noreferrer"><i class="bi bi-box-arrow-up-right" aria-hidden="true"></i> Abrir site</a>
+                            </div>
 
+                            <div class="opcao-hospedagem-card">
+                                <button type="button" class="opcao" data-hospedagem="Airbnb" aria-pressed="false" onclick="selecionarHospedagem('Airbnb')">
+                                    <i class="bi bi-house-door icone-opcao" aria-hidden="true"></i>
+                                    <strong>Airbnb</strong>
+                                    <small>Casas e apartamentos</small>
+                                </button>
+                                <a class="link-pesquisa-hospedagem" data-link-hospedagem="Airbnb" href="https://www.airbnb.com.br/" target="_blank" rel="noopener noreferrer"><i class="bi bi-box-arrow-up-right" aria-hidden="true"></i> Abrir site</a>
+                            </div>
 
-                            <button class="opcao" onclick="selecionarHospedagem('Booking.com')">
+                            <div class="opcao-hospedagem-card">
+                                <button type="button" class="opcao" data-hospedagem="Hotels.com" aria-pressed="false" onclick="selecionarHospedagem('Hotels.com')">
+                                    <i class="bi bi-door-open icone-opcao" aria-hidden="true"></i>
+                                    <strong>Hotels.com</strong>
+                                    <small>Acomodações</small>
+                                </button>
+                                <a class="link-pesquisa-hospedagem" data-link-hospedagem="Hotels.com" href="https://www.hoteis.com/" target="_blank" rel="noopener noreferrer"><i class="bi bi-box-arrow-up-right" aria-hidden="true"></i> Abrir site</a>
+                            </div>
 
-                        🏨
-
-                        <strong>
-                            Booking.com
-                        </strong>
-
-                        <small>
-                            Hotéis e pousadas
-                        </small>
-
-                    </button>
-
-
-                            <button class="opcao" onclick="selecionarHospedagem('Airbnb')">
-
-                        🏠
-
-                        <strong>
-                            Airbnb
-                        </strong>
-
-                        <small>
-                            Casas e apartamentos
-                        </small>
-
-                    </button>
-
-
-                            <button class="opcao" onclick="selecionarHospedagem('Hotels.com')">
-
-                        🛏️
-
-                        <strong>
-                            Hotels.com
-                        </strong>
-
-                        <small>
-                            Acomodações
-                        </small>
-
-                    </button>
-
-
-                            <button class="opcao" onclick="selecionarHospedagem('HostelWorld')">
-
-                        🏠
-
-                        <strong>
-                            HostelWorld
-                        </strong>
-
-                        <small>
-                            Hostels e albergues
-                        </small>
-
-                    </button>
-
-
+                            <div class="opcao-hospedagem-card">
+                                <button type="button" class="opcao" data-hospedagem="HostelWorld" aria-pressed="false" onclick="selecionarHospedagem('HostelWorld')">
+                                    <i class="bi bi-people icone-opcao" aria-hidden="true"></i>
+                                    <strong>HostelWorld</strong>
+                                    <small>Hostels e albergues</small>
+                                </button>
+                                <a class="link-pesquisa-hospedagem" data-link-hospedagem="HostelWorld" href="https://www.hostelworld.com/" target="_blank" rel="noopener noreferrer"><i class="bi bi-box-arrow-up-right" aria-hidden="true"></i> Abrir site</a>
+                            </div>
                         </div>
 
-
-                        <label>
-                    Valor da hospedagem (R$)
-                </label>
-
-
-                        <input type="number" id="hospedagem" value="0" min="0">
-
-
-                        <p id="hospedagemSelecionada">
-
-                            Nenhuma hospedagem selecionada.
-
-                        </p>
+                        <div class="campo-valor-planejamento">
+                            <label for="hospedagem">Valor da hospedagem (R$)</label>
+                            <input type="number" id="hospedagem" value="0" min="0" step="0.01" inputmode="decimal">
+                            <p id="hospedagemSelecionada">Nenhuma hospedagem selecionada.</p>
+                        </div>
 
 
                     </div>
@@ -833,8 +802,8 @@ $idEvento = (int) $idInformado;
                         Ingresso
                     </span>
 
-                            <span>
-                        R$ 265,00
+                            <span id="resumoIngresso">
+                        Carregando...
                     </span>
 
                         </div>
@@ -876,7 +845,7 @@ $idEvento = (int) $idInformado;
                     </span>
 
                             <span id="totalFinal">
-                        R$ 265,00
+                        R$ 0,00
                     </span>
 
                         </div>
@@ -913,7 +882,7 @@ $idEvento = (int) $idInformado;
                     </span>
 
                             <span id="gastosFinal">
-                        R$ 265,00
+                        R$ 0,00
                     </span>
 
                         </div>
@@ -1025,64 +994,18 @@ $idEvento = (int) $idInformado;
                         </h3>
 
 
-                        <p>
-                            💊 Leve medicamentos básicos e seu plano de saúde.
-                        </p>
+                        <p><i class="bi bi-capsule" aria-hidden="true"></i><span>Leve medicamentos básicos e seu plano de saúde.</span></p>
 
-                        <p>
-                            ☀️ Confira a previsão do tempo e leve roupas adequadas.
-                        </p>
+                        <p><i class="bi bi-brightness-high" aria-hidden="true"></i><span>Confira a previsão do tempo e leve roupas adequadas.</span></p>
 
-                        <p>
-                            🎫 Não esqueça de adquirir seus ingressos com antecedência.
-                        </p>
+                        <p><i class="bi bi-ticket-perforated" aria-hidden="true"></i><span>Não esqueça de adquirir seus ingressos com antecedência.</span></p>
 
-                        <p>
-                            📱 Baixe o aplicativo do evento para atualizações.
-                        </p>
+                        <p><i class="bi bi-phone" aria-hidden="true"></i><span>Consulte o canal oficial do evento para acompanhar atualizações.</span></p>
 
                     </div>
 
                     <form id="formPlanejamento" class="form-planejamento-api">
-                        <h3>Dados do deslocamento</h3>
-                        <p>Confirme os dados que serão salvos em seus planejados.</p>
-
-                        <div class="campos-planejamento-api">
-                            <div>
-                                <label for="meioTransportePlanejamento">Meio de transporte</label>
-                                <select id="meioTransportePlanejamento" required>
-                                    <option value="">Selecione</option>
-                                    <option value="Ônibus">Ônibus</option>
-                                    <option value="Carro">Carro</option>
-                                    <option value="Avião">Avião</option>
-                                    <option value="Uber">Uber</option>
-                                    <option value="Outro">Outro</option>
-                                </select>
-                            </div>
-
-                            <div>
-                                <label for="distanciaPlanejamento">Distância (km)</label>
-                                <input
-                                    id="distanciaPlanejamento"
-                                    type="number"
-                                    min="0.01"
-                                    max="99999999.99"
-                                    step="0.01"
-                                    placeholder="Ex.: 125.5"
-                                    required>
-                            </div>
-
-                            <div>
-                                <label for="tempoPlanejamento">Tempo estimado (minutos)</label>
-                                <input
-                                    id="tempoPlanejamento"
-                                    type="number"
-                                    min="1"
-                                    step="1"
-                                    placeholder="Ex.: 150"
-                                    required>
-                            </div>
-                        </div>
+                        <input id="meioTransportePlanejamento" type="hidden" value="">
 
                         <p id="mensagemPlanejamento" class="mensagem-planejamento-api" aria-live="polite"></p>
 
@@ -1099,7 +1022,7 @@ $idEvento = (int) $idInformado;
                         </div>
 
                         <div class="botoes">
-                            <button type="button" onclick="voltarEtapa(4)">Voltar</button>
+                            <button id="botaoVoltarResumo" type="button" onclick="voltarEtapa(4)">Voltar</button>
                             <button id="botaoFinalizarPlanejamento" type="submit">Finalizar planejamento</button>
                         </div>
                     </form>
@@ -1157,11 +1080,55 @@ $idEvento = (int) $idInformado;
                 cidade: '',
                 uf: '',
                 rua: '',
-                local: '',
+                numero: '',
+                cep: '',
                 data: '',
                 horario: '',
-                endereco: ''
+                endereco: '',
+                gratuidade: true,
+                valorMinimo: 0,
+                valorMaximo: null
             };
+
+            function atualizarLinksTransporte() {
+                const destinoEvento = evento.endereco
+                    || [evento.cidade, evento.uf].filter(Boolean).join(' - ')
+                    || evento.nome;
+                const destinoResumido = [evento.cidade, evento.uf].filter(Boolean).join(' - ')
+                    || evento.nome;
+                const parametrosUber = new URLSearchParams({
+                    action: 'setPickup',
+                    pickup: 'my_location',
+                    'dropoff[formatted_address]': destinoEvento
+                });
+                const links = {
+                    'Ônibus': `https://www.google.com/search?q=${encodeURIComponent(`passagens de ônibus para ${destinoResumido}`)}`,
+                    'Carro': `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(destinoEvento)}`,
+                    'Avião': `https://www.google.com/travel/flights?q=${encodeURIComponent(`voos para ${destinoResumido}`)}`,
+                    'Uber': `https://m.uber.com/ul/?${parametrosUber}`
+                };
+
+                document.querySelectorAll('[data-link-transporte]').forEach((link) => {
+                    link.href = links[link.dataset.linkTransporte] || '#';
+                });
+            }
+
+            function atualizarLinksHospedagem() {
+                const destinoBusca = [evento.cidade, evento.uf].filter(Boolean).join(', ')
+                    || evento.endereco
+                    || evento.nome;
+                const destinoCodificado = encodeURIComponent(destinoBusca);
+                const links = {
+                    'Booking.com': `https://www.booking.com/searchresults.pt-br.html?ss=${destinoCodificado}`,
+                    'Airbnb': `https://www.airbnb.com.br/s/${destinoCodificado}/homes`,
+                    'Hotels.com': `https://www.hoteis.com/Hotel-Search?destination=${destinoCodificado}`,
+                    'HostelWorld': `https://www.hostelworld.com/st/hostels/?search_keywords=${destinoCodificado}`
+                };
+
+                document.querySelectorAll('[data-link-hospedagem]').forEach((link) => {
+                    link.href = links[link.dataset.linkHospedagem] || link.href;
+                });
+            }
 
             async function carregarEvento() {
                 const resposta = await fetch(`api/eventos/${evento.id}`);
@@ -1172,27 +1139,53 @@ $idEvento = (int) $idInformado;
                 }
 
                 const eventoApi = dados.evento;
-                const endereco = [eventoApi.rua_evento, eventoApi.cidade_evento]
-                    .filter(Boolean)
-                    .join(', ');
-                const enderecoComUf = [endereco, eventoApi.uf].filter(Boolean).join(' - ');
+                const enderecoBase = eventoApi.endereco_evento
+                    || [eventoApi.rua_evento, eventoApi.cidade_evento, eventoApi.uf]
+                        .filter(Boolean)
+                        .join(', ');
+                const rua = String(eventoApi.rua_evento || '').trim();
+                const numero = String(eventoApi.numero_endereco || '').trim();
+                let enderecoComNumero = String(enderecoBase || '').trim();
+                if (rua && numero && enderecoComNumero.toLocaleLowerCase('pt-BR').startsWith(rua.toLocaleLowerCase('pt-BR'))) {
+                    const complemento = enderecoComNumero.slice(rua.length).replace(/^\s*,\s*/, '');
+                    enderecoComNumero = [rua, numero, complemento].filter(Boolean).join(', ');
+                } else if (!enderecoComNumero) {
+                    enderecoComNumero = [rua, numero, eventoApi.cidade_evento, eventoApi.uf]
+                        .filter(Boolean)
+                        .join(', ');
+                }
 
                 Object.assign(evento, {
                     nome: eventoApi.nome_evento || 'Evento',
                     cidade: eventoApi.cidade_evento || '',
                     uf: eventoApi.uf || '',
-                    rua: eventoApi.rua_evento || '',
-                    local: eventoApi.local_evento || '',
+                    rua,
+                    numero,
+                    cep: eventoApi.cep_evento || '',
                     data: eventoApi.data_evento || '',
                     horario: eventoApi.horario_evento || '',
-                    endereco: [eventoApi.local_evento, enderecoComUf].filter(Boolean).join(' - ')
+                    endereco: enderecoComNumero,
+                    gratuidade: Boolean(eventoApi.gratuidade),
+                    valorMinimo: Number(eventoApi.valor_ingresso_minimo || 0),
+                    valorMaximo: eventoApi.valor_ingresso_maximo === null
+                        ? null
+                        : Number(eventoApi.valor_ingresso_maximo)
                 });
+
+                custoIngresso = evento.gratuidade ? 0 : evento.valorMinimo;
+                atualizarLinksTransporte();
+                atualizarLinksHospedagem();
 
                 document.getElementById('tituloEvento').textContent = evento.nome;
                 document.getElementById('enderecoEvento').textContent = evento.endereco || 'Endereço não informado';
-                document.getElementById('resumoDestino').textContent = evento.local || evento.nome;
+                document.getElementById('resumoDestino').textContent = evento.endereco || evento.nome;
                 document.getElementById('textoDestinoTransporte').textContent =
                     `Pesquise opções de transporte para ${evento.cidade || 'o evento'}, ${evento.uf} e informe o valor escolhido.`;
+                document.getElementById('custoMinimoEvento').textContent = evento.gratuidade
+                    ? 'Entrada gratuita: não há custo de ingresso no planejamento.'
+                    : `Valor mínimo informado para o ingresso: ${moeda(custoIngresso)}.`;
+                document.getElementById('resumoIngresso').textContent = moeda(custoIngresso);
+                atualizarResumo();
             }
 
 
@@ -1200,7 +1193,7 @@ $idEvento = (int) $idInformado;
                CONFIGURAÇÕES
             ========================================================= */
 
-            const custoIngresso = 265;
+            let custoIngresso = 0;
 
 
             /* =========================================================
@@ -1229,6 +1222,7 @@ $idEvento = (int) $idInformado;
 
             let rotaCalculada = false;
 
+            let idPlanejamentoExistente = null;
 
             /*
                 Controle para impedir
@@ -1314,81 +1308,87 @@ $idEvento = (int) $idInformado;
 
             ========================================================= */
 
-            async function localizarEvento() {
+            function coordenadasValidas(latitude, longitude) {
+                return Number.isFinite(latitude)
+                    && Number.isFinite(longitude)
+                    && latitude >= -90
+                    && latitude <= 90
+                    && longitude >= -180
+                    && longitude <= 180;
+            }
 
-                try {
-
-                    const endereco =
-                        `${evento.rua || ""}, ` +
-                        `${evento.cidade || ""} - ` +
-                        `${evento.uf || ""}, Brasil`;
-
-
-                    const url =
-                        "https://nominatim.openstreetmap.org/search" +
-                        "?format=json" +
-                        "&limit=1" +
-                        "&countrycodes=br" +
-                        "&q=" +
-                        encodeURIComponent(
-                            endereco
-                        );
-
-
-                    const resposta =
-                        await fetch(
-                            url, {
-                                headers: {
-                                    Accept: "application/json"
-                                }
-                            }
-                        );
-
-
-                    const locais =
-                        await resposta.json();
-
-
-                    if (!locais.length) {
-
-                        throw new Error(
-                            "Evento não localizado."
-                        );
-
-                    }
-
-
-                    destino = {
-
-                        lat: Number(
-                            locais[0].lat
-                        ),
-
-                        lng: Number(
-                            locais[0].lon
-                        )
-
-                    };
-
-
-                    return true;
-
-
-                } catch (erro) {
-
-                    console.error(erro);
-
-
-                    mostrarMensagem(
-                        "Não foi possível localizar automaticamente o endereço do evento.",
-                        true
-                    );
-
-
+            async function localizarEventoPorCep() {
+                const cep = String(evento.cep || '').replace(/\D/g, '');
+                if (cep.length !== 8) {
                     return false;
-
                 }
 
+                const resposta = await fetch(`https://brasilapi.com.br/api/cep/v2/${cep}`, {
+                    headers: {Accept: 'application/json'}
+                });
+                if (!resposta.ok) {
+                    return false;
+                }
+
+                const dados = await resposta.json();
+                const latitude = Number(dados?.location?.coordinates?.latitude);
+                const longitude = Number(dados?.location?.coordinates?.longitude);
+                if (!coordenadasValidas(latitude, longitude)) {
+                    return false;
+                }
+
+                destino = {lat: latitude, lng: longitude};
+                return true;
+            }
+
+            async function localizarEvento() {
+                try {
+                    const endereco = [
+                        evento.rua,
+                        evento.numero,
+                        evento.cidade,
+                        evento.uf,
+                        'Brasil'
+                    ].filter(Boolean).join(', ');
+                    const url =
+                        'https://nominatim.openstreetmap.org/search' +
+                        '?format=json' +
+                        '&limit=1' +
+                        '&countrycodes=br' +
+                        '&q=' +
+                        encodeURIComponent(endereco);
+                    const resposta = await fetch(url, {
+                        headers: {Accept: 'application/json'}
+                    });
+                    const locais = await resposta.json();
+
+                    if (!resposta.ok || !Array.isArray(locais) || !locais.length) {
+                        throw new Error('Evento não localizado.');
+                    }
+
+                    const latitude = Number(locais[0].lat);
+                    const longitude = Number(locais[0].lon);
+                    if (!coordenadasValidas(latitude, longitude)) {
+                        throw new Error('Coordenadas inválidas.');
+                    }
+
+                    destino = {lat: latitude, lng: longitude};
+                    return true;
+                } catch (erro) {
+                    try {
+                        if (await localizarEventoPorCep()) {
+                            return true;
+                        }
+                    } catch (erroCep) {
+                        console.error(erroCep);
+                    }
+                    console.error(erro);
+                    mostrarMensagem(
+                        'Não foi possível localizar automaticamente o endereço do evento.',
+                        true
+                    );
+                    return false;
+                }
             }
 
 
@@ -1493,10 +1493,10 @@ $idEvento = (int) $idInformado;
                         return;
                     }
 
-                    if (!transporte || transporte <= 0) {
+                    if (campoTransporte.value === '' || !Number.isFinite(transporte) || transporte < 0) {
 
                         notificarErroPlanejamento(
-                            "Informe o valor do transporte antes de continuar."
+                            "Informe um valor de transporte igual ou maior que zero."
                         );
 
                         campoTransporte.focus();
@@ -1556,6 +1556,23 @@ $idEvento = (int) $idInformado;
 
                         }
 
+                        return;
+                    }
+
+                    const campoDistancia = document.getElementById('distanciaPlanejamento');
+                    const campoTempo = document.getElementById('tempoPlanejamento');
+                    const distancia = Number(campoDistancia.value);
+                    const tempo = Number(campoTempo.value);
+
+                    if (!Number.isFinite(distancia) || distancia <= 0) {
+                        notificarErroPlanejamento('Informe uma distância válida para a rota.');
+                        campoDistancia.focus();
+                        return;
+                    }
+
+                    if (!Number.isFinite(tempo) || tempo < 1) {
+                        notificarErroPlanejamento('Informe o tempo estimado da rota em minutos.');
+                        campoTempo.focus();
                         return;
                     }
 
@@ -1697,7 +1714,7 @@ $idEvento = (int) $idInformado;
                    ETAPA 4 - HOSPEDAGEM
                 ===================================================== */
 
-                if (numero === 4) {
+                if (numero === 4 && hospedagemSelecionada) {
 
                     atualizarHospedagem();
 
@@ -1715,103 +1732,6 @@ $idEvento = (int) $idInformado;
                 }
 
             }
-            /* =====================================================
-               PROTEÇÃO CONTRA PULAR ETAPA
-            ===================================================== */
-
-            if (
-                numero !==
-                numeroAtual + 1
-            ) {
-
-
-                if (
-                    numero >
-                    numeroAtual + 1
-                ) {
-
-                    notificarErroPlanejamento(
-                        "Conclua as etapas anteriores antes de continuar."
-                    );
-
-                }
-
-
-                return;
-
-            }
-
-
-            atualizarResumo();
-
-
-            document
-                .querySelectorAll(".etapa")
-                .forEach(
-                    etapa =>
-                    etapa.classList.remove(
-                        "ativa"
-                    )
-                );
-
-
-            document
-                .getElementById(
-                    `etapa${numero}`
-                )
-                .classList.add(
-                    "ativa"
-                );
-
-
-            atualizarTimeline(
-                numero
-            );
-
-
-            /* ETAPA 3 */
-
-            if (numero === 3) {
-
-                setTimeout(
-                    async() => {
-
-                        if (!destino) {
-
-                            await localizarEvento();
-
-                        }
-
-
-                        iniciarMapa();
-
-                    },
-                    150
-                );
-
-            }
-
-
-            /* ETAPA 4 */
-
-            if (numero === 4) {
-
-                atualizarHospedagem();
-
-            }
-
-
-            /* ETAPA 5 */
-
-            if (numero === 5) {
-
-                atualizarResumo();
-
-            }
-
-            }
-
-
             /* =========================================================
                VOLTAR
             ========================================================= */
@@ -1967,6 +1887,13 @@ $idEvento = (int) $idInformado;
                     ).textContent =
                     `Transporte selecionado: ${tipo}`;
 
+                document.getElementById('meioTransportePlanejamento').value = tipo;
+                document.querySelectorAll('[data-transporte]').forEach((opcao) => {
+                    const selecionada = opcao.dataset.transporte === tipo;
+                    opcao.classList.toggle('selecionada', selecionada);
+                    opcao.setAttribute('aria-pressed', String(selecionada));
+                });
+
 
                 calcularEstimativaTransporte();
 
@@ -1978,149 +1905,53 @@ $idEvento = (int) $idInformado;
             ========================================================= */
 
             function calcularEstimativaTransporte() {
-
-
                 const box =
                     document.getElementById(
                         "estimativaTransporte"
                     );
-
-
                 if (!transporteSelecionado) {
-
                     box.hidden = true;
-
-
                     return;
-
                 }
-
-
-                let minimo = 0;
-
-                let maximo = 0;
-
-                let texto = "";
-
-
-                switch (
-                    transporteSelecionado
-                ) {
-
-
-                    case "Ônibus":
-
-                        minimo = 35;
-
-                        maximo = 80;
-
-                        texto =
-                            "Estimativa de passagem rodoviária. O valor real depende da origem, data e empresa.";
-
-                        break;
-
-
-                    case "Carro":
-
-                        minimo = 30;
-
-                        maximo = 100;
-
-                        texto =
-                            "Estimativa de combustível e pedágios. O valor real depende da distância e do veículo.";
-
-                        break;
-
-
-                    case "Uber":
-
-                        minimo = 25;
-
-                        maximo = 100;
-
-                        texto =
-                            "Estimativa de viagem. O preço real varia conforme distância, horário e demanda.";
-
-                        break;
-
-
-                    case "Avião":
-
-                        minimo = 300;
-
-                        maximo = 1200;
-
-                        texto =
-                            "Estimativa de passagem aérea. O valor varia conforme origem, data e antecedência.";
-
-                        break;
-
-                }
-
-
                 box.innerHTML = `
-
-        <strong>
-            Estimativa de ${transporteSelecionado}
-        </strong>
-
-        <br>
-
-        Faixa estimada:
-        ${moeda(minimo)}
-        –
-        ${moeda(maximo)}
-
-        <br>
-
-        <small>
-            ${texto}
-        </small>
-
-    `;
-
-
+                    <strong>${transporteSelecionado} selecionado</strong><br>
+                    <small>Informe abaixo o valor real consultado. O ShowMe não preenche preços simulados.</small>
+                `;
                 box.hidden = false;
+            }
 
-
-                /*
-                    Coloca a média automaticamente
-                    no campo.
-
-                    O usuário ainda pode alterar.
-                */
-
-                const media =
-                    (
-                        minimo +
-                        maximo
-                    ) / 2;
-
-
-                const campo =
-                    document.getElementById(
-                        "transporte"
-                    );
-
-
-                if (!campo.value ||
-                    Number(campo.value) === 0
-                ) {
-
-                    campo.value =
-                        media.toFixed(2);
-
-                }
-
-
+            function mostrarResumoPlanejamentoSalvo() {
+                document.querySelectorAll('.etapa').forEach((etapa) => {
+                    etapa.classList.remove('ativa');
+                });
+                document.getElementById('etapa5').classList.add('ativa');
+                etapaConcluida = {1: true, 2: true, 3: true, 4: true};
                 atualizarResumo();
-
+                atualizarTimeline(5);
             }
 
 
             /* =========================================================
                HOSPEDAGEM
             ========================================================= */
+
+            function atualizarEstadoHospedagem() {
+                const opcaoSim = document.getElementById('opcaoHospedagemSim');
+                const opcaoNao = document.getElementById('opcaoHospedagemNao');
+                const simSelecionado = hospedagemDecidida && hospedagemSelecionada;
+                const naoSelecionado = hospedagemDecidida && !hospedagemSelecionada;
+
+                opcaoSim.classList.toggle('selecionada', simSelecionado);
+                opcaoSim.setAttribute('aria-pressed', String(simSelecionado));
+                opcaoNao.classList.toggle('selecionada', naoSelecionado);
+                opcaoNao.setAttribute('aria-pressed', String(naoSelecionado));
+
+                document.querySelectorAll('[data-hospedagem]').forEach((opcao) => {
+                    const selecionada = simSelecionado && opcao.dataset.hospedagem === hospedagemNome;
+                    opcao.classList.toggle('selecionada', selecionada);
+                    opcao.setAttribute('aria-pressed', String(selecionada));
+                });
+            }
 
             function mostrarHospedagem() {
 
@@ -2136,6 +1967,9 @@ $idEvento = (int) $idInformado;
                 document.getElementById(
                         "opcoesHospedagem"
                     ).hidden = false;
+
+
+                atualizarEstadoHospedagem();
 
 
                 atualizarHospedagem();
@@ -2175,6 +2009,9 @@ $idEvento = (int) $idInformado;
                     "Você escolheu continuar sem hospedagem.";
 
 
+                atualizarEstadoHospedagem();
+
+
                 atualizarResumo();
 
             }
@@ -2199,6 +2036,9 @@ $idEvento = (int) $idInformado;
                     `Hospedagem selecionada: ${nome}`;
 
 
+                atualizarEstadoHospedagem();
+
+
                 atualizarResumo();
 
             }
@@ -2211,10 +2051,8 @@ $idEvento = (int) $idInformado;
                Aqui usamos OpenStreetMap/Overpass para descobrir
                hospedagens próximas.
 
-               O OpenStreetMap NÃO fornece preços de reserva.
-
-               Por isso o sistema apresenta uma faixa de preço
-               estimada, deixando claro que é uma estimativa.
+               O OpenStreetMap NÃO fornece preços ou disponibilidade;
+               esses dados precisam ser consultados nos sites de reserva.
 
             ========================================================= */
 
@@ -2340,92 +2178,44 @@ $idEvento = (int) $idInformado;
                     }
 
 
-                    resultado.innerHTML =
-                        locais.map(
-                            item => {
+                    const listaHospedagens = document.createElement('div');
+                    listaHospedagens.className = 'resultado-hospedagem-grid';
 
+                    locais.forEach((item) => {
+                        const nome = item.tags.name;
+                        const tipo = item.tags.tourism === 'hostel'
+                            ? 'Hostel'
+                            : item.tags.tourism === 'guest_house'
+                                ? 'Pousada'
+                                : 'Hotel';
+                        const endereco = [
+                            item.tags['addr:street'],
+                            item.tags['addr:housenumber'],
+                            item.tags['addr:suburb']
+                        ].filter(Boolean).join(', ');
+                        const botao = document.createElement('button');
+                        botao.type = 'button';
+                        botao.className = 'resultado-hospedagem';
+                        botao.dataset.hospedagem = nome;
+                        botao.setAttribute('aria-pressed', 'false');
 
-                                const nome =
-                                    item.tags.name;
+                        const icone = document.createElement('i');
+                        icone.className = 'bi bi-building';
+                        icone.setAttribute('aria-hidden', 'true');
+                        const titulo = document.createElement('strong');
+                        titulo.textContent = nome;
+                        const descricao = document.createElement('small');
+                        descricao.textContent = endereco ? `${tipo} · ${endereco}` : tipo;
+                        const ajuda = document.createElement('span');
+                        ajuda.textContent = 'Selecionar como referência';
 
+                        botao.append(icone, titulo, descricao, ajuda);
+                        botao.addEventListener('click', () => selecionarHospedagem(nome));
+                        listaHospedagens.append(botao);
+                    });
 
-                                const estimativa =
-                                    item.tags.tourism ===
-                                    "hostel"
-
-                                ?
-                                "R$ 80 – R$ 180/noite"
-
-                                :
-                                "R$ 180 – R$ 450/noite";
-
-
-                                return `
-
-                        <div
-                            class="resultado-hospedagem"
-                        >
-
-                            <strong>
-                                ${escapeHtml(nome)}
-                            </strong>
-
-                            <small>
-                                ${
-                                    item.tags.tourism ===
-                                    "hostel"
-                                        ? "Hostel"
-                                        : "Hospedagem"
-                                }
-                            </small>
-
-                            <span>
-                                Estimativa:
-                                ${estimativa}
-                            </span>
-
-                        </div>
-
-                    `;
-
-                            }
-                        )
-                        .join("");
-
-
-                    /*
-                        Média usada inicialmente no orçamento.
-
-                        O usuário pode alterar.
-                    */
-
-                    const media =
-                        locais.some(
-                            item =>
-                            item.tags.tourism ===
-                            "hostel"
-                        ) ?
-                        220 :
-                        315;
-
-
-                    const campo =
-                        document.getElementById(
-                            "hospedagem"
-                        );
-
-
-                    if (!campo.value ||
-                        Number(campo.value) === 0
-                    ) {
-
-                        campo.value =
-                            media.toFixed(2);
-
-                    }
-
-
-                    atualizarResumo();
+                    resultado.replaceChildren(listaHospedagens);
+                    atualizarEstadoHospedagem();
 
 
                 } catch (erro) {
@@ -3163,6 +2953,8 @@ $idEvento = (int) $idInformado;
                         rota.distance /
                         1000;
 
+                    document.getElementById('distanciaPlanejamento').value = distanciaKm.toFixed(2);
+
 
                     document.getElementById(
                             "distanciaRota"
@@ -3181,6 +2973,8 @@ $idEvento = (int) $idInformado;
                             rota.duration /
                             60
                         );
+
+                    document.getElementById('tempoPlanejamento').value = String(minutos);
 
 
                     let tempoTexto;
@@ -3509,6 +3303,50 @@ function notificarErroPlanejamento(mensagem) {
     window.ShowMeUI.toast(mensagem, {variante: 'erro'});
 }
 
+function abrirEtapaPlanejamento(numero) {
+    document.querySelectorAll('.etapa').forEach((etapa) => etapa.classList.remove('ativa'));
+    document.getElementById(`etapa${numero}`).classList.add('ativa');
+    atualizarTimeline(numero);
+
+    if (numero === 3) {
+        window.setTimeout(async () => {
+            if (!destino) await localizarEvento();
+            if (destino) await iniciarMapa();
+            mapa?.invalidateSize();
+        }, 150);
+    }
+}
+
+function configurarBotaoPlanejamentoFinalizado() {
+    const botao = document.getElementById('botaoFinalizarPlanejamento');
+    botao.type = 'button';
+    botao.dataset.estado = 'finalizado';
+    botao.classList.add('botao-editar-planejamento');
+    botao.innerHTML = '<i class="bi bi-pencil-square" aria-hidden="true"></i><span>Editar planejamento</span>';
+    botao.disabled = false;
+    document.getElementById('botaoVoltarResumo').hidden = true;
+}
+
+async function habilitarEdicaoPlanejamento() {
+    const deveEditar = await window.ShowMeUI.confirmar({
+        titulo: 'Editar planejamento',
+        texto: 'Deseja reabrir este planejamento? As alterações só serão gravadas quando você salvar novamente.',
+        confirmarTexto: 'Editar',
+        cancelarTexto: 'Cancelar',
+        variante: 'importante'
+    });
+    if (!deveEditar) return;
+
+    const botao = document.getElementById('botaoFinalizarPlanejamento');
+    botao.type = 'submit';
+    botao.dataset.estado = 'editando';
+    botao.classList.remove('botao-editar-planejamento');
+    botao.innerHTML = '<i class="bi bi-check2-circle" aria-hidden="true"></i><span>Salvar alterações</span>';
+    document.getElementById('botaoVoltarResumo').hidden = false;
+    document.getElementById('mensagemPlanejamento').textContent = '';
+    abrirEtapaPlanejamento(1);
+}
+
 async function lerRespostaJson(resposta) {
     const texto = await resposta.text();
     try {
@@ -3566,7 +3404,7 @@ async function carregarPlanejamentoExistente() {
     const dados = await lerRespostaJson(resposta);
 
     if (!resposta.ok) {
-        return;
+        return null;
     }
 
     const existente = (dados.planejamentos || []).find(
@@ -3574,9 +3412,45 @@ async function carregarPlanejamentoExistente() {
     );
 
     if (existente) {
-        document.getElementById('botaoFinalizarPlanejamento').textContent = 'Planejamento finalizado';
+        idPlanejamentoExistente = Number(existente.id_rota);
+        custoIngresso = Number(existente.custo_ingresso ?? custoIngresso);
+        document.getElementById('resumoIngresso').textContent = moeda(custoIngresso);
+        document.getElementById('orcamento').value = existente.orcamento_total ?? 0;
+        document.getElementById('transporte').value = existente.custo_transporte ?? 0;
+        document.getElementById('hospedagem').value = existente.custo_hospedagem ?? 0;
+        document.getElementById('meioTransportePlanejamento').value = existente.meio_transporte || '';
+        document.getElementById('distanciaPlanejamento').value = existente.distancia_km ?? '';
+        document.getElementById('tempoPlanejamento').value = existente.tempo_estimado ?? '';
+        document.getElementById('origemManual').value = existente.origem || '';
+        transporteSelecionado = existente.meio_transporte || '';
+        hospedagemSelecionada = Boolean(existente.hospedagem_necessaria);
+        hospedagemDecidida = true;
+        hospedagemNome = existente.nome_hospedagem || '';
+        document.getElementById('opcoesHospedagem').hidden = !hospedagemSelecionada;
+        origem = existente.origem ? {lat: null, lng: null, descricao: existente.origem} : origem;
+        rotaCalculada = Boolean(existente.distancia_km && existente.tempo_estimado);
+        document.getElementById('transporteSelecionado').textContent = transporteSelecionado
+            ? `Transporte selecionado: ${transporteSelecionado}`
+            : 'Nenhum transporte selecionado.';
+        document.getElementById('hospedagemSelecionada').textContent = hospedagemSelecionada
+            ? `Hospedagem selecionada: ${hospedagemNome || 'não informada'}`
+            : 'Você escolheu continuar sem hospedagem.';
+        document.getElementById('resumoOrigem').textContent = existente.origem || '—';
+        document.getElementById('resumoDistancia').textContent = existente.distancia_km !== null
+            ? `${Number(existente.distancia_km).toLocaleString('pt-BR')} km`
+            : '—';
+        document.getElementById('resumoTempo').textContent = existente.tempo_estimado !== null
+            ? `${Number(existente.tempo_estimado).toLocaleString('pt-BR')} min`
+            : '—';
+        if (transporteSelecionado) selecionarTransporte(transporteSelecionado);
+        atualizarEstadoHospedagem();
+        atualizarResumo();
+        configurarBotaoPlanejamentoFinalizado();
         await exibirAcoesGoogleAgenda(existente.id_rota);
+        return existente;
     }
+
+    return null;
 }
 
 function confirmarFinalizacaoComConflito(conflitos) {
@@ -3668,6 +3542,27 @@ async function finalizarPlanejamento(eventoSubmit) {
     const meioTransporte = document.getElementById('meioTransportePlanejamento').value;
     const distancia = document.getElementById('distanciaPlanejamento').value;
     const tempo = document.getElementById('tempoPlanejamento').value;
+    const orcamento = Number(document.getElementById('orcamento').value) || 0;
+    const custoTransporte = Number(document.getElementById('transporte').value) || 0;
+    const custoHospedagem = hospedagemSelecionada
+        ? Number(document.getElementById('hospedagem').value) || 0
+        : 0;
+    const origemInformada = document.getElementById('origemManual').value.trim()
+        || document.getElementById('origemTexto').textContent.trim();
+
+    const atualizandoPlanejamento = Number.isInteger(idPlanejamentoExistente)
+        && idPlanejamentoExistente > 0;
+    const deveSalvar = await window.ShowMeUI.confirmar({
+        titulo: atualizandoPlanejamento ? 'Salvar alterações' : 'Finalizar planejamento',
+        texto: atualizandoPlanejamento
+            ? 'Confirma a substituição dos dados salvos por estas novas informações?'
+            : 'Confirma este planejamento? Ele passará a aparecer em Meus Eventos e no calendário.',
+        confirmarTexto: atualizandoPlanejamento ? 'Salvar' : 'Finalizar',
+        cancelarTexto: 'Cancelar',
+        variante: 'importante'
+    });
+    if (!deveSalvar) return;
+
     mensagem.textContent = 'Verificando sua agenda...';
     mensagem.classList.remove('erro');
     botao.disabled = true;
@@ -3681,14 +3576,24 @@ async function finalizarPlanejamento(eventoSubmit) {
         }
 
         mensagem.textContent = 'Salvando planejamento...';
-        const resposta = await fetch('api/planejamento/', {
-            method: 'POST',
+        const endpointPlanejamento = atualizandoPlanejamento
+            ? `api/planejamento/${idPlanejamentoExistente}`
+            : 'api/planejamento/';
+        const resposta = await fetch(endpointPlanejamento, {
+            method: atualizandoPlanejamento ? 'PUT' : 'POST',
             headers: {'Content-Type': 'application/json', Accept: 'application/json'},
             body: JSON.stringify({
                 id_evento: evento.id,
                 meio_transporte: meioTransporte,
                 distancia_km: distancia,
-                tempo_estimado: tempo
+                tempo_estimado: tempo,
+                origem: origemInformada,
+                orcamento_total: orcamento,
+                custo_ingresso: custoIngresso,
+                custo_transporte: custoTransporte,
+                hospedagem_necessaria: hospedagemSelecionada,
+                nome_hospedagem: hospedagemNome,
+                custo_hospedagem: custoHospedagem
             })
         });
         const dados = await lerRespostaJson(resposta);
@@ -3698,20 +3603,23 @@ async function finalizarPlanejamento(eventoSubmit) {
         }
 
         const idRota = dados.planejamento?.id_rota || dados.id_rota;
+        idPlanejamentoExistente = Number(idRota) || idPlanejamentoExistente;
         atualizarResumo();
-        mensagem.replaceChildren();
-        mensagem.append(resposta.status === 409
-            ? 'Este evento já possui um planejamento finalizado. '
-            : 'Planejamento finalizado com sucesso. ');
-
-        const linkPlanejados = document.createElement('a');
-        linkPlanejados.href = 'meusEventos.php?aba=planejados';
-        linkPlanejados.textContent = 'Ver planejados ou desfazer';
-        mensagem.append(linkPlanejados);
-        botao.textContent = 'Planejamento finalizado';
+        mensagem.textContent =
+            resposta.status === 409
+                ? 'Este evento já possui um planejamento finalizado.'
+                : atualizandoPlanejamento
+                    ? 'Planejamento atualizado com sucesso.'
+                    : 'Planejamento finalizado com sucesso.';
+        configurarBotaoPlanejamentoFinalizado();
 
         if (resposta.status !== 409) {
-            window.ShowMeUI.toast('Planejamento salvo com sucesso!', {variante: 'sucesso'});
+            window.ShowMeUI.toast(
+                atualizandoPlanejamento
+                    ? 'Planejamento atualizado com sucesso!'
+                    : 'Planejamento salvo com sucesso!',
+                {variante: 'sucesso'}
+            );
         }
 
         await exibirAcoesGoogleAgenda(idRota);
@@ -3802,15 +3710,35 @@ document
     .getElementById("formPlanejamento")
     .addEventListener("submit", finalizarPlanejamento);
 
+document.getElementById('botaoFinalizarPlanejamento').addEventListener('click', (eventoClique) => {
+    if (eventoClique.currentTarget.dataset.estado !== 'finalizado') return;
+    eventoClique.preventDefault();
+    habilitarEdicaoPlanejamento();
+});
+
+document.getElementById('transporte').addEventListener('keydown', (eventoTeclado) => {
+    if (eventoTeclado.key !== 'Enter') return;
+    eventoTeclado.preventDefault();
+    proximaEtapa(3);
+});
+
+document.getElementById('hospedagem').addEventListener('keydown', (eventoTeclado) => {
+    if (eventoTeclado.key !== 'Enter') return;
+    eventoTeclado.preventDefault();
+    proximaEtapa(5);
+});
+
 
 /* =========================================================
    INICIALIZAÇÃO
 ========================================================= */
 
 async function inicializarPlanejamento() {
+    let planejamentoExistente = null;
+
     try {
         await carregarEvento();
-        await carregarPlanejamentoExistente();
+        planejamentoExistente = await carregarPlanejamentoExistente();
     } catch (erro) {
         document.getElementById("tituloEvento").textContent = erro.message;
         document.getElementById("botaoFinalizarPlanejamento").disabled = true;
@@ -3818,7 +3746,11 @@ async function inicializarPlanejamento() {
     }
 
     atualizarResumo();
-    atualizarTimeline(1);
+    if (planejamentoExistente) {
+        mostrarResumoPlanejamentoSalvo();
+    } else {
+        atualizarTimeline(1);
+    }
 }
 
 inicializarPlanejamento();

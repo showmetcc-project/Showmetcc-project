@@ -3,10 +3,12 @@
     const parametros = new URLSearchParams(window.location.search);
     const idEvento = Number(parametros.get('id'));
     const idUsuario = Number(document.body.dataset.userId || 0);
+    const usuarioAdmin = document.body.dataset.userType === 'admin';
     const fallback = 'assets/img/bannerEventoPadrao.png';
     let posts = [];
     let midias = [];
     let categoriaAtual = '';
+    let alvoDenunciaAtual = null;
 
     async function json(resposta) {
         const texto = await resposta.text();
@@ -20,6 +22,16 @@
         if (!valor) return '';
         const data = new Date(valor);
         return Number.isNaN(data.getTime()) ? valor : new Intl.DateTimeFormat('pt-BR', {dateStyle:'medium', timeStyle:'short'}).format(data);
+    }
+    function formatarValor(valor) {
+        return Number(valor).toLocaleString('pt-BR', {style:'currency', currency:'BRL'});
+    }
+    function faixaPreco(evento) {
+        const minimo = Number(evento.valor_ingresso_minimo || 0);
+        const maximo = Number(evento.valor_ingresso_maximo || 0);
+        if (minimo <= 0) return 'Consulte valores';
+        if (maximo > minimo) return `${formatarValor(minimo)} – ${formatarValor(maximo)}`;
+        return `A partir de ${formatarValor(minimo)}`;
     }
     function nome(pessoa) { return [pessoa.nome_user, pessoa.sobrenome].filter(Boolean).join(' ') || 'Usuário'; }
     function avatar(pessoa) { return pessoa.foto_perfil ? caminho(pessoa.foto_perfil) : 'assets/img/showme.png'; }
@@ -89,10 +101,41 @@
         const resposta=await fetch(`api/comunidade-posts/${id}`,{method:'DELETE'}); const dados=await json(resposta);
         if(!resposta.ok){window.ShowMeUI.toast(dados.erro||'Não foi possível excluir.',{variante:'erro'});return;} await carregarPosts();window.ShowMeUI.toast('Publicação excluída.',{variante:'sucesso'});
     }
-    async function denunciarConteudo(alvo) {
-        const motivo=prompt('Informe o motivo da denúncia:'); if(!motivo||!motivo.trim())return;
-        const resposta=await fetch('api/comunidade-denuncias',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({...alvo,motivo:motivo.trim()})});
-        const dados=await json(resposta); window.ShowMeUI.toast(resposta.ok?'Denúncia registrada para revisão.':(dados.erro||'Não foi possível denunciar.'),{variante:resposta.ok?'sucesso':'erro'});
+    function denunciarConteudo(alvo) {
+        alvoDenunciaAtual = alvo;
+        const form = document.getElementById('formDenuncia');
+        form.reset();
+        document.getElementById('campoOutroMotivo').hidden = true;
+        document.getElementById('outroMotivoDenuncia').required = false;
+        document.getElementById('btnEnviarDenuncia').disabled = true;
+        bootstrap.Modal.getOrCreateInstance(document.getElementById('modalDenuncia')).show();
+    }
+    async function enviarDenuncia(evento) {
+        evento.preventDefault();
+        if (!alvoDenunciaAtual) return;
+
+        const selecionado = document.querySelector('input[name="motivoDenuncia"]:checked');
+        const outro = document.getElementById('outroMotivoDenuncia').value.trim();
+        if (!selecionado || (selecionado.value === 'Outro motivo' && !outro)) return;
+
+        const motivo = selecionado.value === 'Outro motivo' ? `Outro motivo: ${outro}` : selecionado.value;
+        const botaoEnviar = document.getElementById('btnEnviarDenuncia');
+        botaoEnviar.disabled = true;
+
+        try {
+            const resposta = await fetch('api/comunidade-denuncias', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({...alvoDenunciaAtual, motivo})
+            });
+            const dados = await json(resposta);
+            if (!resposta.ok) throw new Error(dados.erro || 'Não foi possível denunciar.');
+            bootstrap.Modal.getOrCreateInstance(document.getElementById('modalDenuncia')).hide();
+            window.ShowMeUI.toast('Denúncia registrada para revisão.', {variante: 'sucesso'});
+        } catch (erro) {
+            window.ShowMeUI.toast(erro.message || 'Não foi possível denunciar.', {variante: 'erro'});
+            botaoEnviar.disabled = false;
+        }
     }
     async function carregarGaleria() {
         const alvo=document.getElementById('galeriaComunidade'); alvo.innerHTML='<p class="comunidade-estado">Carregando galeria...</p>';
@@ -121,11 +164,18 @@
     async function carregarEvento() {
         if(!Number.isInteger(idEvento)||idEvento<1)throw new Error('Informe um evento válido na URL.');
         const r=await fetch(`api/eventos/${idEvento}`);const d=await json(r);if(!r.ok||!d.evento)throw new Error(d.erro||'Evento não encontrado.');const evento=d.evento;
-        document.title=`Comunidade — ${evento.nome_evento} - ShowMe`;document.getElementById('nomeComunidadeEvento').textContent=evento.nome_evento;
+        document.title=`Comunidade — ${evento.nome_evento} - ShowMe`;
+        const linkEvento=document.getElementById('nomeComunidadeEvento');
+        const idEventoDetalhes=Number(evento.id_evento)||idEvento;
+        linkEvento.textContent=evento.nome_evento;
+        if (!usuarioAdmin && linkEvento instanceof HTMLAnchorElement) {
+            linkEvento.href=`detalhesEvento.php?id=${idEventoDetalhes}`;
+            linkEvento.setAttribute('aria-label',`Ver detalhes de ${evento.nome_evento}`);
+        }
         document.querySelector('#dataComunidadeEvento span').textContent=evento.data_evento?new Intl.DateTimeFormat('pt-BR',{dateStyle:'long'}).format(new Date(`${evento.data_evento}T12:00:00`)):'';
-        const local=document.getElementById('localComunidadeEvento');const textoLocal=[evento.local_evento,evento.cidade_evento,evento.uf].filter(Boolean).join(' — ');local.querySelector('span').textContent=textoLocal;local.hidden=!textoLocal;
+        const local=document.getElementById('localComunidadeEvento');const textoLocal=[evento.cidade_evento,evento.uf].filter(Boolean).join(' - ');local.querySelector('span').textContent=textoLocal;local.hidden=!textoLocal;
         const categoria=document.getElementById('categoriaComunidadeEvento');categoria.querySelector('span').textContent=evento.categoria_evento||'';categoria.hidden=!evento.categoria_evento;
-        const preco=document.getElementById('precoComunidadeEvento');preco.querySelector('span').textContent=String(evento.faixa_preco||'').trim()||'Consulte valores';preco.hidden=Boolean(evento.gratuidade);
+        const preco=document.getElementById('precoComunidadeEvento');preco.querySelector('span').textContent=faixaPreco(evento);preco.hidden=Boolean(evento.gratuidade);
         const img=document.getElementById('imagemComunidadeEvento');img.src=caminho(evento.imagem_evento);img.alt=evento.nome_evento;img.onerror=()=>{img.onerror=null;img.src=fallback;};
         document.getElementById('estadoComunidade').hidden=true;document.getElementById('conteudoComunidade').hidden=false;
     }
@@ -135,6 +185,15 @@
         const form=document.getElementById('formPublicacao'),categoria=document.getElementById('categoriaPublicacao'),texto=document.getElementById('textoPublicacao'),publicar=document.getElementById('btnPublicar');const validar=()=>{publicar.disabled=!(categoria.value&&texto.value.trim());};categoria.addEventListener('change',validar);texto.addEventListener('input',validar);
         form.addEventListener('submit',async(e)=>{e.preventDefault();publicar.disabled=true;const r=await fetch('api/comunidade-posts',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id_evento:idEvento,categoria:categoria.value,texto:texto.value.trim()})});const d=await json(r);if(!r.ok){window.ShowMeUI.toast(d.erro||'Não foi possível publicar.',{variante:'erro'});validar();return;}form.reset();validar();bootstrap.Modal.getOrCreateInstance(document.getElementById('modalPublicacao')).hide();await carregarPosts();window.ShowMeUI.toast('Publicação criada.',{variante:'sucesso'});});
         const arquivo=document.getElementById('arquivoMidia');arquivo.addEventListener('change',()=>document.getElementById('nomeArquivoMidia').textContent=arquivo.files[0]?.name||'');document.getElementById('formMidia').addEventListener('submit',async(e)=>{e.preventDefault();const form=e.currentTarget,data=new FormData(form);data.set('id_evento',String(idEvento));const botaoSubmit=form.querySelector('button[type=submit]');botaoSubmit.disabled=true;const r=await fetch('api/comunidade-midias',{method:'POST',body:data});const d=await json(r);if(!r.ok){window.ShowMeUI.toast(d.erro||'Não foi possível publicar a foto.',{variante:'erro'});botaoSubmit.disabled=false;return;}form.reset();document.getElementById('nomeArquivoMidia').textContent='';bootstrap.Modal.getOrCreateInstance(document.getElementById('modalMidia')).hide();botaoSubmit.disabled=false;await carregarGaleria();window.ShowMeUI.toast('Foto publicada na galeria.',{variante:'sucesso'});});
+        const formDenuncia=document.getElementById('formDenuncia');
+        const campoOutro=document.getElementById('campoOutroMotivo');
+        const outroMotivo=document.getElementById('outroMotivoDenuncia');
+        const btnEnviarDenuncia=document.getElementById('btnEnviarDenuncia');
+        const validarDenuncia=()=>{const selecionado=document.querySelector('input[name="motivoDenuncia"]:checked');const exigeOutro=selecionado?.value==='Outro motivo';campoOutro.hidden=!exigeOutro;outroMotivo.required=exigeOutro;btnEnviarDenuncia.disabled=!selecionado||(exigeOutro&&!outroMotivo.value.trim());};
+        formDenuncia.addEventListener('change',validarDenuncia);
+        outroMotivo.addEventListener('input',validarDenuncia);
+        formDenuncia.addEventListener('submit',enviarDenuncia);
+        document.getElementById('modalDenuncia').addEventListener('hidden.bs.modal',()=>{alvoDenunciaAtual=null;formDenuncia.reset();validarDenuncia();});
         const lightbox=document.getElementById('lightboxComunidade');lightbox.querySelector('[data-fechar-lightbox]').onclick=()=>lightbox.close();lightbox.addEventListener('click',(e)=>{if(e.target===lightbox)lightbox.close();});
     }
     iniciarInterface();

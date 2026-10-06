@@ -22,6 +22,10 @@ RewriteRule ^comunidade-curtidas/?$ apiComunidadeCurtidas.php [QSA,L]
 
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^comunidade-denuncias/(\d+)/?$ apiComunidadeDenuncias.php?id=$1 [QSA,L]
+
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
 RewriteRule ^comunidade-denuncias/?$ apiComunidadeDenuncias.php [QSA,L]
 
 RewriteCond %{REQUEST_FILENAME} !-f

@@ -42,6 +42,11 @@
 
 .carrossel-wrapper .swiper-wrapper { align-items: stretch; }
 
+.carrossel-wrapper.carrossel-poucos-itens {
+  -webkit-mask-image: none;
+  mask-image: none;
+}
+
 .carrossel-wrapper .swiper-slide {
   width: 300px;
   height: auto;
@@ -183,6 +188,19 @@
 }
 
 @media (max-width: 767.98px) {
+  .eventos h3 {
+    margin-left: 0;
+    text-align: center;
+  }
+
+  .sem-eventos,
+  .estado-eventos {
+    width: 100%;
+    margin-right: auto;
+    margin-left: auto;
+    text-align: center;
+  }
+
   .carrossel-eventos {
     width: 100%;
     padding-right: 0;
@@ -252,10 +270,10 @@
   line-height: 1;
 }
 
-.banner {
+.inicio .banner {
   width: 100%;
-  height: min(56vw, calc(100svh - var(--cabecalho-altura-real, 86px) - var(--titulo-height) - 24px), 620px);
-  min-height: 260px;
+  height: 620px;
+  min-height: 0;
   max-height: 620px;
   position: relative;
   z-index: 1;
@@ -277,7 +295,6 @@
   z-index: 2;
 }
 
-.banner.swiper,
 .banner .swiper-wrapper {
   height: 100%;
 }
@@ -285,7 +302,7 @@
 .banner .swiper-slide img {
   width: 100%;
   height: 100%;
-  object-fit: contain;
+  object-fit: cover;
   object-position: center;
   display: block;
 }
@@ -330,6 +347,14 @@
 .banner .swiper-button-prev,
 .banner .swiper-button-next {
   color: #00ff00;
+}
+
+.banner .swiper-button-prev {
+  left: clamp(18px, 2.5vw, 40px);
+}
+
+.banner .swiper-button-next {
+  right: clamp(18px, 2.5vw, 40px);
 }
 
 .banner .swiper-button-prev::after,
@@ -461,6 +486,18 @@
     font-size: 22px;
   }
 
+  .inicio .banner {
+    width: 100%;
+    height: 400px;
+    max-height: 400px;
+    min-height: 0;
+    border-radius: 0 0 14px 14px;
+  }
+
+  .banner::after {
+    height: 50px;
+  }
+
   .cards-grid {
     grid-template-columns: 1fr;
   }
@@ -484,15 +521,4 @@
     font-size: 16px;
   }
 
-  .banner {
-    width: 100%;
-    height: min(78vw, calc(100svh - var(--cabecalho-altura-real, 64px) - var(--titulo-height) - 18px), 400px);
-    max-height: 400px;
-    min-height: 220px;
-    border-radius: 0 0 14px 14px;
-  }
-
-  .banner::after {
-    height: 50px;
-  }
 }

@@ -75,6 +75,15 @@
    * Scroll top button
    */
   let scrollTop = document.querySelector('.scroll-top');
+  if (!scrollTop) {
+    scrollTop = document.createElement('a');
+    scrollTop.href = '#';
+    scrollTop.id = 'scroll-top';
+    scrollTop.className = 'scroll-top d-flex align-items-center justify-content-center';
+    scrollTop.setAttribute('aria-label', 'Voltar ao topo');
+    scrollTop.innerHTML = '<i class="bi bi-arrow-up-short" aria-hidden="true"></i>';
+    document.body.append(scrollTop);
+  }
 
   function toggleScrollTop() {
     if (scrollTop) {

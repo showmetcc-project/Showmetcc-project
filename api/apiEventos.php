@@ -29,6 +29,47 @@ function normalizarEspacos(string $texto): string
     return $normalizado === null ? $texto : $normalizado;
 }
 
+function chaveCategoriaEvento(string $categoria): string
+{
+    $categoria = normalizarEspacos($categoria);
+    $semAcentos = iconv('UTF-8', 'ASCII//TRANSLIT//IGNORE', $categoria);
+    return strtolower($semAcentos === false ? $categoria : $semAcentos);
+}
+
+function normalizarCategoriasEvento($valor): string
+{
+    $permitidas = [
+        'Música', 'Cinema', 'Show Nacional', 'Show Internacional',
+        'Workshop', 'Oficina', 'Gastronômico'
+    ];
+    $mapa = [];
+    foreach ($permitidas as $categoria) {
+        $mapa[chaveCategoriaEvento($categoria)] = $categoria;
+    }
+
+    $recebidas = is_array($valor)
+        ? $valor
+        : preg_split('/\s*,\s*/u', (string) $valor, -1, PREG_SPLIT_NO_EMPTY);
+    $normalizadas = [];
+
+    foreach ($recebidas ?: [] as $categoria) {
+        if (!is_scalar($categoria)) {
+            responder(['erro' => 'categoria_evento contém um valor inválido'], 400);
+        }
+        $chave = chaveCategoriaEvento((string) $categoria);
+        if (!isset($mapa[$chave])) {
+            responder(['erro' => 'Categoria de evento inválida'], 400);
+        }
+        $normalizadas[$mapa[$chave]] = true;
+    }
+
+    if ($normalizadas === []) {
+        responder(['erro' => 'Selecione pelo menos uma categoria para o evento'], 400);
+    }
+
+    return implode(', ', array_keys($normalizadas));
+}
+
 function atualizarTextoOpcional(array $dados, string $campo, $valorAtual): ?string
 {
     if (!array_key_exists($campo, $dados)) {
@@ -37,6 +78,55 @@ function atualizarTextoOpcional(array $dados, string $campo, $valorAtual): ?stri
 
     $valor = trim((string) $dados[$campo]);
     return $valor === '' ? null : $valor;
+}
+
+function normalizarCepEvento($valor): string
+{
+    $cep = preg_replace('/\D/', '', (string) $valor);
+
+    if ($cep === null || strlen($cep) !== 8) {
+        responder(['erro' => 'cep_evento deve conter exatamente 8 números'], 400);
+    }
+
+    return $cep;
+}
+
+function normalizarValorIngresso($valor, string $campo, bool $obrigatorio): ?float
+{
+    if ($valor === null || $valor === '') {
+        if ($obrigatorio) {
+            responder(['erro' => "$campo é obrigatório para eventos pagos"], 400);
+        }
+
+        return null;
+    }
+
+    if (!is_numeric($valor)) {
+        responder(['erro' => "$campo deve ser um número válido"], 400);
+    }
+
+    $numero = round((float) $valor, 2);
+    if ($numero <= 0 || $numero > 99999999.99) {
+        responder(['erro' => "$campo deve ser maior que zero"], 400);
+    }
+
+    return $numero;
+}
+
+function validarFaixaIngresso(int $gratuidade, $minimo, $maximo): array
+{
+    if ($gratuidade === 1) {
+        return [null, null];
+    }
+
+    $minimoNormalizado = normalizarValorIngresso($minimo, 'valor_ingresso_minimo', true);
+    $maximoNormalizado = normalizarValorIngresso($maximo, 'valor_ingresso_maximo', false);
+
+    if ($maximoNormalizado !== null && $maximoNormalizado < $minimoNormalizado) {
+        responder(['erro' => 'valor_ingresso_maximo não pode ser menor que o mínimo'], 400);
+    }
+
+    return [$minimoNormalizado, $maximoNormalizado];
 }
 
 require_once dirname(__DIR__) . '/config/conexao.php';
@@ -48,13 +138,17 @@ require_once __DIR__ . '/middleware/uploadHelper.php';
 $metodo = $_SERVER['REQUEST_METHOD'];
 $id = obterIdApi();
 
-$camposEvento = 'id_evento, id_solicitacao_origem, num_evento, nome_evento, local_evento, rua_evento,
+$camposEvento = 'id_evento, id_solicitacao_origem, num_evento, nome_evento,
+                 cep_evento, endereco_evento, numero_endereco, rua_evento,
                  cidade_evento, uf, descricao_evento, data_evento, gratuidade,
+                 valor_ingresso_minimo, valor_ingresso_maximo,
                  horario_evento, categoria_evento, link_oficial, imagem_evento, status_evento';
 
-$camposEventoComAlias = 'e.id_evento, e.id_solicitacao_origem, e.num_evento, e.nome_evento, e.local_evento,
+$camposEventoComAlias = 'e.id_evento, e.id_solicitacao_origem, e.num_evento, e.nome_evento,
+                         e.cep_evento, e.endereco_evento, e.numero_endereco,
                          e.rua_evento, e.cidade_evento, e.uf, e.descricao_evento,
-                         e.data_evento, e.gratuidade, e.horario_evento, e.categoria_evento,
+                         e.data_evento, e.gratuidade, e.valor_ingresso_minimo,
+                         e.valor_ingresso_maximo, e.horario_evento, e.categoria_evento,
                          e.link_oficial, e.imagem_evento, e.status_evento';
 
 switch ($metodo) {
@@ -141,9 +235,11 @@ switch ($metodo) {
 
             $camposSolicitacao =
                 's.id_solicitacao, s.id_user, s.nome_evento, s.status_solicitacao,
-                 s.foto, s.horario_evento, s.data_evento, s.local_evento,
+                 s.foto, s.horario_evento, s.data_evento,
+                 s.cep_evento, s.endereco_evento, s.numero_endereco,
                  s.rua_evento, s.cidade_evento, s.uf, s.categoria_evento,
-                 s.link_oficial, s.gratuidade, s.descricao_evento, s.descricao_artista,
+                 s.link_oficial, s.gratuidade, s.valor_ingresso_minimo,
+                 s.valor_ingresso_maximo, s.descricao_evento, s.descricao_artista,
                  s.nome_artista_solicitado,
                  s.data_solicitacao, u.nome_user, u.sobrenome, u.email_user,
                  e.id_evento';
@@ -283,7 +379,7 @@ switch ($metodo) {
             responder(['erro' => 'A criação não recebe ID na URL'], 400);
         }
 
-        $idUsuario = exigirLogin();
+        $idUsuario = exigirUsuarioComum();
         $tipoConteudo = (string) ($_SERVER['CONTENT_TYPE'] ?? '');
         if (!str_starts_with(strtolower($tipoConteudo), 'multipart/form-data')) {
             responder(['erro' => 'Envie os dados como multipart/form-data'], 400);
@@ -299,16 +395,19 @@ switch ($metodo) {
         $nome = trim((string) ($dados['nome_evento'] ?? ''));
         $horario = isset($dados['horario_evento']) ? trim((string) $dados['horario_evento']) : '';
         $data = isset($dados['data_evento']) ? trim((string) $dados['data_evento']) : '';
-        $local = isset($dados['local_evento']) ? trim((string) $dados['local_evento']) : '';
+        $cep = normalizarCepEvento($dados['cep_evento'] ?? '');
+        $endereco = trim((string) ($dados['endereco_evento'] ?? ''));
+        $numero = trim((string) ($dados['numero_endereco'] ?? ''));
         $rua = isset($dados['rua_evento']) ? trim((string) $dados['rua_evento']) : '';
         $cidade = isset($dados['cidade_evento']) ? trim((string) $dados['cidade_evento']) : '';
         $uf = isset($dados['uf']) ? strtoupper(trim((string) $dados['uf'])) : '';
-        $categoria = isset($dados['categoria_evento'])
-            ? trim((string) $dados['categoria_evento'])
-            : '';
+        $categoria = normalizarCategoriasEvento($dados['categoria_evento'] ?? []);
         $linkOficial = isset($dados['link_oficial']) ? trim((string) $dados['link_oficial']) : '';
+        if (!array_key_exists('gratuidade', $dados)) {
+            responder(['erro' => 'gratuidade é obrigatória'], 400);
+        }
         $gratuidadeRecebida = filter_var(
-            $dados['gratuidade'] ?? false,
+            $dados['gratuidade'],
             FILTER_VALIDATE_BOOLEAN,
             FILTER_NULL_ON_FAILURE
         );
@@ -322,14 +421,14 @@ switch ($metodo) {
             responder(['erro' => 'Nome do evento é obrigatório e deve ter até 100 caracteres'], 400);
         }
 
-        if (tamanhoTexto($local) > 100) {
-            responder(['erro' => 'Local do evento deve ter até 100 caracteres'], 400);
+        if ($endereco === '' || tamanhoTexto($endereco) > 255 || tamanhoTexto($numero) > 20) {
+            responder(['erro' => 'Endereço é obrigatório (até 255 caracteres) e número deve ter até 20'], 400);
         }
 
         if (
             tamanhoTexto($rua) > 100
             || tamanhoTexto($cidade) > 100
-            || tamanhoTexto($categoria) > 100
+            || tamanhoTexto($categoria) > 255
             || tamanhoTexto($linkOficial) > 255
             || tamanhoTexto($nomeArtistaSolicitado) > 150
         ) {
@@ -340,12 +439,21 @@ switch ($metodo) {
             responder(['erro' => 'uf deve conter duas letras'], 400);
         }
 
-        if ($linkOficial !== '' && filter_var($linkOficial, FILTER_VALIDATE_URL) === false) {
+        if ($cidade === '' || $uf === '') {
+            responder(['erro' => 'O CEP precisa retornar cidade e UF válidas'], 400);
+        }
+
+        if ($linkOficial === '' || filter_var($linkOficial, FILTER_VALIDATE_URL) === false) {
             responder(['erro' => 'link_oficial deve ser uma URL válida'], 400);
         }
 
-        if (tamanhoTexto($descricao) > 1000 || tamanhoTexto($descricaoArtista) > 1000) {
-            responder(['erro' => 'As descrições devem ter até 1000 caracteres'], 400);
+        if ($descricao === '' || $descricaoArtista === ''
+            || tamanhoTexto($descricao) > 1000 || tamanhoTexto($descricaoArtista) > 1000) {
+            responder(['erro' => 'As descrições são obrigatórias e devem ter até 1000 caracteres'], 400);
+        }
+
+        if ($nomeArtistaSolicitado === '' || tamanhoTexto($nomeArtistaSolicitado) > 150) {
+            responder(['erro' => 'Nome do artista ou atração é obrigatório e deve ter até 150 caracteres'], 400);
         }
 
         if ($gratuidadeRecebida === null) {
@@ -353,8 +461,15 @@ switch ($metodo) {
         }
 
         $gratuidade = $gratuidadeRecebida ? 1 : 0;
+        [$valorMinimo, $valorMaximo] = validarFaixaIngresso(
+            $gratuidade,
+            $dados['valor_ingresso_minimo'] ?? null,
+            $dados['valor_ingresso_maximo'] ?? null
+        );
 
-        if ($data !== '') {
+        if ($data === '') {
+            responder(['erro' => 'data_evento é obrigatória'], 400);
+        } else {
             $dataValidada = DateTimeImmutable::createFromFormat('!Y-m-d', $data);
 
             if (!$dataValidada || $dataValidada->format('Y-m-d') !== $data) {
@@ -362,7 +477,9 @@ switch ($metodo) {
             }
         }
 
-        if ($horario !== '') {
+        if ($horario === '') {
+            responder(['erro' => 'horario_evento é obrigatório'], 400);
+        } else {
             $partesHorario = explode(':', $horario);
             $horarioValido = preg_match('/^\d{2}:\d{2}(:\d{2})?$/', $horario)
                 && (int) $partesHorario[0] <= 23
@@ -376,7 +493,7 @@ switch ($metodo) {
 
         $horario = $horario === '' ? null : $horario;
         $data = $data === '' ? null : $data;
-        $local = $local === '' ? null : $local;
+        $numero = $numero === '' ? null : $numero;
         $rua = $rua === '' ? null : $rua;
         $cidade = $cidade === '' ? null : $cidade;
         $uf = $uf === '' ? null : $uf;
@@ -404,26 +521,30 @@ switch ($metodo) {
 
             $stmt = $conn->prepare(
                 'INSERT INTO solicitacao
-                 (id_user, nome_evento, foto, horario_evento, data_evento, local_evento,
-                  rua_evento, cidade_evento, uf, categoria_evento, link_oficial,
-                  gratuidade, descricao_evento, descricao_artista, nome_artista_solicitado)
-                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
+                 (id_user, nome_evento, foto, horario_evento, data_evento,
+                  cep_evento, endereco_evento, numero_endereco, rua_evento, cidade_evento,
+                  uf, categoria_evento, link_oficial, gratuidade, valor_ingresso_minimo,
+                  valor_ingresso_maximo, descricao_evento, descricao_artista, nome_artista_solicitado)
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
             );
-            $tipos = 'i' . str_repeat('s', 10) . 'i' . str_repeat('s', 3);
             $stmt->bind_param(
-                $tipos,
+                'issssssssssssiddsss',
                 $idUsuario,
                 $nome,
                 $foto,
                 $horario,
                 $data,
-                $local,
+                $cep,
+                $endereco,
+                $numero,
                 $rua,
                 $cidade,
                 $uf,
                 $categoria,
                 $linkOficial,
                 $gratuidade,
+                $valorMinimo,
+                $valorMaximo,
                 $descricao,
                 $descricaoArtista,
                 $nomeArtistaSolicitado
@@ -468,9 +589,11 @@ switch ($metodo) {
 
         if ($acao === 'editar_solicitacao') {
             $camposEditaveisSolicitacao = [
-                'nome_evento', 'horario_evento', 'data_evento', 'local_evento',
-                'rua_evento', 'cidade_evento', 'uf', 'categoria_evento', 'link_oficial',
-                'gratuidade', 'descricao_evento', 'descricao_artista', 'nome_artista_solicitado'
+                'nome_evento', 'horario_evento', 'data_evento',
+                'cep_evento', 'endereco_evento', 'numero_endereco', 'rua_evento',
+                'cidade_evento', 'uf', 'categoria_evento', 'link_oficial', 'gratuidade',
+                'valor_ingresso_minimo', 'valor_ingresso_maximo', 'descricao_evento',
+                'descricao_artista', 'nome_artista_solicitado'
             ];
 
             if (array_intersect($camposEditaveisSolicitacao, array_keys($dados)) === []) {
@@ -478,9 +601,10 @@ switch ($metodo) {
             }
 
             $stmt = $conn->prepare(
-                'SELECT nome_evento, horario_evento, data_evento, local_evento,
-                        rua_evento, cidade_evento, uf, categoria_evento, link_oficial,
-                        gratuidade, descricao_evento, descricao_artista,
+                'SELECT nome_evento, horario_evento, data_evento,
+                        cep_evento, endereco_evento, numero_endereco, rua_evento,
+                        cidade_evento, uf, categoria_evento, link_oficial, gratuidade,
+                        valor_ingresso_minimo, valor_ingresso_maximo, descricao_evento, descricao_artista,
                         nome_artista_solicitado, status_solicitacao
                  FROM solicitacao
                  WHERE id_solicitacao = ?
@@ -508,14 +632,16 @@ switch ($metodo) {
                 $solicitacaoAtual['horario_evento']
             );
             $data = atualizarTextoOpcional($dados, 'data_evento', $solicitacaoAtual['data_evento']);
-            $local = atualizarTextoOpcional($dados, 'local_evento', $solicitacaoAtual['local_evento']);
+            $cep = array_key_exists('cep_evento', $dados)
+                ? normalizarCepEvento($dados['cep_evento'])
+                : $solicitacaoAtual['cep_evento'];
+            $endereco = atualizarTextoOpcional($dados, 'endereco_evento', $solicitacaoAtual['endereco_evento']);
+            $numero = atualizarTextoOpcional($dados, 'numero_endereco', $solicitacaoAtual['numero_endereco']);
             $rua = atualizarTextoOpcional($dados, 'rua_evento', $solicitacaoAtual['rua_evento']);
             $cidade = atualizarTextoOpcional($dados, 'cidade_evento', $solicitacaoAtual['cidade_evento']);
             $uf = atualizarTextoOpcional($dados, 'uf', $solicitacaoAtual['uf']);
-            $categoria = atualizarTextoOpcional(
-                $dados,
-                'categoria_evento',
-                $solicitacaoAtual['categoria_evento']
+            $categoria = normalizarCategoriasEvento(
+                $dados['categoria_evento'] ?? $solicitacaoAtual['categoria_evento']
             );
             $linkOficial = atualizarTextoOpcional(
                 $dados,
@@ -549,14 +675,15 @@ switch ($metodo) {
                 responder(['erro' => 'Nome do evento é obrigatório e deve ter até 100 caracteres'], 400);
             }
 
-            if ($local !== null && tamanhoTexto($local) > 100) {
-                responder(['erro' => 'Local do evento deve ter até 100 caracteres'], 400);
+            if ($cep === null || $endereco === null || tamanhoTexto($endereco) > 255
+                || ($numero !== null && tamanhoTexto($numero) > 20)) {
+                responder(['erro' => 'CEP e endereço são obrigatórios; confira também o número'], 400);
             }
 
             if (
                 ($rua !== null && tamanhoTexto($rua) > 100)
                 || ($cidade !== null && tamanhoTexto($cidade) > 100)
-                || ($categoria !== null && tamanhoTexto($categoria) > 100)
+                || tamanhoTexto($categoria) > 255
                 || ($linkOficial !== null && tamanhoTexto($linkOficial) > 255)
                 || ($nomeArtistaSolicitado !== null && tamanhoTexto($nomeArtistaSolicitado) > 150)
             ) {
@@ -570,18 +697,29 @@ switch ($metodo) {
                 }
             }
 
-            if ($linkOficial !== null && filter_var($linkOficial, FILTER_VALIDATE_URL) === false) {
+            if ($cep === null || $endereco === null || $cidade === null || $uf === null) {
+                responder(['erro' => 'CEP, endereço, cidade e UF são obrigatórios'], 400);
+            }
+
+            if ($linkOficial === null || filter_var($linkOficial, FILTER_VALIDATE_URL) === false) {
                 responder(['erro' => 'link_oficial deve ser uma URL válida'], 400);
             }
 
             if (
-                ($descricao !== null && tamanhoTexto($descricao) > 1000)
-                || ($descricaoArtista !== null && tamanhoTexto($descricaoArtista) > 1000)
+                $descricao === null || $descricaoArtista === null
+                || tamanhoTexto($descricao) > 1000
+                || tamanhoTexto($descricaoArtista) > 1000
             ) {
-                responder(['erro' => 'As descrições devem ter até 1000 caracteres'], 400);
+                responder(['erro' => 'As descrições são obrigatórias e devem ter até 1000 caracteres'], 400);
             }
 
-            if ($data !== null) {
+            if ($nomeArtistaSolicitado === null || tamanhoTexto($nomeArtistaSolicitado) > 150) {
+                responder(['erro' => 'Nome do artista ou atração é obrigatório e deve ter até 150 caracteres'], 400);
+            }
+
+            if ($data === null) {
+                responder(['erro' => 'data_evento é obrigatória'], 400);
+            } else {
                 $dataValidada = DateTimeImmutable::createFromFormat('!Y-m-d', $data);
 
                 if (!$dataValidada || $dataValidada->format('Y-m-d') !== $data) {
@@ -589,7 +727,9 @@ switch ($metodo) {
                 }
             }
 
-            if ($horario !== null) {
+            if ($horario === null) {
+                responder(['erro' => 'horario_evento é obrigatório'], 400);
+            } else {
                 $partesHorario = explode(':', $horario);
                 $horarioValido = preg_match('/^\d{2}:\d{2}(:\d{2})?$/', $horario)
                     && (int) $partesHorario[0] <= 23
@@ -617,27 +757,37 @@ switch ($metodo) {
                 $gratuidade = $gratuidadeValidada ? 1 : 0;
             }
 
+            [$valorMinimo, $valorMaximo] = validarFaixaIngresso(
+                $gratuidade,
+                $dados['valor_ingresso_minimo'] ?? $solicitacaoAtual['valor_ingresso_minimo'],
+                $dados['valor_ingresso_maximo'] ?? $solicitacaoAtual['valor_ingresso_maximo']
+            );
+
             $stmt = $conn->prepare(
                 "UPDATE solicitacao
-                 SET nome_evento = ?, horario_evento = ?, data_evento = ?, local_evento = ?,
-                     rua_evento = ?, cidade_evento = ?, uf = ?, categoria_evento = ?,
-                     link_oficial = ?, gratuidade = ?, descricao_evento = ?,
+                 SET nome_evento = ?, horario_evento = ?, data_evento = ?,
+                     cep_evento = ?, endereco_evento = ?, numero_endereco = ?, rua_evento = ?,
+                     cidade_evento = ?, uf = ?, categoria_evento = ?, link_oficial = ?,
+                     gratuidade = ?, valor_ingresso_minimo = ?, valor_ingresso_maximo = ?, descricao_evento = ?,
                      descricao_artista = ?, nome_artista_solicitado = ?
                  WHERE id_solicitacao = ? AND status_solicitacao = 'pendente'"
             );
-            $tipos = str_repeat('s', 9) . 'i' . str_repeat('s', 3) . 'i';
             $stmt->bind_param(
-                $tipos,
+                'sssssssssssiddsssi',
                 $nome,
                 $horario,
                 $data,
-                $local,
+                $cep,
+                $endereco,
+                $numero,
                 $rua,
                 $cidade,
                 $uf,
                 $categoria,
                 $linkOficial,
                 $gratuidade,
+                $valorMinimo,
+                $valorMaximo,
                 $descricao,
                 $descricaoArtista,
                 $nomeArtistaSolicitado,
@@ -648,9 +798,11 @@ switch ($metodo) {
 
             $stmt = $conn->prepare(
                 'SELECT s.id_solicitacao, s.id_user, s.nome_evento, s.status_solicitacao,
-                        s.foto, s.horario_evento, s.data_evento, s.local_evento,
+                        s.foto, s.horario_evento, s.data_evento,
+                        s.cep_evento, s.endereco_evento, s.numero_endereco,
                         s.rua_evento, s.cidade_evento, s.uf, s.categoria_evento,
-                        s.link_oficial, s.gratuidade, s.descricao_evento,
+                        s.link_oficial, s.gratuidade, s.valor_ingresso_minimo,
+                        s.valor_ingresso_maximo, s.descricao_evento,
                         s.descricao_artista, s.nome_artista_solicitado,
                         s.data_solicitacao, u.nome_user, u.sobrenome, u.email_user,
                         NULL AS id_evento
@@ -690,9 +842,11 @@ switch ($metodo) {
 
             try {
                 $stmt = $conn->prepare(
-                    'SELECT nome_evento, foto, horario_evento, data_evento, local_evento,
-                            rua_evento, cidade_evento, uf, categoria_evento, link_oficial,
-                            gratuidade, descricao_evento, nome_artista_solicitado,
+                    'SELECT nome_evento, foto, horario_evento, data_evento,
+                            cep_evento, endereco_evento, numero_endereco, rua_evento,
+                            cidade_evento, uf, categoria_evento, link_oficial, gratuidade,
+                            valor_ingresso_minimo, valor_ingresso_maximo,
+                            descricao_evento, nome_artista_solicitado,
                             status_solicitacao
                      FROM solicitacao WHERE id_solicitacao = ? LIMIT 1 FOR UPDATE'
                 );
@@ -717,17 +871,20 @@ switch ($metodo) {
                     $gratuidade = (int) $solicitacao['gratuidade'];
                     $stmt = $conn->prepare(
                         'INSERT INTO evento
-                         (id_solicitacao_origem, nome_evento, local_evento, rua_evento,
-                          cidade_evento, uf, descricao_evento, data_evento, horario_evento,
-                          gratuidade, categoria_evento, link_oficial, imagem_evento)
-                         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
+                         (id_solicitacao_origem, nome_evento, cep_evento,
+                          endereco_evento, numero_endereco, rua_evento, cidade_evento, uf,
+                          descricao_evento, data_evento, horario_evento, gratuidade,
+                          valor_ingresso_minimo, valor_ingresso_maximo, categoria_evento,
+                          link_oficial, imagem_evento)
+                         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
                     );
-                    $tipos = 'i' . str_repeat('s', 8) . 'i' . str_repeat('s', 3);
                     $stmt->bind_param(
-                        $tipos,
+                        'issssssssssiddsss',
                         $id,
                         $solicitacao['nome_evento'],
-                        $solicitacao['local_evento'],
+                        $solicitacao['cep_evento'],
+                        $solicitacao['endereco_evento'],
+                        $solicitacao['numero_endereco'],
                         $solicitacao['rua_evento'],
                         $solicitacao['cidade_evento'],
                         $solicitacao['uf'],
@@ -735,6 +892,8 @@ switch ($metodo) {
                         $solicitacao['data_evento'],
                         $solicitacao['horario_evento'],
                         $gratuidade,
+                        $solicitacao['valor_ingresso_minimo'],
+                        $solicitacao['valor_ingresso_maximo'],
                         $solicitacao['categoria_evento'],
                         $solicitacao['link_oficial'],
                         $solicitacao['foto']
@@ -848,9 +1007,11 @@ switch ($metodo) {
         }
 
         $camposEditaveis = [
-            'nome_evento', 'local_evento', 'rua_evento', 'cidade_evento',
-            'uf', 'descricao_evento', 'data_evento', 'horario_evento', 'gratuidade', 'categoria_evento',
-            'link_oficial', 'imagem_evento', 'status_evento'
+            'nome_evento', 'cep_evento', 'endereco_evento',
+            'numero_endereco', 'rua_evento', 'cidade_evento', 'uf', 'descricao_evento',
+            'data_evento', 'horario_evento', 'gratuidade', 'valor_ingresso_minimo',
+            'valor_ingresso_maximo', 'categoria_evento', 'link_oficial',
+            'imagem_evento', 'status_evento'
         ];
 
         if (array_intersect($camposEditaveis, array_keys($dados)) === []) {
@@ -875,20 +1036,28 @@ switch ($metodo) {
             responder(['erro' => 'Nome do evento é obrigatório'], 400);
         }
 
-        $local = atualizarTextoOpcional($dados, 'local_evento', $eventoAtual['local_evento']);
+        $cep = array_key_exists('cep_evento', $dados)
+            ? normalizarCepEvento($dados['cep_evento'])
+            : $eventoAtual['cep_evento'];
+        $endereco = atualizarTextoOpcional($dados, 'endereco_evento', $eventoAtual['endereco_evento']);
+        $numero = atualizarTextoOpcional($dados, 'numero_endereco', $eventoAtual['numero_endereco']);
         $rua = atualizarTextoOpcional($dados, 'rua_evento', $eventoAtual['rua_evento']);
         $cidade = atualizarTextoOpcional($dados, 'cidade_evento', $eventoAtual['cidade_evento']);
         $uf = atualizarTextoOpcional($dados, 'uf', $eventoAtual['uf']);
         $descricao = atualizarTextoOpcional($dados, 'descricao_evento', $eventoAtual['descricao_evento']);
         $data = atualizarTextoOpcional($dados, 'data_evento', $eventoAtual['data_evento']);
         $horario = atualizarTextoOpcional($dados, 'horario_evento', $eventoAtual['horario_evento']);
-        $categoria = atualizarTextoOpcional($dados, 'categoria_evento', $eventoAtual['categoria_evento']);
+        $categoria = normalizarCategoriasEvento(
+            $dados['categoria_evento'] ?? $eventoAtual['categoria_evento']
+        );
         $linkOficial = atualizarTextoOpcional($dados, 'link_oficial', $eventoAtual['link_oficial']);
         $imagem = atualizarTextoOpcional($dados, 'imagem_evento', $eventoAtual['imagem_evento']);
 
         $erroLimite = validarLimitesTextoApi([
             'nome_evento' => $nome,
-            'local_evento' => $local,
+            'cep_evento' => $cep,
+            'endereco_evento' => $endereco,
+            'numero_endereco' => $numero,
             'rua_evento' => $rua,
             'cidade_evento' => $cidade,
             'uf' => $uf,
@@ -898,12 +1067,14 @@ switch ($metodo) {
             'imagem_evento' => $imagem,
         ], [
             'nome_evento' => 100,
-            'local_evento' => 100,
+            'cep_evento' => 8,
+            'endereco_evento' => 255,
+            'numero_endereco' => 20,
             'rua_evento' => 100,
             'cidade_evento' => 100,
             'uf' => 2,
             'descricao_evento' => 1000,
-            'categoria_evento' => 100,
+            'categoria_evento' => 255,
             'link_oficial' => 255,
             'imagem_evento' => 255,
         ]);
@@ -912,7 +1083,15 @@ switch ($metodo) {
             responder(['erro' => $erroLimite], 400);
         }
 
-        if ($linkOficial !== null && filter_var($linkOficial, FILTER_VALIDATE_URL) === false) {
+        if ($cep === null || $endereco === null || $cidade === null || $uf === null) {
+            responder(['erro' => 'CEP, endereço, cidade e UF são obrigatórios'], 400);
+        }
+
+        if ($descricao === null) {
+            responder(['erro' => 'descricao_evento é obrigatória'], 400);
+        }
+
+        if ($linkOficial === null || filter_var($linkOficial, FILTER_VALIDATE_URL) === false) {
             responder(['erro' => 'link_oficial deve ser uma URL válida'], 400);
         }
 
@@ -923,14 +1102,18 @@ switch ($metodo) {
             }
         }
 
-        if ($data !== null) {
+        if ($data === null) {
+            responder(['erro' => 'data_evento é obrigatória'], 400);
+        } else {
             $dataValidada = DateTimeImmutable::createFromFormat('!Y-m-d', $data);
             if (!$dataValidada || $dataValidada->format('Y-m-d') !== $data) {
                 responder(['erro' => 'data_evento deve usar uma data válida no formato YYYY-MM-DD'], 400);
             }
         }
 
-        if ($horario !== null) {
+        if ($horario === null) {
+            responder(['erro' => 'horario_evento é obrigatório'], 400);
+        } else {
             $partesHorario = explode(':', $horario);
             $horarioValido = preg_match('/^\d{2}:\d{2}(:\d{2})?$/', $horario)
                 && (int) $partesHorario[0] <= 23
@@ -957,6 +1140,12 @@ switch ($metodo) {
             $gratuidade = $gratuidadeValidada ? 1 : 0;
         }
 
+        [$valorMinimo, $valorMaximo] = validarFaixaIngresso(
+            $gratuidade,
+            $dados['valor_ingresso_minimo'] ?? $eventoAtual['valor_ingresso_minimo'],
+            $dados['valor_ingresso_maximo'] ?? $eventoAtual['valor_ingresso_maximo']
+        );
+
         $statusEvento = array_key_exists('status_evento', $dados)
             ? (string) $dados['status_evento']
             : $eventoAtual['status_evento'];
@@ -967,17 +1156,20 @@ switch ($metodo) {
 
         $stmt = $conn->prepare(
             'UPDATE evento
-             SET nome_evento = ?, local_evento = ?, rua_evento = ?,
-                 cidade_evento = ?, uf = ?, descricao_evento = ?, data_evento = ?,
-                 horario_evento = ?, gratuidade = ?, categoria_evento = ?, link_oficial = ?, imagem_evento = ?,
+             SET nome_evento = ?, cep_evento = ?, endereco_evento = ?,
+                 numero_endereco = ?, rua_evento = ?, cidade_evento = ?, uf = ?,
+                 descricao_evento = ?, data_evento = ?, horario_evento = ?, gratuidade = ?,
+                 valor_ingresso_minimo = ?, valor_ingresso_maximo = ?,
+                 categoria_evento = ?, link_oficial = ?, imagem_evento = ?,
                  status_evento = ?
              WHERE id_evento = ?'
         );
-        $tipos = str_repeat('s', 8) . 'i' . str_repeat('s', 4) . 'i';
         $stmt->bind_param(
-            $tipos,
+            'ssssssssssiddssssi',
             $nome,
-            $local,
+            $cep,
+            $endereco,
+            $numero,
             $rua,
             $cidade,
             $uf,
@@ -985,6 +1177,8 @@ switch ($metodo) {
             $data,
             $horario,
             $gratuidade,
+            $valorMinimo,
+            $valorMaximo,
             $categoria,
             $linkOficial,
             $imagem,

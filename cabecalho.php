@@ -1,5 +1,8 @@
 <?php
 $usuarioLogado = isset($_SESSION['id_user']);
+$usuarioAdmin = $usuarioLogado && (($_SESSION['tipo_usuario'] ?? '') === 'admin');
+$urlAreaUsuario = $usuarioAdmin ? 'admin.php' : 'perfilUsuario.php';
+$rotuloAreaUsuario = $usuarioAdmin ? 'Painel admin' : 'Usuário';
 $nomeUsuario = htmlspecialchars(
     (string) ($_SESSION['nome_user'] ?? ''),
     ENT_QUOTES,
@@ -172,6 +175,7 @@ $atributosRequerLogin = !$usuarioLogado
         <nav id="navmenu" class="navmenu cabecalho-nav-desktop d-none d-md-block" aria-label="Navegação principal">
           <ul>
             <?php if ($tipoCabecalho === 'A'): ?>
+              <?php if (!$usuarioAdmin): ?>
               <li>
                 <a href="cadastroEvento.php" class="nav-cadastrar-evento"<?= $atributosRequerLogin ?>>
                   <i class="bi bi-plus-lg" aria-hidden="true"></i>
@@ -179,6 +183,7 @@ $atributosRequerLogin = !$usuarioLogado
                 </a>
               </li>
               <li><a href="meusEventos.php"<?= $atributosRequerLogin ?>><i class="bi bi-calendar-event" aria-hidden="true"></i><span>Meus Eventos</span></a></li>
+              <?php endif; ?>
               <?php if ($menuComunidades): ?>
                 <li><a href="inicio.php" class="nav-inicio"><i class="bi bi-house-door" aria-hidden="true"></i><span>Início</span></a></li>
               <?php else: ?>
@@ -187,9 +192,9 @@ $atributosRequerLogin = !$usuarioLogado
               <li><a href="institucional.php">Institucional</a></li>
               <?php if ($usuarioLogado): ?>
                 <li>
-                  <a href="perfilUsuario.php" class="nav-usuario-direto" aria-label="Abrir perfil do usuário">
+                  <a href="<?= $urlAreaUsuario ?>" class="nav-usuario-direto" aria-label="Abrir <?= $usuarioAdmin ? 'painel administrativo' : 'perfil do usuário' ?>">
                     <i class="bi bi-person-circle" aria-hidden="true"></i>
-                    <span>Usuário</span>
+                    <span><?= $rotuloAreaUsuario ?></span>
                   </a>
                 </li>
               <?php else: ?>
@@ -202,11 +207,11 @@ $atributosRequerLogin = !$usuarioLogado
                   <ul>
                     <li><a href="login.php"><i class="bi bi-person" aria-hidden="true"></i><span>Sou usuário</span></a></li>
                     <li><a href="loginAdmin.php"><i class="bi bi-shield-lock" aria-hidden="true"></i><span>Sou administrador</span></a></li>
-                    <li><a href="cadastro.php"><i class="bi bi-person-plus" aria-hidden="true"></i><span>Criar conta</span></a></li>
                   </ul>
                 </li>
               <?php endif; ?>
             <?php else: ?>
+              <?php if (!$usuarioAdmin): ?>
               <li>
                 <a href="cadastroEvento.php" class="nav-cadastrar-evento"<?= $atributosRequerLogin ?>>
                   <i class="bi bi-plus-lg" aria-hidden="true"></i>
@@ -214,6 +219,7 @@ $atributosRequerLogin = !$usuarioLogado
                 </a>
               </li>
               <li><a href="meusEventos.php"<?= $atributosRequerLogin ?>><i class="bi bi-calendar-event" aria-hidden="true"></i><span>Meus Eventos</span></a></li>
+              <?php endif; ?>
               <li>
                 <a href="inicio.php" class="nav-inicio">
                   <i class="bi bi-house-door" aria-hidden="true"></i>
@@ -236,9 +242,9 @@ $atributosRequerLogin = !$usuarioLogado
               </li>
               <?php if ($usuarioLogado): ?>
                 <li>
-                  <a href="perfilUsuario.php" class="nav-usuario-direto" aria-label="Abrir perfil do usuário">
+                  <a href="<?= $urlAreaUsuario ?>" class="nav-usuario-direto" aria-label="Abrir <?= $usuarioAdmin ? 'painel administrativo' : 'perfil do usuário' ?>">
                     <i class="bi bi-person-circle" aria-hidden="true"></i>
-                    <span>Usuário</span>
+                    <span><?= $rotuloAreaUsuario ?></span>
                   </a>
                 </li>
               <?php else: ?>
@@ -251,7 +257,6 @@ $atributosRequerLogin = !$usuarioLogado
                   <ul>
                     <li><a href="login.php"><i class="bi bi-person" aria-hidden="true"></i><span>Sou usuário</span></a></li>
                     <li><a href="loginAdmin.php"><i class="bi bi-shield-lock" aria-hidden="true"></i><span>Sou administrador</span></a></li>
-                    <li><a href="cadastro.php"><i class="bi bi-person-plus" aria-hidden="true"></i><span>Criar conta</span></a></li>
                   </ul>
                 </li>
               <?php endif; ?>
@@ -274,6 +279,7 @@ $atributosRequerLogin = !$usuarioLogado
           <nav aria-label="Navegação principal móvel">
             <ul>
               <?php if ($tipoCabecalho === 'A'): ?>
+                <?php if (!$usuarioAdmin): ?>
                 <li>
                   <a href="cadastroEvento.php" class="nav-cadastrar-evento"<?= $atributosRequerLogin ?>>
                     <i class="bi bi-plus-lg" aria-hidden="true"></i>
@@ -281,6 +287,7 @@ $atributosRequerLogin = !$usuarioLogado
                   </a>
                 </li>
                 <li><a href="meusEventos.php"<?= $atributosRequerLogin ?>><i class="bi bi-calendar-event" aria-hidden="true"></i><span>Meus Eventos</span></a></li>
+                <?php endif; ?>
                 <?php if ($menuComunidades): ?>
                   <li><a href="inicio.php" class="nav-inicio"><i class="bi bi-house-door" aria-hidden="true"></i><span>Início</span></a></li>
                 <?php else: ?>
@@ -289,9 +296,9 @@ $atributosRequerLogin = !$usuarioLogado
                 <li><a href="institucional.php">Institucional</a></li>
                 <?php if ($usuarioLogado): ?>
                   <li>
-                    <a href="perfilUsuario.php" class="nav-usuario-direto" aria-label="Abrir perfil do usuário">
+                    <a href="<?= $urlAreaUsuario ?>" class="nav-usuario-direto" aria-label="Abrir <?= $usuarioAdmin ? 'painel administrativo' : 'perfil do usuário' ?>">
                       <i class="bi bi-person-circle" aria-hidden="true"></i>
-                      <span>Usuário</span>
+                      <span><?= $rotuloAreaUsuario ?></span>
                     </a>
                   </li>
                 <?php else: ?>
@@ -310,11 +317,11 @@ $atributosRequerLogin = !$usuarioLogado
                     <ul class="collapse" id="submenuEntradaMobile">
                       <li><a href="login.php"><i class="bi bi-person" aria-hidden="true"></i><span>Sou usuário</span></a></li>
                       <li><a href="loginAdmin.php"><i class="bi bi-shield-lock" aria-hidden="true"></i><span>Sou administrador</span></a></li>
-                      <li><a href="cadastro.php"><i class="bi bi-person-plus" aria-hidden="true"></i><span>Criar conta</span></a></li>
                     </ul>
                   </li>
                 <?php endif; ?>
               <?php else: ?>
+                <?php if (!$usuarioAdmin): ?>
                 <li>
                   <a href="cadastroEvento.php" class="nav-cadastrar-evento"<?= $atributosRequerLogin ?>>
                     <i class="bi bi-plus-lg" aria-hidden="true"></i>
@@ -322,6 +329,7 @@ $atributosRequerLogin = !$usuarioLogado
                   </a>
                 </li>
                 <li><a href="meusEventos.php"<?= $atributosRequerLogin ?>><i class="bi bi-calendar-event" aria-hidden="true"></i><span>Meus Eventos</span></a></li>
+                <?php endif; ?>
                 <li>
                   <a href="inicio.php" class="nav-inicio">
                     <i class="bi bi-house-door" aria-hidden="true"></i>
@@ -352,9 +360,9 @@ $atributosRequerLogin = !$usuarioLogado
                 </li>
                 <?php if ($usuarioLogado): ?>
                   <li>
-                    <a href="perfilUsuario.php" class="nav-usuario-direto" aria-label="Abrir perfil do usuário">
+                    <a href="<?= $urlAreaUsuario ?>" class="nav-usuario-direto" aria-label="Abrir <?= $usuarioAdmin ? 'painel administrativo' : 'perfil do usuário' ?>">
                       <i class="bi bi-person-circle" aria-hidden="true"></i>
-                      <span>Usuário</span>
+                      <span><?= $rotuloAreaUsuario ?></span>
                     </a>
                   </li>
                 <?php else: ?>
@@ -373,7 +381,6 @@ $atributosRequerLogin = !$usuarioLogado
                     <ul class="collapse" id="submenuEntradaMobile">
                       <li><a href="login.php"><i class="bi bi-person" aria-hidden="true"></i><span>Sou usuário</span></a></li>
                       <li><a href="loginAdmin.php"><i class="bi bi-shield-lock" aria-hidden="true"></i><span>Sou administrador</span></a></li>
-                      <li><a href="cadastro.php"><i class="bi bi-person-plus" aria-hidden="true"></i><span>Criar conta</span></a></li>
                     </ul>
                   </li>
                 <?php endif; ?>

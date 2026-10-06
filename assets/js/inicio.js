@@ -5,12 +5,17 @@
     const limiteBanner = 5;
     let bannerSwiper = null;
     let requisicaoBusca = null;
+    let eventosCarregados = [];
+    let temporizadorRedimensionamento = null;
     const carrosseisCategorias = new Map();
 
     const secoesCategorias = [
         {id: 'eventosMusicais', termos: ['musica', 'musical', 'show', 'festival', 'concerto']},
         {id: 'pertoVoce', termos: ['perto de voce', 'local', 'regional']},
         {id: 'cinema', termos: ['cinema', 'filme', 'mostra cinematografica']},
+        {id: 'workshops', termos: ['workshop']},
+        {id: 'oficinas', termos: ['oficina']},
+        {id: 'gastronomicos', termos: ['gastronomico', 'gastronomia']},
         {id: 'showsInternacionais', termos: ['internacional']},
         {id: 'showsNacionais', termos: ['nacional'], excluir: ['internacional']},
         {id: 'emBreve', termos: ['em breve', 'futuro', 'proximamente']}
@@ -214,7 +219,7 @@
         const uf = String(evento.uf || '').trim();
         const local = cidade
             ? `${cidade}${uf ? ` - ${uf}` : ''}`
-            : (evento.local_evento || 'Local não informado');
+            : (evento.endereco_evento || 'Endereço não informado');
 
         informacoes.append(
             criarLinhaInformacao('bi bi-geo-alt-fill', local, 'evento-localizacao'),
@@ -365,21 +370,93 @@
         }
     }
 
+    function calcularOcupacaoCarrossel(carrossel, quantidade) {
+        const larguraSlide = window.innerWidth < 768
+            ? Math.min(window.innerWidth * 0.72, 300)
+            : 300;
+        const quantidadeQueCabe = Math.max(
+            1,
+            Math.floor((carrossel.clientWidth + 16) / (larguraSlide + 16))
+        );
+        const poucosItens = quantidade <= quantidadeQueCabe;
+
+        return {
+            quantidadeQueCabe,
+            poucosItens,
+            usarLoop: !poucosItens
+        };
+    }
+
+    function navegarCarrosselCategoria(instancia, direcao) {
+        if (!instancia || instancia.destroyed || instancia.slides.length < 2) return;
+
+        if (instancia.params.loop) {
+            if (direcao > 0) {
+                instancia.slideNext();
+            } else {
+                instancia.slidePrev();
+            }
+            return;
+        }
+
+        const trilho = instancia.wrapperEl;
+        const estaNoFim = direcao > 0 && instancia.isEnd;
+        const estaNoInicio = direcao < 0 && instancia.isBeginning;
+
+        if (estaNoFim) {
+            const primeiroSlide = trilho.firstElementChild;
+            if (!primeiroSlide) return;
+
+            const indiceAtual = instancia.activeIndex;
+            trilho.append(primeiroSlide);
+            instancia.update();
+            instancia.slideTo(Math.max(0, indiceAtual - 1), 0, false);
+
+            window.requestAnimationFrame(() => instancia.slideNext());
+            return;
+        }
+
+        if (estaNoInicio) {
+            const ultimoSlide = trilho.lastElementChild;
+            if (!ultimoSlide) return;
+
+            const indiceAtual = instancia.activeIndex;
+            trilho.prepend(ultimoSlide);
+            instancia.update();
+            instancia.slideTo(Math.min(instancia.slides.length - 1, indiceAtual + 1), 0, false);
+
+            window.requestAnimationFrame(() => instancia.slidePrev());
+            return;
+        }
+
+        if (direcao > 0) {
+            instancia.slideNext();
+        } else {
+            instancia.slidePrev();
+        }
+    }
+
     function iniciarCarrosselCategoria(idCarrossel, quantidade) {
         const carrossel = document.getElementById(idCarrossel);
-        if (!carrossel || quantidade < 2 || typeof window.Swiper !== 'function') return;
+        if (!carrossel) return;
+
+        const {poucosItens, usarLoop} = calcularOcupacaoCarrossel(carrossel, quantidade);
+        carrossel.classList.toggle('carrossel-poucos-itens', poucosItens);
+
+        if (quantidade < 2 || typeof window.Swiper !== 'function') return;
 
         const botaoAnterior = document.querySelector(`[data-carrossel="${idCarrossel}"][data-direcao="-1"]`);
         const botaoProximo = document.querySelector(`[data-carrossel="${idCarrossel}"][data-direcao="1"]`);
 
         const instancia = new window.Swiper(carrossel, {
             slidesPerView: 'auto',
-            centeredSlides: true,
+            centeredSlides: !poucosItens,
+            centerInsufficientSlides: poucosItens,
             spaceBetween: 16,
             grabCursor: true,
-            loop: true,
+            loop: usarLoop,
             rewind: false,
-            loopAdditionalSlides: Math.min(quantidade, 3),
+            loopPreventsSliding: false,
             watchSlidesProgress: true,
             keyboard: {
                 enabled: true,
@@ -392,8 +469,12 @@
 
         /* Os controles ficam fora do elemento Swiper para permanecerem visíveis
            mesmo quando a biblioteca entende que todos os slides cabem na tela. */
-        botaoAnterior.onclick = () => instancia.slidePrev();
-        botaoProximo.onclick = () => instancia.slideNext();
+        if (botaoAnterior) {
+            botaoAnterior.onclick = () => navegarCarrosselCategoria(instancia, -1);
+        }
+        if (botaoProximo) {
+            botaoProximo.onclick = () => navegarCarrosselCategoria(instancia, 1);
+        }
 
         carrosseisCategorias.set(idCarrossel, instancia);
     }
@@ -406,6 +487,7 @@
         }
 
         destruirCarrosselCategoria(idCarrossel);
+        carrossel.classList.remove('carrossel-poucos-itens');
         let trilho = carrossel.querySelector('.swiper-wrapper');
         if (!trilho) {
             trilho = document.createElement('div');
@@ -422,25 +504,42 @@
             return;
         }
 
-        /* O Swiper precisa de slides suficientes para manter vizinhos nos dois
-           lados e fechar o ciclo. Com listas curtas, repita a sequência visual. */
-        const eventosVisuais = eventos.length > 1 && eventos.length < 5
-            ? [...eventos, ...eventos]
-            : eventos;
-
-        const slides = eventosVisuais.map((evento) => {
+        const {quantidadeQueCabe, usarLoop} = calcularOcupacaoCarrossel(carrossel, eventos.length);
+        const quantidadeMinimaParaLoop = (quantidadeQueCabe + 1) * 2;
+        const repeticoes = usarLoop
+            ? Math.max(2, Math.ceil(quantidadeMinimaParaLoop / eventos.length))
+            : 1;
+        const eventosVisuais = Array.from(
+            {length: repeticoes},
+            () => eventos
+        ).flat();
+        const slides = eventosVisuais.map((evento, indice) => {
             const slide = document.createElement('div');
             slide.className = 'swiper-slide';
+            if (indice >= eventos.length) {
+                slide.dataset.carrosselCopia = 'true';
+            }
             slide.append(criarCardEvento(evento));
             return slide;
         });
 
         trilho.replaceChildren(...slides);
         atualizarNavegacao(idCarrossel, eventos.length > 1);
-        window.requestAnimationFrame(() => iniciarCarrosselCategoria(idCarrossel, slides.length));
+        window.requestAnimationFrame(() => iniciarCarrosselCategoria(idCarrossel, eventos.length));
     }
 
     function eventoPertenceASecao(evento, secao) {
+        if (secao.id === 'emBreve') {
+            const partes = String(evento.data_evento || '').split('-').map(Number);
+            if (partes.length !== 3 || partes.some((parte) => !Number.isInteger(parte))) return false;
+            const dataEvento = new Date(partes[0], partes[1] - 1, partes[2]);
+            const hoje = new Date();
+            hoje.setHours(0, 0, 0, 0);
+            const limite = new Date(hoje);
+            limite.setDate(limite.getDate() + 90);
+            return dataEvento >= hoje && dataEvento <= limite;
+        }
+
         const categoria = normalizarTexto(evento.categoria_evento);
 
         if (!categoria) {
@@ -475,6 +574,8 @@
                 throw new Error('A API retornou uma resposta inesperada.');
             }
 
+            eventosCarregados = dados.eventos;
+
             renderizarBanner(dados.eventos);
 
             secoesCategorias.forEach((secao) => {
@@ -498,6 +599,20 @@
     carregarEventos();
     window.addEventListener('showme:busca-home', function (evento) {
         buscarEventosNaHome(evento.detail?.termo || '');
+    });
+
+    window.addEventListener('resize', () => {
+        window.clearTimeout(temporizadorRedimensionamento);
+        temporizadorRedimensionamento = window.setTimeout(() => {
+            if (!eventosCarregados.length) return;
+            secoesCategorias.forEach((secao) => {
+                renderizarCarrossel(
+                    secao.id,
+                    eventosCarregados.filter((evento) => eventoPertenceASecao(evento, secao)),
+                    'Nenhum evento cadastrado nesta categoria no momento.'
+                );
+            });
+        }, 180);
     });
 
     buscarEventosNaHome(new URL(window.location.href).searchParams.get('busca') || '');

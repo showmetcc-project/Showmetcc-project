@@ -84,7 +84,7 @@ function criarCardFavorito(favorito) {
 
     const local = criarInformacao(
         'bi bi-geo-alt-fill',
-        [favorito.local_evento, favorito.cidade_evento, favorito.uf]
+        [favorito.endereco_evento, favorito.numero_endereco, favorito.cidade_evento, favorito.uf]
             .filter(Boolean)
             .join(', ') || 'Local não informado'
     );
@@ -218,6 +218,14 @@ function formatarDataEvento(data) {
     return dataLocal.toLocaleDateString('pt-BR');
 }
 
+function formatarMoeda(valor) {
+    const numero = Number(valor);
+    return (Number.isFinite(numero) ? numero : 0).toLocaleString('pt-BR', {
+        style: 'currency',
+        currency: 'BRL'
+    });
+}
+
 function chaveHojeLocal() {
     const hoje = new Date();
     const ano = hoje.getFullYear();
@@ -294,7 +302,7 @@ function criarCardPlanejado(planejamento) {
 
     const local = criarInformacao(
         'bi bi-geo-alt-fill',
-        [planejamento.local_evento, planejamento.cidade_evento, planejamento.uf]
+        [planejamento.endereco_evento, planejamento.numero_endereco, planejamento.cidade_evento, planejamento.uf]
             .filter(Boolean)
             .join(', ') || 'Local não informado'
     );
@@ -306,50 +314,15 @@ function criarCardPlanejado(planejamento) {
 
     const detalhes = document.createElement('a');
     detalhes.className = 'btn-detalhes';
-    detalhes.href = `detalhesEvento.php?id_evento=${planejamento.id_evento}`;
-    detalhes.textContent = 'Ver detalhes';
+    detalhes.href = `planejamento.php?id=${planejamento.id_evento}&resumo=1`;
+    detalhes.textContent = 'Ver planejamento';
 
-    const editar = document.createElement('button');
-    editar.type = 'button';
-    editar.className = 'btn-planejamento';
-    editar.textContent = 'Editar transporte';
-    editar.addEventListener('click', async () => {
-        const novoMeio = window.prompt('Novo meio de transporte:', planejamento.meio_transporte);
+    const verCalendario = document.createElement('a');
+    verCalendario.className = 'btn-planejamento';
+    verCalendario.href = `meusEventos.php?aba=calendario&data=${encodeURIComponent(chaveDoPlanejamento(planejamento))}`;
+    verCalendario.textContent = 'Ver no calendário';
 
-        if (novoMeio === null) {
-            return;
-        }
-
-        const meioTransporte = novoMeio.trim();
-
-        if (!meioTransporte || meioTransporte.length > 30) {
-            window.ShowMeUI.toast('Informe um meio de transporte com até 30 caracteres.', {
-                variante: 'erro'
-            });
-            return;
-        }
-
-        try {
-            const resposta = await fetch(`api/planejamento/${planejamento.id_rota}`, {
-                method: 'PUT',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({meio_transporte: meioTransporte})
-            });
-            const dados = await resposta.json();
-
-            if (!resposta.ok) {
-                throw new Error(dados.erro || 'Não foi possível editar o planejamento.');
-            }
-
-            planejamento.meio_transporte = meioTransporte;
-            deslocamento.lastChild.textContent = textoDeslocamento(planejamento);
-            window.ShowMeUI.toast('Planejamento atualizado.', {variante: 'sucesso'});
-        } catch (erro) {
-            window.ShowMeUI.toast(erro.message, {variante: 'erro'});
-        }
-    });
-
-    botoes.append(detalhes, editar);
+    botoes.append(detalhes, verCalendario);
     info.append(titulo, local, data, deslocamento, botoes);
 
     const acoes = document.createElement('div');
@@ -499,7 +472,7 @@ function agruparPlanejamentosPorData() {
 }
 
 function localPlanejamento(planejamento) {
-    return [planejamento.local_evento, planejamento.cidade_evento, planejamento.uf]
+    return [planejamento.endereco_evento, planejamento.numero_endereco, planejamento.cidade_evento, planejamento.uf]
         .filter(Boolean)
         .join(', ') || 'Local não informado';
 }
@@ -540,13 +513,15 @@ function criarDetalhePlanejamento(planejamento) {
     local.append(document.createTextNode(localPlanejamento(planejamento)));
 
     const investimento = document.createElement('p');
-    investimento.className = 'calendario-evento-info calendario-investimento-indisponivel';
+    investimento.className = 'calendario-evento-info';
     investimento.innerHTML = '<i class="bi bi-wallet2" aria-hidden="true"></i>';
-    investimento.append(document.createTextNode('Investimento total: não registrado'));
+    investimento.append(document.createTextNode(
+        `Investimento total: ${formatarMoeda(planejamento.investimento_total)}`
+    ));
 
     const link = document.createElement('a');
     link.className = 'calendario-link-planejamento';
-    link.href = `planejamento.php?id=${planejamento.id_evento}`;
+    link.href = `planejamento.php?id=${planejamento.id_evento}&resumo=1`;
     link.textContent = 'Ver planejamento completo →';
 
     card.append(cabecalho, local, investimento, link);
@@ -634,11 +609,20 @@ function renderizarResumoMes() {
     const investimento = document.createElement('div');
     investimento.className = 'resumo-mes-metrica resumo-investimento';
     investimento.innerHTML = '<span>Investimento total no mês</span>';
-    const indisponivel = document.createElement('strong');
-    indisponivel.textContent = 'Não disponível';
-    const explicacao = document.createElement('small');
-    explicacao.textContent = 'A rota ainda não armazena valores financeiros.';
-    investimento.append(indisponivel, explicacao);
+    const totalInvestimento = eventosMes.reduce((soma, planejamento) => {
+        const totalSalvo = Number(planejamento.investimento_total);
+        if (Number.isFinite(totalSalvo)) {
+            return soma + totalSalvo;
+        }
+
+        return soma
+            + Number(planejamento.custo_ingresso || 0)
+            + Number(planejamento.custo_transporte || 0)
+            + Number(planejamento.custo_hospedagem || 0);
+    }, 0);
+    const valorInvestimento = document.createElement('strong');
+    valorInvestimento.textContent = formatarMoeda(totalInvestimento);
+    investimento.append(valorInvestimento);
 
     resumoMesConteudo.append(quantidade, investimento);
 }
@@ -736,7 +720,8 @@ calendarioHoje?.addEventListener('click', () => {
 });
 
 function ativarAbaInicial() {
-    const abaSolicitada = new URLSearchParams(window.location.search).get('aba');
+    const parametros = new URLSearchParams(window.location.search);
+    const abaSolicitada = parametros.get('aba');
 
     if (!['favoritos', 'planejados', 'calendario'].includes(abaSolicitada)) {
         return;
@@ -750,6 +735,17 @@ function ativarAbaInicial() {
     document.querySelectorAll('.conteudo').forEach((conteudo) => {
         conteudo.classList.toggle('ativa', conteudo.id === abaSolicitada);
     });
+
+    if (abaSolicitada === 'calendario') {
+        const dataSolicitada = parametros.get('data') || '';
+        if (/^\d{4}-\d{2}-\d{2}$/.test(dataSolicitada)) {
+            const data = dataDaChave(dataSolicitada);
+            if (!Number.isNaN(data.getTime()) && chaveDaData(data) === dataSolicitada) {
+                mesCalendario = new Date(data.getFullYear(), data.getMonth(), 1);
+                dataSelecionada = dataSolicitada;
+            }
+        }
+    }
 }
 
 ativarAbaInicial();

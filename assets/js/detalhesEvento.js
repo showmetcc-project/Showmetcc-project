@@ -34,6 +34,16 @@
         const uf = String(evento.uf || '').trim();
         return cidade ? `${cidade}${uf ? ` - ${uf}` : ''}` : 'Cidade não informada';
     }
+    function formatarValor(valor) {
+        return Number(valor).toLocaleString('pt-BR', {style: 'currency', currency: 'BRL'});
+    }
+    function faixaPreco(evento) {
+        const minimo = Number(evento.valor_ingresso_minimo || 0);
+        const maximo = Number(evento.valor_ingresso_maximo || 0);
+        if (minimo <= 0) return 'Consulte valores';
+        if (maximo > minimo) return `${formatarValor(minimo)} – ${formatarValor(maximo)}`;
+        return `A partir de ${formatarValor(minimo)}`;
+    }
     function mostrarErro(mensagem) {
         const estado = document.getElementById('estadoPagina');
         estado.classList.add('erro'); estado.replaceChildren();
@@ -72,37 +82,122 @@
     }
     function endereco(evento) {
         const cidade = String(evento.cidade_evento || '').trim(), uf = String(evento.uf || '').trim();
-        return [evento.local_evento, evento.rua_evento, cidade ? `${cidade}${uf ? ` - ${uf}` : ''}` : '']
+        if (evento.endereco_evento) {
+            const enderecoCompleto = String(evento.endereco_evento).trim();
+            const rua = String(evento.rua_evento || '').trim();
+            const numero = String(evento.numero_endereco || '').trim();
+            if (rua && numero && enderecoCompleto.toLocaleLowerCase('pt-BR').startsWith(rua.toLocaleLowerCase('pt-BR'))) {
+                const complemento = enderecoCompleto.slice(rua.length).replace(/^\s*,\s*/, '');
+                return [rua, numero, complemento].filter(Boolean).join(', ');
+            }
+            return enderecoCompleto;
+        }
+        return [evento.rua_evento, evento.numero_endereco, cidade ? `${cidade}${uf ? ` - ${uf}` : ''}` : '']
             .filter((p) => String(p || '').trim()).join(', ');
     }
+
+    function coordenadasValidas(latitude, longitude) {
+        return Number.isFinite(latitude)
+            && Number.isFinite(longitude)
+            && latitude >= -90
+            && latitude <= 90
+            && longitude >= -180
+            && longitude <= 180;
+    }
+
+    async function localizarPorCep(cep) {
+        const cepNumerico = String(cep || '').replace(/\D/g, '');
+        if (cepNumerico.length !== 8) return null;
+
+        const resposta = await fetch(`https://brasilapi.com.br/api/cep/v2/${cepNumerico}`, {
+            headers: {Accept: 'application/json'}
+        });
+        if (!resposta.ok) return null;
+
+        const dados = await resposta.json();
+        const latitude = Number(dados?.location?.coordinates?.latitude);
+        const longitude = Number(dados?.location?.coordinates?.longitude);
+        return coordenadasValidas(latitude, longitude) ? {latitude, longitude} : null;
+    }
+
+    async function localizarPorEndereco(evento) {
+        const consulta = [
+            evento.rua_evento,
+            evento.numero_endereco,
+            evento.cidade_evento,
+            evento.uf,
+            'Brasil'
+        ].filter((parte) => String(parte || '').trim()).join(', ');
+        if (!consulta) return null;
+
+        const qs = new URLSearchParams({format: 'json', limit: '1', countrycodes: 'br', q: consulta});
+        const resposta = await fetch(`https://nominatim.openstreetmap.org/search?${qs}`, {
+            headers: {Accept: 'application/json'}
+        });
+        if (!resposta.ok) return null;
+
+        const dados = await resposta.json();
+        if (!Array.isArray(dados) || !dados.length) return null;
+        const latitude = Number(dados[0].lat);
+        const longitude = Number(dados[0].lon);
+        return coordenadasValidas(latitude, longitude) ? {latitude, longitude} : null;
+    }
+
     async function carregarMapa(evento) {
         const alvo = document.getElementById('mapaEventoBanco'), texto = endereco(evento);
-        if (!texto || typeof window.L === 'undefined') { alvo.textContent = 'Localização não disponível.'; return; }
+        if (!texto) { alvo.textContent = 'Localização não disponível.'; return; }
+        if (typeof window.L === 'undefined') { alvo.textContent = 'Não foi possível iniciar o mapa.'; return; }
         alvo.textContent = 'Carregando mapa...';
         try {
-            const qs = new URLSearchParams({format: 'json', limit: '1', q: texto});
-            const resposta = await fetch(`https://nominatim.openstreetmap.org/search?${qs}`, {headers: {Accept: 'application/json'}});
-            const dados = await resposta.json();
-            if (!resposta.ok || !Array.isArray(dados) || !dados.length) throw new Error();
+            const coordenadas = await localizarPorEndereco(evento)
+                || await localizarPorCep(evento.cep_evento);
+            if (!coordenadas) throw new Error('Endereço não localizado.');
+
             alvo.replaceChildren(); if (mapaAtual) mapaAtual.remove();
-            mapaAtual = window.L.map('mapaEventoBanco').setView([Number(dados[0].lat), Number(dados[0].lon)], 15);
+            mapaAtual = window.L.map('mapaEventoBanco').setView([coordenadas.latitude, coordenadas.longitude], 15);
             window.L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {attribution: '&copy; OpenStreetMap &copy; CARTO', subdomains: 'abcd', maxZoom: 20}).addTo(mapaAtual);
-            window.L.marker([Number(dados[0].lat), Number(dados[0].lon)]).addTo(mapaAtual).bindPopup(texto).openPopup();
-        } catch (_) { alvo.textContent = 'Não foi possível carregar o mapa.'; }
+            window.L.marker([coordenadas.latitude, coordenadas.longitude]).addTo(mapaAtual).bindPopup(texto).openPopup();
+            window.setTimeout(() => mapaAtual?.invalidateSize(), 0);
+        } catch (erro) {
+            console.error('Falha ao carregar o mapa do evento:', erro);
+            alvo.textContent = 'Não foi possível localizar este endereço no mapa.';
+        }
     }
-    function configurarIngressos(evento) {
-        const texto = document.getElementById('textoIngressos');
-        const link = document.getElementById('linkIngressos');
-        const aviso = document.getElementById('avisoIngressos');
-        link.hidden = true; aviso.hidden = true;
-        if (eventoEncerrado) { texto.textContent = 'As vendas foram encerradas para este evento.'; return; }
-        if (evento.gratuidade) { texto.textContent = 'Este evento é gratuito.'; return; }
-        texto.textContent = 'Este evento é pago. Consulte o canal oficial.';
+    function configurarAcessoEvento(evento) {
+        const badge = document.getElementById('badgeAcessoEvento');
+        const texto = document.getElementById('textoAcessoEvento');
+        const link = document.getElementById('linkAcessoEvento');
+        const aviso = document.getElementById('avisoAcessoEvento');
+        const gratuito = Boolean(evento.gratuidade);
+
+        badge.hidden = !gratuito;
+        badge.textContent = gratuito ? 'Entrada gratuita' : '';
+        link.hidden = true;
+        link.removeAttribute('href');
+        aviso.hidden = true;
+
+        if (eventoEncerrado) {
+            texto.textContent = gratuito
+                ? 'Este evento teve entrada gratuita, mas já foi encerrado.'
+                : 'As vendas foram encerradas para este evento.';
+            return;
+        }
+
+        if (gratuito) {
+            texto.textContent = 'A entrada para este evento é gratuita.';
+            link.textContent = 'Mais informações';
+        } else {
+            texto.textContent = `Ingressos: ${faixaPreco(evento)}`;
+            link.textContent = 'Comprar ingressos';
+        }
+
         if (!evento.link_oficial) return;
         try {
             const url = new URL(evento.link_oficial, location.href);
             if (!['http:', 'https:'].includes(url.protocol)) return;
-            link.href = url.href; link.hidden = false; aviso.hidden = false;
+            link.href = url.href;
+            link.hidden = false;
+            aviso.hidden = gratuito;
         } catch (_) { /* link inválido fica oculto */ }
     }
     function renderizarEvento(evento) {
@@ -118,19 +213,19 @@
         document.getElementById('tituloEvento').textContent = evento.nome_evento || 'Evento sem nome';
         document.querySelector('#infoData span').textContent = formatarData(evento.data_evento);
         document.querySelector('#infoCidade span').textContent = localidade(evento);
-        const local = document.getElementById('infoLocal'); local.querySelector('span').textContent = evento.local_evento || ''; local.hidden = !evento.local_evento;
+        const local = document.getElementById('infoLocal'); local.hidden = true;
         const categoria = document.getElementById('infoCategoria'); categoria.querySelector('span').textContent = evento.categoria_evento || ''; categoria.hidden = !evento.categoria_evento;
-        const preco = document.getElementById('infoPreco'); preco.querySelector('span').textContent = String(evento.faixa_preco || '').trim() || 'Consulte valores'; preco.hidden = Boolean(evento.gratuidade);
+        const preco = document.getElementById('infoPreco'); preco.querySelector('span').textContent = faixaPreco(evento); preco.hidden = Boolean(evento.gratuidade);
         document.getElementById('descricaoEvento').textContent = evento.descricao_evento || 'Este evento ainda não possui uma descrição cadastrada.';
         renderizarArtistas(evento.artistas);
-        document.getElementById('nomeLocal').textContent = evento.local_evento || 'Local não informado';
-        document.getElementById('enderecoLocal').textContent = [evento.rua_evento, localidade(evento)].filter(Boolean).join(' — ');
+        document.getElementById('nomeLocal').textContent = evento.endereco_evento || 'Endereço não informado';
+        document.getElementById('enderecoLocal').textContent = endereco(evento);
         const planejar = document.getElementById('linkPlanejamento'); planejar.href = `planejamento.php?id=${idEvento}`;
         planejar.classList.toggle('acao-desabilitada', eventoEncerrado); planejar.setAttribute('aria-disabled', String(eventoEncerrado));
         if (eventoEncerrado) planejar.removeAttribute('href');
         const favorito = document.querySelector('.btn-favoritar'); favorito.disabled = eventoEncerrado; favorito.title = eventoEncerrado ? 'Evento encerrado' : '';
         document.getElementById('linkComunidade').href = `comunidadeEvento.php?id=${idEvento}`;
-        configurarIngressos(evento);
+        configurarAcessoEvento(evento);
         document.getElementById('estadoPagina').hidden = true; document.getElementById('conteudoEvento').hidden = false;
         carregarMapa(evento);
     }

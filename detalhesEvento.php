@@ -1,5 +1,5 @@
 <?php
-require_once __DIR__ . '/config/verificaLogin.php';
+require_once __DIR__ . '/config/verificaUsuarioComum.php';
 
 $idUsuarioSessao = isset($_SESSION['id_user']) ? (int) $_SESSION['id_user'] : 0;
 ?>
@@ -60,18 +60,18 @@ $idUsuarioSessao = isset($_SESSION['id_user']) ? (int) $_SESSION['id_user'] : 0;
                 </div>
 
                 <div class="row mt-4 g-4">
-                    <div class="col-lg-8">
+                    <div class="col-lg-8 detalhes-coluna-esquerda">
                         <section class="secao">
                             <h2>Sobre o evento</h2>
                             <p id="descricaoEvento"></p>
                         </section>
 
-                        <section class="secao">
+                        <section class="secao secao-artistas">
                             <h2>Artistas e atrações</h2>
                             <div id="listaArtistas"></div>
                         </section>
 
-                        <section class="secao">
+                        <section class="secao secao-local">
                             <h2>Local</h2>
                             <div class="card-showme">
                                 <h4 id="nomeLocal"></h4>
@@ -94,13 +94,14 @@ $idUsuarioSessao = isset($_SESSION['id_user']) ? (int) $_SESSION['id_user'] : 0;
 
                     <div class="col-lg-4">
                         <aside class="detalhes-lateral-sticky" aria-label="Ações do evento">
-                        <div class="ingresso-card">
-                            <h3>Ingressos</h3>
-                            <p id="textoIngressos"></p>
-                            <a id="linkIngressos" href="#" target="_blank" rel="noopener noreferrer" class="btn-comprar" hidden>
-                                Comprar Ingressos
+                        <div class="acesso-evento-card">
+                            <h3>Acesso ao Evento</h3>
+                            <span id="badgeAcessoEvento" class="badge-acesso-evento" hidden></span>
+                            <p id="textoAcessoEvento"></p>
+                            <a id="linkAcessoEvento" href="#" target="_blank" rel="noopener noreferrer" class="btn-acesso-evento" hidden>
+                                Comprar ingressos
                             </a>
-                            <small id="avisoIngressos" hidden>Confira os valores no canal oficial do evento.</small>
+                            <small id="avisoAcessoEvento" hidden>Confira os valores no canal oficial do evento.</small>
                         </div>
 
                         <button type="button" class="btn-acao btn-favoritar" aria-pressed="false">

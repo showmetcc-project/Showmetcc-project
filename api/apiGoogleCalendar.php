@@ -14,7 +14,8 @@ require_once __DIR__ . '/middleware/googleCalendarHelper.php';
 function buscarEventoParaAgenda(mysqli $conn, int $idEvento): ?array
 {
     $stmt = $conn->prepare(
-        'SELECT id_evento, nome_evento, local_evento, rua_evento, cidade_evento, uf,
+        'SELECT id_evento, nome_evento, endereco_evento, numero_endereco,
+                rua_evento, cidade_evento, uf,
                 data_evento, horario_evento, link_oficial
          FROM evento
          WHERE id_evento = ?
@@ -60,8 +61,14 @@ function janelaEventoGoogleCalendar(array $evento, int $tempoDeslocamento = 0): 
 
 function enderecoEventoGoogleCalendar(array $evento): string
 {
+    if (!empty($evento['endereco_evento'])) {
+        return implode(', ', array_filter([
+            $evento['endereco_evento'],
+            $evento['numero_endereco'] ?? null,
+        ], static fn ($valor) => trim((string) $valor) !== ''));
+    }
+
     return implode(', ', array_filter([
-        $evento['local_evento'] ?? null,
         $evento['rua_evento'] ?? null,
         $evento['cidade_evento'] ?? null,
         $evento['uf'] ?? null,
@@ -206,7 +213,8 @@ switch ($metodo) {
 
             $stmt = $conn->prepare(
                 'SELECT r.id_rota, r.id_evento, r.tempo_estimado,
-                        e.nome_evento, e.local_evento, e.rua_evento, e.cidade_evento,
+                        e.nome_evento, e.endereco_evento, e.numero_endereco,
+                        e.rua_evento, e.cidade_evento,
                         e.uf, e.data_evento, e.horario_evento, e.link_oficial
                  FROM rota r
                  INNER JOIN evento e ON e.id_evento = r.id_evento

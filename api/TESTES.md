@@ -353,11 +353,14 @@ curl.exe -i -b $COOKIE_COMUM "$BASE/eventos/?solicitacoes=pendente"
 ```powershell
 curl.exe -i -b $COOKIE_COMUM -X POST "$BASE/eventos/" `
   -F "nome_evento=Festival Regional" `
-  -F "local_evento=Praça Central" `
+  -F "cep_evento=01001000" `
+  -F "endereco_evento=Praça da Sé, Sé, São Paulo - SP, CEP 01001-000" `
+  -F "numero_endereco=100" `
   -F "rua_evento=Rua das Artes, 100" `
   -F "cidade_evento=Sao Paulo" `
   -F "uf=SP" `
-  -F "categoria_evento=Musica" `
+  -F "categoria_evento[]=Música" `
+  -F "categoria_evento[]=Show Nacional" `
   -F "link_oficial=https://example.com/festival" `
   -F "data_evento=2026-12-20" `
   -F "horario_evento=20:00" `
@@ -375,6 +378,42 @@ curl.exe -i -X POST "$BASE/eventos/" `
   -F "nome_evento=Festival sem sessão" `
   -F "foto=@$FOTO_1"
 ```
+
+Para um evento pago, envie também `valor_ingresso_minimo` e, opcionalmente,
+`valor_ingresso_maximo`. O máximo não pode ser menor que o mínimo:
+
+```powershell
+curl.exe -i -b $COOKIE_COMUM -X POST "$BASE/eventos/" `
+  -F "nome_evento=Evento pago sem valor" `
+  -F "cep_evento=01001000" `
+  -F "endereco_evento=Praça da Sé, Sé, São Paulo - SP, CEP 01001-000" `
+  -F "cidade_evento=São Paulo" -F "uf=SP" `
+  -F "categoria_evento[]=Música" `
+  -F "link_oficial=https://example.com/pago-sem-valor" `
+  -F "data_evento=2027-05-10" -F "horario_evento=20:00" `
+  -F "gratuidade=false" `
+  -F "descricao_evento=Teste" -F "descricao_artista=Teste" `
+  -F "nome_artista_solicitado=Artista Teste" `
+  -F "foto=@$FOTO_1"
+
+curl.exe -i -b $COOKIE_COMUM -X POST "$BASE/eventos/" `
+  -F "nome_evento=Evento com faixa inválida" `
+  -F "cep_evento=01001000" `
+  -F "endereco_evento=Praça da Sé, Sé, São Paulo - SP, CEP 01001-000" `
+  -F "cidade_evento=São Paulo" -F "uf=SP" `
+  -F "categoria_evento[]=Música" `
+  -F "link_oficial=https://example.com/faixa-invalida" `
+  -F "data_evento=2027-05-11" -F "horario_evento=20:00" `
+  -F "gratuidade=false" `
+  -F "descricao_evento=Teste" -F "descricao_artista=Teste" `
+  -F "nome_artista_solicitado=Artista Teste" `
+  -F "valor_ingresso_minimo=200" `
+  -F "valor_ingresso_maximo=100" `
+  -F "foto=@$FOTO_1"
+```
+
+Os dois comandos devem retornar `400`, respectivamente por ausência do valor mínimo e
+por faixa de valores inválida.
 
 ### POST /eventos — nome acima de 100 caracteres retorna 400
 
@@ -394,10 +433,22 @@ declarado pelo cliente. A API deve detectar o conteúdo PHP real com `finfo`.
 ```powershell
 curl.exe -i -b $COOKIE_COMUM -X POST "$BASE/eventos/" `
   -F "nome_evento=Arquivo malicioso" `
+  -F "cep_evento=01001000" -F "endereco_evento=Praça da Sé, São Paulo - SP" `
+  -F "cidade_evento=São Paulo" -F "uf=SP" -F "categoria_evento[]=Cinema" `
+  -F "link_oficial=https://example.com/arquivo" -F "data_evento=2027-06-01" `
+  -F "horario_evento=20:00" -F "gratuidade=true" `
+  -F "descricao_evento=Teste" -F "descricao_artista=Teste" `
+  -F "nome_artista_solicitado=Atração Teste" `
   -F "foto=@$ARQUIVO_PHP;filename=disfarce.jpg;type=image/jpeg"
 
 curl.exe -i -b $COOKIE_COMUM -X POST "$BASE/eventos/" `
   -F "nome_evento=Evento com vídeo" `
+  -F "cep_evento=01001000" -F "endereco_evento=Praça da Sé, São Paulo - SP" `
+  -F "cidade_evento=São Paulo" -F "uf=SP" -F "categoria_evento[]=Cinema" `
+  -F "link_oficial=https://example.com/video" -F "data_evento=2027-06-02" `
+  -F "horario_evento=20:00" -F "gratuidade=true" `
+  -F "descricao_evento=Teste" -F "descricao_artista=Teste" `
+  -F "nome_artista_solicitado=Atração Teste" `
   -F "foto=@$VIDEO_1"
 ```
 
@@ -408,7 +459,7 @@ A foto original é mantida; o painel permite corrigir os demais dados antes da d
 ```powershell
 curl.exe -i -b $COOKIE_ADMIN -X PUT "$BASE/eventos/ID_SOLICITACAO" `
   -H "Content-Type: application/json" `
-  -d '{"acao":"editar_solicitacao","nome_evento":"Nome corrigido","local_evento":"Local corrigido","data_evento":"2026-12-21","horario_evento":"21:00","gratuidade":true,"descricao_evento":"Descrição corrigida","descricao_artista":"Artista corrigido"}'
+  -d '{"acao":"editar_solicitacao","nome_evento":"Nome corrigido","data_evento":"2026-12-21","horario_evento":"21:00","gratuidade":true,"descricao_evento":"Descrição corrigida","descricao_artista":"Artista corrigido"}'
 
 curl.exe -i -b $COOKIE_ADMIN -X PUT "$BASE/eventos/ID_SOLICITACAO" `
   -H "Content-Type: application/json" `
@@ -476,15 +527,20 @@ o mesmo artista com diferenças de caixa e espaços. Isso testa a reutilização
 ```powershell
 curl.exe -i -b $COOKIE_COMUM -X POST "$BASE/eventos/" `
   -F "nome_evento=Festival Reuso de Artista" `
-  -F "local_evento=Teatro Municipal" `
+  -F "cep_evento=13010000" `
+  -F "endereco_evento=Centro, Campinas - SP, CEP 13010-000" `
+  -F "numero_endereco=200" `
   -F "rua_evento=Rua do Teatro, 200" `
   -F "cidade_evento=Campinas" `
   -F "uf=SP" `
-  -F "categoria_evento=Musica" `
+  -F "categoria_evento[]=Música" `
+  -F "categoria_evento[]=Show Nacional" `
   -F "link_oficial=https://example.com/festival-reuso" `
   -F "data_evento=2026-12-22" `
   -F "horario_evento=21:30" `
   -F "gratuidade=false" `
+  -F "valor_ingresso_minimo=80.00" `
+  -F "valor_ingresso_maximo=250.00" `
   -F "descricao_evento=Segundo evento completo" `
   -F "descricao_artista=Mesmo artista do primeiro evento" `
   -F "nome_artista_solicitado=  banda   exemplo  " `
@@ -510,7 +566,7 @@ SELECT
     e.id_evento,
     e.id_solicitacao_origem,
     e.num_evento,
-    e.local_evento,
+    e.endereco_evento,
     e.rua_evento,
     e.cidade_evento,
     e.uf,
@@ -633,7 +689,7 @@ teste de criação.
 ```powershell
 curl.exe -i -b $COOKIE_COMUM -X POST "$BASE/planejamento/" `
   -H "Content-Type: application/json" `
-  --data-raw '{\"id_evento\":1,\"meio_transporte\":\"Carro\",\"distancia_km\":125.5,\"tempo_estimado\":150}'
+  --data-raw '{\"id_evento\":1,\"meio_transporte\":\"Carro\",\"distancia_km\":125.5,\"tempo_estimado\":150,\"origem\":\"Campinas - SP\",\"orcamento_total\":800,\"custo_ingresso\":80,\"custo_transporte\":120,\"hospedagem_necessaria\":true,\"nome_hospedagem\":\"Hotel de teste\",\"custo_hospedagem\":250}'
 ```
 
 A resposta esperada é `201`. Guarde o `id_rota` retornado para os testes de edição e
@@ -668,7 +724,7 @@ curl.exe -i "$BASE/planejamento/"
 ```
 
 A resposta autenticada deve incluir os dados da rota e do evento, incluindo
-`nome_evento`, `data_evento` e `imagem_evento`.
+`nome_evento`, `data_evento`, `imagem_evento`, custos persistidos e `investimento_total`.
 
 ### PUT /planejamento/{id_rota} — sucesso e erro 404
 
@@ -805,6 +861,36 @@ curl.exe -i -b $COOKIE_OUTRO_USUARIO -X POST "$BASE/comunidade-denuncias" `
 ```
 
 Espere `201` e confirme a linha em `comunidade_denuncia`; a segunda chamada retorna `400`.
+
+### Moderação administrativa de posts denunciados
+
+Liste todas as denúncias e filtre as pendentes. Usuário comum deve receber `403`:
+
+```powershell
+curl.exe -i -b $COOKIE_ADMIN "$BASE/comunidade-denuncias?status=todas"
+curl.exe -i -b $COOKIE_ADMIN "$BASE/comunidade-denuncias?status=pendente"
+curl.exe -i -b $COOKIE_COMUM "$BASE/comunidade-denuncias?status=pendente"
+```
+
+Mantenha uma publicação e remova outra:
+
+```powershell
+curl.exe -i -b $COOKIE_ADMIN -X PUT "$BASE/comunidade-denuncias/ID_DENUNCIA_MANTER" `
+  -H "Content-Type: application/json" `
+  -d '{"acao":"manter"}'
+
+curl.exe -i -b $COOKIE_ADMIN -X PUT "$BASE/comunidade-denuncias/ID_DENUNCIA_REMOVER" `
+  -H "Content-Type: application/json" `
+  -d '{"acao":"remover"}'
+
+curl.exe -i -b $COOKIE_ADMIN "$BASE/comunidade-denuncias?status=mantido"
+curl.exe -i -b $COOKIE_ADMIN "$BASE/comunidade-denuncias?status=removido"
+curl.exe -i -b $COOKIE_COMUM "$BASE/comunidade-posts?evento_id=ID_EVENTO"
+```
+
+As duas decisões devem responder `200`. A publicação mantida continua no feed; a removida
+deixa de aparecer, mas permanece no histórico administrativo. Repetir a mesma decisão deve
+retornar `409`.
 
 ### Eventos passados fora da descoberta
 

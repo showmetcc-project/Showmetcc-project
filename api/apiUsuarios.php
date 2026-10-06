@@ -354,7 +354,7 @@ if ($metodo === 'GET') {
                   WHERE s.id_user = u.id_user) AS eventos_cadastrados,
                 ((SELECT COUNT(*)
                     FROM comunidade_post cp
-                   WHERE cp.id_usuario = u.id_user)
+                   WHERE cp.id_usuario = u.id_user AND cp.status_post = \'ativo\')
                  +
                  (SELECT COUNT(*)
                     FROM comunidade_midia cm

@@ -810,6 +810,31 @@ paths:
         '200': {description: Estado e total de curtidas atualizados}
         '404': {$ref: '#/components/responses/NaoEncontrado'}
   /comunidade-denuncias:
+    get:
+      tags: [Comunidades, Administração]
+      summary: Lista denúncias de publicações para moderação
+      description: Restrito a administradores. Retorna o post, autor, comunidade, motivo e situação da denúncia.
+      security: [{cookieAuth: []}]
+      parameters:
+        - name: status
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [todas, pendente, mantido, removido]
+            default: todas
+      responses:
+        '200':
+          description: Denúncias retornadas
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  denuncias:
+                    type: array
+                    items: {$ref: '#/components/schemas/ComunidadeDenuncia'}
+        '403': {$ref: '#/components/responses/Proibido'}
     post:
       tags: [Comunidades]
       summary: Denuncia uma publicação ou foto
@@ -823,6 +848,26 @@ paths:
       responses:
         '201': {description: Denúncia persistida}
         '400': {$ref: '#/components/responses/RequisicaoInvalida'}
+  /comunidade-denuncias/{id}:
+    put:
+      tags: [Comunidades, Administração]
+      summary: Mantém ou remove uma publicação denunciada
+      description: >-
+        Restrito a administradores. Remover faz exclusão lógica do post para preservar
+        o histórico da denúncia; manter conserva a publicação visível.
+      security: [{cookieAuth: []}]
+      parameters: [{$ref: '#/components/parameters/IdNaRota'}]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/ModeracaoDenunciaEntrada'}
+      responses:
+        '200': {description: Denúncia analisada}
+        '400': {$ref: '#/components/responses/RequisicaoInvalida'}
+        '403': {$ref: '#/components/responses/Proibido'}
+        '404': {$ref: '#/components/responses/NaoEncontrado'}
+        '409': {description: Denúncia já analisada}
   /comunidade-midias:
     get:
       tags: [Comunidades]
@@ -1042,9 +1087,17 @@ components:
           description: Campo legado, mantido no banco e sem uso definido pela API.
         nome_evento:
           type: string
-        local_evento:
+        cep_evento:
           type: string
-          maxLength: 100
+          pattern: '^\d{8}$'
+          nullable: true
+        endereco_evento:
+          type: string
+          maxLength: 255
+          nullable: true
+        numero_endereco:
+          type: string
+          maxLength: 20
           nullable: true
         rua_evento:
           type: string
@@ -1070,9 +1123,17 @@ components:
           nullable: true
         gratuidade:
           type: boolean
+        valor_ingresso_minimo:
+          type: number
+          format: double
+          nullable: true
+        valor_ingresso_maximo:
+          type: number
+          format: double
+          nullable: true
         categoria_evento:
           type: string
-          maxLength: 100
+          maxLength: 255
           nullable: true
         link_oficial:
           type: string
@@ -1142,9 +1203,15 @@ components:
           type: string
           format: date
           nullable: true
-        local_evento:
+        cep_evento:
           type: string
-          maxLength: 100
+          pattern: '^\d{8}$'
+        endereco_evento:
+          type: string
+          maxLength: 255
+        numero_endereco:
+          type: string
+          maxLength: 20
           nullable: true
         rua_evento:
           type: string
@@ -1161,7 +1228,7 @@ components:
           nullable: true
         categoria_evento:
           type: string
-          maxLength: 100
+          maxLength: 255
           nullable: true
         link_oficial:
           type: string
@@ -1170,6 +1237,14 @@ components:
           nullable: true
         gratuidade:
           type: boolean
+        valor_ingresso_minimo:
+          type: number
+          format: double
+          nullable: true
+        valor_ingresso_maximo:
+          type: number
+          format: double
+          nullable: true
         descricao_evento:
           type: string
           maxLength: 1000
@@ -1193,9 +1268,15 @@ components:
         nome_evento:
           type: string
           maxLength: 100
-        local_evento:
+        cep_evento:
           type: string
-          maxLength: 100
+          pattern: '^\d{8}$'
+        endereco_evento:
+          type: string
+          maxLength: 255
+        numero_endereco:
+          type: string
+          maxLength: 20
           nullable: true
         rua_evento:
           type: string
@@ -1224,9 +1305,17 @@ components:
           nullable: true
         gratuidade:
           type: boolean
+        valor_ingresso_minimo:
+          type: number
+          format: double
+          nullable: true
+        valor_ingresso_maximo:
+          type: number
+          format: double
+          nullable: true
         categoria_evento:
           type: string
-          maxLength: 100
+          maxLength: 255
           nullable: true
         link_oficial:
           type: string
@@ -1243,7 +1332,21 @@ components:
 
     SolicitacaoCadastro:
       type: object
-      required: [nome_evento, foto]
+      required:
+        - nome_evento
+        - foto
+        - horario_evento
+        - data_evento
+        - cep_evento
+        - endereco_evento
+        - cidade_evento
+        - uf
+        - categoria_evento
+        - link_oficial
+        - gratuidade
+        - descricao_evento
+        - descricao_artista
+        - nome_artista_solicitado
       properties:
         nome_evento:
           type: string
@@ -1254,14 +1357,19 @@ components:
         horario_evento:
           type: string
           example: '20:00'
-          nullable: true
         data_evento:
           type: string
           format: date
           nullable: true
-        local_evento:
+        cep_evento:
           type: string
-          maxLength: 100
+          pattern: '^\d{8}$'
+        endereco_evento:
+          type: string
+          maxLength: 255
+        numero_endereco:
+          type: string
+          maxLength: 20
           nullable: true
         rua_evento:
           type: string
@@ -1277,9 +1385,12 @@ components:
           maxLength: 2
           nullable: true
         categoria_evento:
-          type: string
-          maxLength: 100
-          nullable: true
+          type: array
+          minItems: 1
+          uniqueItems: true
+          items:
+            type: string
+            enum: [Música, Cinema, Show Nacional, Show Internacional, Workshop, Oficina, Gastronômico]
         link_oficial:
           type: string
           format: uri
@@ -1287,6 +1398,20 @@ components:
           nullable: true
         gratuidade:
           type: boolean
+          description: Quando false, valor_ingresso_minimo é obrigatório.
+        valor_ingresso_minimo:
+          type: number
+          format: double
+          exclusiveMinimum: true
+          minimum: 0
+          nullable: true
+        valor_ingresso_maximo:
+          type: number
+          format: double
+          exclusiveMinimum: true
+          minimum: 0
+          nullable: true
+          description: Quando informado, deve ser maior ou igual ao valor mínimo.
         descricao_evento:
           type: string
           maxLength: 1000
@@ -1336,9 +1461,17 @@ components:
         data_evento:
           type: string
           format: date
-          nullable: true
-        local_evento:
+        cep_evento:
           type: string
+          pattern: '^\d{8}$'
+          nullable: true
+        endereco_evento:
+          type: string
+          maxLength: 255
+          nullable: true
+        numero_endereco:
+          type: string
+          maxLength: 20
           nullable: true
         rua_evento:
           type: string
@@ -1347,35 +1480,43 @@ components:
         cidade_evento:
           type: string
           maxLength: 100
-          nullable: true
         uf:
           type: string
           minLength: 2
           maxLength: 2
-          nullable: true
         categoria_evento:
           type: string
-          maxLength: 100
+          maxLength: 255
           nullable: true
         link_oficial:
           type: string
           format: uri
           maxLength: 255
-          nullable: true
         gratuidade:
           type: boolean
+          description: Quando false, valor_ingresso_minimo é obrigatório.
+        valor_ingresso_minimo:
+          type: number
+          format: double
+          exclusiveMinimum: true
+          minimum: 0
+          nullable: true
+        valor_ingresso_maximo:
+          type: number
+          format: double
+          exclusiveMinimum: true
+          minimum: 0
+          nullable: true
+          description: Quando informado, deve ser maior ou igual ao valor mínimo.
         descricao_evento:
           type: string
           maxLength: 1000
-          nullable: true
         descricao_artista:
           type: string
           maxLength: 1000
-          nullable: true
         nome_artista_solicitado:
           type: string
           maxLength: 150
-          nullable: true
         data_solicitacao:
           type: string
           format: date-time
@@ -1411,6 +1552,28 @@ components:
           type: integer
           minimum: 1
           description: Tempo em minutos.
+        origem:
+          type: string
+          maxLength: 255
+          nullable: true
+        orcamento_total:
+          type: number
+          minimum: 0
+        custo_ingresso:
+          type: number
+          minimum: 0
+        custo_transporte:
+          type: number
+          minimum: 0
+        hospedagem_necessaria:
+          type: boolean
+        nome_hospedagem:
+          type: string
+          maxLength: 100
+          nullable: true
+        custo_hospedagem:
+          type: number
+          minimum: 0
 
     GoogleAgendaConflitoEntrada:
       type: object
@@ -1454,6 +1617,28 @@ components:
           type: integer
           minimum: 1
           description: Tempo em minutos.
+        origem:
+          type: string
+          maxLength: 255
+          nullable: true
+        orcamento_total:
+          type: number
+          minimum: 0
+        custo_ingresso:
+          type: number
+          minimum: 0
+        custo_transporte:
+          type: number
+          minimum: 0
+        hospedagem_necessaria:
+          type: boolean
+        nome_hospedagem:
+          type: string
+          maxLength: 100
+          nullable: true
+        custo_hospedagem:
+          type: number
+          minimum: 0
 
     PlanejamentoRota:
       type: object
@@ -1469,6 +1654,22 @@ components:
           format: float
         tempo_estimado:
           type: integer
+        origem:
+          type: string
+          nullable: true
+        orcamento_total:
+          type: number
+        custo_ingresso:
+          type: number
+        custo_transporte:
+          type: number
+        hospedagem_necessaria:
+          type: boolean
+        nome_hospedagem:
+          type: string
+          nullable: true
+        custo_hospedagem:
+          type: number
 
     Planejamento:
       allOf:
@@ -1477,9 +1678,6 @@ components:
           properties:
             nome_evento:
               type: string
-            local_evento:
-              type: string
-              nullable: true
             cidade_evento:
               type: string
               nullable: true
@@ -1518,9 +1716,6 @@ components:
           properties:
             nome_evento:
               type: string
-            local_evento:
-              type: string
-              nullable: true
             cidade_evento:
               type: string
               nullable: true
@@ -1577,6 +1772,39 @@ components:
         motivo:
           type: string
           maxLength: 100
+          description: >-
+            Use Conteúdo inapropriado, Spam ou publicidade, Informação falsa,
+            Discurso de ódio ou o prefixo "Outro motivo: " seguido da descrição.
+
+    ModeracaoDenunciaEntrada:
+      type: object
+      required: [acao]
+      properties:
+        acao:
+          type: string
+          enum: [manter, remover]
+
+    ComunidadeDenuncia:
+      type: object
+      properties:
+        id_denuncia: {type: integer}
+        id_post: {type: integer}
+        id_denunciante: {type: integer}
+        motivo: {type: string}
+        status_denuncia: {type: string, enum: [pendente, mantido, removido]}
+        data_denuncia: {type: string, format: date-time}
+        data_moderacao: {type: string, format: date-time, nullable: true}
+        id_evento: {type: integer}
+        id_autor: {type: integer}
+        categoria_post: {type: string}
+        texto_post: {type: string}
+        status_post: {type: string, enum: [ativo, removido]}
+        data_post: {type: string, format: date-time}
+        autor_nome: {type: string}
+        autor_sobrenome: {type: string, nullable: true}
+        autor_email: {type: string, format: email}
+        comunidade_nome: {type: string}
+        comunidade_imagem: {type: string, nullable: true}
 
     ComunidadeMidiaEntrada:
       type: object

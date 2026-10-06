@@ -189,7 +189,7 @@
           
           .card-planejamento {
               width: 100%;
-              min-height: 620px;
+              min-height: 0;
               padding: 45px;
               border-radius: 18px;
               background: var(--fundo-card);
@@ -347,8 +347,23 @@
               gap: 12px;
               margin-bottom: 25px;
           }
+
+          .opcao-transporte-card {
+              display: flex;
+              min-width: 0;
+              flex-direction: column;
+              gap: 8px;
+          }
+
+          .opcao-hospedagem-card {
+              display: flex;
+              min-width: 0;
+              flex-direction: column;
+              gap: 8px;
+          }
           
           .opcao {
+              width: 100%;
               min-height: 85px;
               padding: 15px;
               border: 1px solid rgba(255, 255, 255, .1);
@@ -379,6 +394,50 @@
               color: #888;
               font-size: 11px;
           }
+
+          .opcao.selecionada,
+          .opcao[aria-pressed="true"],
+          .resultado-hospedagem.selecionada,
+          .resultado-hospedagem[aria-pressed="true"] {
+              border-color: var(--verde);
+              background: rgba(0, 255, 0, .1);
+              box-shadow: 0 0 0 2px rgba(0, 255, 0, .08), 0 8px 24px rgba(0, 255, 0, .1);
+              transform: translateY(-2px);
+          }
+
+          .icone-opcao {
+              color: var(--rosa);
+              font-size: 24px;
+              line-height: 1;
+          }
+
+          .link-pesquisa-transporte,
+          .link-pesquisa-hospedagem {
+              display: flex;
+              min-height: 44px;
+              align-items: center;
+              justify-content: center;
+              gap: 7px;
+              border: 1px solid rgba(255, 0, 110, .5);
+              border-radius: 8px;
+              color: var(--rosa);
+              font-size: 12px;
+              font-weight: 700;
+              text-align: center;
+              text-decoration: none;
+              transition: .2s ease;
+          }
+
+          .link-pesquisa-transporte:hover,
+          .link-pesquisa-transporte:focus-visible,
+          .link-pesquisa-hospedagem:hover,
+          .link-pesquisa-hospedagem:focus-visible {
+              border-color: var(--rosa-hover);
+              background: rgba(255, 0, 110, .1);
+              color: var(--rosa-hover);
+              transform: translateY(-2px);
+              outline: none;
+          }
           /* =========================================================
                TEXTO DE SELEÇÃO
                ========================================================= */
@@ -387,7 +446,19 @@
           #hospedagemSelecionada {
               color: var(--verde);
               font-size: 13px;
-              margin: -10px 0 20px;
+              margin: 8px 0 0;
+              line-height: 1.45;
+              overflow-wrap: anywhere;
+          }
+
+          .campo-valor-planejamento {
+              display: grid;
+              gap: 7px;
+              margin-top: 22px;
+          }
+
+          .campo-valor-planejamento label {
+              margin: 0;
           }
           /* =========================================================
                BOTÕES PRINCIPAIS
@@ -636,51 +707,6 @@
 
           .form-planejamento-api {
               margin-top: 24px;
-              padding: 22px;
-              border: 1px solid rgba(0, 255, 0, .35);
-              border-radius: 12px;
-              background: rgba(0, 255, 0, .035);
-          }
-
-          .form-planejamento-api h3 {
-              margin: 0 0 6px;
-              color: var(--verde);
-              font-size: 17px;
-          }
-
-          .form-planejamento-api > p {
-              margin: 0 0 18px;
-              color: var(--texto-secundario);
-              font-size: 13px;
-          }
-
-          .campos-planejamento-api {
-              display: grid;
-              grid-template-columns: repeat(3, minmax(0, 1fr));
-              gap: 14px;
-          }
-
-          .campos-planejamento-api label {
-              display: block;
-              margin-bottom: 7px;
-              color: #ddd;
-              font-size: 12px;
-          }
-
-          .campos-planejamento-api select {
-              width: 100%;
-              min-height: 47px;
-              padding: 11px 13px;
-              color: #fff;
-              background: #0b0b0b;
-              border: 1px solid rgba(255, 255, 255, .15);
-              border-radius: 8px;
-          }
-
-          .campos-planejamento-api select:focus {
-              border-color: var(--verde);
-              outline: none;
-              box-shadow: 0 0 0 3px rgba(0, 255, 0, .07);
           }
 
           .mensagem-planejamento-api {
@@ -703,6 +729,25 @@
               cursor: not-allowed;
               opacity: .65;
               transform: none;
+          }
+
+          #botaoFinalizarPlanejamento,
+          #botaoFinalizarPlanejamento span {
+              display: inline-flex;
+              align-items: center;
+              justify-content: center;
+              gap: 8px;
+          }
+
+          #botaoFinalizarPlanejamento.botao-editar-planejamento {
+              background: var(--rosa);
+              color: #fff;
+              box-shadow: 0 8px 22px rgba(255, 0, 110, .18);
+          }
+
+          #botaoFinalizarPlanejamento.botao-editar-planejamento:hover {
+              background: var(--rosa-hover);
+              box-shadow: 0 10px 26px rgba(255, 0, 110, .28);
           }
 
           .acoes-google-agenda {
@@ -842,9 +887,18 @@
           }
           
           .dicas p {
+              display: flex;
+              align-items: flex-start;
+              gap: 9px;
               color: #aaa;
               font-size: 12px;
               margin: 8px 0;
+          }
+
+          .dicas p i {
+              flex: 0 0 auto;
+              color: var(--rosa);
+              font-size: 15px;
           }
           .origem-rota {
               margin-top: 25px;
@@ -938,6 +992,18 @@
           .botoes-navegacao button:hover {
               transform: translateY(-2px);
           }
+
+          .botoes-navegacao button {
+              display: inline-flex;
+              align-items: center;
+              justify-content: center;
+              gap: 8px;
+          }
+
+          .icone-link-externo {
+              font-size: 12px;
+              opacity: .85;
+          }
           
           .navegacao-box {
               margin-top: 20px;
@@ -956,6 +1022,89 @@
               font-size: 12px;
               line-height: 1.6;
           }
+
+          .dados-rota-planejamento {
+              margin-top: 20px;
+              padding: 18px;
+              border: 1px solid rgba(255, 0, 110, .3);
+              border-radius: 12px;
+              background: rgba(255, 0, 110, .035);
+          }
+
+          .dados-rota-planejamento h3 {
+              margin: 0 0 7px;
+              color: var(--rosa);
+          }
+
+          .dados-rota-planejamento > p,
+          .fonte-hospedagem {
+              color: #bdbdbd;
+              font-size: 12px;
+              line-height: 1.55;
+          }
+
+          .fonte-hospedagem {
+              display: flex;
+              align-items: flex-start;
+              gap: 8px;
+              margin: -5px 0 16px;
+          }
+
+          .fonte-hospedagem i {
+              flex: 0 0 auto;
+              color: var(--verde);
+          }
+
+          .campos-rota-planejamento {
+              display: grid;
+              grid-template-columns: repeat(2, minmax(0, 1fr));
+              gap: 14px;
+              margin-top: 15px;
+          }
+
+          .resultado-hospedagem-grid {
+              display: grid;
+              grid-template-columns: repeat(2, minmax(0, 1fr));
+              gap: 10px;
+              margin-bottom: 22px;
+          }
+
+          .resultado-hospedagem {
+              display: grid;
+              grid-template-columns: auto minmax(0, 1fr);
+              gap: 4px 10px;
+              align-items: center;
+              min-width: 0;
+              min-height: 94px;
+              padding: 14px;
+              border: 1px solid rgba(255, 255, 255, .12);
+              border-radius: 10px;
+              background: rgba(255, 255, 255, .025);
+              color: #fff;
+              text-align: left;
+              transition: .2s ease;
+          }
+
+          .resultado-hospedagem:hover {
+              border-color: var(--verde);
+              background: rgba(0, 255, 0, .06);
+          }
+
+          .resultado-hospedagem i {
+              grid-row: 1 / span 3;
+              color: var(--rosa);
+              font-size: 22px;
+          }
+
+          .resultado-hospedagem strong,
+          .resultado-hospedagem small,
+          .resultado-hospedagem span {
+              min-width: 0;
+              overflow-wrap: anywhere;
+          }
+
+          .resultado-hospedagem small { color: #aaa; }
+          .resultado-hospedagem span { color: var(--verde); font-size: 11px; }
           /* =========================================================
                RESPONSIVIDADE
                ========================================================= */
@@ -1054,7 +1203,8 @@
               .informacoes-rota {
                   grid-template-columns: 1fr;
               }
-              .campos-planejamento-api {
+              .campos-rota-planejamento,
+              .resultado-hospedagem-grid {
                   grid-template-columns: 1fr;
               }
               #mapaRota {

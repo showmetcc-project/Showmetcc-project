@@ -9,7 +9,7 @@ require_once __DIR__ . '/middleware/verificaLogin.php';
 $metodo = $_SERVER['REQUEST_METHOD'];
 $id = obterIdApi();
 
-$idUsuario = exigirLogin();
+$idUsuario = exigirUsuarioComum();
 
 switch ($metodo) {
     case 'GET':
@@ -18,7 +18,8 @@ switch ($metodo) {
         }
 
         $stmt = $conn->prepare(
-            'SELECT f.id_favorito, e.id_evento, e.nome_evento, e.local_evento,
+            'SELECT f.id_favorito, e.id_evento, e.nome_evento, e.endereco_evento,
+                    e.numero_endereco,
                     e.cidade_evento, e.uf, e.data_evento, e.gratuidade, e.imagem_evento
              FROM favoritos f
              INNER JOIN evento e ON e.id_evento = f.id_evento

@@ -101,7 +101,8 @@ function normalizarEventoApi(array $evento): array
     return normalizarRegistroApi(
         $evento,
         ['id_evento', 'id_solicitacao_origem', 'num_evento'],
-        ['gratuidade']
+        ['gratuidade'],
+        ['valor_ingresso_minimo', 'valor_ingresso_maximo']
     );
 }
 
@@ -116,7 +117,7 @@ function normalizarSolicitacaoApi(array $solicitacao): array
         $solicitacao,
         ['id_solicitacao', 'id_user', 'id_evento'],
         ['gratuidade'],
-        [],
+        ['valor_ingresso_minimo', 'valor_ingresso_maximo'],
         ['data_solicitacao']
     );
 }
@@ -135,8 +136,12 @@ function normalizarPlanejamentoApi(array $planejamento): array
     return normalizarRegistroApi(
         $planejamento,
         ['id_rota', 'id_evento', 'tempo_estimado'],
-        ['gratuidade'],
-        ['distancia_km']
+        ['gratuidade', 'hospedagem_necessaria'],
+        [
+            'distancia_km', 'orcamento_total', 'custo_ingresso',
+            'custo_transporte', 'custo_hospedagem', 'investimento_total',
+            'valor_ingresso_minimo', 'valor_ingresso_maximo'
+        ]
     );
 }
 
@@ -179,5 +184,19 @@ function normalizarResumoComunidadeApi(array $evento): array
         $evento,
         ['id_evento', 'total_posts'],
         ['evento_do_usuario']
+    );
+}
+
+function normalizarDenunciaComunidadeApi(array $denuncia): array
+{
+    return normalizarRegistroApi(
+        $denuncia,
+        [
+            'id_denuncia', 'id_post', 'id_denunciante', 'id_admin_moderacao',
+            'id_evento', 'id_autor'
+        ],
+        [],
+        [],
+        ['data_denuncia', 'data_moderacao', 'data_post']
     );
 }

@@ -1,4 +1,4 @@
-<?php require_once __DIR__ . '/config/verificaLogin.php'; ?>
+<?php require_once __DIR__ . '/config/verificaUsuarioComum.php'; ?>
 <!DOCTYPE html>
 <html lang="pt-BR">
 

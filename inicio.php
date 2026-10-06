@@ -8,9 +8,12 @@ $secoesHome = [
     ['id' => 'eventosMusicais', 'titulo' => 'Eventos Musicais', 'cor' => 'verde'],
     ['id' => 'pertoVoce', 'titulo' => 'Perto de Você', 'cor' => 'rosa'],
     ['id' => 'cinema', 'titulo' => 'Cinema', 'cor' => 'verde'],
-    ['id' => 'showsInternacionais', 'titulo' => 'Shows Internacionais', 'cor' => 'rosa'],
-    ['id' => 'showsNacionais', 'titulo' => 'Shows Nacionais', 'cor' => 'verde'],
-    ['id' => 'emBreve', 'titulo' => 'Em Breve', 'cor' => 'rosa'],
+    ['id' => 'workshops', 'titulo' => 'Workshops', 'cor' => 'rosa'],
+    ['id' => 'oficinas', 'titulo' => 'Oficinas', 'cor' => 'verde'],
+    ['id' => 'gastronomicos', 'titulo' => 'Gastronômicos', 'cor' => 'rosa'],
+    ['id' => 'showsInternacionais', 'titulo' => 'Shows Internacionais', 'cor' => 'verde'],
+    ['id' => 'showsNacionais', 'titulo' => 'Shows Nacionais', 'cor' => 'rosa'],
+    ['id' => 'emBreve', 'titulo' => 'Em Breve', 'cor' => 'verde'],
 ];
 ?>
 <!doctype html>

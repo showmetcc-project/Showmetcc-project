@@ -63,20 +63,32 @@ CREATE TABLE evento (
     id_solicitacao_origem INT NULL UNIQUE,
     num_evento         INT,
     nome_evento        VARCHAR(100) NOT NULL,
-    local_evento       VARCHAR(100),
+    cep_evento         CHAR(8) NOT NULL,
+    endereco_evento    VARCHAR(255) NOT NULL,
+    numero_endereco    VARCHAR(20),
     rua_evento         VARCHAR(100),
     cidade_evento      VARCHAR(100),
     uf                 CHAR(2),
-    descricao_evento   VARCHAR(1000),
-    data_evento        DATE,
-    horario_evento     TIME,
+    descricao_evento   VARCHAR(1000) NOT NULL,
+    data_evento        DATE NOT NULL,
+    horario_evento     TIME NOT NULL,
     gratuidade         BOOLEAN NOT NULL DEFAULT FALSE,
-    categoria_evento   VARCHAR(100),
-    link_oficial       VARCHAR(255),
-    imagem_evento      VARCHAR(255),
+    valor_ingresso_minimo DECIMAL(10,2),
+    valor_ingresso_maximo DECIMAL(10,2),
+    categoria_evento   VARCHAR(255) NOT NULL,
+    link_oficial       VARCHAR(255) NOT NULL,
+    imagem_evento      VARCHAR(255) NOT NULL,
     status_evento      ENUM('ativo', 'cancelado') NOT NULL DEFAULT 'ativo',
 
-    INDEX idx_evento_data (data_evento)
+    INDEX idx_evento_data (data_evento),
+    CONSTRAINT chk_evento_valores_ingresso CHECK (
+        (gratuidade = TRUE AND valor_ingresso_minimo IS NULL AND valor_ingresso_maximo IS NULL)
+        OR (
+            gratuidade = FALSE
+            AND valor_ingresso_minimo > 0
+            AND (valor_ingresso_maximo IS NULL OR valor_ingresso_maximo >= valor_ingresso_minimo)
+        )
+    )
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE artista_evento (
@@ -129,6 +141,13 @@ CREATE TABLE rota (
     meio_transporte  VARCHAR(30),
     distancia_km     DECIMAL(10,2),
     tempo_estimado   INT,
+    origem           VARCHAR(255),
+    orcamento_total  DECIMAL(10,2) NOT NULL DEFAULT 0,
+    custo_ingresso   DECIMAL(10,2) NOT NULL DEFAULT 0,
+    custo_transporte DECIMAL(10,2) NOT NULL DEFAULT 0,
+    hospedagem_necessaria BOOLEAN NOT NULL DEFAULT FALSE,
+    nome_hospedagem  VARCHAR(100),
+    custo_hospedagem DECIMAL(10,2) NOT NULL DEFAULT 0,
 
     FOREIGN KEY (id_user)
         REFERENCES usuario(id_user)
@@ -147,6 +166,7 @@ CREATE TABLE comunidade_post (
     id_usuario    INT NOT NULL,
     categoria     ENUM('Duvida', 'Dica', 'Transporte', 'Hospedagem', 'Companhia', 'Relato') NOT NULL,
     texto         TEXT NOT NULL,
+    status_post   ENUM('ativo', 'removido') NOT NULL DEFAULT 'ativo',
     data_criacao  DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     FOREIGN KEY (id_evento) REFERENCES evento(id_evento) ON DELETE CASCADE,
@@ -195,11 +215,15 @@ CREATE TABLE comunidade_denuncia (
     id_midia      INT NULL,
     id_usuario    INT NOT NULL,
     motivo        VARCHAR(100) NOT NULL,
+    status_denuncia ENUM('pendente', 'mantido', 'removido') NOT NULL DEFAULT 'pendente',
     data_criacao  DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    data_moderacao DATETIME NULL,
+    id_admin_moderacao INT NULL,
 
     FOREIGN KEY (id_post) REFERENCES comunidade_post(id_post) ON DELETE CASCADE,
     FOREIGN KEY (id_midia) REFERENCES comunidade_midia(id_midia) ON DELETE CASCADE,
     FOREIGN KEY (id_usuario) REFERENCES usuario(id_user) ON DELETE CASCADE,
+    FOREIGN KEY (id_admin_moderacao) REFERENCES usuario(id_user) ON DELETE SET NULL,
     CONSTRAINT chk_comunidade_denuncia_alvo CHECK (
         (id_post IS NOT NULL AND id_midia IS NULL)
         OR (id_post IS NULL AND id_midia IS NOT NULL)
@@ -211,24 +235,37 @@ CREATE TABLE solicitacao (
     id_user              INT NOT NULL,
     nome_evento          VARCHAR(100) NOT NULL,
     status_solicitacao   ENUM('pendente', 'aprovado', 'recusado') NOT NULL DEFAULT 'pendente',
-    foto                 VARCHAR(255),
-    horario_evento       TIME,
-    data_evento          DATE,
-    local_evento         VARCHAR(255),
+    foto                 VARCHAR(255) NOT NULL,
+    horario_evento       TIME NOT NULL,
+    data_evento          DATE NOT NULL,
+    cep_evento           CHAR(8) NOT NULL,
+    endereco_evento      VARCHAR(255) NOT NULL,
+    numero_endereco      VARCHAR(20),
     rua_evento           VARCHAR(100),
-    cidade_evento        VARCHAR(100),
-    uf                   CHAR(2),
-    categoria_evento     VARCHAR(100),
-    link_oficial         VARCHAR(255),
+    cidade_evento        VARCHAR(100) NOT NULL,
+    uf                   CHAR(2) NOT NULL,
+    categoria_evento     VARCHAR(255) NOT NULL,
+    link_oficial         VARCHAR(255) NOT NULL,
     gratuidade            BOOLEAN NOT NULL DEFAULT FALSE,
-    descricao_evento      VARCHAR(1000),
-    descricao_artista     VARCHAR(1000),
-    nome_artista_solicitado VARCHAR(150),
+    valor_ingresso_minimo DECIMAL(10,2),
+    valor_ingresso_maximo DECIMAL(10,2),
+    descricao_evento      VARCHAR(1000) NOT NULL,
+    descricao_artista     VARCHAR(1000) NOT NULL,
+    nome_artista_solicitado VARCHAR(150) NOT NULL,
     data_solicitacao      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     FOREIGN KEY (id_user)
         REFERENCES usuario(id_user)
-        ON DELETE CASCADE
+        ON DELETE CASCADE,
+
+    CONSTRAINT chk_solicitacao_valores_ingresso CHECK (
+        (gratuidade = TRUE AND valor_ingresso_minimo IS NULL AND valor_ingresso_maximo IS NULL)
+        OR (
+            gratuidade = FALSE
+            AND valor_ingresso_minimo > 0
+            AND (valor_ingresso_maximo IS NULL OR valor_ingresso_maximo >= valor_ingresso_minimo)
+        )
+    )
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 ALTER TABLE evento

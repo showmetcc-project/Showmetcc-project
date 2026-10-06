@@ -22,7 +22,9 @@ if ($metodo === 'GET') {
 
         $stmt = $conn->prepare(
             "SELECT e.id_evento, e.nome_evento, e.imagem_evento, e.data_evento,
-                    (SELECT COUNT(*) FROM comunidade_post cp WHERE cp.id_evento = e.id_evento) AS total_posts,
+                    (SELECT COUNT(*)
+                     FROM comunidade_post cp
+                     WHERE cp.id_evento = e.id_evento AND cp.status_post = 'ativo') AS total_posts,
                     (EXISTS(SELECT 1 FROM favoritos f WHERE f.id_evento = e.id_evento AND f.id_user = ?)
                      OR EXISTS(SELECT 1 FROM rota r WHERE r.id_evento = e.id_evento AND r.id_user = ?)) AS evento_do_usuario
              FROM evento e
@@ -62,7 +64,7 @@ if ($metodo === 'GET') {
             FROM comunidade_post p
             INNER JOIN usuario u ON u.id_user = p.id_usuario
             LEFT JOIN comunidade_curtida c ON c.id_post = p.id_post
-            WHERE p.id_evento = ?";
+            WHERE p.id_evento = ? AND p.status_post = 'ativo'";
     if ($categoria !== '') {
         $sql .= ' AND p.categoria = ?';
     }
@@ -92,7 +94,7 @@ if ($metodo === 'GET') {
              FROM comunidade_resposta r
              INNER JOIN usuario u ON u.id_user = r.id_usuario
              INNER JOIN comunidade_post p ON p.id_post = r.id_post
-             WHERE p.id_evento = ?
+             WHERE p.id_evento = ? AND p.status_post = \'ativo\'
              ORDER BY r.data_criacao ASC, r.id_resposta ASC'
         );
         $stmt->bind_param('i', $idEvento);
@@ -144,7 +146,11 @@ if ($metodo === 'DELETE') {
     if ($id === null) {
         responder(['erro' => 'Informe o ID da publicação na URL'], 400);
     }
-    $stmt = $conn->prepare('SELECT id_usuario FROM comunidade_post WHERE id_post = ? LIMIT 1');
+    $stmt = $conn->prepare(
+        "SELECT id_usuario FROM comunidade_post
+         WHERE id_post = ? AND status_post = 'ativo'
+         LIMIT 1"
+    );
     $stmt->bind_param('i', $id);
     executarStatementApi($stmt);
     $post = $stmt->get_result()->fetch_assoc();

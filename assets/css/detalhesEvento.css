@@ -193,7 +193,17 @@ a {
 ========================== */
 
 .secao {
-    margin-bottom: 28px;
+    margin-bottom: 16px;
+}
+
+.detalhes-coluna-esquerda {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.detalhes-coluna-esquerda .secao {
+    margin-bottom: 0;
 }
 
 .secao h2 {
@@ -297,7 +307,7 @@ a {
     align-self: flex-start;
 }
 
-.ingresso-card {
+.acesso-evento-card {
     background: #0d0d0d;
     border: 2px solid #ff006e;
     border-radius: 20px;
@@ -308,27 +318,37 @@ a {
     gap: 12px;
 }
 
-.ingresso-card h3 {
+.acesso-evento-card h3 {
     color: #ff006e;
     font-size: 1.2rem;
     font-weight: 700;
     margin: 0;
 }
 
-.ingresso-card p {
+.acesso-evento-card p {
     color: #bdbdbd;
     font-size: 0.88rem;
     margin: 0;
     line-height: 1.5;
 }
 
-.ingresso-card small {
+.acesso-evento-card small {
     color: #aaa;
     font-size: 0.8rem;
     text-align: center;
 }
 
-.btn-comprar {
+.badge-acesso-evento {
+    align-self: flex-start;
+    padding: 7px 13px;
+    border-radius: 999px;
+    background: #ff006e;
+    color: #fff;
+    font-size: 0.82rem;
+    font-weight: 700;
+}
+
+.btn-acesso-evento {
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -347,7 +367,7 @@ a {
     text-decoration: none;
 }
 
-.btn-comprar:hover {
+.btn-acesso-evento:hover {
     transform: translateY(-2px);
     box-shadow: 0 6px 20px rgba(255, 0, 110, .35);
 }
@@ -386,8 +406,16 @@ a {
 }
 
 .btn-planejar:hover {
+    background: #00dd00;
+    border-color: #00dd00;
+    color: #000;
     transform: translateY(-2px);
     box-shadow: 0 6px 20px rgba(0, 255, 0, .3);
+}
+
+.btn-planejar:hover i,
+.btn-planejar:focus-visible i {
+    color: #000;
 }
 
 /* ==========================
@@ -548,10 +576,10 @@ a {
 
     .detalhes-lateral-sticky { position: static; }
 
-    .ingresso-card { margin: 0 0 16px; }
+    .acesso-evento-card { margin: 0 0 16px; }
 }
 
-.btn-comprar[hidden] { display: none !important; }
+.btn-acesso-evento[hidden] { display: none !important; }
 
 @media (max-width: 767.98px) {
     .banner-evento { height: min(320px, 42vh); }

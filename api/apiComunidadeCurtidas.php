@@ -19,7 +19,11 @@ if ($idPost === false) {
 }
 $conn->begin_transaction();
 try {
-    $stmt = $conn->prepare('SELECT 1 FROM comunidade_post WHERE id_post = ? LIMIT 1');
+    $stmt = $conn->prepare(
+        "SELECT 1 FROM comunidade_post
+         WHERE id_post = ? AND status_post = 'ativo'
+         LIMIT 1"
+    );
     $stmt->bind_param('i', $idPost);
     executarStatementApi($stmt);
     $stmt->store_result();

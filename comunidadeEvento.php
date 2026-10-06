@@ -1,6 +1,7 @@
 <?php
 require_once __DIR__ . '/config/verificaLogin.php';
 $idUsuarioSessao = (int) ($_SESSION['id_user'] ?? 0);
+$usuarioAdmin = (($_SESSION['tipo_usuario'] ?? '') === 'admin');
 ?>
 <!DOCTYPE html>
 <html lang="pt-BR">
@@ -17,7 +18,7 @@ $idUsuarioSessao = (int) ($_SESSION['id_user'] ?? 0);
     <link href="assets/css/comunidade.css" rel="stylesheet">
     <link href="assets/css/main.css" rel="stylesheet">
 </head>
-<body class="cabecalho-tipo-d pagina-comunidade-evento" data-user-id="<?= $idUsuarioSessao ?>">
+<body class="cabecalho-tipo-d pagina-comunidade-evento" data-user-id="<?= $idUsuarioSessao ?>" data-user-type="<?= $usuarioAdmin ? 'admin' : 'comum' ?>">
 <?php
 $tipoCabecalho = 'D';
 $configuracaoCabecalho = [
@@ -33,7 +34,13 @@ require __DIR__ . '/cabecalho.php';
         </div>
         <section class="container comunidade-evento-identidade">
             <p>Comunidade do evento</p>
-            <h1 id="nomeComunidadeEvento"></h1>
+            <h1>
+                <?php if ($usuarioAdmin): ?>
+                    <span id="nomeComunidadeEvento" class="titulo-evento-sem-link"></span>
+                <?php else: ?>
+                    <a id="nomeComunidadeEvento" href="detalhesEvento.php" aria-label="Ver detalhes do evento"></a>
+                <?php endif; ?>
+            </h1>
             <div class="comunidade-evento-infos" aria-label="Informações do evento">
                 <span id="dataComunidadeEvento"><i class="bi bi-calendar3" aria-hidden="true"></i><span></span></span>
                 <span id="localComunidadeEvento" hidden><i class="bi bi-geo-alt-fill" aria-hidden="true"></i><span></span></span>
@@ -97,6 +104,46 @@ require __DIR__ . '/cabecalho.php';
       <label for="legendaMidia">Legenda (opcional)</label><input id="legendaMidia" name="legenda" maxlength="255">
       <label class="comunidade-checkbox"><input name="permitir_download" type="checkbox" value="1"> Permitir que outras pessoas baixem esta imagem</label>
     </div><div class="modal-footer"><button class="btn-showme" type="submit">Publicar foto</button></div></form>
+  </div></div>
+</div>
+
+<div class="modal fade" id="modalDenuncia" tabindex="-1" aria-labelledby="modalDenunciaTitulo" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered"><div class="modal-content modal-comunidade modal-denuncia">
+    <div class="modal-header">
+      <div>
+        <h2 id="modalDenunciaTitulo" class="modal-title">Denunciar conteúdo</h2>
+        <p class="modal-denuncia-subtitulo">Selecione o motivo para enviar à equipe de moderação.</p>
+      </div>
+      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+    </div>
+    <form id="formDenuncia">
+      <div class="modal-body">
+        <fieldset class="opcoes-denuncia">
+          <legend>Motivo da denúncia</legend>
+          <?php foreach ([
+              'Conteúdo inapropriado' => 'bi-exclamation-octagon',
+              'Spam ou publicidade' => 'bi-megaphone',
+              'Informação falsa' => 'bi-shield-exclamation',
+              'Discurso de ódio' => 'bi-chat-square-x',
+              'Outro motivo' => 'bi-three-dots',
+          ] as $motivo => $icone): ?>
+            <label class="opcao-denuncia">
+              <input type="radio" name="motivoDenuncia" value="<?= htmlspecialchars($motivo, ENT_QUOTES, 'UTF-8') ?>" required>
+              <span><i class="bi <?= $icone ?>" aria-hidden="true"></i><?= htmlspecialchars($motivo, ENT_QUOTES, 'UTF-8') ?></span>
+            </label>
+          <?php endforeach; ?>
+        </fieldset>
+        <div id="campoOutroMotivo" class="campo-outro-motivo" hidden>
+          <label for="outroMotivoDenuncia">Descreva o outro motivo</label>
+          <textarea id="outroMotivoDenuncia" rows="3" maxlength="80" placeholder="Explique brevemente o motivo da denúncia"></textarea>
+          <small>Até 80 caracteres.</small>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn-denuncia-cancelar" data-bs-dismiss="modal">Cancelar</button>
+        <button id="btnEnviarDenuncia" type="submit" class="btn-denuncia-enviar" disabled>Enviar denúncia</button>
+      </div>
+    </form>
   </div></div>
 </div>
 

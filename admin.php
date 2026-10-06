@@ -30,54 +30,112 @@
     ?>
 
     <main class="container py-4">
-        <section class="header-admin">
-            <div class="header-row">
-                <div>
-                    <p>Gerencie os eventos enviados pelos usuários.</p>
+        <label class="busca busca-admin-geral" for="buscaAdmin">
+            <i class="bi bi-search" aria-hidden="true"></i>
+            <input
+                type="search"
+                id="buscaAdmin"
+                placeholder="Buscar evento ou solicitante..."
+                autocomplete="off">
+        </label>
+
+        <nav class="admin-abas" role="tablist" aria-label="Áreas de moderação">
+            <button
+                type="button"
+                class="ativa"
+                id="abaEventosAdmin"
+                data-aba-admin="eventos"
+                role="tab"
+                aria-selected="true"
+                aria-controls="painelEventosAdmin">
+                <i class="bi bi-calendar2-check" aria-hidden="true"></i>
+                Eventos enviados
+            </button>
+            <button
+                type="button"
+                id="abaDenunciasAdmin"
+                data-aba-admin="denuncias"
+                role="tab"
+                aria-selected="false"
+                aria-controls="painelDenunciasAdmin">
+                <i class="bi bi-flag" aria-hidden="true"></i>
+                Posts denunciados
+                <span class="admin-aba-contador" id="contadorDenunciasAba">0</span>
+            </button>
+        </nav>
+
+        <section id="painelEventosAdmin" class="admin-painel ativa" role="tabpanel" aria-labelledby="abaEventosAdmin">
+            <header class="header-admin">
+                <div class="header-row">
+                    <div>
+                        <h2>Eventos enviados</h2>
+                        <p>Revise, corrija, aprove ou reprove os eventos enviados pelos usuários.</p>
+                    </div>
                 </div>
+            </header>
 
-                <label class="busca" for="buscaSolicitacao">
-                    <i class="bi bi-search" aria-hidden="true"></i>
-                    <input
-                        type="search"
-                        id="buscaSolicitacao"
-                        placeholder="Buscar evento ou solicitante..."
-                        autocomplete="off">
-                </label>
+            <div class="admin-filtros" aria-label="Filtrar eventos enviados">
+                <button type="button" class="ativo" data-filtro-evento="pendente">
+                    Pendentes <span id="contadorPendentes">0</span>
+                </button>
+                <button type="button" data-filtro-evento="todas">
+                    Todas <span id="contadorTodas">0</span>
+                </button>
+                <button type="button" data-filtro-evento="aprovado">
+                    Aprovados <span id="contadorAprovadas">0</span>
+                </button>
+                <button type="button" data-filtro-evento="recusado">
+                    Reprovados <span id="contadorRecusadas">0</span>
+                </button>
             </div>
+
+            <section
+                id="listaSolicitacoes"
+                class="lista-solicitacoes"
+                aria-live="polite"
+                aria-busy="true">
+                <div class="estado-solicitacoes">
+                    <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
+                    Carregando solicitações...
+                </div>
+            </section>
         </section>
 
-        <section class="stats" aria-label="Filtros das solicitações">
-            <div class="total-destaque" title="Total de solicitações">
-                <span id="totalSolicitacoes">0</span>
+        <section id="painelDenunciasAdmin" class="admin-painel" role="tabpanel" aria-labelledby="abaDenunciasAdmin" hidden>
+            <header class="header-admin">
+                <div class="header-row">
+                    <div>
+                        <h2>Posts denunciados</h2>
+                        <p>Analise o conteúdo denunciado e decida se a publicação permanece ou é removida.</p>
+                    </div>
+                </div>
+            </header>
+
+            <div class="admin-filtros" aria-label="Filtrar posts denunciados">
+                <button type="button" class="ativo" data-filtro-denuncia="pendente">
+                    Pendentes <span id="contadorDenunciasPendentes">0</span>
+                </button>
+                <button type="button" data-filtro-denuncia="todas">
+                    Todas <span id="contadorDenunciasTodas">0</span>
+                </button>
+                <button type="button" data-filtro-denuncia="mantido">
+                    Mantidos <span id="contadorDenunciasMantidas">0</span>
+                </button>
+                <button type="button" data-filtro-denuncia="removido">
+                    Removidos <span id="contadorDenunciasRemovidas">0</span>
+                </button>
             </div>
 
-            <button type="button" class="status-item ativo" data-filtro="todas">
-                Todas <span class="badge-count" id="contadorTodas">0</span>
-            </button>
-            <button type="button" class="status-item" data-filtro="pendente">
-                Pendentes <span class="badge-count" id="contadorPendentes">0</span>
-            </button>
-            <button type="button" class="status-item" data-filtro="aprovado">
-                Aprovadas <span class="badge-count" id="contadorAprovadas">0</span>
-            </button>
-            <button type="button" class="status-item" data-filtro="recusado">
-                Recusadas <span class="badge-count" id="contadorRecusadas">0</span>
-            </button>
-
-            <div class="stats-barra" aria-hidden="true"></div>
-        </section>
-
-
-        <section
-            id="listaSolicitacoes"
-            class="lista-solicitacoes"
-            aria-live="polite"
-            aria-busy="true">
-            <div class="estado-solicitacoes">
-                <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
-                Carregando solicitações...
-            </div>
+            <section
+                id="listaDenuncias"
+                class="lista-denuncias"
+                aria-live="polite"
+                aria-busy="true">
+                <div class="estado-solicitacoes">
+                    <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
+                    Carregando denúncias...
+                </div>
+            </section>
         </section>
     </main>
 
@@ -98,20 +156,28 @@
                                 <label for="nomeEventoEdicao" class="form-label">Nome do evento</label>
                                 <input type="text" class="form-control" id="nomeEventoEdicao" maxlength="100" required>
                             </div>
-                            <div class="col-md-7">
-                                <label for="localEventoEdicao" class="form-label">Local</label>
-                                <input type="text" class="form-control" id="localEventoEdicao" maxlength="100">
-                            </div>
-                            <div class="col-md-3">
+                            <div class="col-md-6">
                                 <label for="dataEventoEdicao" class="form-label">Data</label>
                                 <input type="date" class="form-control" id="dataEventoEdicao">
                             </div>
-                            <div class="col-md-2">
+                            <div class="col-md-6">
                                 <label for="horarioEventoEdicao" class="form-label">Horário</label>
                                 <input type="time" class="form-control" id="horarioEventoEdicao">
                             </div>
+                            <div class="col-md-3">
+                                <label for="cepEventoEdicao" class="form-label">CEP</label>
+                                <input type="text" class="form-control" id="cepEventoEdicao" maxlength="8" pattern="\d{8}">
+                            </div>
+                            <div class="col-md-7">
+                                <label for="enderecoEventoEdicao" class="form-label">Endereço consolidado</label>
+                                <input type="text" class="form-control" id="enderecoEventoEdicao" maxlength="255">
+                            </div>
+                            <div class="col-md-2">
+                                <label for="numeroEnderecoEdicao" class="form-label">Número</label>
+                                <input type="text" class="form-control" id="numeroEnderecoEdicao" maxlength="20">
+                            </div>
                             <div class="col-12">
-                                <label for="ruaEventoEdicao" class="form-label">Rua / endereço</label>
+                                <label for="ruaEventoEdicao" class="form-label">Logradouro (busca/mapa)</label>
                                 <input type="text" class="form-control" id="ruaEventoEdicao" maxlength="100">
                             </div>
                             <div class="col-md-8">
@@ -122,9 +188,18 @@
                                 <label for="ufEventoEdicao" class="form-label">UF</label>
                                 <input type="text" class="form-control" id="ufEventoEdicao" maxlength="2" pattern="[A-Za-z]{2}">
                             </div>
+                            <div class="col-md-4">
+                                <label for="valorMinimoEdicao" class="form-label">Valor mínimo (R$)</label>
+                                <input type="number" class="form-control" id="valorMinimoEdicao" min="0.01" step="0.01">
+                            </div>
+                            <div class="col-md-4">
+                                <label for="valorMaximoEdicao" class="form-label">Valor máximo (R$)</label>
+                                <input type="number" class="form-control" id="valorMaximoEdicao" min="0.01" step="0.01">
+                            </div>
                             <div class="col-md-5">
                                 <label for="categoriaEventoEdicao" class="form-label">Categoria</label>
-                                <input type="text" class="form-control" id="categoriaEventoEdicao" maxlength="100">
+                                <input type="text" class="form-control" id="categoriaEventoEdicao" maxlength="255"
+                                    placeholder="Ex.: Música, Show Nacional">
                             </div>
                             <div class="col-md-7">
                                 <label for="linkOficialEdicao" class="form-label">Link oficial</label>

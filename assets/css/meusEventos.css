@@ -890,9 +890,19 @@ body {
 
 }
 
-#planejados .card-evento.evento-encerrado > img {
+#favoritos .card-evento.evento-encerrado,
+#planejados .card-evento.evento-encerrado {
     filter: grayscale(100%);
-    opacity: .72;
+}
+
+.calendario-evento-detalhe.evento-encerrado,
+.calendario-dia.evento-encerrado {
+    filter: grayscale(100%);
+}
+
+#favoritos .card-evento.evento-encerrado > img,
+#planejados .card-evento.evento-encerrado > img {
+    opacity: 1;
 }
 
 .badge-evento-encerrado {

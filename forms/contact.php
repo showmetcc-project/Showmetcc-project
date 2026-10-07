@@ -1,8 +1,5 @@
 <?php
 
-use PHPMailer\PHPMailer\Exception;
-use PHPMailer\PHPMailer\PHPMailer;
-
 header('Content-Type: application/json; charset=UTF-8');
 
 function responderContato(array $dados, int $status = 200): never
@@ -39,52 +36,24 @@ if ($mensagem === '' || mb_strlen($mensagem) < 10 || mb_strlen($mensagem) > 5000
     responderContato(['erro' => 'A mensagem deve ter entre 10 e 5000 caracteres'], 422);
 }
 
-$autoload = dirname(__DIR__) . '/vendor/autoload.php';
-$arquivoConfiguracao = dirname(__DIR__) . '/config/email.php';
+require_once dirname(__DIR__) . '/config/emailHelper.php';
 
-if (!is_file($autoload)) {
-    responderContato(['erro' => 'Dependências de e-mail não instaladas'], 503);
+try {
+    $configuracao = configuracaoEmailShowMe();
+    $mailer = criarMailerShowMe();
+} catch (Throwable $erro) {
+    error_log('Falha ao carregar configuração do formulário de contato: ' . $erro->getMessage());
+    responderContato(['erro' => 'O envio de e-mail ainda não foi configurado'], 503);
 }
 
-if (!is_file($arquivoConfiguracao)) {
-    responderContato(['erro' => 'Configuração de e-mail não encontrada'], 503);
-}
-
-require_once $autoload;
-$configuracao = require $arquivoConfiguracao;
-
-if (!is_array($configuracao)) {
-    responderContato(['erro' => 'Configuração de e-mail inválida'], 503);
-}
-
-$host = trim((string) ($configuracao['host'] ?? ''));
-$porta = filter_var(
-    $configuracao['porta'] ?? null,
-    FILTER_VALIDATE_INT,
-    ['options' => ['min_range' => 1, 'max_range' => 65535]]
-);
-$usuario = trim((string) ($configuracao['usuario'] ?? ''));
-$senha = (string) ($configuracao['senha'] ?? '');
-$criptografia = strtolower(trim((string) ($configuracao['criptografia'] ?? '')));
-$remetenteEmail = trim((string) ($configuracao['remetente_email'] ?? ''));
-$remetenteNome = trim((string) ($configuracao['remetente_nome'] ?? 'ShowMe'));
 $destinatarioEmail = trim((string) ($configuracao['destinatario_email'] ?? ''));
 $destinatarioNome = trim((string) ($configuracao['destinatario_nome'] ?? 'ShowMe'));
-
 if ($destinatarioEmail === '') {
-    $destinatarioEmail = $remetenteEmail;
+    $destinatarioEmail = trim((string) $configuracao['remetente_email']);
 }
 
-if (
-    $host === ''
-    || $porta === false
-    || $usuario === ''
-    || $senha === ''
-    || filter_var($remetenteEmail, FILTER_VALIDATE_EMAIL) === false
-    || filter_var($destinatarioEmail, FILTER_VALIDATE_EMAIL) === false
-    || !in_array($criptografia, ['', 'tls', 'ssl'], true)
-) {
-    responderContato(['erro' => 'O envio de e-mail ainda não foi configurado'], 503);
+if (filter_var($destinatarioEmail, FILTER_VALIDATE_EMAIL) === false) {
+    responderContato(['erro' => 'O destinatário do formulário não foi configurado corretamente'], 503);
 }
 
 $nomeCabecalho = preg_replace('/[\r\n]+/', ' ', $nome) ?: 'Visitante ShowMe';
@@ -93,26 +62,6 @@ $emailSeguro = htmlspecialchars($email, ENT_QUOTES, 'UTF-8');
 $mensagemSegura = nl2br(htmlspecialchars($mensagem, ENT_QUOTES, 'UTF-8'));
 
 try {
-    $mailer = new PHPMailer(true);
-    $mailer->isSMTP();
-    $mailer->Host = $host;
-    $mailer->Port = (int) $porta;
-    $mailer->SMTPAuth = true;
-    $mailer->Username = $usuario;
-    $mailer->Password = $senha;
-    $mailer->Timeout = 15;
-    $mailer->CharSet = PHPMailer::CHARSET_UTF8;
-
-    if ($criptografia === 'tls') {
-        $mailer->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
-    } elseif ($criptografia === 'ssl') {
-        $mailer->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;
-    } else {
-        $mailer->SMTPSecure = '';
-        $mailer->SMTPAutoTLS = false;
-    }
-
-    $mailer->setFrom($remetenteEmail, $remetenteNome !== '' ? $remetenteNome : 'ShowMe');
     $mailer->addAddress($destinatarioEmail, $destinatarioNome);
     $mailer->addReplyTo($email, $nomeCabecalho);
     $mailer->isHTML(true);
@@ -128,7 +77,7 @@ try {
     $mailer->send();
 
     responderContato(['sucesso' => true]);
-} catch (Exception $erro) {
+} catch (Throwable $erro) {
     error_log('Falha no envio do formulário de contato: ' . $erro->getMessage());
     responderContato(['erro' => 'Não foi possível enviar a mensagem. Tente novamente mais tarde.'], 500);
 }

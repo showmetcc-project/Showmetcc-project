@@ -405,17 +405,18 @@ a {
     color: #000;
 }
 
-.btn-planejar:hover {
-    background: #00dd00;
-    border-color: #00dd00;
-    color: #000;
+.btn-planejar:hover,
+.btn-planejar:focus-visible {
+    background: #000;
+    border-color: #00ff00;
+    color: #00ff00;
     transform: translateY(-2px);
     box-shadow: 0 6px 20px rgba(0, 255, 0, .3);
 }
 
 .btn-planejar:hover i,
 .btn-planejar:focus-visible i {
-    color: #000;
+    color: #00ff00;
 }
 
 /* ==========================

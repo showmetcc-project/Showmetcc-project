@@ -46,7 +46,7 @@ $idEvento = (int) $idInformado;
     </head>
 
 
-    <body class="com-cabecalho-padrao cabecalho-tipo-c">
+    <body class="com-cabecalho-padrao cabecalho-tipo-c pagina-planejamento">
 
         <?php
         $tipoCabecalho = 'C';
@@ -787,6 +787,32 @@ $idEvento = (int) $idInformado;
                     </div>
 
 
+                    <!-- EVENTO -->
+
+                    <div class="resumo-box resumo-evento-planejado">
+
+                        <h3>
+                            <i class="bi bi-calendar-event" aria-hidden="true"></i> Evento
+                        </h3>
+
+                        <div class="linha-resumo">
+                            <span>Nome</span>
+                            <span id="resumoNomeEvento">Carregando...</span>
+                        </div>
+
+                        <div class="linha-resumo">
+                            <span>Data e horário</span>
+                            <span id="resumoDataHorarioEvento">Carregando...</span>
+                        </div>
+
+                        <div class="linha-resumo">
+                            <span>Local</span>
+                            <span id="resumoLocalEvento">Carregando...</span>
+                        </div>
+
+                    </div>
+
+
                     <!-- CUSTOS -->
 
                     <div class="resumo-box">
@@ -1023,6 +1049,10 @@ $idEvento = (int) $idInformado;
 
                         <div class="botoes">
                             <button id="botaoVoltarResumo" type="button" onclick="voltarEtapa(4)">Voltar</button>
+                            <button id="botaoImprimirPlanejamento" class="botao-imprimir-planejamento" type="button" hidden>
+                                <i class="bi bi-printer" aria-hidden="true"></i>
+                                <span>Imprimir / Baixar PDF</span>
+                            </button>
                             <button id="botaoFinalizarPlanejamento" type="submit">Finalizar planejamento</button>
                         </div>
                     </form>
@@ -1178,6 +1208,12 @@ $idEvento = (int) $idInformado;
 
                 document.getElementById('tituloEvento').textContent = evento.nome;
                 document.getElementById('enderecoEvento').textContent = evento.endereco || 'Endereço não informado';
+                document.getElementById('resumoNomeEvento').textContent = evento.nome;
+                document.getElementById('resumoDataHorarioEvento').textContent = formatarDataHorarioEvento(
+                    evento.data,
+                    evento.horario
+                );
+                document.getElementById('resumoLocalEvento').textContent = evento.endereco || 'Local não informado';
                 document.getElementById('resumoDestino').textContent = evento.endereco || evento.nome;
                 document.getElementById('textoDestinoTransporte').textContent =
                     `Pesquise opções de transporte para ${evento.cidade || 'o evento'}, ${evento.uf} e informe o valor escolhido.`;
@@ -1186,6 +1222,27 @@ $idEvento = (int) $idInformado;
                     : `Valor mínimo informado para o ingresso: ${moeda(custoIngresso)}.`;
                 document.getElementById('resumoIngresso').textContent = moeda(custoIngresso);
                 atualizarResumo();
+            }
+
+            function formatarDataHorarioEvento(dataEvento, horarioEvento) {
+                const partesData = String(dataEvento || '').split('-').map(Number);
+                let dataFormatada = 'Data não informada';
+
+                if (partesData.length === 3 && partesData.every(Number.isInteger)) {
+                    const [ano, mes, dia] = partesData;
+                    const data = new Date(ano, mes - 1, dia);
+
+                    if (!Number.isNaN(data.getTime())) {
+                        dataFormatada = new Intl.DateTimeFormat('pt-BR', {
+                            day: '2-digit',
+                            month: 'long',
+                            year: 'numeric'
+                        }).format(data);
+                    }
+                }
+
+                const horario = String(horarioEvento || '').slice(0, 5);
+                return horario ? `${dataFormatada}, às ${horario}` : dataFormatada;
             }
 
 
@@ -3317,17 +3374,41 @@ function abrirEtapaPlanejamento(numero) {
     }
 }
 
+function eventoPlanejamentoEncerrado() {
+    const dataEvento = String(evento.data || '').slice(0, 10);
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(dataEvento)) return false;
+
+    const hoje = new Date();
+    const dataHoje = [
+        hoje.getFullYear(),
+        String(hoje.getMonth() + 1).padStart(2, '0'),
+        String(hoje.getDate()).padStart(2, '0')
+    ].join('-');
+
+    return dataEvento < dataHoje;
+}
+
 function configurarBotaoPlanejamentoFinalizado() {
     const botao = document.getElementById('botaoFinalizarPlanejamento');
+    const eventoEncerrado = eventoPlanejamentoEncerrado();
     botao.type = 'button';
     botao.dataset.estado = 'finalizado';
     botao.classList.add('botao-editar-planejamento');
     botao.innerHTML = '<i class="bi bi-pencil-square" aria-hidden="true"></i><span>Editar planejamento</span>';
-    botao.disabled = false;
+    botao.disabled = eventoEncerrado;
+    botao.hidden = eventoEncerrado;
     document.getElementById('botaoVoltarResumo').hidden = true;
+    document.getElementById('botaoImprimirPlanejamento').hidden = false;
 }
 
 async function habilitarEdicaoPlanejamento() {
+    if (eventoPlanejamentoEncerrado()) {
+        window.ShowMeUI.toast('O planejamento de um evento encerrado não pode ser alterado.', {
+            variante: 'erro'
+        });
+        return;
+    }
+
     const deveEditar = await window.ShowMeUI.confirmar({
         titulo: 'Editar planejamento',
         texto: 'Deseja reabrir este planejamento? As alterações só serão gravadas quando você salvar novamente.',
@@ -3343,6 +3424,7 @@ async function habilitarEdicaoPlanejamento() {
     botao.classList.remove('botao-editar-planejamento');
     botao.innerHTML = '<i class="bi bi-check2-circle" aria-hidden="true"></i><span>Salvar alterações</span>';
     document.getElementById('botaoVoltarResumo').hidden = false;
+    document.getElementById('botaoImprimirPlanejamento').hidden = true;
     document.getElementById('mensagemPlanejamento').textContent = '';
     abrirEtapaPlanejamento(1);
 }
@@ -3714,6 +3796,10 @@ document.getElementById('botaoFinalizarPlanejamento').addEventListener('click', 
     if (eventoClique.currentTarget.dataset.estado !== 'finalizado') return;
     eventoClique.preventDefault();
     habilitarEdicaoPlanejamento();
+});
+
+document.getElementById('botaoImprimirPlanejamento').addEventListener('click', () => {
+    window.print();
 });
 
 document.getElementById('transporte').addEventListener('keydown', (eventoTeclado) => {

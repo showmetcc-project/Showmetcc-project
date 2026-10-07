@@ -403,7 +403,9 @@ paths:
         status_solicitacao para manter compatibilidade, e acao=editar quando o ID
         representar um evento já publicado. Ao aprovar, todos os campos são
         promovidos para evento, id_solicitacao_origem é preenchido e o artista é
-        criado ou reutilizado por nome normalizado. A edição preserva a foto enviada.
+        criado ou reutilizado por nome normalizado. Aprovação e recusa tentam enviar
+        um e-mail transacional ao solicitante; falhas de SMTP são registradas no
+        servidor sem desfazer a moderação. A edição preserva a foto enviada.
       security:
         - cookieAuth: []
       parameters:
@@ -482,7 +484,7 @@ paths:
     get:
       tags: [Planejamentos]
       summary: Lista os planejamentos finalizados do usuário atual
-      description: Cada planejamento já inclui os dados principais do evento relacionado.
+      description: Cada planejamento já inclui os dados principais do evento relacionado, em ordem da data mais recente para a mais antiga.
       security:
         - cookieAuth: []
       responses:
@@ -502,7 +504,7 @@ paths:
     post:
       tags: [Planejamentos]
       summary: Finaliza o planejamento de um evento
-      description: Um usuário pode manter somente um planejamento por evento.
+      description: Um usuário pode manter somente um planejamento por evento. Eventos encerrados ou indisponíveis não aceitam novos planejamentos.
       security:
         - cookieAuth: []
       requestBody:
@@ -530,7 +532,7 @@ paths:
         '404':
           $ref: '#/components/responses/NaoEncontrado'
         '409':
-          description: O usuário já finalizou um planejamento para o evento
+          description: O usuário já finalizou um planejamento para o evento, ou o evento está encerrado/indisponível
           content:
             application/json:
               schema:
@@ -540,7 +542,7 @@ paths:
     put:
       tags: [Planejamentos]
       summary: Edita um planejamento do usuário atual
-      description: O parâmetro id representa id_rota. id_user e id_evento não são editáveis.
+      description: O parâmetro id representa id_rota. id_user e id_evento não são editáveis. Planejamentos de eventos encerrados permanecem visíveis, mas não podem ser alterados.
       security:
         - cookieAuth: []
       parameters:
@@ -569,6 +571,12 @@ paths:
           $ref: '#/components/responses/NaoAutenticado'
         '404':
           $ref: '#/components/responses/NaoEncontrado'
+        '409':
+          description: O evento já foi encerrado ou está indisponível para alteração
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erro'
 
     delete:
       tags: [Planejamentos]
@@ -664,7 +672,7 @@ paths:
     get:
       tags: [Favoritos]
       summary: Lista os favoritos do usuário atual
-      description: Cada item contém id_favorito e id_evento, permitindo ao frontend alternar o favorito sem endpoint adicional.
+      description: Cada item contém id_favorito e id_evento, permitindo ao frontend alternar o favorito sem endpoint adicional. A lista vem ordenada pela data do evento, da mais recente para a mais antiga.
       security:
         - cookieAuth: []
       responses:

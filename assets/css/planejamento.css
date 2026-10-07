@@ -750,6 +750,33 @@
               box-shadow: 0 10px 26px rgba(255, 0, 110, .28);
           }
 
+          .botao-imprimir-planejamento {
+              display: inline-flex;
+              align-items: center;
+              justify-content: center;
+              gap: 8px;
+              min-height: 44px;
+              padding: 13px 25px;
+              border: 1px solid rgba(255, 255, 255, .2);
+              border-radius: 8px;
+              background: transparent;
+              color: #fff;
+              font-weight: 600;
+              cursor: pointer;
+              transition: .25s;
+          }
+
+          .botao-imprimir-planejamento:hover {
+              border-color: var(--verde);
+              color: var(--verde);
+              transform: translateY(-2px);
+              box-shadow: 0 0 18px rgba(0, 255, 0, .18);
+          }
+
+          .botao-imprimir-planejamento[hidden] {
+              display: none;
+          }
+
           .acoes-google-agenda {
               display: flex;
               align-items: center;

@@ -10,4 +10,5 @@ return [
     'remetente_nome' => 'ShowMe',
     'destinatario_email' => '', // Se vazio, será usado o e-mail do remetente
     'destinatario_nome' => 'ShowMe',
+    'url_base' => '', // Ex.: https://seudominio.com ou http://localhost/Showmetcc-project
 ];

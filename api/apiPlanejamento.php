@@ -110,7 +110,7 @@ switch ($metodo) {
              FROM rota r
              INNER JOIN evento e ON e.id_evento = r.id_evento
              WHERE r.id_user = ?
-             ORDER BY e.data_evento ASC, r.id_rota DESC'
+             ORDER BY e.data_evento DESC, r.id_rota DESC'
         );
         $stmt->bind_param('i', $idUsuario);
         executarStatementApi($stmt);
@@ -142,16 +142,22 @@ switch ($metodo) {
 
         $planejamento = validarPlanejamento($dados);
 
-        $stmt = $conn->prepare('SELECT id_evento FROM evento WHERE id_evento = ? LIMIT 1');
+        $stmt = $conn->prepare(
+            'SELECT id_evento, status_evento, (data_evento < CURDATE()) AS evento_encerrado
+             FROM evento WHERE id_evento = ? LIMIT 1'
+        );
         $stmt->bind_param('i', $idEvento);
         executarStatementApi($stmt);
-        $stmt->store_result();
+        $evento = $stmt->get_result()->fetch_assoc();
+        $stmt->close();
 
-        if ($stmt->num_rows === 0) {
-            $stmt->close();
+        if (!$evento) {
             responder(['erro' => 'Evento não encontrado'], 404);
         }
-        $stmt->close();
+
+        if ($evento['status_evento'] !== 'ativo' || (bool) $evento['evento_encerrado']) {
+            responder(['erro' => 'Não é possível planejar um evento encerrado ou indisponível'], 409);
+        }
 
         $stmt = $conn->prepare(
             'SELECT id_rota FROM rota WHERE id_user = ? AND id_evento = ? LIMIT 1'
@@ -241,10 +247,13 @@ switch ($metodo) {
         }
 
         $stmt = $conn->prepare(
-            'SELECT meio_transporte, distancia_km, tempo_estimado, origem,
-                    orcamento_total, custo_ingresso, custo_transporte,
-                    hospedagem_necessaria, nome_hospedagem, custo_hospedagem
-             FROM rota WHERE id_rota = ? AND id_user = ? LIMIT 1'
+            'SELECT r.meio_transporte, r.distancia_km, r.tempo_estimado, r.origem,
+                    r.orcamento_total, r.custo_ingresso, r.custo_transporte,
+                    r.hospedagem_necessaria, r.nome_hospedagem, r.custo_hospedagem,
+                    e.status_evento, (e.data_evento < CURDATE()) AS evento_encerrado
+             FROM rota r
+             INNER JOIN evento e ON e.id_evento = r.id_evento
+             WHERE r.id_rota = ? AND r.id_user = ? LIMIT 1'
         );
         $stmt->bind_param('ii', $id, $idUsuario);
         executarStatementApi($stmt);
@@ -253,6 +262,10 @@ switch ($metodo) {
 
         if (!$atual) {
             responder(['erro' => 'Planejamento não encontrado'], 404);
+        }
+
+        if ($atual['status_evento'] !== 'ativo' || (bool) $atual['evento_encerrado']) {
+            responder(['erro' => 'O planejamento de um evento encerrado não pode ser alterado'], 409);
         }
 
         $planejamento = validarPlanejamento([

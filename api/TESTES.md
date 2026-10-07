@@ -489,6 +489,16 @@ curl.exe -i -b $COOKIE_ADMIN -X PUT "$BASE/eventos/OUTRA_ID_SOLICITACAO" `
   -d '{"acao":"recusar"}'
 ```
 
+Com `config/email.php` preenchido, confirme também na caixa de entrada do solicitante:
+
+- aprovação: assunto `Seu evento foi aprovado no ShowMe!`, nome/data do evento e link para
+  `detalhesEvento.php?id=ID_EVENTO`;
+- recusa: assunto `Sobre o seu evento no ShowMe` e aviso genérico, sem motivo específico.
+
+Para verificar a tolerância a falhas, interrompa temporariamente o SMTP ou use uma porta inválida
+em ambiente local e modere uma solicitação de teste. O endpoint deve continuar retornando sucesso,
+o status deve permanecer atualizado no banco e a falha deve aparecer apenas no log do PHP.
+
 ### Recusar solicitação — remove a foto física
 
 Antes de recusar uma solicitação pendente, copie o valor de `foto` retornado na criação e
@@ -708,6 +718,15 @@ curl.exe -i -b $COOKIE_COMUM -X POST "$BASE/planejamento/" `
 A resposta esperada é `409`, pois o mesmo usuário não pode finalizar dois planejamentos
 para o mesmo evento.
 
+Use também o ID de um evento cuja `data_evento` seja anterior a hoje. A tentativa de
+criar um planejamento novo deve responder `409` sem inserir uma linha em `rota`:
+
+```powershell
+curl.exe -i -b $COOKIE_COMUM -X POST "$BASE/planejamento/" `
+  -H "Content-Type: application/json" `
+  --data-raw '{\"id_evento\":ID_EVENTO_ENCERRADO,\"meio_transporte\":\"Carro\",\"distancia_km\":10,\"tempo_estimado\":20}'
+```
+
 ### POST /planejamento — erro 401 sem login
 
 ```powershell
@@ -737,6 +756,20 @@ curl.exe -i -b $COOKIE_COMUM -X PUT "$BASE/planejamento/999999999" `
   -H "Content-Type: application/json" `
   --data-raw '{\"meio_transporte\":\"Carro\"}'
 ```
+
+### PUT /planejamento/{id_rota} — evento encerrado não pode ser alterado
+
+Use o ID de uma rota vinculada a um evento cuja `data_evento` seja anterior a hoje. O
+planejamento continua aparecendo no `GET`, mas a edição deve responder `409`:
+
+```powershell
+curl.exe -i -b $COOKIE_COMUM -X PUT "$BASE/planejamento/ID_ROTA_ENCERRADA" `
+  -H "Content-Type: application/json" `
+  --data-raw '{\"meio_transporte\":\"Carro\"}'
+```
+
+Confirme também no `GET /favoritos` e no `GET /planejamento` que os registros estão
+ordenados por `data_evento` decrescente (mais recentes primeiro).
 
 ### DELETE /planejamento/{id_rota} — sucesso e erro 404
 

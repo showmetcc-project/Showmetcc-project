@@ -24,7 +24,7 @@ switch ($metodo) {
              FROM favoritos f
              INNER JOIN evento e ON e.id_evento = f.id_evento
              WHERE f.id_user = ?
-             ORDER BY e.data_evento ASC'
+             ORDER BY e.data_evento DESC, f.id_favorito DESC'
         );
         $stmt->bind_param('i', $idUsuario);
         executarStatementApi($stmt);

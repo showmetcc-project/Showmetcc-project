@@ -134,6 +134,7 @@ require_once __DIR__ . '/middleware/apiHelper.php';
 require_once __DIR__ . '/middleware/verificaLogin.php';
 require_once __DIR__ . '/middleware/verificaAdmin.php';
 require_once __DIR__ . '/middleware/uploadHelper.php';
+require_once dirname(__DIR__) . '/config/emailHelper.php';
 
 $metodo = $_SERVER['REQUEST_METHOD'];
 $id = obterIdApi();
@@ -842,13 +843,15 @@ switch ($metodo) {
 
             try {
                 $stmt = $conn->prepare(
-                    'SELECT nome_evento, foto, horario_evento, data_evento,
-                            cep_evento, endereco_evento, numero_endereco, rua_evento,
-                            cidade_evento, uf, categoria_evento, link_oficial, gratuidade,
-                            valor_ingresso_minimo, valor_ingresso_maximo,
-                            descricao_evento, nome_artista_solicitado,
-                            status_solicitacao
-                     FROM solicitacao WHERE id_solicitacao = ? LIMIT 1 FOR UPDATE'
+                    'SELECT s.nome_evento, s.foto, s.horario_evento, s.data_evento,
+                            s.cep_evento, s.endereco_evento, s.numero_endereco, s.rua_evento,
+                            s.cidade_evento, s.uf, s.categoria_evento, s.link_oficial, s.gratuidade,
+                            s.valor_ingresso_minimo, s.valor_ingresso_maximo,
+                            s.descricao_evento, s.nome_artista_solicitado,
+                            s.status_solicitacao, u.nome_user, u.sobrenome, u.email_user
+                     FROM solicitacao s
+                     INNER JOIN usuario u ON u.id_user = s.id_user
+                     WHERE s.id_solicitacao = ? LIMIT 1 FOR UPDATE'
                 );
                 $stmt->bind_param('i', $id);
                 executarStatementApi($stmt);
@@ -985,6 +988,27 @@ switch ($metodo) {
                 $conn->commit();
 
                 removerArquivosUploadSemReferencia($conn, $caminhosUploads);
+
+                try {
+                    $nomeSolicitante = trim(implode(' ', array_filter([
+                        $solicitacao['nome_user'] ?? '',
+                        $solicitacao['sobrenome'] ?? '',
+                    ])));
+                    enviarEmailModeracaoEventoShowMe(
+                        (string) ($solicitacao['email_user'] ?? ''),
+                        $nomeSolicitante,
+                        (string) $solicitacao['nome_evento'],
+                        (string) $solicitacao['data_evento'],
+                        $novoStatus,
+                        $idEvento === null ? null : (int) $idEvento
+                    );
+                } catch (Throwable $erroEmail) {
+                    error_log(sprintf(
+                        'Falha ao enviar e-mail da moderação da solicitação %d: %s',
+                        $id,
+                        $erroEmail->getMessage()
+                    ));
+                }
 
                 responder([
                     'mensagem' => 'Solicitação atualizada com sucesso',

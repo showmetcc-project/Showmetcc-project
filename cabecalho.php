@@ -119,7 +119,7 @@ $atributosRequerLogin = !$usuarioLogado
       <?php if (in_array($tipoCabecalho, ['A', 'B'], true)): ?>
         <?php if ($mostrarBusca): ?>
           <button
-            class="cabecalho-busca-toggle d-md-none"
+            class="cabecalho-busca-toggle"
             type="button"
             data-bs-toggle="collapse"
             data-bs-target="#buscaCabecalhoArea"
@@ -129,7 +129,7 @@ $atributosRequerLogin = !$usuarioLogado
             <i class="bi bi-search" aria-hidden="true"></i>
           </button>
 
-          <div class="cabecalho-busca-area collapse d-md-flex" id="buscaCabecalhoArea">
+          <div class="cabecalho-busca-area collapse" id="buscaCabecalhoArea">
             <form
               class="busca-cabecalho<?= $buscaComunidadesNavbar ? ' busca-comunidades-navbar' : '' ?>"
               <?= $buscaComunidadesNavbar ? '' : 'action="inicio.php" method="get"' ?>
@@ -172,7 +172,7 @@ $atributosRequerLogin = !$usuarioLogado
           </div>
         <?php endif; ?>
 
-        <nav id="navmenu" class="navmenu cabecalho-nav-desktop d-none d-md-block" aria-label="Navegação principal">
+        <nav id="navmenu" class="navmenu cabecalho-nav-desktop d-none d-xl-block" aria-label="Navegação principal">
           <ul>
             <?php if ($tipoCabecalho === 'A'): ?>
               <?php if (!$usuarioAdmin): ?>
@@ -265,7 +265,7 @@ $atributosRequerLogin = !$usuarioLogado
         </nav>
 
         <button
-          class="cabecalho-hamburguer d-md-none"
+          class="cabecalho-hamburguer d-xl-none"
           type="button"
           data-bs-toggle="collapse"
           data-bs-target="#menuCabecalhoMobile"
@@ -275,7 +275,7 @@ $atributosRequerLogin = !$usuarioLogado
           <i class="bi bi-list" aria-hidden="true"></i>
         </button>
 
-        <div class="collapse cabecalho-menu-mobile d-md-none" id="menuCabecalhoMobile">
+        <div class="collapse cabecalho-menu-mobile d-xl-none" id="menuCabecalhoMobile">
           <nav aria-label="Navegação principal móvel">
             <ul>
               <?php if ($tipoCabecalho === 'A'): ?>

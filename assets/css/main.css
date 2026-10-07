@@ -276,9 +276,9 @@ h5, h6 {
 
 .cabecalho-busca-area {
   order: 2;
-  flex: 1 1 180px;
+  flex: 1 1 280px;
   min-width: 0;
-  max-width: 320px;
+  max-width: 440px;
 }
 
 .cabecalho-busca-area .busca-cabecalho {
@@ -300,6 +300,10 @@ h5, h6 {
   line-height: 1;
 }
 
+.cabecalho-busca-toggle {
+  display: none;
+}
+
 .header.cabecalho-home .logo,
 .header.cabecalho-institucional .logo {
   order: 1;
@@ -316,7 +320,12 @@ h5, h6 {
   width: 100%;
 }
 
-@media (min-width: 768px) {
+@media (min-width: 1200px) {
+  .header.cabecalho-home .cabecalho-busca-area,
+  .header.cabecalho-institucional .cabecalho-busca-area {
+    display: flex !important;
+  }
+
   .header.cabecalho-home .cabecalho-nav-desktop,
   .header.cabecalho-institucional .cabecalho-nav-desktop {
     position: static;
@@ -393,7 +402,7 @@ h5, h6 {
   }
 }
 
-@media (max-width: 767.98px) {
+@media (max-width: 1199.98px) {
   .header.cabecalho-home,
   .header.cabecalho-institucional {
     padding: 10px 0;
@@ -414,17 +423,11 @@ h5, h6 {
     max-height: 44px;
   }
 
-  .cabecalho-busca-toggle {
-    display: inline-flex !important;
-    align-items: center;
-    justify-content: center;
-    margin-left: auto;
-  }
-
   .cabecalho-hamburguer {
     display: inline-flex !important;
     align-items: center;
     justify-content: center;
+    order: 3;
   }
 
   .header.cabecalho-institucional .cabecalho-hamburguer {
@@ -432,13 +435,16 @@ h5, h6 {
   }
 
   .cabecalho-busca-area {
-    order: 4;
-    flex-basis: 100%;
+    order: 2;
+    display: flex !important;
+    flex: 1 1 260px;
     max-width: none;
-    padding-top: 4px;
+    padding-top: 0;
   }
 
   .cabecalho-busca-area .busca-cabecalho {
+    width: 100%;
+    max-width: none;
     min-width: 0;
   }
 
@@ -527,14 +533,8 @@ h5, h6 {
   }
 }
 
-/* No tablet, a busca vira um controle expansível para preservar os botões da navbar. */
-@media (min-width: 768px) and (max-width: 991.98px) {
-  .header.cabecalho-home .cabecalho-navbar-conteudo {
-    flex-wrap: wrap;
-    gap: 10px;
-  }
-
-  .header.cabecalho-home .cabecalho-busca-toggle {
+@media (max-width: 479.98px) {
+  .cabecalho-busca-toggle {
     order: 2;
     display: inline-flex !important;
     align-items: center;
@@ -542,21 +542,25 @@ h5, h6 {
     margin-left: auto;
   }
 
-  .header.cabecalho-home .cabecalho-busca-area {
+  .cabecalho-busca-area {
     order: 4;
     display: none !important;
     flex: 0 0 100%;
+    justify-content: center;
     max-width: none;
     padding-top: 4px;
   }
 
-  .header.cabecalho-home .cabecalho-busca-area.show {
+  .cabecalho-busca-area.show {
     display: flex !important;
   }
 
-  .header.cabecalho-home .cabecalho-nav-desktop {
-    order: 3;
-    margin-left: 0;
+  .cabecalho-busca-area .busca-cabecalho,
+  .header.cabecalho-home .cabecalho-busca-area .busca-cabecalho,
+  .header.cabecalho-institucional .cabecalho-busca-area .busca-cabecalho {
+    width: min(100%, 540px);
+    max-width: 540px;
+    margin-inline: auto;
   }
 }
 
@@ -575,8 +579,8 @@ h5, h6 {
 }
 
 .header.cabecalho-home .busca-cabecalho {
-  min-width: 180px;
-  max-width: 320px;
+  min-width: 0;
+  max-width: none;
 }
 
 .header.cabecalho-home .cabecalho-nav-desktop a.nav-cadastrar-evento,
@@ -663,7 +667,7 @@ h5, h6 {
   transform: translateY(-2px);
 }
 
-@media (max-width: 767.98px) {
+@media (max-width: 1199.98px) {
   .header.cabecalho-home .cabecalho-menu-mobile a.nav-cadastrar-evento,
   .header.cabecalho-home .cabecalho-menu-mobile a.nav-usuario-direto,
   .header.cabecalho-institucional .cabecalho-menu-mobile a.nav-cadastrar-evento,
@@ -4390,5 +4394,158 @@ body.showme-modal-aberto {
   .showme-confirmacao-saindo,
   .showme-toast-saindo {
     animation-duration: .01ms;
+  }
+}
+
+/* Impressão limpa do planejamento finalizado. Mantida no fim de main.css para
+   prevalecer sobre os tokens escuros globais carregados nesta folha. */
+@page {
+  size: A4;
+  margin: 14mm;
+}
+
+@media print {
+  html,
+  body.pagina-planejamento {
+    width: 100% !important;
+    min-height: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: #fff !important;
+    color: #000 !important;
+    filter: none !important;
+    -webkit-filter: none !important;
+  }
+
+  body.pagina-planejamento {
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+
+  body.pagina-planejamento > * {
+    display: none !important;
+  }
+
+  body.pagina-planejamento > main.planejamento-container {
+    display: block !important;
+    width: 100% !important;
+    max-width: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: #fff !important;
+  }
+
+  body.pagina-planejamento .planejamento-container > .row,
+  body.pagina-planejamento .planejamento-container .col-lg-9,
+  body.pagina-planejamento .card-planejamento {
+    display: block !important;
+    width: 100% !important;
+    max-width: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    background: #fff !important;
+    box-shadow: none !important;
+  }
+
+  body.pagina-planejamento .progresso,
+  body.pagina-planejamento .etapa:not(#etapa5),
+  body.pagina-planejamento #etapa5 > :not(.titulo-card):not(.resumo-box) {
+    display: none !important;
+  }
+
+  body.pagina-planejamento #etapa5 {
+    display: block !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: #fff !important;
+  }
+
+  body.pagina-planejamento #etapa5,
+  body.pagina-planejamento #etapa5 * {
+    color: #000 !important;
+    background: transparent !important;
+    filter: none !important;
+    -webkit-filter: none !important;
+    box-shadow: none !important;
+    text-shadow: none !important;
+    line-height: 1.4 !important;
+    letter-spacing: normal !important;
+    word-spacing: normal !important;
+  }
+
+  body.pagina-planejamento #etapa5 > .titulo-card {
+    display: flex !important;
+    align-items: center !important;
+    gap: 3mm !important;
+    margin: 0 0 8mm !important;
+    padding: 0 0 4mm !important;
+    border: 0 !important;
+    border-bottom: 2px solid #000 !important;
+  }
+
+  body.pagina-planejamento #etapa5 > .titulo-card h2 {
+    margin: 0 !important;
+    font-family: 'Open Sans', 'Segoe UI', sans-serif !important;
+    font-size: 22pt !important;
+  }
+
+  body.pagina-planejamento #etapa5 > .titulo-card i {
+    display: inline-block !important;
+    font-size: 18pt !important;
+  }
+
+  body.pagina-planejamento #etapa5 > .resumo-box {
+    display: block !important;
+    break-inside: avoid;
+    page-break-inside: avoid;
+    margin: 0 0 6mm !important;
+    padding: 0 0 4mm !important;
+    border: 0 !important;
+    border-bottom: 1px solid #999 !important;
+    border-radius: 0 !important;
+  }
+
+  body.pagina-planejamento .resumo-box h3 {
+    margin: 0 0 2mm !important;
+    padding: 0 !important;
+    font-family: 'Open Sans', 'Segoe UI', sans-serif !important;
+    font-size: 12pt !important;
+  }
+
+  body.pagina-planejamento .linha-resumo {
+    display: flex !important;
+    justify-content: space-between !important;
+    gap: 10mm !important;
+    padding: 1.5mm 0 !important;
+    border: 0 !important;
+    font-size: 10pt !important;
+  }
+
+  body.pagina-planejamento .linha-resumo span:first-child {
+    font-weight: 600 !important;
+  }
+
+  body.pagina-planejamento .linha-resumo span:last-child {
+    font-weight: 400 !important;
+    text-align: right !important;
+  }
+
+  body.pagina-planejamento .linha-resumo.total {
+    margin-top: 1mm !important;
+    padding-top: 2mm !important;
+    border-top: 1px solid #000 !important;
+    font-size: 11pt !important;
+  }
+
+  body.pagina-planejamento .linha-resumo.total span:last-child {
+    font-size: 11pt !important;
+    font-weight: 700 !important;
+  }
+
+  body.pagina-planejamento .resumo-box hr {
+    display: none !important;
   }
 }

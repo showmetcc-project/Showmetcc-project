@@ -65,8 +65,9 @@ function mostrarFavoritosVazios() {
 function criarCardFavorito(favorito) {
     const coluna = document.createElement('div');
     const card = document.createElement('div');
+    const eventoEncerrado = !planejamentoEstaAtivo(favorito);
     coluna.className = 'col-12';
-    card.className = 'card-evento';
+    card.className = `card-evento${eventoEncerrado ? ' evento-encerrado' : ''}`;
 
     const imagem = document.createElement('img');
     imagem.src = caminhoImagem(favorito.imagem_evento);
@@ -156,6 +157,14 @@ function criarCardFavorito(favorito) {
     });
 
     acoes.append(tipo, excluir);
+
+    if (eventoEncerrado) {
+        const encerrado = document.createElement('span');
+        encerrado.className = 'badge-evento-encerrado';
+        encerrado.textContent = 'Evento encerrado';
+        card.append(encerrado);
+    }
+
     card.append(imagem, info, acoes);
     coluna.append(card);
     return coluna;
@@ -479,7 +488,7 @@ function localPlanejamento(planejamento) {
 
 function criarDetalhePlanejamento(planejamento) {
     const card = document.createElement('article');
-    card.className = 'calendario-evento-detalhe';
+    card.className = `calendario-evento-detalhe${planejamentoEstaAtivo(planejamento) ? '' : ' evento-encerrado'}`;
 
     const cabecalho = document.createElement('div');
     cabecalho.className = 'calendario-evento-cabecalho';
@@ -667,6 +676,10 @@ function renderizarCalendario() {
         dia.classList.toggle('dia-hoje', chave === chaveHoje);
         dia.classList.toggle('dia-selecionado', chave === dataSelecionada);
         dia.classList.toggle('dia-com-evento', eventos.length > 0);
+        dia.classList.toggle(
+            'evento-encerrado',
+            eventos.length > 0 && eventos.every((planejamento) => !planejamentoEstaAtivo(planejamento))
+        );
 
         const numero = document.createElement('span');
         numero.className = 'calendario-numero';

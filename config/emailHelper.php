@@ -150,3 +150,96 @@ function enviarEmailModeracaoEventoShowMe(
 
     $mailer->send();
 }
+
+function enviarEmailModeracaoDenunciaShowMe(
+    string $destinatario,
+    string $nomeUsuario,
+    string $nomeEvento,
+    string $tipoConteudo,
+    string $acao,
+    string $papel
+): void {
+    if (filter_var($destinatario, FILTER_VALIDATE_EMAIL) === false) {
+        throw new InvalidArgumentException('E-mail de notificação da denúncia inválido');
+    }
+
+    if (!in_array($tipoConteudo, ['post', 'midia'], true)) {
+        throw new InvalidArgumentException('Tipo de conteúdo denunciado inválido');
+    }
+
+    if (!in_array($acao, ['manter', 'remover'], true) || !in_array($papel, ['denunciante', 'autor'], true)) {
+        throw new InvalidArgumentException('Resultado de moderação inválido');
+    }
+
+    $mailer = criarMailerShowMe();
+    $mailer->addAddress($destinatario, trim($nomeUsuario));
+    $mailer->isHTML(true);
+
+    $nomeSeguro = htmlspecialchars($nomeUsuario !== '' ? $nomeUsuario : 'Olá', ENT_QUOTES, 'UTF-8');
+    $eventoSeguro = htmlspecialchars($nomeEvento, ENT_QUOTES, 'UTF-8');
+    $rotuloConteudo = $tipoConteudo === 'post' ? 'publicação' : 'foto da galeria';
+
+    if ($papel === 'autor') {
+        $mailer->Subject = 'Um conteúdo seu foi removido no ShowMe';
+        $mailer->Body = "<p>{$nomeSeguro},</p>
+            <p>Após análise da equipe de moderação, sua {$rotuloConteudo} na comunidade do evento <strong>{$eventoSeguro}</strong> foi removida.</p>
+            <p>Esta é uma mensagem automática de moderação.</p>";
+        $mailer->AltBody = "{$nomeUsuario},\n\nApós análise da equipe de moderação, sua {$rotuloConteudo} na comunidade do evento {$nomeEvento} foi removida.";
+    } else {
+        $resultado = $acao === 'remover'
+            ? 'foi removido após a análise'
+            : 'foi analisado e permanecerá disponível';
+        $mailer->Subject = 'Sua denúncia foi analisada no ShowMe';
+        $mailer->Body = "<p>{$nomeSeguro},</p>
+            <p>O conteúdo que você denunciou na comunidade do evento <strong>{$eventoSeguro}</strong> {$resultado}.</p>
+            <p>Obrigado por ajudar a manter a comunidade segura.</p>";
+        $mailer->AltBody = "{$nomeUsuario},\n\nO conteúdo que você denunciou na comunidade do evento {$nomeEvento} {$resultado}.";
+    }
+
+    $mailer->send();
+}
+
+function enviarEmailAlteracaoEventoShowMe(
+    string $destinatario,
+    string $nomeUsuario,
+    string $nomeEvento,
+    string $acao,
+    ?int $idEvento
+): void {
+    if (filter_var($destinatario, FILTER_VALIDATE_EMAIL) === false) {
+        throw new InvalidArgumentException('E-mail do responsável pelo evento inválido');
+    }
+
+    if (!in_array($acao, ['editado', 'removido'], true)) {
+        throw new InvalidArgumentException('Ação administrativa de evento inválida');
+    }
+
+    $mailer = criarMailerShowMe();
+    $mailer->addAddress($destinatario, trim($nomeUsuario));
+    $mailer->isHTML(true);
+
+    $nomeSeguro = htmlspecialchars($nomeUsuario !== '' ? $nomeUsuario : 'Olá', ENT_QUOTES, 'UTF-8');
+    $eventoSeguro = htmlspecialchars($nomeEvento, ENT_QUOTES, 'UTF-8');
+
+    if ($acao === 'editado') {
+        if ($idEvento === null || $idEvento < 1) {
+            throw new InvalidArgumentException('Evento editado sem ID válido');
+        }
+
+        $link = urlBaseEmailShowMe() . '/detalhesEvento.php?id=' . $idEvento;
+        $linkSeguro = htmlspecialchars($link, ENT_QUOTES, 'UTF-8');
+        $mailer->Subject = 'Seu evento foi atualizado no ShowMe';
+        $mailer->Body = "<p>{$nomeSeguro},</p>
+            <p>A equipe de moderação atualizou as informações do evento <strong>{$eventoSeguro}</strong>.</p>
+            <p><a href=\"{$linkSeguro}\">Ver informações atualizadas</a></p>";
+        $mailer->AltBody = "{$nomeUsuario},\n\nA equipe de moderação atualizou as informações do evento {$nomeEvento}.\n\nVer evento: {$link}";
+    } else {
+        $mailer->Subject = 'Seu evento foi removido do ShowMe';
+        $mailer->Body = "<p>{$nomeSeguro},</p>
+            <p>O evento <strong>{$eventoSeguro}</strong> foi removido do ShowMe pela equipe de moderação.</p>
+            <p>Esta é uma mensagem automática sobre a publicação do seu evento.</p>";
+        $mailer->AltBody = "{$nomeUsuario},\n\nO evento {$nomeEvento} foi removido do ShowMe pela equipe de moderação.";
+    }
+
+    $mailer->send();
+}

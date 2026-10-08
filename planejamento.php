@@ -3414,14 +3414,13 @@ async function habilitarEdicaoPlanejamento() {
         texto: 'Deseja reabrir este planejamento? As alterações só serão gravadas quando você salvar novamente.',
         confirmarTexto: 'Editar',
         cancelarTexto: 'Cancelar',
-        variante: 'importante'
+        variante: 'edicao'
     });
     if (!deveEditar) return;
 
     const botao = document.getElementById('botaoFinalizarPlanejamento');
     botao.type = 'submit';
     botao.dataset.estado = 'editando';
-    botao.classList.remove('botao-editar-planejamento');
     botao.innerHTML = '<i class="bi bi-check2-circle" aria-hidden="true"></i><span>Salvar alterações</span>';
     document.getElementById('botaoVoltarResumo').hidden = false;
     document.getElementById('botaoImprimirPlanejamento').hidden = true;
@@ -3641,7 +3640,7 @@ async function finalizarPlanejamento(eventoSubmit) {
             : 'Confirma este planejamento? Ele passará a aparecer em Meus Eventos e no calendário.',
         confirmarTexto: atualizandoPlanejamento ? 'Salvar' : 'Finalizar',
         cancelarTexto: 'Cancelar',
-        variante: 'importante'
+        variante: atualizandoPlanejamento ? 'edicao' : 'importante'
     });
     if (!deveSalvar) return;
 
@@ -3696,11 +3695,19 @@ async function finalizarPlanejamento(eventoSubmit) {
         configurarBotaoPlanejamentoFinalizado();
 
         if (resposta.status !== 409) {
+            const opcoesToast = {variante: 'sucesso'};
+            if (!atualizandoPlanejamento) {
+                opcoesToast.duracao = 8000;
+                opcoesToast.acao = {
+                    texto: 'Ver meus planejados',
+                    href: 'meusEventos.php?aba=planejados'
+                };
+            }
             window.ShowMeUI.toast(
                 atualizandoPlanejamento
                     ? 'Planejamento atualizado com sucesso!'
                     : 'Planejamento salvo com sucesso!',
-                {variante: 'sucesso'}
+                opcoesToast
             );
         }
 

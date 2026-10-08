@@ -16,6 +16,7 @@
         {id: 'workshops', termos: ['workshop']},
         {id: 'oficinas', termos: ['oficina']},
         {id: 'gastronomicos', termos: ['gastronomico', 'gastronomia']},
+        {id: 'literatura', termos: ['literatura', 'literario', 'livro', 'leitura']},
         {id: 'showsInternacionais', termos: ['internacional']},
         {id: 'showsNacionais', termos: ['nacional'], excluir: ['internacional']},
         {id: 'emBreve', termos: ['em breve', 'futuro', 'proximamente']}
@@ -488,6 +489,7 @@
 
         destruirCarrosselCategoria(idCarrossel);
         carrossel.classList.remove('carrossel-poucos-itens');
+        carrossel.classList.remove('carrossel-item-unico');
         let trilho = carrossel.querySelector('.swiper-wrapper');
         if (!trilho) {
             trilho = document.createElement('div');
@@ -503,6 +505,8 @@
             atualizarNavegacao(idCarrossel, false);
             return;
         }
+
+        carrossel.classList.toggle('carrossel-item-unico', eventos.length === 1);
 
         const {quantidadeQueCabe, usarLoop} = calcularOcupacaoCarrossel(carrossel, eventos.length);
         const quantidadeMinimaParaLoop = (quantidadeQueCabe + 1) * 2;

@@ -23,7 +23,7 @@ if ($metodo === 'GET') {
                 m.permitir_download, m.data_criacao, u.nome_user, u.sobrenome, u.foto_perfil
          FROM comunidade_midia m
          INNER JOIN usuario u ON u.id_user = m.id_usuario
-         WHERE m.id_evento = ?
+         WHERE m.id_evento = ? AND m.status_midia = \'ativo\'
          ORDER BY m.data_criacao DESC, m.id_midia DESC'
     );
     $stmt->bind_param('i', $idEvento);
@@ -38,6 +38,8 @@ if ($metodo === 'GET') {
 }
 
 if ($metodo === 'POST') {
+    $idUsuario = exigirUsuarioComum();
+
     if ($id !== null) {
         responder(['erro' => 'Não informe ID para publicar uma foto'], 400);
     }
@@ -94,10 +96,17 @@ if ($metodo === 'POST') {
 }
 
 if ($metodo === 'DELETE') {
+    $idUsuario = exigirUsuarioComum();
+
     if ($id === null) {
         responder(['erro' => 'Informe o ID da mídia na URL'], 400);
     }
-    $stmt = $conn->prepare('SELECT id_usuario, caminho_arquivo FROM comunidade_midia WHERE id_midia = ? LIMIT 1');
+    $stmt = $conn->prepare(
+        "SELECT id_usuario, caminho_arquivo
+         FROM comunidade_midia
+         WHERE id_midia = ? AND status_midia = 'ativo'
+         LIMIT 1"
+    );
     $stmt->bind_param('i', $id);
     executarStatementApi($stmt);
     $midia = $stmt->get_result()->fetch_assoc();

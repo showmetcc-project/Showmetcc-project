@@ -47,6 +47,10 @@
   mask-image: none;
 }
 
+.carrossel-wrapper.carrossel-item-unico .swiper-wrapper {
+  justify-content: center;
+}
+
 .carrossel-wrapper .swiper-slide {
   width: 300px;
   height: auto;

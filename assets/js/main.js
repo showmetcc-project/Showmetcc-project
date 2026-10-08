@@ -118,93 +118,12 @@
   window.addEventListener('load', aosInit);
 
   /**
-   * Initiate glightbox
-   */
-  if (typeof GLightbox !== 'undefined') {
-    GLightbox({
-      selector: '.glightbox'
-    });
-  }
-
-  /**
-   * Init swiper sliders
-   */
-  function initSwiper() {
-    if (typeof Swiper === 'undefined') return;
-    document.querySelectorAll(".init-swiper").forEach(function(swiperElement) {
-      let config = JSON.parse(
-        swiperElement.querySelector(".swiper-config").innerHTML.trim()
-      );
-
-      if (swiperElement.classList.contains("swiper-tab")) {
-        initSwiperWithCustomPagination(swiperElement, config);
-      } else {
-        new Swiper(swiperElement, config);
-      }
-    });
-  }
-
-  window.addEventListener("load", initSwiper);
-
-  /**
    * Frequently Asked Questions Toggle
    */
   document.querySelectorAll('.faq-item h3, .faq-item .faq-toggle').forEach((faqItem) => {
     faqItem.addEventListener('click', () => {
       faqItem.parentNode.classList.toggle('faq-active');
     });
-  });
-
-  /**
-   * Animate the skills items on reveal
-   */
-  let skillsAnimation = document.querySelectorAll('.skills-animation');
-  skillsAnimation.forEach((item) => {
-    if (typeof Waypoint === 'undefined') return;
-    new Waypoint({
-      element: item,
-      offset: '80%',
-      handler: function(direction) {
-        let progress = item.querySelectorAll('.progress .progress-bar');
-        progress.forEach(el => {
-          el.style.width = el.getAttribute('aria-valuenow') + '%';
-        });
-      }
-    });
-  });
-
-  /**
-   * Init isotope layout and filters
-   */
-  document.querySelectorAll('.isotope-layout').forEach(function(isotopeItem) {
-    if (typeof imagesLoaded === 'undefined' || typeof Isotope === 'undefined') return;
-    let layout = isotopeItem.getAttribute('data-layout') ?? 'masonry';
-    let filter = isotopeItem.getAttribute('data-default-filter') ?? '*';
-    let sort = isotopeItem.getAttribute('data-sort') ?? 'original-order';
-
-    let initIsotope;
-    imagesLoaded(isotopeItem.querySelector('.isotope-container'), function() {
-      initIsotope = new Isotope(isotopeItem.querySelector('.isotope-container'), {
-        itemSelector: '.isotope-item',
-        layoutMode: layout,
-        filter: filter,
-        sortBy: sort
-      });
-    });
-
-    isotopeItem.querySelectorAll('.isotope-filters li').forEach(function(filters) {
-      filters.addEventListener('click', function() {
-        isotopeItem.querySelector('.isotope-filters .filter-active').classList.remove('filter-active');
-        this.classList.add('filter-active');
-        initIsotope.arrange({
-          filter: this.getAttribute('data-filter')
-        });
-        if (typeof aosInit === 'function') {
-          aosInit();
-        }
-      }, false);
-    });
-
   });
 
   /**
@@ -289,6 +208,18 @@
     const texto = document.createElement('p');
     texto.textContent = String(mensagem || '');
 
+    const conteudo = document.createElement('div');
+    conteudo.className = 'showme-toast-conteudo';
+    conteudo.append(texto);
+
+    if (opcoes.acao && opcoes.acao.texto && opcoes.acao.href) {
+      const acao = document.createElement('a');
+      acao.className = 'showme-toast-acao';
+      acao.href = String(opcoes.acao.href);
+      acao.textContent = String(opcoes.acao.texto);
+      conteudo.append(acao);
+    }
+
     const fechar = document.createElement('button');
     fechar.type = 'button';
     fechar.className = 'showme-toast-fechar';
@@ -304,7 +235,7 @@
     };
 
     fechar.addEventListener('click', remover);
-    notificacao.append(icone, texto, fechar);
+    notificacao.append(icone, conteudo, fechar);
     garantirContainerToasts().append(notificacao);
     temporizador = window.setTimeout(remover, duracao);
     return notificacao;
@@ -326,7 +257,9 @@
   function confirmar(opcoes = {}) {
     if (modalAtual) finalizarConfirmacao(false);
 
-    const variante = opcoes.variante === 'importante' ? 'importante' : 'destrutiva';
+    const variante = ['importante', 'edicao'].includes(opcoes.variante)
+      ? opcoes.variante
+      : 'destrutiva';
     const tituloId = `showmeConfirmacaoTitulo-${Date.now()}`;
     focoAnterior = document.activeElement;
 
@@ -342,7 +275,9 @@
     const icone = document.createElement('i');
     icone.className = variante === 'destrutiva'
       ? 'bi bi-exclamation-triangle-fill showme-confirmacao-icone'
-      : 'bi bi-question-circle-fill showme-confirmacao-icone';
+      : variante === 'edicao'
+        ? 'bi bi-pencil-square showme-confirmacao-icone'
+        : 'bi bi-question-circle-fill showme-confirmacao-icone';
     icone.setAttribute('aria-hidden', 'true');
 
     const titulo = document.createElement('h2');

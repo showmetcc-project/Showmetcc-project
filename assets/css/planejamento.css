@@ -750,7 +750,7 @@
               box-shadow: 0 10px 26px rgba(255, 0, 110, .28);
           }
 
-          .botao-imprimir-planejamento {
+.botao-imprimir-planejamento {
               display: inline-flex;
               align-items: center;
               justify-content: center;
@@ -764,7 +764,7 @@
               font-weight: 600;
               cursor: pointer;
               transition: .25s;
-          }
+}
 
           .botao-imprimir-planejamento:hover {
               border-color: var(--verde);

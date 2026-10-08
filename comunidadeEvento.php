@@ -56,6 +56,12 @@ require __DIR__ . '/cabecalho.php';
         </div>
 
         <section id="abaPublicacoes" class="comunidade-painel ativa">
+            <?php if ($usuarioAdmin): ?>
+                <p class="comunidade-aviso-somente-leitura">
+                    <i class="bi bi-eye" aria-hidden="true"></i>
+                    Administradores acessam a comunidade em modo somente leitura.
+                </p>
+            <?php endif; ?>
             <div class="comunidade-barra-acoes">
                 <div id="filtrosCategoria" class="comunidade-filtros" aria-label="Filtrar publicações">
                     <button type="button" class="ativo" data-categoria="">Todas</button>
@@ -66,7 +72,9 @@ require __DIR__ . '/cabecalho.php';
                     <button type="button" data-categoria="Companhia">Companhia</button>
                     <button type="button" data-categoria="Relato">Relato</button>
                 </div>
-                <button type="button" class="btn-showme btn-criar-post" data-bs-toggle="modal" data-bs-target="#modalPublicacao"><i class="bi bi-plus-lg"></i> Criar publicação</button>
+                <?php if (!$usuarioAdmin): ?>
+                    <button type="button" class="btn-showme btn-criar-post" data-bs-toggle="modal" data-bs-target="#modalPublicacao"><i class="bi bi-plus-lg"></i> Criar publicação</button>
+                <?php endif; ?>
             </div>
             <div id="feedComunidade" class="comunidade-feed" aria-live="polite"></div>
         </section>
@@ -74,7 +82,9 @@ require __DIR__ . '/cabecalho.php';
         <section id="abaGaleria" class="comunidade-painel" hidden>
             <div class="comunidade-galeria-topo">
                 <div><h2>Galeria da Galera</h2><p>Veja e compartilhe imagens do local e do evento.</p></div>
-                <button type="button" class="btn-showme btn-adicionar-midia" data-bs-toggle="modal" data-bs-target="#modalMidia"><i class="bi bi-image"></i> Adicionar mídia</button>
+                <?php if (!$usuarioAdmin): ?>
+                    <button type="button" class="btn-showme btn-adicionar-midia" data-bs-toggle="modal" data-bs-target="#modalMidia"><i class="bi bi-image"></i> Adicionar mídia</button>
+                <?php endif; ?>
             </div>
             <div id="galeriaComunidade" class="comunidade-galeria" aria-live="polite"></div>
         </section>
@@ -82,6 +92,7 @@ require __DIR__ . '/cabecalho.php';
     </div>
 </main>
 
+<?php if (!$usuarioAdmin): ?>
 <div class="modal fade" id="modalPublicacao" tabindex="-1" aria-labelledby="modalPublicacaoTitulo" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered"><div class="modal-content modal-comunidade">
     <div class="modal-header"><h2 id="modalPublicacaoTitulo" class="modal-title">Criar publicação</h2><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button></div>
@@ -107,14 +118,14 @@ require __DIR__ . '/cabecalho.php';
   </div></div>
 </div>
 
-<div class="modal fade" id="modalDenuncia" tabindex="-1" aria-labelledby="modalDenunciaTitulo" aria-hidden="true">
+<dialog id="modalDenuncia" class="dialog-denuncia" aria-labelledby="modalDenunciaTitulo">
   <div class="modal-dialog modal-dialog-centered"><div class="modal-content modal-comunidade modal-denuncia">
     <div class="modal-header">
       <div>
         <h2 id="modalDenunciaTitulo" class="modal-title">Denunciar conteúdo</h2>
         <p class="modal-denuncia-subtitulo">Selecione o motivo para enviar à equipe de moderação.</p>
       </div>
-      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+      <button type="button" class="btn-close" data-fechar-denuncia aria-label="Fechar"></button>
     </div>
     <form id="formDenuncia">
       <div class="modal-body">
@@ -140,12 +151,13 @@ require __DIR__ . '/cabecalho.php';
         </div>
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn-denuncia-cancelar" data-bs-dismiss="modal">Cancelar</button>
+        <button type="button" class="btn-denuncia-cancelar" data-fechar-denuncia>Cancelar</button>
         <button id="btnEnviarDenuncia" type="submit" class="btn-denuncia-enviar" disabled>Enviar denúncia</button>
       </div>
     </form>
   </div></div>
-</div>
+</dialog>
+<?php endif; ?>
 
 <dialog id="lightboxComunidade" class="lightbox-comunidade"><button type="button" data-fechar-lightbox aria-label="Fechar"><i class="bi bi-x-lg"></i></button><img alt=""><div><strong></strong><time></time><p></p><div class="lightbox-acoes"></div></div></dialog>
 

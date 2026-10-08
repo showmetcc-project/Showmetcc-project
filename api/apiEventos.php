@@ -40,7 +40,7 @@ function normalizarCategoriasEvento($valor): string
 {
     $permitidas = [
         'Música', 'Cinema', 'Show Nacional', 'Show Internacional',
-        'Workshop', 'Oficina', 'Gastronômico'
+        'Workshop', 'Oficina', 'Gastronômico', 'Literatura'
     ];
     $mapa = [];
     foreach ($permitidas as $categoria) {
@@ -216,51 +216,139 @@ switch ($metodo) {
 
             $statusSolicitacoes = strtolower(trim($_GET['solicitacoes']));
 
-            if (!in_array($statusSolicitacoes, ['pendente', 'aprovado', 'recusado', 'todas'], true)) {
+            if (!in_array($statusSolicitacoes, ['pendente', 'aprovado', 'recusado', 'removido', 'todas'], true)) {
                 responder([
-                    'erro' => 'solicitacoes deve ser pendente, aprovado, recusado ou todas'
+                    'erro' => 'solicitacoes deve ser pendente, aprovado, recusado, removido ou todas'
                 ], 400);
             }
 
-            if (
-                array_key_exists('busca', $_GET)
-                || array_key_exists('limite', $_GET)
-                || array_key_exists('incluir_cancelados', $_GET)
-            ) {
-                responder([
-                    'erro' => 'Não combine solicitacoes com busca, limite ou incluir_cancelados'
-                ], 400);
+            if (array_key_exists('incluir_cancelados', $_GET)) {
+                responder(['erro' => 'Não combine solicitacoes com incluir_cancelados'], 400);
             }
 
             exigirAdmin();
 
+            if (array_key_exists('busca', $_GET) && !is_string($_GET['busca'])) {
+                responder(['erro' => 'busca deve ser um texto'], 400);
+            }
+            $buscaSolicitacoes = trim((string) ($_GET['busca'] ?? ''));
+            if (tamanhoTexto($buscaSolicitacoes) > 100) {
+                responder(['erro' => 'busca deve ter no máximo 100 caracteres'], 400);
+            }
+
+            $diasSolicitacoes = 0;
+            if (array_key_exists('dias', $_GET)) {
+                $diasInformados = $_GET['dias'];
+                if (!is_string($diasInformados) || !ctype_digit($diasInformados)
+                    || (int) $diasInformados > 3650) {
+                    responder(['erro' => 'dias deve ser um inteiro entre 0 e 3650'], 400);
+                }
+                $diasSolicitacoes = (int) $diasInformados;
+            }
+
+            $limiteSolicitacoes = null;
+            $offsetSolicitacoes = 0;
+            if (array_key_exists('limite', $_GET)) {
+                $limiteInformado = $_GET['limite'];
+                if (!is_string($limiteInformado) || !ctype_digit($limiteInformado)
+                    || (int) $limiteInformado < 1 || (int) $limiteInformado > 50) {
+                    responder(['erro' => 'limite deve ser um inteiro entre 1 e 50'], 400);
+                }
+                $limiteSolicitacoes = (int) $limiteInformado;
+            }
+
+            if (array_key_exists('offset', $_GET)) {
+                $offsetInformado = $_GET['offset'];
+                if ($limiteSolicitacoes === null || !is_string($offsetInformado)
+                    || !ctype_digit($offsetInformado)) {
+                    responder(['erro' => 'offset deve ser um inteiro maior ou igual a zero e exige limite'], 400);
+                }
+                $offsetSolicitacoes = (int) $offsetInformado;
+            }
+
             $camposSolicitacao =
-                's.id_solicitacao, s.id_user, s.nome_evento, s.status_solicitacao,
-                 s.foto, s.horario_evento, s.data_evento,
-                 s.cep_evento, s.endereco_evento, s.numero_endereco,
-                 s.rua_evento, s.cidade_evento, s.uf, s.categoria_evento,
-                 s.link_oficial, s.gratuidade, s.valor_ingresso_minimo,
-                 s.valor_ingresso_maximo, s.descricao_evento, s.descricao_artista,
+                's.id_solicitacao, s.id_user,
+                 IF(e.id_evento IS NULL, s.nome_evento, e.nome_evento) AS nome_evento,
+                 s.status_solicitacao,
+                 IF(e.id_evento IS NULL, s.foto, e.imagem_evento) AS foto,
+                 IF(e.id_evento IS NULL, s.horario_evento, e.horario_evento) AS horario_evento,
+                 IF(e.id_evento IS NULL, s.data_evento, e.data_evento) AS data_evento,
+                 IF(e.id_evento IS NULL, s.cep_evento, e.cep_evento) AS cep_evento,
+                 IF(e.id_evento IS NULL, s.endereco_evento, e.endereco_evento) AS endereco_evento,
+                 IF(e.id_evento IS NULL, s.numero_endereco, e.numero_endereco) AS numero_endereco,
+                 IF(e.id_evento IS NULL, s.rua_evento, e.rua_evento) AS rua_evento,
+                 IF(e.id_evento IS NULL, s.cidade_evento, e.cidade_evento) AS cidade_evento,
+                 IF(e.id_evento IS NULL, s.uf, e.uf) AS uf,
+                 IF(e.id_evento IS NULL, s.categoria_evento, e.categoria_evento) AS categoria_evento,
+                 IF(e.id_evento IS NULL, s.link_oficial, e.link_oficial) AS link_oficial,
+                 IF(e.id_evento IS NULL, s.gratuidade, e.gratuidade) AS gratuidade,
+                 IF(e.id_evento IS NULL, s.valor_ingresso_minimo, e.valor_ingresso_minimo) AS valor_ingresso_minimo,
+                 IF(e.id_evento IS NULL, s.valor_ingresso_maximo, e.valor_ingresso_maximo) AS valor_ingresso_maximo,
+                 IF(e.id_evento IS NULL, s.descricao_evento, e.descricao_evento) AS descricao_evento,
+                 s.descricao_artista,
                  s.nome_artista_solicitado,
                  s.data_solicitacao, u.nome_user, u.sobrenome, u.email_user,
                  e.id_evento';
-            $sqlSolicitacoes =
+            $sqlBaseSolicitacoes =
                 "SELECT $camposSolicitacao
                  FROM solicitacao s
                  INNER JOIN usuario u ON u.id_user = s.id_user
-                 LEFT JOIN evento e ON e.id_solicitacao_origem = s.id_solicitacao";
+                 LEFT JOIN evento e ON e.id_solicitacao_origem = s.id_solicitacao
+                 WHERE (
+                        ? = 'todas'
+                        OR (? = 'removido' AND s.status_solicitacao = 'aprovado' AND e.id_evento IS NULL)
+                        OR (? = 'aprovado' AND s.status_solicitacao = 'aprovado' AND e.id_evento IS NOT NULL)
+                        OR (? = 'pendente' AND s.status_solicitacao = 'pendente')
+                        OR (? = 'recusado' AND s.status_solicitacao = 'recusado')
+                   )
+                   AND (? = 0 OR s.data_solicitacao >= DATE_SUB(NOW(), INTERVAL ? DAY))
+                   AND (? = '' OR CONCAT_WS(' ',
+                        s.nome_evento, s.endereco_evento, s.rua_evento,
+                        s.cidade_evento, s.uf, s.categoria_evento,
+                        s.descricao_evento, s.descricao_artista,
+                        s.nome_artista_solicitado, u.nome_user,
+                        u.sobrenome, u.email_user, e.nome_evento,
+                        e.endereco_evento, e.rua_evento, e.cidade_evento,
+                        e.uf, e.categoria_evento, e.descricao_evento
+                   ) LIKE CONCAT('%', ?, '%'))";
+            $sqlSolicitacoes = $sqlBaseSolicitacoes
+                . ' ORDER BY s.data_solicitacao DESC, s.id_solicitacao DESC';
 
-            if ($statusSolicitacoes !== 'todas') {
-                $sqlSolicitacoes .= ' WHERE s.status_solicitacao = ?';
+            if ($limiteSolicitacoes !== null) {
+                $sqlSolicitacoes .= ' LIMIT ? OFFSET ?';
             }
-
-            $sqlSolicitacoes .= ' ORDER BY s.data_solicitacao DESC, s.id_solicitacao DESC';
 
             try {
                 $stmt = $conn->prepare($sqlSolicitacoes);
 
-                if ($statusSolicitacoes !== 'todas') {
-                    $stmt->bind_param('s', $statusSolicitacoes);
+                if ($limiteSolicitacoes === null) {
+                    $stmt->bind_param(
+                        'sssssiiss',
+                        $statusSolicitacoes,
+                        $statusSolicitacoes,
+                        $statusSolicitacoes,
+                        $statusSolicitacoes,
+                        $statusSolicitacoes,
+                        $diasSolicitacoes,
+                        $diasSolicitacoes,
+                        $buscaSolicitacoes,
+                        $buscaSolicitacoes
+                    );
+                } else {
+                    $stmt->bind_param(
+                        'sssssiissii',
+                        $statusSolicitacoes,
+                        $statusSolicitacoes,
+                        $statusSolicitacoes,
+                        $statusSolicitacoes,
+                        $statusSolicitacoes,
+                        $diasSolicitacoes,
+                        $diasSolicitacoes,
+                        $buscaSolicitacoes,
+                        $buscaSolicitacoes,
+                        $limiteSolicitacoes,
+                        $offsetSolicitacoes
+                    );
                 }
 
                 executarStatementApi($stmt);
@@ -272,7 +360,54 @@ switch ($metodo) {
                 }
 
                 $stmt->close();
-                responder(['solicitacoes' => $solicitacoes]);
+
+                $sqlContadores =
+                    "SELECT COUNT(*) AS todas,
+                            SUM(s.status_solicitacao = 'pendente') AS pendente,
+                            SUM(s.status_solicitacao = 'aprovado' AND e.id_evento IS NOT NULL) AS aprovado,
+                            SUM(s.status_solicitacao = 'recusado') AS recusado,
+                            SUM(s.status_solicitacao = 'aprovado' AND e.id_evento IS NULL) AS removido
+                     FROM solicitacao s
+                     INNER JOIN usuario u ON u.id_user = s.id_user
+                     LEFT JOIN evento e ON e.id_solicitacao_origem = s.id_solicitacao
+                     WHERE (? = 0 OR s.data_solicitacao >= DATE_SUB(NOW(), INTERVAL ? DAY))
+                       AND (? = '' OR CONCAT_WS(' ',
+                            s.nome_evento, s.endereco_evento, s.rua_evento,
+                            s.cidade_evento, s.uf, s.categoria_evento,
+                            s.descricao_evento, s.descricao_artista,
+                            s.nome_artista_solicitado, u.nome_user,
+                            u.sobrenome, u.email_user, e.nome_evento,
+                            e.endereco_evento, e.rua_evento, e.cidade_evento,
+                            e.uf, e.categoria_evento, e.descricao_evento
+                       ) LIKE CONCAT('%', ?, '%'))";
+                $stmt = $conn->prepare($sqlContadores);
+                $stmt->bind_param(
+                    'iiss',
+                    $diasSolicitacoes,
+                    $diasSolicitacoes,
+                    $buscaSolicitacoes,
+                    $buscaSolicitacoes
+                );
+                executarStatementApi($stmt);
+                $contadores = $stmt->get_result()->fetch_assoc();
+                $stmt->close();
+
+                foreach (['todas', 'pendente', 'aprovado', 'recusado', 'removido'] as $campoContador) {
+                    $contadores[$campoContador] = (int) ($contadores[$campoContador] ?? 0);
+                }
+
+                $totalStatus = $contadores[$statusSolicitacoes === 'todas'
+                    ? 'todas'
+                    : $statusSolicitacoes];
+                responder([
+                    'solicitacoes' => $solicitacoes,
+                    'contadores' => $contadores,
+                    'total' => $totalStatus,
+                    'limite' => $limiteSolicitacoes,
+                    'offset' => $offsetSolicitacoes,
+                    'tem_mais' => $limiteSolicitacoes !== null
+                        && $offsetSolicitacoes + count($solicitacoes) < $totalStatus
+                ]);
             } catch (mysqli_sql_exception $erro) {
                 responderErroInfraestrutura('Falha ao listar solicitações', $erro);
             }
@@ -1052,6 +1187,19 @@ switch ($metodo) {
             responder(['erro' => 'Evento não encontrado'], 404);
         }
 
+        $stmt = $conn->prepare(
+            'SELECT u.nome_user, u.sobrenome, u.email_user
+             FROM evento e
+             INNER JOIN solicitacao s ON s.id_solicitacao = e.id_solicitacao_origem
+             INNER JOIN usuario u ON u.id_user = s.id_user
+             WHERE e.id_evento = ?
+             LIMIT 1'
+        );
+        $stmt->bind_param('i', $id);
+        executarStatementApi($stmt);
+        $solicitanteEvento = $stmt->get_result()->fetch_assoc();
+        $stmt->close();
+
         $nome = array_key_exists('nome_evento', $dados)
             ? trim((string) $dados['nome_evento'])
             : $eventoAtual['nome_evento'];
@@ -1218,6 +1366,24 @@ switch ($metodo) {
         $evento = $stmt->get_result()->fetch_assoc();
         $stmt->close();
 
+        if ($solicitanteEvento) {
+            try {
+                enviarEmailAlteracaoEventoShowMe(
+                    (string) $solicitanteEvento['email_user'],
+                    trim((string) $solicitanteEvento['nome_user'] . ' ' . (string) $solicitanteEvento['sobrenome']),
+                    (string) $evento['nome_evento'],
+                    'editado',
+                    $id
+                );
+            } catch (Throwable $erroEmail) {
+                error_log(sprintf(
+                    'Falha ao notificar a edição do evento %d: %s',
+                    $id,
+                    $erroEmail->getMessage()
+                ));
+            }
+        }
+
         responder([
             'mensagem' => 'Evento atualizado com sucesso',
             'evento' => normalizarEvento($evento)
@@ -1235,9 +1401,12 @@ switch ($metodo) {
 
         try {
             $stmt = $conn->prepare(
-                'SELECT imagem_evento
-                 FROM evento
-                 WHERE id_evento = ?
+                'SELECT e.imagem_evento, e.nome_evento,
+                        u.nome_user, u.sobrenome, u.email_user
+                 FROM evento e
+                 LEFT JOIN solicitacao s ON s.id_solicitacao = e.id_solicitacao_origem
+                 LEFT JOIN usuario u ON u.id_user = s.id_user
+                 WHERE e.id_evento = ?
                  LIMIT 1
                  FOR UPDATE'
             );
@@ -1285,6 +1454,24 @@ switch ($metodo) {
         }
 
         removerArquivosUploadSemReferencia($conn, $caminhosUploads);
+
+        if (!empty($evento['email_user'])) {
+            try {
+                enviarEmailAlteracaoEventoShowMe(
+                    (string) $evento['email_user'],
+                    trim((string) $evento['nome_user'] . ' ' . (string) $evento['sobrenome']),
+                    (string) $evento['nome_evento'],
+                    'removido',
+                    null
+                );
+            } catch (Throwable $erroEmail) {
+                error_log(sprintf(
+                    'Falha ao notificar a remoção do evento %d: %s',
+                    $id,
+                    $erroEmail->getMessage()
+                ));
+            }
+        }
 
         responder(['mensagem' => 'Evento removido com sucesso']);
 

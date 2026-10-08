@@ -275,7 +275,7 @@ paths:
     get:
       tags: [Eventos]
       summary: Lista eventos públicos ou solicitações para moderação
-      description: Sem parâmetros, lista somente eventos ativos com data igual ou posterior a hoje. Com busca, aplica o mesmo recorte de data e filtra por nome, cidade, categoria ou artista. Com solicitacoes, consulta a tabela de solicitações e exige uma sessão de administrador; esse parâmetro não pode ser combinado com busca, limite ou incluir_cancelados.
+      description: Sem parâmetros, lista somente eventos ativos com data igual ou posterior a hoje. Com busca, aplica o mesmo recorte de data e filtra por nome, cidade, categoria ou artista. Com solicitacoes, consulta a tabela de solicitações e exige uma sessão de administrador; nessa modalidade, busca, dias, limite e offset controlam a listagem administrativa paginada.
       parameters:
         - name: busca
           in: query
@@ -287,7 +287,7 @@ paths:
         - name: limite
           in: query
           required: false
-          description: Quantidade máxima de resultados quando busca estiver preenchido. Usado pelo autocomplete.
+          description: Quantidade máxima de resultados. Usado pelo autocomplete público e pela paginação da listagem administrativa de solicitações.
           schema:
             type: integer
             minimum: 1
@@ -296,11 +296,21 @@ paths:
         - name: solicitacoes
           in: query
           required: false
-          description: Lista solicitações do status escolhido. Esta modalidade é restrita a administradores.
+          description: Lista solicitações do status escolhido. Removido representa uma solicitação aprovada cujo evento publicado já foi excluído. Esta modalidade é restrita a administradores.
           schema:
             type: string
-            enum: [pendente, aprovado, recusado, todas]
+            enum: [pendente, aprovado, recusado, removido, todas]
           example: pendente
+        - name: dias
+          in: query
+          required: false
+          description: Na listagem de solicitações, considera apenas registros criados nos últimos N dias. Zero inclui todo o período.
+          schema: {type: integer, minimum: 0, maximum: 3650, default: 0}
+        - name: offset
+          in: query
+          required: false
+          description: Deslocamento da paginação administrativa; exige limite.
+          schema: {type: integer, minimum: 0, default: 0}
         - name: incluir_cancelados
           in: query
           required: false
@@ -328,6 +338,18 @@ paths:
                         type: array
                         items:
                           $ref: '#/components/schemas/SolicitacaoAdmin'
+                      contadores:
+                        type: object
+                        properties:
+                          todas: {type: integer}
+                          pendente: {type: integer}
+                          aprovado: {type: integer}
+                          recusado: {type: integer}
+                          removido: {type: integer}
+                      total: {type: integer}
+                      limite: {type: integer, nullable: true}
+                      offset: {type: integer}
+                      tem_mais: {type: boolean}
         '400':
           $ref: '#/components/responses/RequisicaoInvalida'
         '401':
@@ -405,7 +427,8 @@ paths:
         promovidos para evento, id_solicitacao_origem é preenchido e o artista é
         criado ou reutilizado por nome normalizado. Aprovação e recusa tentam enviar
         um e-mail transacional ao solicitante; falhas de SMTP são registradas no
-        servidor sem desfazer a moderação. A edição preserva a foto enviada.
+        servidor sem desfazer a moderação. A edição preserva a foto enviada e
+        também tenta notificar por e-mail o usuário que cadastrou o evento.
       security:
         - cookieAuth: []
       parameters:
@@ -461,7 +484,7 @@ paths:
     delete:
       tags: [Eventos]
       summary: Remove um evento
-      description: Restrito a administradores. Relacionamentos configurados com ON DELETE CASCADE são removidos pelo banco.
+      description: Restrito a administradores. Relacionamentos configurados com ON DELETE CASCADE são removidos pelo banco e o usuário que cadastrou o evento é notificado por e-mail. Falha no SMTP não desfaz a remoção.
       security:
         - cookieAuth: []
       parameters:
@@ -768,6 +791,7 @@ paths:
     post:
       tags: [Comunidades]
       summary: Cria uma publicação
+      description: Restrito a usuários comuns; administradores possuem acesso somente para leitura.
       security: [{cookieAuth: []}]
       requestBody:
         required: true
@@ -778,7 +802,24 @@ paths:
         '201': {description: Publicação criada}
         '400': {$ref: '#/components/responses/RequisicaoInvalida'}
         '401': {$ref: '#/components/responses/NaoAutenticado'}
+        '403': {$ref: '#/components/responses/Proibido'}
   /comunidade-posts/{id}:
+    put:
+      tags: [Comunidades]
+      summary: Edita categoria e texto de uma publicação do próprio autor
+      description: Restrito a usuários comuns; administradores possuem acesso somente para leitura.
+      security: [{cookieAuth: []}]
+      parameters: [{$ref: '#/components/parameters/IdNaRota'}]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/ComunidadePostEdicao'}
+      responses:
+        '200': {description: Publicação atualizada}
+        '400': {$ref: '#/components/responses/RequisicaoInvalida'}
+        '403': {$ref: '#/components/responses/Proibido'}
+        '404': {$ref: '#/components/responses/NaoEncontrado'}
     delete:
       tags: [Comunidades]
       summary: Exclui uma publicação do próprio autor
@@ -801,6 +842,32 @@ paths:
       responses:
         '201': {description: Resposta criada}
         '400': {$ref: '#/components/responses/RequisicaoInvalida'}
+        '403': {$ref: '#/components/responses/Proibido'}
+  /comunidade-respostas/{id}:
+    put:
+      tags: [Comunidades]
+      summary: Edita uma resposta do próprio autor
+      security: [{cookieAuth: []}]
+      parameters: [{$ref: '#/components/parameters/IdNaRota'}]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/ComunidadeRespostaEdicao'}
+      responses:
+        '200': {description: Resposta atualizada}
+        '400': {$ref: '#/components/responses/RequisicaoInvalida'}
+        '403': {$ref: '#/components/responses/Proibido'}
+        '404': {$ref: '#/components/responses/NaoEncontrado'}
+    delete:
+      tags: [Comunidades]
+      summary: Exclui uma resposta do próprio autor
+      security: [{cookieAuth: []}]
+      parameters: [{$ref: '#/components/parameters/IdNaRota'}]
+      responses:
+        '200': {description: Resposta excluída}
+        '403': {$ref: '#/components/responses/Proibido'}
+        '404': {$ref: '#/components/responses/NaoEncontrado'}
   /comunidade-curtidas:
     post:
       tags: [Comunidades]
@@ -816,12 +883,13 @@ paths:
               properties: {id_post: {type: integer, minimum: 1}}
       responses:
         '200': {description: Estado e total de curtidas atualizados}
+        '403': {$ref: '#/components/responses/Proibido'}
         '404': {$ref: '#/components/responses/NaoEncontrado'}
   /comunidade-denuncias:
     get:
       tags: [Comunidades, Administração]
-      summary: Lista denúncias de publicações para moderação
-      description: Restrito a administradores. Retorna o post, autor, comunidade, motivo e situação da denúncia.
+      summary: Lista denúncias de publicações e fotos para moderação
+      description: Restrito a administradores. Retorna o conteúdo, autor, denunciante, comunidade, motivo e situação da denúncia.
       security: [{cookieAuth: []}]
       parameters:
         - name: status
@@ -831,6 +899,25 @@ paths:
             type: string
             enum: [todas, pendente, mantido, removido]
             default: todas
+        - name: busca
+          in: query
+          required: false
+          description: Pesquisa no conteúdo, motivo, autor, denunciante e comunidade.
+          schema: {type: string, maxLength: 100}
+        - name: dias
+          in: query
+          required: false
+          description: Considera apenas denúncias criadas nos últimos N dias. Zero inclui todo o período.
+          schema: {type: integer, minimum: 0, maximum: 3650, default: 0}
+        - name: limite
+          in: query
+          required: false
+          schema: {type: integer, minimum: 1, maximum: 50}
+        - name: offset
+          in: query
+          required: false
+          description: Deslocamento da paginação; exige limite.
+          schema: {type: integer, minimum: 0, default: 0}
       responses:
         '200':
           description: Denúncias retornadas
@@ -842,6 +929,17 @@ paths:
                   denuncias:
                     type: array
                     items: {$ref: '#/components/schemas/ComunidadeDenuncia'}
+                  contadores:
+                    type: object
+                    properties:
+                      todas: {type: integer}
+                      pendente: {type: integer}
+                      mantido: {type: integer}
+                      removido: {type: integer}
+                  total: {type: integer}
+                  limite: {type: integer, nullable: true}
+                  offset: {type: integer}
+                  tem_mais: {type: boolean}
         '403': {$ref: '#/components/responses/Proibido'}
     post:
       tags: [Comunidades]
@@ -856,13 +954,16 @@ paths:
       responses:
         '201': {description: Denúncia persistida}
         '400': {$ref: '#/components/responses/RequisicaoInvalida'}
+        '403': {$ref: '#/components/responses/Proibido'}
+        '409': {description: O usuário já denunciou o mesmo conteúdo}
   /comunidade-denuncias/{id}:
     put:
       tags: [Comunidades, Administração]
-      summary: Mantém ou remove uma publicação denunciada
+      summary: Mantém ou remove uma publicação ou foto denunciada
       description: >-
-        Restrito a administradores. Remover faz exclusão lógica do post para preservar
-        o histórico da denúncia; manter conserva a publicação visível.
+        Restrito a administradores. A decisão vale para todas as denúncias pendentes do
+        mesmo conteúdo. A API envia e-mail aos denunciantes e, em caso de remoção, ao
+        autor. Posts usam exclusão lógica; fotos também têm o arquivo físico removido.
       security: [{cookieAuth: []}]
       parameters: [{$ref: '#/components/parameters/IdNaRota'}]
       requestBody:
@@ -888,6 +989,7 @@ paths:
     post:
       tags: [Comunidades]
       summary: Publica uma foto na galeria
+      description: Restrito a usuários comuns; administradores possuem acesso somente para leitura.
       security: [{cookieAuth: []}]
       requestBody:
         required: true
@@ -897,6 +999,7 @@ paths:
       responses:
         '201': {description: Foto publicada}
         '400': {$ref: '#/components/responses/RequisicaoInvalida'}
+        '403': {$ref: '#/components/responses/Proibido'}
   /comunidade-midias/{id}:
     delete:
       tags: [Comunidades]
@@ -1398,7 +1501,7 @@ components:
           uniqueItems: true
           items:
             type: string
-            enum: [Música, Cinema, Show Nacional, Show Internacional, Workshop, Oficina, Gastronômico]
+            enum: [Música, Cinema, Show Nacional, Show Internacional, Workshop, Oficina, Gastronômico, Literatura]
         link_oficial:
           type: string
           format: uri
@@ -1765,6 +1868,25 @@ components:
           type: string
           maxLength: 3000
 
+    ComunidadePostEdicao:
+      type: object
+      required: [categoria, texto]
+      properties:
+        categoria:
+          type: string
+          enum: [Duvida, Dica, Transporte, Hospedagem, Companhia, Relato]
+        texto:
+          type: string
+          maxLength: 5000
+
+    ComunidadeRespostaEdicao:
+      type: object
+      required: [texto]
+      properties:
+        texto:
+          type: string
+          maxLength: 3000
+
     ComunidadeDenunciaEntrada:
       type: object
       required: [motivo]
@@ -1796,7 +1918,9 @@ components:
       type: object
       properties:
         id_denuncia: {type: integer}
-        id_post: {type: integer}
+        id_post: {type: integer, nullable: true}
+        id_midia: {type: integer, nullable: true}
+        tipo_alvo: {type: string, enum: [post, midia]}
         id_denunciante: {type: integer}
         motivo: {type: string}
         status_denuncia: {type: string, enum: [pendente, mantido, removido]}
@@ -1804,10 +1928,14 @@ components:
         data_moderacao: {type: string, format: date-time, nullable: true}
         id_evento: {type: integer}
         id_autor: {type: integer}
-        categoria_post: {type: string}
-        texto_post: {type: string}
-        status_post: {type: string, enum: [ativo, removido]}
-        data_post: {type: string, format: date-time}
+        categoria_post: {type: string, nullable: true}
+        texto_post: {type: string, nullable: true}
+        status_post: {type: string, enum: [ativo, removido], nullable: true}
+        data_post: {type: string, format: date-time, nullable: true}
+        caminho_midia: {type: string, nullable: true}
+        legenda_midia: {type: string, nullable: true}
+        status_midia: {type: string, enum: [ativo, removido], nullable: true}
+        data_midia: {type: string, format: date-time, nullable: true}
         autor_nome: {type: string}
         autor_sobrenome: {type: string, nullable: true}
         autor_email: {type: string, format: email}

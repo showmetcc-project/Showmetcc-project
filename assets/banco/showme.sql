@@ -202,6 +202,7 @@ CREATE TABLE comunidade_midia (
     caminho_arquivo   VARCHAR(255) NOT NULL,
     legenda           VARCHAR(255) NULL,
     permitir_download TINYINT(1) NOT NULL DEFAULT 0,
+    status_midia      ENUM('ativo','removido') NOT NULL DEFAULT 'ativo',
     data_criacao      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     FOREIGN KEY (id_evento) REFERENCES evento(id_evento) ON DELETE CASCADE,
@@ -219,6 +220,8 @@ CREATE TABLE comunidade_denuncia (
     data_criacao  DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     data_moderacao DATETIME NULL,
     id_admin_moderacao INT NULL,
+    UNIQUE KEY uk_denuncia_post_usuario (id_post, id_usuario),
+    UNIQUE KEY uk_denuncia_midia_usuario (id_midia, id_usuario),
 
     FOREIGN KEY (id_post) REFERENCES comunidade_post(id_post) ON DELETE CASCADE,
     FOREIGN KEY (id_midia) REFERENCES comunidade_midia(id_midia) ON DELETE CASCADE,

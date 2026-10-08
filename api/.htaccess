@@ -14,6 +14,10 @@ RewriteRule ^comunidade-posts/?$ apiComunidadePosts.php [QSA,L]
 
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^comunidade-respostas/(\d+)/?$ apiComunidadeRespostas.php?id=$1 [QSA,L]
+
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
 RewriteRule ^comunidade-respostas/?$ apiComunidadeRespostas.php [QSA,L]
 
 RewriteCond %{REQUEST_FILENAME} !-f

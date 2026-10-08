@@ -146,12 +146,13 @@ body {
 }
 
 .btn-editar.salvar-alteracoes {
-    background: #ff006e;
-    color: #ffffff;
+    background: #00ff00;
+    color: #000000;
 }
 
 .btn-editar.salvar-alteracoes:hover {
-    box-shadow: 0 6px 20px rgba(255, 0, 110, .3);
+    background: #00dd00;
+    box-shadow: 0 6px 20px rgba(0, 255, 0, .3);
 }
 
 .btn-editar:disabled {
@@ -868,13 +869,14 @@ body {
 
 .btn-salvar-perfil {
     border: 0;
-    background: #00ff00;
-    color: #000000;
+    background: #ff006e;
+    color: #ffffff;
 }
 
 .btn-salvar-perfil:hover {
-    color: #000000;
-    box-shadow: 0 6px 18px rgba(0, 255, 0, .24);
+    background: #dd0060;
+    color: #ffffff;
+    box-shadow: 0 6px 18px rgba(221, 0, 96, .24);
 }
 
 .btn-salvar-perfil:disabled {
@@ -1032,9 +1034,9 @@ body.recorte-aberto {
     align-items: center;
     justify-content: center;
     padding: 0;
-    border: 1px solid rgba(255, 255, 255, .28);
+    border: 1px solid #ff006e;
     border-radius: 50%;
-    background: rgba(10, 10, 10, .88);
+    background: #ff006e;
     color: #ffffff;
     font-size: 1.1rem;
     backdrop-filter: blur(8px);
@@ -1042,7 +1044,8 @@ body.recorte-aberto {
 }
 
 .btn-alterar-banner:hover {
-    border-color: #ff006e;
+    border-color: #dd0060;
+    background: #dd0060;
     color: #ffffff;
     transform: translateY(-2px);
     box-shadow: 0 8px 22px rgba(255, 0, 110, .25);

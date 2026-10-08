@@ -3,16 +3,14 @@ $usuarioLogado = isset($_SESSION['id_user']);
 $usuarioAdmin = $usuarioLogado && (($_SESSION['tipo_usuario'] ?? '') === 'admin');
 $urlAreaUsuario = $usuarioAdmin ? 'admin.php' : 'perfilUsuario.php';
 $rotuloAreaUsuario = $usuarioAdmin ? 'Painel admin' : 'Usuário';
-$nomeUsuario = htmlspecialchars(
-    (string) ($_SESSION['nome_user'] ?? ''),
-    ENT_QUOTES,
-    'UTF-8'
-);
 $termoBuscaCabecalho = isset($_GET['busca']) && is_string($_GET['busca'])
     ? htmlspecialchars(trim($_GET['busca']), ENT_QUOTES, 'UTF-8')
     : '';
 
-$tipoCabecalho = strtoupper((string) ($tipoCabecalho ?? 'LEGADO'));
+$tipoCabecalho = strtoupper((string) ($tipoCabecalho ?? 'B'));
+if (!in_array($tipoCabecalho, ['A', 'B', 'C', 'D'], true)) {
+    $tipoCabecalho = 'B';
+}
 $configuracaoCabecalho = isset($configuracaoCabecalho) && is_array($configuracaoCabecalho)
     ? $configuracaoCabecalho
     : [];
@@ -23,7 +21,7 @@ $escaparCabecalho = static fn ($valor): string => htmlspecialchars(
     'UTF-8'
 );
 
-$mostrarBusca = $tipoCabecalho === 'A' || $tipoCabecalho === 'LEGADO';
+$mostrarBusca = $tipoCabecalho === 'A';
 $mostrarLogout = false;
 $buscaComunidadesNavbar = $mostrarBusca
     && (($configuracaoCabecalho['acao'] ?? '') === 'busca_comunidades');
@@ -110,14 +108,13 @@ $atributosRequerLogin = !$usuarioLogado
   <header
     id="header"
     data-usuario-logado="<?= $usuarioLogado ? '1' : '0' ?>"
-    class="header d-flex align-items-center fixed-top <?= $tipoCabecalho === 'A' ? 'cabecalho-home' : ($tipoCabecalho === 'B' ? 'cabecalho-institucional' : 'cabecalho-legado') ?>">
+    class="header d-flex align-items-center fixed-top <?= $tipoCabecalho === 'A' ? 'cabecalho-home' : 'cabecalho-institucional' ?>">
     <div class="container-fluid container-xl position-relative cabecalho-navbar-conteudo">
       <a href="<?= $usuarioLogado ? 'inicio.php' : 'institucional.php' ?>" class="logo d-flex align-items-center" aria-label="ShowMe - página inicial">
         <img src="assets/img/showme.png" alt="ShowMe">
       </a>
 
-      <?php if (in_array($tipoCabecalho, ['A', 'B'], true)): ?>
-        <?php if ($mostrarBusca): ?>
+      <?php if ($mostrarBusca): ?>
           <button
             class="cabecalho-busca-toggle"
             type="button"
@@ -170,7 +167,7 @@ $atributosRequerLogin = !$usuarioLogado
               <?php endif; ?>
             </form>
           </div>
-        <?php endif; ?>
+      <?php endif; ?>
 
         <nav id="navmenu" class="navmenu cabecalho-nav-desktop d-none d-xl-block" aria-label="Navegação principal">
           <ul>
@@ -389,72 +386,6 @@ $atributosRequerLogin = !$usuarioLogado
           </nav>
         </div>
 
-      <?php else: ?>
-        <?php if ($mostrarBusca): ?>
-          <form class="busca-cabecalho" action="inicio.php" method="get" role="search">
-            <div class="busca-cabecalho-campo">
-              <input
-                id="buscaCabecalho"
-                name="busca"
-                type="search"
-                value="<?= $termoBuscaCabecalho ?>"
-                placeholder="Buscar eventos..."
-                aria-label="Buscar eventos por nome, cidade, categoria ou artista"
-                aria-controls="sugestoesBusca"
-                aria-autocomplete="list"
-                autocomplete="off"
-                spellcheck="false"
-              >
-              <button
-                type="button"
-                class="busca-cabecalho-limpar"
-                data-limpar-busca
-                aria-label="Limpar busca"
-                hidden>
-                <i class="bi bi-x-lg" aria-hidden="true"></i>
-              </button>
-              <button type="submit" class="busca-cabecalho-enviar" aria-label="Confirmar busca">
-                <i class="bi bi-search" aria-hidden="true"></i>
-              </button>
-            </div>
-            <div id="sugestoesBusca" class="sugestoes-busca" role="listbox" aria-label="Sugestões de eventos" hidden></div>
-          </form>
-        <?php endif; ?>
-
-        <nav id="navmenu" class="navmenu">
-          <ul>
-            <li><a href="<?= $usuarioLogado ? 'inicio.php' : 'institucional.php#hero' ?>">Início</a></li>
-            <li><a href="#about">Sobre Nós</a></li>
-            <li><a href="#work-process">Como Funciona</a></li>
-            <li><a href="#faq-2">Perguntas</a></li>
-            <li><a href="#footer">Contato</a></li>
-
-            <?php if ($usuarioLogado): ?>
-              <li class="dropdown login-menu">
-                <a href="#">
-                  <span class="preto"><?= $nomeUsuario ?></span>
-                  <i class="bi bi-chevron-down toggle-dropdown"></i>
-                </a>
-                <ul>
-                  <li><a href="cadastroEvento.php"><i class="bi bi-plus-circle"></i><span>Cadastrar evento</span></a></li>
-                  <li><a href="meusEventos.php"><i class="bi bi-heart"></i><span>Favoritos</span></a></li>
-                  <li><a href="perfilUsuario.php"><i class="bi bi-person"></i><span>Meu perfil</span></a></li>
-                  <li>
-                    <button type="button" class="btn-logout-menu" id="btnLogout">
-                      <i class="bi bi-box-arrow-right"></i><span>Sair</span>
-                    </button>
-                  </li>
-                </ul>
-              </li>
-              <?php $mostrarLogout = true; ?>
-            <?php else: ?>
-              <li class="login-menu"><a href="login.php"><span class="preto">Login</span></a></li>
-              <li class="login-menu"><a href="cadastro.php"><span class="preto">Cadastro</span></a></li>
-            <?php endif; ?>
-          </ul>
-          <i class="mobile-nav-toggle d-xl-none bi bi-list" aria-label="Abrir menu"></i>
-        </nav>
-      <?php endif; ?>
     </div>
   </header>
 <?php endif; ?>

@@ -5,6 +5,7 @@
     const campoBusca = document.getElementById('buscaAdmin');
     const listaDenuncias = document.getElementById('listaDenuncias');
     const campoBuscaDenuncia = campoBusca;
+    const campoPeriodo = document.getElementById('filtroPeriodoAdmin');
     const elementoModalEdicao = document.getElementById('modalEditarSolicitacao');
     const formularioEdicao = document.getElementById('formEditarSolicitacao');
     const modalEdicao = new window.bootstrap.Modal(elementoModalEdicao);
@@ -15,6 +16,12 @@
     let filtroAtual = 'pendente';
     let filtroDenunciaAtual = 'pendente';
     let denunciasCarregadas = false;
+    const tamanhoLote = 10;
+    let temMaisSolicitacoes = false;
+    let temMaisDenuncias = false;
+    let sequenciaSolicitacoes = 0;
+    let sequenciaDenuncias = 0;
+    let temporizadorBusca = null;
 
     async function lerJson(resposta) {
         try {
@@ -76,21 +83,14 @@
         }[status] || status;
     }
 
+    function situacaoSolicitacao(solicitacao) {
+        return solicitacao.status_solicitacao === 'aprovado' && !solicitacao.id_evento
+            ? 'Evento removido'
+            : statusLegivel(solicitacao.status_solicitacao);
+    }
+
     function nomeSolicitante(solicitacao) {
         return [solicitacao.nome_user, solicitacao.sobrenome].filter(Boolean).join(' ') || 'Usuário';
-    }
-
-    function normalizarBusca(texto) {
-        return String(texto || '')
-            .normalize('NFD')
-            .replace(/[\u0300-\u036f]/g, '')
-            .toLocaleLowerCase('pt-BR');
-    }
-
-    function ativarFiltroBusca(seletor, valor) {
-        document.querySelectorAll(seletor).forEach((botao) => {
-            botao.classList.toggle('ativo', botao.dataset[valor.chave] === valor.status);
-        });
     }
 
     function mostrarMensagem(texto, tipo = 'danger') {
@@ -111,47 +111,13 @@
         return campo;
     }
 
-    function atualizarContadores() {
-        const quantidades = {
-            todas: solicitacoes.length,
-            pendente: solicitacoes.filter((item) => item.status_solicitacao === 'pendente').length,
-            aprovado: solicitacoes.filter((item) => item.status_solicitacao === 'aprovado').length,
-            recusado: solicitacoes.filter((item) => item.status_solicitacao === 'recusado').length
-        };
+    function atualizarContadores(quantidades = {}) {
 
         document.getElementById('contadorTodas').textContent = quantidades.todas;
         document.getElementById('contadorPendentes').textContent = quantidades.pendente;
         document.getElementById('contadorAprovadas').textContent = quantidades.aprovado;
         document.getElementById('contadorRecusadas').textContent = quantidades.recusado;
-    }
-
-    function filtrarSolicitacoes() {
-        const termo = normalizarBusca(campoBusca.value.trim());
-
-        return solicitacoes.filter((solicitacao) => {
-            if (filtroAtual !== 'todas' && solicitacao.status_solicitacao !== filtroAtual) {
-                return false;
-            }
-
-            if (!termo) {
-                return true;
-            }
-
-            const conteudo = normalizarBusca([
-                solicitacao.nome_evento,
-                solicitacao.endereco_evento,
-                solicitacao.rua_evento,
-                solicitacao.cidade_evento,
-                solicitacao.uf,
-                solicitacao.categoria_evento,
-                solicitacao.descricao_evento,
-                solicitacao.descricao_artista,
-                solicitacao.nome_artista_solicitado,
-                nomeSolicitante(solicitacao),
-                solicitacao.email_user
-            ].filter(Boolean).join(' '));
-            return conteudo.includes(termo);
-        });
+        document.getElementById('contadorRemovidas').textContent = quantidades.removido;
     }
 
     async function moderarSolicitacao(solicitacao, status) {
@@ -195,15 +161,12 @@
 
             if (!resposta.ok) {
                 if (resposta.status === 409 || resposta.status === 404) {
-                    await carregarSolicitacoes(false);
+                    await carregarSolicitacoes({reiniciar: true, exibirCarregamento: false});
                 }
                 throw new Error(dados.erro || 'Não foi possível analisar a solicitação.');
             }
 
-            solicitacao.status_solicitacao = dados.solicitacao.status_solicitacao;
-            solicitacao.id_evento = dados.solicitacao.id_evento;
-            atualizarContadores();
-            renderizarSolicitacoes();
+            await carregarSolicitacoes({reiniciar: true, exibirCarregamento: false});
             window.ShowMeUI.toast(
                 status === 'aprovado'
                     ? 'Evento aprovado com sucesso.'
@@ -216,12 +179,7 @@
         }
     }
 
-    function abrirEdicaoSolicitacao(solicitacao) {
-        if (solicitacao.status_solicitacao !== 'pendente') {
-            mostrarMensagem('Somente solicitações pendentes podem ser editadas.');
-            return;
-        }
-
+    function preencherFormularioEvento(solicitacao) {
         document.getElementById('idSolicitacaoEdicao').value = String(solicitacao.id_solicitacao);
         document.getElementById('nomeEventoEdicao').value = solicitacao.nome_evento || '';
         document.getElementById('cepEventoEdicao').value = solicitacao.cep_evento || '';
@@ -242,14 +200,50 @@
         document.getElementById('descricaoEventoEdicao').value = solicitacao.descricao_evento || '';
         document.getElementById('descricaoArtistaEdicao').value = solicitacao.descricao_artista || '';
         document.getElementById('nomeArtistaSolicitadoEdicao').value = solicitacao.nome_artista_solicitado || '';
+    }
+
+    function configurarModalEdicao(solicitacao, modo) {
+        const editandoEvento = modo === 'evento';
+        formularioEdicao.dataset.modo = modo;
+        formularioEdicao.dataset.idAlvo = String(
+            editandoEvento ? solicitacao.id_evento : solicitacao.id_solicitacao
+        );
+        preencherFormularioEvento(solicitacao);
+        document.getElementById('tituloModalEditarSolicitacao').textContent = editandoEvento
+            ? 'Editar evento publicado'
+            : 'Corrigir solicitação';
+        document.getElementById('btnSalvarSolicitacao').innerHTML = editandoEvento
+            ? '<i class="bi bi-pencil" aria-hidden="true"></i> Salvar evento'
+            : '<i class="bi bi-check-lg" aria-hidden="true"></i> Salvar correções';
+        document.querySelectorAll('.campo-apenas-solicitacao').forEach((campo) => {
+            campo.hidden = editandoEvento;
+        });
         modalEdicao.show();
     }
 
+    function abrirEdicaoSolicitacao(solicitacao) {
+        if (solicitacao.status_solicitacao !== 'pendente') {
+            mostrarMensagem('Somente solicitações pendentes podem ser editadas.');
+            return;
+        }
+        configurarModalEdicao(solicitacao, 'solicitacao');
+    }
+
+    function abrirEdicaoEvento(solicitacao) {
+        if (solicitacao.status_solicitacao !== 'aprovado' || !solicitacao.id_evento) {
+            mostrarMensagem('O evento publicado não foi encontrado.');
+            return;
+        }
+        configurarModalEdicao(solicitacao, 'evento');
+    }
+
     async function salvarEdicaoSolicitacao() {
-        const idSolicitacao = Number(document.getElementById('idSolicitacaoEdicao').value);
+        const modo = formularioEdicao.dataset.modo || 'solicitacao';
+        const editandoEvento = modo === 'evento';
+        const idAlvo = Number(formularioEdicao.dataset.idAlvo);
         const botaoSalvar = document.getElementById('btnSalvarSolicitacao');
         const dadosEdicao = {
-            acao: 'editar_solicitacao',
+            acao: editandoEvento ? 'editar' : 'editar_solicitacao',
             nome_evento: document.getElementById('nomeEventoEdicao').value.trim(),
             cep_evento: document.getElementById('cepEventoEdicao').value.trim(),
             endereco_evento: document.getElementById('enderecoEventoEdicao').value.trim(),
@@ -264,15 +258,29 @@
             gratuidade: document.getElementById('gratuidadeEdicao').value === 'true',
             valor_ingresso_minimo: document.getElementById('valorMinimoEdicao').value,
             valor_ingresso_maximo: document.getElementById('valorMaximoEdicao').value,
-            descricao_evento: document.getElementById('descricaoEventoEdicao').value.trim(),
-            descricao_artista: document.getElementById('descricaoArtistaEdicao').value.trim(),
-            nome_artista_solicitado: document.getElementById('nomeArtistaSolicitadoEdicao').value.trim()
+            descricao_evento: document.getElementById('descricaoEventoEdicao').value.trim()
         };
+
+        if (!editandoEvento) {
+            dadosEdicao.descricao_artista = document.getElementById('descricaoArtistaEdicao').value.trim();
+            dadosEdicao.nome_artista_solicitado = document.getElementById('nomeArtistaSolicitadoEdicao').value.trim();
+        }
+
+        if (editandoEvento) {
+            const confirmou = await window.ShowMeUI.confirmar({
+                titulo: 'Salvar alterações no evento',
+                texto: 'As informações publicadas serão alteradas e o usuário que cadastrou o evento será avisado por e-mail.',
+                confirmarTexto: 'Salvar alterações',
+                cancelarTexto: 'Cancelar',
+                variante: 'edicao'
+            });
+            if (!confirmou) return;
+        }
 
         botaoSalvar.disabled = true;
 
         try {
-            const resposta = await fetch(`api/eventos/${idSolicitacao}`, {
+            const resposta = await fetch(`api/eventos/${idAlvo}`, {
                 method: 'PUT',
                 headers: {'Content-Type': 'application/json', Accept: 'application/json'},
                 body: JSON.stringify(dadosEdicao)
@@ -286,29 +294,71 @@
 
             if (!resposta.ok) {
                 if (resposta.status === 409 || resposta.status === 404) {
-                    await carregarSolicitacoes(false);
+                    await carregarSolicitacoes({reiniciar: true, exibirCarregamento: false});
                 }
                 throw new Error(dados.erro || 'Não foi possível salvar as correções.');
             }
 
-            const indice = solicitacoes.findIndex(
-                (item) => Number(item.id_solicitacao) === idSolicitacao
-            );
-
-            if (indice >= 0) {
-                solicitacoes[indice] = dados.solicitacao;
-            }
-
             modalEdicao.hide();
-            renderizarSolicitacoes();
+            await carregarSolicitacoes({reiniciar: true, exibirCarregamento: false});
             window.ShowMeUI.toast(
-                'Alterações salvas. A solicitação já pode ser aprovada.',
+                editandoEvento
+                    ? 'Evento atualizado. O responsável será notificado por e-mail.'
+                    : 'Alterações salvas. A solicitação já pode ser aprovada.',
                 {variante: 'sucesso'}
             );
         } catch (erro) {
             window.ShowMeUI.toast(erro.message, {variante: 'erro'});
         } finally {
             botaoSalvar.disabled = false;
+        }
+    }
+
+    async function removerEventoPublicado(solicitacao) {
+        if (!solicitacao.id_evento) {
+            mostrarMensagem('O evento publicado não foi encontrado.');
+            return;
+        }
+
+        const confirmou = await window.ShowMeUI.confirmar({
+            titulo: 'Remover evento publicado',
+            texto: `Tem certeza que deseja remover “${solicitacao.nome_evento}”? Favoritos, planejamentos e a comunidade associados também serão removidos. O responsável será avisado por e-mail.`,
+            confirmarTexto: 'Remover evento',
+            cancelarTexto: 'Cancelar',
+            variante: 'destrutiva'
+        });
+        if (!confirmou) return;
+
+        const card = lista.querySelector(`[data-solicitacao-id="${solicitacao.id_solicitacao}"]`);
+        card?.querySelectorAll('button, a').forEach((controle) => {
+            controle.setAttribute('aria-disabled', 'true');
+            if ('disabled' in controle) controle.disabled = true;
+        });
+
+        try {
+            const resposta = await fetch(`api/eventos/${solicitacao.id_evento}`, {
+                method: 'DELETE',
+                headers: {Accept: 'application/json'}
+            });
+            const dados = await lerJson(resposta);
+            if (resposta.status === 401 || resposta.status === 403) {
+                window.location.href = 'loginAdmin.php';
+                return;
+            }
+            if (!resposta.ok) {
+                throw new Error(dados.erro || 'Não foi possível remover o evento.');
+            }
+            await carregarSolicitacoes({reiniciar: true, exibirCarregamento: false});
+            window.ShowMeUI.toast(
+                'Evento removido. O responsável será notificado por e-mail.',
+                {variante: 'sucesso'}
+            );
+        } catch (erro) {
+            mostrarMensagem(erro.message);
+            card?.querySelectorAll('button, a').forEach((controle) => {
+                controle.removeAttribute('aria-disabled');
+                if ('disabled' in controle) controle.disabled = false;
+            });
         }
     }
 
@@ -327,7 +377,10 @@
 
     function criarCard(solicitacao, expandido) {
         const card = document.createElement('article');
-        card.className = `evento-card status-${solicitacao.status_solicitacao}${expandido ? ' expandido' : ''}`;
+        const statusVisual = solicitacao.status_solicitacao === 'aprovado' && !solicitacao.id_evento
+            ? 'removido'
+            : solicitacao.status_solicitacao;
+        card.className = `evento-card status-${statusVisual}${expandido ? ' expandido' : ''}`;
         card.dataset.solicitacaoId = String(solicitacao.id_solicitacao);
 
         const cabecalho = document.createElement('button');
@@ -363,8 +416,9 @@
         const ladoDireito = document.createElement('span');
         ladoDireito.className = 'header-direito';
         const badge = document.createElement('span');
-        badge.className = `badge-solicitacao badge-${solicitacao.status_solicitacao}`;
-        badge.textContent = statusLegivel(solicitacao.status_solicitacao);
+        const eventoRemovido = solicitacao.status_solicitacao === 'aprovado' && !solicitacao.id_evento;
+        badge.className = `badge-solicitacao badge-${eventoRemovido ? 'removido' : solicitacao.status_solicitacao}`;
+        badge.textContent = situacaoSolicitacao(solicitacao);
         const chevron = document.createElement('i');
         chevron.className = `bi ${expandido ? 'bi-chevron-up' : 'bi-chevron-down'} chevron`;
         chevron.setAttribute('aria-hidden', 'true');
@@ -405,42 +459,47 @@
             criarCampo('Data e hora', `${formatarData(solicitacao.data_evento)}${horario}`),
             criarCampo('Solicitado por', `${nomeSolicitante(solicitacao)} · ${solicitacao.email_user}`),
             criarCampo('Enviado em', formatarDataHora(solicitacao.data_solicitacao)),
-            criarCampo('Situação', statusLegivel(solicitacao.status_solicitacao))
+            criarCampo('Situação', situacaoSolicitacao(solicitacao))
         );
         linha.append(colunaEvento, colunaSolicitante);
         corpo.append(linha);
 
         const rodape = document.createElement('div');
         rodape.className = 'evento-footer';
-        const editar = document.createElement('button');
-        editar.type = 'button';
-        editar.className = 'btn-editar';
-        editar.disabled = solicitacao.status_solicitacao !== 'pendente';
-        editar.innerHTML = '<i class="bi bi-pencil" aria-hidden="true"></i> Editar informações';
-        editar.addEventListener('click', () => abrirEdicaoSolicitacao(solicitacao));
-        rodape.append(
-            editar,
-            criarBotaoModeracao(solicitacao, 'aprovado'),
-            criarBotaoModeracao(solicitacao, 'recusado')
-        );
+        if (solicitacao.status_solicitacao === 'pendente') {
+            const editar = document.createElement('button');
+            editar.type = 'button';
+            editar.className = 'btn-editar';
+            editar.innerHTML = '<i class="bi bi-pencil" aria-hidden="true"></i> Editar informações';
+            editar.addEventListener('click', () => abrirEdicaoSolicitacao(solicitacao));
+            rodape.append(
+                editar,
+                criarBotaoModeracao(solicitacao, 'aprovado'),
+                criarBotaoModeracao(solicitacao, 'recusado')
+            );
+        } else if (solicitacao.status_solicitacao === 'aprovado' && solicitacao.id_evento) {
+            const editarEvento = document.createElement('button');
+            editarEvento.type = 'button';
+            editarEvento.className = 'btn-editar';
+            editarEvento.innerHTML = '<i class="bi bi-pencil" aria-hidden="true"></i> Editar evento publicado';
+            editarEvento.addEventListener('click', () => abrirEdicaoEvento(solicitacao));
 
-        if (solicitacao.id_evento) {
-            const verEvento = document.createElement('a');
-            verEvento.className = 'btn-ver-evento';
-            verEvento.href = `detalhesEvento.php?id=${encodeURIComponent(solicitacao.id_evento)}`;
-            verEvento.textContent = 'Ver evento publicado';
-            rodape.prepend(verEvento);
+            const removerEvento = document.createElement('button');
+            removerEvento.type = 'button';
+            removerEvento.className = 'btn-remover-evento';
+            removerEvento.innerHTML = '<i class="bi bi-trash" aria-hidden="true"></i> Remover evento';
+            removerEvento.addEventListener('click', () => removerEventoPublicado(solicitacao));
+            rodape.append(editarEvento, removerEvento);
         }
 
         card.append(cabecalho, corpo, rodape);
         return card;
     }
 
-    function renderizarSolicitacoes() {
-        const filtradas = filtrarSolicitacoes();
+    function renderizarSolicitacoes(adicionar = false, novosItens = solicitacoes) {
         lista.setAttribute('aria-busy', 'false');
 
-        if (filtradas.length === 0) {
+        if (solicitacoes.length === 0) {
             const vazio = document.createElement('div');
             vazio.className = 'estado-solicitacoes';
             vazio.textContent = campoBusca.value.trim()
@@ -450,7 +509,20 @@
             return;
         }
 
-        lista.replaceChildren(...filtradas.map((solicitacao, indice) => criarCard(solicitacao, indice === 0)));
+        if (adicionar) {
+            lista.querySelector('.admin-ver-mais-container')?.remove();
+            lista.append(...novosItens.map((solicitacao) => criarCard(solicitacao, false)));
+            if (temMaisSolicitacoes) {
+                lista.append(criarBotaoVerMais('solicitacoes'));
+            }
+            return;
+        }
+
+        const elementos = solicitacoes.map((solicitacao, indice) => criarCard(solicitacao, indice === 0));
+        if (temMaisSolicitacoes) {
+            elementos.push(criarBotaoVerMais('solicitacoes'));
+        }
+        lista.replaceChildren(...elementos);
     }
 
     function statusDenunciaLegivel(status) {
@@ -465,45 +537,13 @@
         return [nome, sobrenome].filter(Boolean).join(' ') || fallback;
     }
 
-    function atualizarContadoresDenuncias() {
-        const quantidades = {
-            todas: denuncias.length,
-            pendente: denuncias.filter((item) => item.status_denuncia === 'pendente').length,
-            mantido: denuncias.filter((item) => item.status_denuncia === 'mantido').length,
-            removido: denuncias.filter((item) => item.status_denuncia === 'removido').length
-        };
+    function atualizarContadoresDenuncias(quantidades = {}) {
 
         document.getElementById('contadorDenunciasAba').textContent = quantidades.pendente;
         document.getElementById('contadorDenunciasTodas').textContent = quantidades.todas;
         document.getElementById('contadorDenunciasPendentes').textContent = quantidades.pendente;
         document.getElementById('contadorDenunciasMantidas').textContent = quantidades.mantido;
         document.getElementById('contadorDenunciasRemovidas').textContent = quantidades.removido;
-    }
-
-    function filtrarDenuncias() {
-        const termo = normalizarBusca(campoBuscaDenuncia.value.trim());
-
-        return denuncias.filter((denuncia) => {
-            if (filtroDenunciaAtual !== 'todas' && denuncia.status_denuncia !== filtroDenunciaAtual) {
-                return false;
-            }
-
-            if (!termo) {
-                return true;
-            }
-
-            return normalizarBusca([
-                denuncia.texto_post,
-                denuncia.categoria_post,
-                denuncia.motivo,
-                denuncia.comunidade_nome,
-                denuncia.autor_nome,
-                denuncia.autor_sobrenome,
-                denuncia.autor_email,
-                denuncia.denunciante_nome,
-                denuncia.denunciante_sobrenome
-            ].filter(Boolean).join(' ')).includes(termo);
-        });
     }
 
     function criarDetalheDenuncia(rotulo, valor, classe = '') {
@@ -525,10 +565,10 @@
 
         const removendo = acao === 'remover';
         const deveModerar = await window.ShowMeUI.confirmar({
-            titulo: removendo ? 'Remover publicação' : 'Manter publicação',
+            titulo: removendo ? 'Remover conteúdo' : 'Manter conteúdo',
             texto: removendo
-                ? 'A publicação deixará de aparecer na comunidade. O histórico da denúncia será preservado.'
-                : 'A publicação continuará visível e a denúncia será marcada como mantida.',
+                ? 'O conteúdo deixará de aparecer na comunidade. O histórico da denúncia será preservado e as pessoas envolvidas serão notificadas por e-mail.'
+                : 'O conteúdo continuará visível, a denúncia será marcada como mantida e o denunciante será notificado por e-mail.',
             confirmarTexto: removendo ? 'Remover' : 'Manter',
             cancelarTexto: 'Cancelar',
             variante: removendo ? 'destrutiva' : 'importante'
@@ -554,23 +594,14 @@
 
             if (!resposta.ok) {
                 if (resposta.status === 404 || resposta.status === 409) {
-                    await carregarDenuncias(false);
+                    await carregarDenuncias({reiniciar: true, exibirCarregamento: false});
                 }
                 throw new Error(dados.erro || 'Não foi possível moderar a denúncia.');
             }
 
-            denuncias.forEach((item) => {
-                if (Number(item.id_post) === Number(dados.moderacao.id_post)
-                    && item.status_denuncia === 'pendente') {
-                    item.status_denuncia = dados.moderacao.status_denuncia;
-                    item.status_post = dados.moderacao.status_post;
-                    item.data_moderacao = new Date().toISOString();
-                }
-            });
-            atualizarContadoresDenuncias();
-            renderizarDenuncias();
+            await carregarDenuncias({reiniciar: true, exibirCarregamento: false});
             window.ShowMeUI.toast(
-                removendo ? 'Publicação removida.' : 'Publicação mantida.',
+                removendo ? 'Conteúdo removido.' : 'Conteúdo mantido.',
                 {variante: 'sucesso'}
             );
         } catch (erro) {
@@ -624,17 +655,34 @@
         const autorNome = document.createElement('strong');
         autorNome.textContent = nomePessoa(denuncia.autor_nome, denuncia.autor_sobrenome, 'Autor não encontrado');
         const dataPost = document.createElement('time');
-        dataPost.dateTime = denuncia.data_post || '';
-        dataPost.textContent = formatarDataHora(denuncia.data_post);
+        const dataConteudo = denuncia.tipo_alvo === 'midia' ? denuncia.data_midia : denuncia.data_post;
+        dataPost.dateTime = dataConteudo || '';
+        dataPost.textContent = formatarDataHora(dataConteudo);
         autorTexto.append(autorNome, dataPost);
         autor.append(avatar, autorTexto);
         const categoria = document.createElement('span');
         categoria.className = 'denuncia-categoria';
-        categoria.textContent = denuncia.categoria_post || 'Sem categoria';
+        categoria.textContent = denuncia.tipo_alvo === 'midia'
+            ? 'Foto da galeria'
+            : (denuncia.categoria_post || 'Sem categoria');
         const textoPost = document.createElement('p');
         textoPost.className = 'denuncia-texto';
-        textoPost.textContent = denuncia.texto_post;
-        publicacao.append(autor, categoria, textoPost);
+        textoPost.textContent = denuncia.tipo_alvo === 'midia'
+            ? (denuncia.legenda_midia || 'Imagem sem legenda.')
+            : denuncia.texto_post;
+        publicacao.append(autor, categoria);
+        if (denuncia.tipo_alvo === 'midia') {
+            const imagemDenunciada = document.createElement('img');
+            imagemDenunciada.className = 'denuncia-midia-imagem';
+            imagemDenunciada.src = caminhoImagem(denuncia.caminho_midia);
+            imagemDenunciada.alt = denuncia.legenda_midia || 'Foto denunciada da galeria';
+            imagemDenunciada.loading = 'lazy';
+            imagemDenunciada.addEventListener('error', function () {
+                this.src = imagemPadrao;
+            }, {once: true});
+            publicacao.append(imagemDenunciada);
+        }
+        publicacao.append(textoPost);
 
         const detalhes = document.createElement('aside');
         detalhes.className = 'denuncia-detalhes';
@@ -658,12 +706,12 @@
             const manter = document.createElement('button');
             manter.type = 'button';
             manter.className = 'btn-manter-post';
-            manter.innerHTML = '<i class="bi bi-check-circle" aria-hidden="true"></i> Manter publicação';
+            manter.innerHTML = '<i class="bi bi-check-circle" aria-hidden="true"></i> Manter conteúdo';
             manter.addEventListener('click', () => moderarDenuncia(denuncia, 'manter'));
             const remover = document.createElement('button');
             remover.type = 'button';
             remover.className = 'btn-remover-post';
-            remover.innerHTML = '<i class="bi bi-trash" aria-hidden="true"></i> Remover publicação';
+            remover.innerHTML = '<i class="bi bi-trash" aria-hidden="true"></i> Remover conteúdo';
             remover.addEventListener('click', () => moderarDenuncia(denuncia, 'remover'));
             acoes.append(manter, remover);
             card.append(acoes);
@@ -672,11 +720,10 @@
         return card;
     }
 
-    function renderizarDenuncias() {
-        const filtradas = filtrarDenuncias();
+    function renderizarDenuncias(adicionar = false, novosItens = denuncias) {
         listaDenuncias.setAttribute('aria-busy', 'false');
 
-        if (filtradas.length === 0) {
+        if (denuncias.length === 0) {
             const vazio = document.createElement('div');
             vazio.className = 'estado-solicitacoes';
             vazio.textContent = campoBuscaDenuncia.value.trim()
@@ -686,10 +733,56 @@
             return;
         }
 
-        listaDenuncias.replaceChildren(...filtradas.map(criarCardDenuncia));
+        if (adicionar) {
+            listaDenuncias.querySelector('.admin-ver-mais-container')?.remove();
+            listaDenuncias.append(...novosItens.map(criarCardDenuncia));
+            if (temMaisDenuncias) {
+                listaDenuncias.append(criarBotaoVerMais('denuncias'));
+            }
+            return;
+        }
+
+        const elementos = denuncias.map(criarCardDenuncia);
+        if (temMaisDenuncias) {
+            elementos.push(criarBotaoVerMais('denuncias'));
+        }
+        listaDenuncias.replaceChildren(...elementos);
     }
 
-    async function carregarDenuncias(exibirCarregamento = true) {
+    function criarBotaoVerMais(tipo) {
+        const envoltorio = document.createElement('div');
+        envoltorio.className = 'admin-ver-mais-container';
+        const botao = document.createElement('button');
+        botao.type = 'button';
+        botao.className = 'admin-ver-mais';
+        botao.innerHTML = '<i class="bi bi-plus-circle" aria-hidden="true"></i> Ver mais';
+        botao.addEventListener('click', async () => {
+            botao.disabled = true;
+            botao.innerHTML = '<span class="spinner-border spinner-border-sm" aria-hidden="true"></span> Carregando...';
+            if (tipo === 'denuncias') {
+                await carregarDenuncias({reiniciar: false, exibirCarregamento: false});
+            } else {
+                await carregarSolicitacoes({reiniciar: false, exibirCarregamento: false});
+            }
+        });
+        envoltorio.append(botao);
+        return envoltorio;
+    }
+
+    function parametrosListagem(status, offset) {
+        const parametros = new URLSearchParams({
+            status,
+            busca: campoBusca.value.trim(),
+            dias: campoPeriodo.value,
+            limite: String(tamanhoLote),
+            offset: String(offset)
+        });
+        return parametros;
+    }
+
+    async function carregarDenuncias({reiniciar = true, exibirCarregamento = true} = {}) {
+        const sequenciaAtual = ++sequenciaDenuncias;
+        const offset = reiniciar ? 0 : denuncias.length;
         if (exibirCarregamento) {
             listaDenuncias.setAttribute('aria-busy', 'true');
             const carregando = document.createElement('div');
@@ -699,7 +792,8 @@
         }
 
         try {
-            const resposta = await fetch('api/comunidade-denuncias?status=todas', {
+            const parametros = parametrosListagem(filtroDenunciaAtual, offset);
+            const resposta = await fetch(`api/comunidade-denuncias?${parametros}`, {
                 headers: {Accept: 'application/json'}
             });
             const dados = await lerJson(resposta);
@@ -713,11 +807,16 @@
                 throw new Error(dados.erro || 'Não foi possível carregar as denúncias.');
             }
 
-            denuncias = dados.denuncias;
+            if (sequenciaAtual !== sequenciaDenuncias) return;
+
+            const novosItens = dados.denuncias;
+            denuncias = reiniciar ? novosItens : denuncias.concat(novosItens);
+            temMaisDenuncias = Boolean(dados.tem_mais);
             denunciasCarregadas = true;
-            atualizarContadoresDenuncias();
-            renderizarDenuncias();
+            atualizarContadoresDenuncias(dados.contadores);
+            renderizarDenuncias(!reiniciar, novosItens);
         } catch (erro) {
+            if (sequenciaAtual !== sequenciaDenuncias) return;
             listaDenuncias.setAttribute('aria-busy', 'false');
             const falha = document.createElement('div');
             falha.className = 'estado-solicitacoes erro';
@@ -726,7 +825,9 @@
         }
     }
 
-    async function carregarSolicitacoes(exibirCarregamento = true) {
+    async function carregarSolicitacoes({reiniciar = true, exibirCarregamento = true} = {}) {
+        const sequenciaAtual = ++sequenciaSolicitacoes;
+        const offset = reiniciar ? 0 : solicitacoes.length;
         if (exibirCarregamento) {
             lista.setAttribute('aria-busy', 'true');
             const carregando = document.createElement('div');
@@ -736,7 +837,10 @@
         }
 
         try {
-            const resposta = await fetch('api/eventos?solicitacoes=todas', {
+            const parametros = parametrosListagem(filtroAtual, offset);
+            parametros.delete('status');
+            parametros.set('solicitacoes', filtroAtual);
+            const resposta = await fetch(`api/eventos?${parametros}`, {
                 headers: {Accept: 'application/json'}
             });
             const dados = await lerJson(resposta);
@@ -750,10 +854,15 @@
                 throw new Error(dados.erro || 'Não foi possível carregar as solicitações.');
             }
 
-            solicitacoes = dados.solicitacoes;
-            atualizarContadores();
-            renderizarSolicitacoes();
+            if (sequenciaAtual !== sequenciaSolicitacoes) return;
+
+            const novosItens = dados.solicitacoes;
+            solicitacoes = reiniciar ? novosItens : solicitacoes.concat(novosItens);
+            temMaisSolicitacoes = Boolean(dados.tem_mais);
+            atualizarContadores(dados.contadores);
+            renderizarSolicitacoes(!reiniciar, novosItens);
         } catch (erro) {
+            if (sequenciaAtual !== sequenciaSolicitacoes) return;
             lista.setAttribute('aria-busy', 'false');
             const falha = document.createElement('div');
             falha.className = 'estado-solicitacoes erro';
@@ -767,7 +876,7 @@
             document.querySelectorAll('[data-filtro-evento]').forEach((item) => item.classList.remove('ativo'));
             this.classList.add('ativo');
             filtroAtual = this.dataset.filtroEvento;
-            renderizarSolicitacoes();
+            carregarSolicitacoes({reiniciar: true});
         });
     });
 
@@ -776,7 +885,7 @@
             document.querySelectorAll('[data-filtro-denuncia]').forEach((item) => item.classList.remove('ativo'));
             this.classList.add('ativo');
             filtroDenunciaAtual = this.dataset.filtroDenuncia;
-            renderizarDenuncias();
+            carregarDenuncias({reiniciar: true});
         });
     });
 
@@ -800,16 +909,6 @@
             painelDenuncias.classList.toggle('ativa', mostrarDenuncias);
             painelDenuncias.hidden = !mostrarDenuncias;
 
-            if (campoBusca.value.trim()) {
-                if (mostrarDenuncias) {
-                    filtroDenunciaAtual = 'todas';
-                    ativarFiltroBusca('[data-filtro-denuncia]', {chave: 'filtroDenuncia', status: 'todas'});
-                } else {
-                    filtroAtual = 'todas';
-                    ativarFiltroBusca('[data-filtro-evento]', {chave: 'filtroEvento', status: 'todas'});
-                }
-            }
-
             if (mostrarDenuncias && !denunciasCarregadas) {
                 carregarDenuncias();
             } else if (mostrarDenuncias) {
@@ -821,22 +920,16 @@
     });
 
     campoBusca.addEventListener('input', function () {
-        const temBusca = Boolean(campoBusca.value.trim());
-        const painelDenunciasAtivo = !document.getElementById('painelDenunciasAdmin').hidden;
+        window.clearTimeout(temporizadorBusca);
+        temporizadorBusca = window.setTimeout(() => {
+            carregarSolicitacoes({reiniciar: true, exibirCarregamento: false});
+            carregarDenuncias({reiniciar: true, exibirCarregamento: false});
+        }, 300);
+    });
 
-        if (painelDenunciasAtivo) {
-            if (temBusca) {
-                filtroDenunciaAtual = 'todas';
-                ativarFiltroBusca('[data-filtro-denuncia]', {chave: 'filtroDenuncia', status: 'todas'});
-            }
-            renderizarDenuncias();
-        } else {
-            if (temBusca) {
-                filtroAtual = 'todas';
-                ativarFiltroBusca('[data-filtro-evento]', {chave: 'filtroEvento', status: 'todas'});
-            }
-            renderizarSolicitacoes();
-        }
+    campoPeriodo.addEventListener('change', function () {
+        carregarSolicitacoes({reiniciar: true});
+        carregarDenuncias({reiniciar: true});
     });
     formularioEdicao.addEventListener('submit', function (evento) {
         evento.preventDefault();

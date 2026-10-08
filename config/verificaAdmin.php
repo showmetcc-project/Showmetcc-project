@@ -1,8 +1,10 @@
 <?php
 
-require_once __DIR__ . '/verificaLogin.php';
+if (session_status() !== PHP_SESSION_ACTIVE) {
+    session_start();
+}
 
-if (($_SESSION['tipo_usuario'] ?? '') !== 'admin') {
+if (!isset($_SESSION['id_user']) || ($_SESSION['tipo_usuario'] ?? '') !== 'admin') {
     header('Location: loginAdmin.php');
     exit;
 }

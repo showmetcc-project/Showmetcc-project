@@ -30,14 +30,30 @@
     ?>
 
     <main class="container py-4">
-        <label class="busca busca-admin-geral" for="buscaAdmin">
-            <i class="bi bi-search" aria-hidden="true"></i>
-            <input
-                type="search"
-                id="buscaAdmin"
-                placeholder="Buscar evento ou solicitante..."
-                autocomplete="off">
-        </label>
+        <div class="admin-controles-listagem">
+            <label class="busca busca-admin-geral" for="buscaAdmin">
+                <i class="bi bi-search" aria-hidden="true"></i>
+                <input
+                    type="search"
+                    id="buscaAdmin"
+                    placeholder="Buscar evento ou solicitante..."
+                    autocomplete="off">
+            </label>
+            <label class="admin-filtro-periodo" for="filtroPeriodoAdmin">
+                <span>Período</span>
+                <select id="filtroPeriodoAdmin">
+                    <option value="0">Todo o período</option>
+                    <option value="1">Há 1 dia</option>
+                    <option value="7">Há 7 dias</option>
+                    <option value="30">Há 30 dias</option>
+                    <option value="60">Há 60 dias</option>
+                    <option value="90">Há 90 dias</option>
+                    <option value="120">Há 120 dias</option>
+                    <option value="180">Há 180 dias</option>
+                    <option value="365">Há 1 ano</option>
+                </select>
+            </label>
+        </div>
 
         <nav class="admin-abas" role="tablist" aria-label="Áreas de moderação">
             <button
@@ -59,7 +75,7 @@
                 aria-selected="false"
                 aria-controls="painelDenunciasAdmin">
                 <i class="bi bi-flag" aria-hidden="true"></i>
-                Posts denunciados
+                Conteúdos denunciados
                 <span class="admin-aba-contador" id="contadorDenunciasAba">0</span>
             </button>
         </nav>
@@ -69,7 +85,7 @@
                 <div class="header-row">
                     <div>
                         <h2>Eventos enviados</h2>
-                        <p>Revise, corrija, aprove ou reprove os eventos enviados pelos usuários.</p>
+                        <p>Revise solicitações e edite ou remova eventos que já foram publicados.</p>
                     </div>
                 </div>
             </header>
@@ -86,6 +102,9 @@
                 </button>
                 <button type="button" data-filtro-evento="recusado">
                     Reprovados <span id="contadorRecusadas">0</span>
+                </button>
+                <button type="button" data-filtro-evento="removido">
+                    Removidos <span id="contadorRemovidas">0</span>
                 </button>
             </div>
 
@@ -105,13 +124,13 @@
             <header class="header-admin">
                 <div class="header-row">
                     <div>
-                        <h2>Posts denunciados</h2>
-                        <p>Analise o conteúdo denunciado e decida se a publicação permanece ou é removida.</p>
+                        <h2>Conteúdos denunciados</h2>
+                        <p>Analise posts e fotos denunciados e decida se o conteúdo permanece ou é removido.</p>
                     </div>
                 </div>
             </header>
 
-            <div class="admin-filtros" aria-label="Filtrar posts denunciados">
+            <div class="admin-filtros" aria-label="Filtrar conteúdos denunciados">
                 <button type="button" class="ativo" data-filtro-denuncia="pendente">
                     Pendentes <span id="contadorDenunciasPendentes">0</span>
                 </button>
@@ -216,11 +235,11 @@
                                 <label for="descricaoEventoEdicao" class="form-label">Descrição do evento</label>
                                 <textarea class="form-control" id="descricaoEventoEdicao" rows="4" maxlength="1000"></textarea>
                             </div>
-                            <div class="col-12">
+                            <div class="col-12 campo-apenas-solicitacao">
                                 <label for="descricaoArtistaEdicao" class="form-label">Artista / atração</label>
                                 <textarea class="form-control" id="descricaoArtistaEdicao" rows="3" maxlength="1000"></textarea>
                             </div>
-                            <div class="col-12">
+                            <div class="col-12 campo-apenas-solicitacao">
                                 <label for="nomeArtistaSolicitadoEdicao" class="form-label">Nome do artista / atração</label>
                                 <input type="text" class="form-control" id="nomeArtistaSolicitadoEdicao" maxlength="150">
                             </div>

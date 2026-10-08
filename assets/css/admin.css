@@ -155,7 +155,44 @@ body {
 .busca-admin-geral {
     width: 100%;
     min-width: 0;
+    margin: 0;
+}
+
+.admin-controles-listagem {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(180px, 230px);
+    align-items: end;
+    gap: 12px;
     margin-bottom: 22px;
+}
+
+.admin-controles-listagem > *,
+.admin-filtro-periodo {
+    min-width: 0;
+}
+
+.admin-filtro-periodo {
+    display: grid;
+    gap: 5px;
+    color: #cccccc;
+    font-size: .78rem;
+    font-weight: 700;
+}
+
+.admin-filtro-periodo select {
+    width: 100%;
+    min-height: 46px;
+    padding: 9px 36px 9px 12px;
+    border: 1px solid #333333;
+    border-radius: 12px;
+    background: #111111;
+    color: #ffffff;
+}
+
+.admin-filtro-periodo select:focus {
+    border-color: var(--green);
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(0, 255, 0, .12);
 }
 
 /* ==========================
@@ -337,7 +374,8 @@ body {
     box-shadow: 0 0 24px rgba(0, 255, 0, .13);
 }
 
-.evento-card.status-recusado.expandido {
+.evento-card.status-recusado.expandido,
+.evento-card.status-removido.expandido {
     border-color: var(--pink);
     box-shadow: 0 0 24px rgba(255, 0, 110, .13);
 }
@@ -422,7 +460,8 @@ body {
 }
 
 .badge-aprovado { color: var(--green); }
-.badge-recusado { color: var(--pink); }
+.badge-recusado,
+.badge-removido { color: var(--pink); }
 
 .chevron {
     font-size: 1.1rem;
@@ -490,7 +529,8 @@ body {
 .btn-aprovar,
 .btn-reprovar,
 .btn-recusar,
-.btn-ver-evento {
+.btn-ver-evento,
+.btn-remover-evento {
     display: inline-flex;
     align-items: center;
     gap: 7px;
@@ -504,14 +544,17 @@ body {
 }
 
 .btn-editar {
-    background: #1e1e1e;
-    border: 2px solid #333;
+    background: var(--pink);
+    border: 2px solid var(--pink);
     color: #fff;
 }
 
 .btn-editar:hover {
-    border-color: #555;
+    background: var(--pink-hover);
+    border-color: var(--pink-hover);
     color: #fff;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(221, 0, 96, .24);
 }
 
 .btn-aprovar {
@@ -541,6 +584,19 @@ body {
     color: #fff;
 }
 
+.btn-remover-evento {
+    border: 2px solid var(--pink);
+    background: transparent;
+    color: var(--pink);
+}
+
+.btn-remover-evento:hover {
+    background: var(--pink-hover);
+    border-color: var(--pink-hover);
+    color: #ffffff;
+    transform: translateY(-2px);
+}
+
 .btn-ver-evento {
     border: 2px solid #555;
     background: #1e1e1e;
@@ -562,6 +618,49 @@ body {
 
 .lista-solicitacoes {
     min-height: 150px;
+}
+
+.evento-card,
+.denuncia-card {
+    animation: adminEntradaLote .28s ease both;
+}
+
+@keyframes adminEntradaLote {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.admin-ver-mais-container {
+    display: flex;
+    justify-content: center;
+    padding: 8px 0 16px;
+}
+
+.admin-ver-mais {
+    display: inline-flex;
+    min-height: 44px;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 9px 24px;
+    border: 2px solid var(--green);
+    border-radius: 999px;
+    background: #121212;
+    color: var(--green);
+    font-weight: 700;
+    transition: transform .2s ease, background-color .2s ease, color .2s ease;
+}
+
+.admin-ver-mais:hover {
+    background: var(--green);
+    color: #000000;
+    transform: translateY(-2px);
+}
+
+.admin-ver-mais:disabled {
+    cursor: wait;
+    opacity: .7;
+    transform: none;
 }
 
 .lista-denuncias {
@@ -678,6 +777,16 @@ body {
     line-height: 1.65;
     overflow-wrap: anywhere;
     white-space: pre-wrap;
+}
+
+.denuncia-midia-imagem {
+    display: block;
+    width: 100%;
+    max-height: 360px;
+    margin: 0 0 14px;
+    border-radius: 14px;
+    background: #050505;
+    object-fit: contain;
 }
 
 .denuncia-detalhes {
@@ -835,9 +944,17 @@ body {
 }
 
 .btn-modal-salvar {
-    border: 1px solid var(--green);
-    background: var(--green);
-    color: #000000;
+    border: 1px solid var(--pink);
+    background: var(--pink);
+    color: #ffffff;
+}
+
+.btn-modal-salvar:hover {
+    border-color: #dd0060;
+    background: #dd0060;
+    color: #ffffff;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(221, 0, 96, .25);
 }
 
 .btn-modal-salvar:disabled {
@@ -993,7 +1110,7 @@ body {
     .evento-header { flex-direction: column; align-items: flex-start; }
     .header-direito { width: 100%; justify-content: space-between; }
     .evento-footer { flex-direction: column; }
-    .btn-editar, .btn-aprovar, .btn-reprovar, .btn-recusar, .btn-ver-evento { width: 100%; justify-content: center; }
+    .btn-editar, .btn-aprovar, .btn-reprovar, .btn-recusar, .btn-ver-evento, .btn-remover-evento { width: 100%; justify-content: center; }
 
     .evento-body .row > [class*="col-"] {
         width: 100%;
@@ -1023,6 +1140,14 @@ body {
 }
 
 @media (max-width: 575.98px) {
+    .admin-controles-listagem {
+        grid-template-columns: minmax(0, 1fr) minmax(112px, 38%);
+        gap: 8px;
+    }
+
+    .admin-filtro-periodo span { font-size: .7rem; }
+    .admin-filtro-periodo select { padding-right: 24px; font-size: .78rem; }
+
     .evento-header,
     .evento-body,
     .evento-footer {

@@ -358,7 +358,7 @@ if ($metodo === 'GET') {
                  +
                  (SELECT COUNT(*)
                     FROM comunidade_midia cm
-                   WHERE cm.id_usuario = u.id_user)) AS publicacoes_comunidade
+                   WHERE cm.id_usuario = u.id_user AND cm.status_midia = \'ativo\')) AS publicacoes_comunidade
          FROM usuario u
          WHERE u.id_user = ?
          LIMIT 1'

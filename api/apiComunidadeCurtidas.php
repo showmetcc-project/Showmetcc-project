@@ -5,7 +5,7 @@ require_once dirname(__DIR__) . '/config/conexao.php';
 require_once __DIR__ . '/middleware/apiHelper.php';
 require_once __DIR__ . '/middleware/verificaLogin.php';
 
-$idUsuario = exigirLogin();
+$idUsuario = exigirUsuarioComum();
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     responder(['erro' => 'Método não permitido'], 405);
 }

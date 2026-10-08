@@ -337,16 +337,33 @@ curl.exe -i "$BASE/eventos/999999999"
 
 ### GET /eventos?solicitacoes= — listagem administrativa e erro 403
 
-O retorno inclui os dados da solicitação, a foto e o usuário solicitante. Os três
+O retorno inclui os dados da solicitação, a foto e o usuário solicitante. Os cinco
 primeiros comandos exigem a sessão do administrador; o último confirma a proteção.
 
 ```powershell
 curl.exe -i -b $COOKIE_ADMIN "$BASE/eventos/?solicitacoes=pendente"
 curl.exe -i -b $COOKIE_ADMIN "$BASE/eventos/?solicitacoes=aprovado"
 curl.exe -i -b $COOKIE_ADMIN "$BASE/eventos/?solicitacoes=recusado"
+curl.exe -i -b $COOKIE_ADMIN "$BASE/eventos/?solicitacoes=removido"
 curl.exe -i -b $COOKIE_ADMIN "$BASE/eventos/?solicitacoes=todas"
 curl.exe -i -b $COOKIE_COMUM "$BASE/eventos/?solicitacoes=pendente"
 ```
+
+Busca, período e lotes de 10 usados pelo Painel Admin:
+
+```powershell
+curl.exe -i -b $COOKIE_ADMIN -G "$BASE/eventos/" `
+  --data-urlencode "solicitacoes=todas" --data-urlencode "busca=Festival" `
+  --data-urlencode "dias=30" --data-urlencode "limite=10" --data-urlencode "offset=0"
+curl.exe -i -b $COOKIE_ADMIN -G "$BASE/eventos/" `
+  --data-urlencode "solicitacoes=todas" --data-urlencode "busca=Festival" `
+  --data-urlencode "dias=30" --data-urlencode "limite=10" --data-urlencode "offset=10"
+```
+
+Cada resposta deve trazer no máximo 10 itens, `contadores`, `total`, `offset` e
+`tem_mais`. O segundo comando representa o lote injetado ao clicar em **Ver mais**.
+Depois de excluir um evento já aprovado, ele deve deixar o filtro `aprovado` e aparecer
+em `removido`, preservando o histórico da solicitação.
 
 ### POST /eventos — sucesso
 
@@ -361,6 +378,7 @@ curl.exe -i -b $COOKIE_COMUM -X POST "$BASE/eventos/" `
   -F "uf=SP" `
   -F "categoria_evento[]=Música" `
   -F "categoria_evento[]=Show Nacional" `
+  -F "categoria_evento[]=Literatura" `
   -F "link_oficial=https://example.com/festival" `
   -F "data_evento=2026-12-20" `
   -F "horario_evento=20:00" `
@@ -472,6 +490,26 @@ curl.exe -i -b $COOKIE_COMUM -X PUT "$BASE/eventos/ID_SOLICITACAO" `
 
 Os dois primeiros comandos devem retornar `200`; o terceiro deve retornar `403`. Depois de aprovar
 ou recusar a solicitação, repetir `editar_solicitacao` deve retornar `409`.
+
+### PUT e DELETE /eventos/{id_evento} — evento aprovado, ações sensíveis
+
+```powershell
+curl.exe -i -b $COOKIE_ADMIN -X PUT "$BASE/eventos/ID_EVENTO" `
+  -H "Content-Type: application/json" `
+  -d '{"acao":"editar","nome_evento":"Evento publicado corrigido"}'
+
+curl.exe -i -b $COOKIE_COMUM -X PUT "$BASE/eventos/ID_EVENTO" `
+  -H "Content-Type: application/json" `
+  -d '{"acao":"editar","nome_evento":"Tentativa sem permissão"}'
+
+curl.exe -i -b $COOKIE_ADMIN -X DELETE "$BASE/eventos/ID_EVENTO_REMOVER"
+curl.exe -i -b $COOKIE_COMUM -X DELETE "$BASE/eventos/ID_EVENTO"
+```
+
+Espere `200`, `403`, `200` e `403`. No painel, PUT e DELETE devem abrir confirmação
+antes do envio. Com SMTP configurado, confirme que o autor da solicitação original
+recebe o e-mail de edição ou remoção. Indisponibilidade do SMTP não pode reverter
+a alteração no banco.
 
 ### PUT /eventos/{id_solicitacao} — aprovar e recusar com sucesso
 
@@ -825,7 +863,7 @@ curl.exe -i "$BASE/comunidade-posts?evento_id=ID_EVENTO"
 Os dois primeiros retornam `200`; a chamada sem sessão retorna `401`. O resumo separa
 eventos favoritados/planejados em `seus_eventos` e os demais em `todas_comunidades`.
 
-### POST e DELETE /comunidade-posts
+### POST, PUT e DELETE /comunidade-posts
 
 ```powershell
 curl.exe -i -b $COOKIE_COMUM -X POST "$BASE/comunidade-posts" `
@@ -836,11 +874,20 @@ curl.exe -i -b $COOKIE_COMUM -X POST "$BASE/comunidade-posts" `
   -H "Content-Type: application/json" `
   -d '{"id_evento":ID_EVENTO,"categoria":"","texto":"Sem categoria"}'
 
+curl.exe -i -b $COOKIE_COMUM -X PUT "$BASE/comunidade-posts/ID_POST" `
+  -H "Content-Type: application/json" `
+  -d '{"categoria":"Relato","texto":"Texto editado pelo próprio autor."}'
+
 curl.exe -i -b $COOKIE_OUTRO_USUARIO -X DELETE "$BASE/comunidade-posts/ID_POST"
 curl.exe -i -b $COOKIE_COMUM -X DELETE "$BASE/comunidade-posts/ID_POST"
+
+curl.exe -i -b $COOKIE_ADMIN -X POST "$BASE/comunidade-posts" `
+  -H "Content-Type: application/json" `
+  -d '{"id_evento":ID_EVENTO,"categoria":"Dica","texto":"Admin não pode publicar."}'
 ```
 
-Espere `201`, `400`, `403` e `200`, respectivamente.
+Espere `201`, `400`, `200`, `403`, `200` e `403`, respectivamente. O último teste
+confirma que o administrador consegue visualizar a comunidade, mas não interagir nela.
 
 ### POST /comunidade-respostas e /comunidade-curtidas
 
@@ -849,6 +896,13 @@ curl.exe -i -b $COOKIE_COMUM -X POST "$BASE/comunidade-respostas" `
   -H "Content-Type: application/json" `
   -d '{"id_post":ID_POST,"texto":"Obrigado pela dica!"}'
 
+curl.exe -i -b $COOKIE_COMUM -X PUT "$BASE/comunidade-respostas/ID_RESPOSTA" `
+  -H "Content-Type: application/json" `
+  -d '{"texto":"Resposta editada pelo próprio autor."}'
+
+curl.exe -i -b $COOKIE_OUTRO_USUARIO -X DELETE "$BASE/comunidade-respostas/ID_RESPOSTA"
+curl.exe -i -b $COOKIE_COMUM -X DELETE "$BASE/comunidade-respostas/ID_RESPOSTA"
+
 curl.exe -i -b $COOKIE_COMUM -X POST "$BASE/comunidade-curtidas" `
   -H "Content-Type: application/json" -d '{"id_post":ID_POST}'
 curl.exe -i -b $COOKIE_COMUM -X POST "$BASE/comunidade-curtidas" `
@@ -856,6 +910,8 @@ curl.exe -i -b $COOKIE_COMUM -X POST "$BASE/comunidade-curtidas" `
 ```
 
 A segunda chamada de curtida desmarca a primeira sem criar duplicidade.
+Os comandos de resposta devem retornar `201`, `200`, `403` e `200`. Repita POST de
+resposta e POST de curtida com `$COOKIE_ADMIN`; ambos devem retornar `403`.
 
 ### POST /comunidade-midias — foto válida e PHP disfarçado
 
@@ -886,16 +942,26 @@ Confirme também que o último DELETE removeu o arquivo de `assets/uploads/comun
 ```powershell
 curl.exe -i -b $COOKIE_OUTRO_USUARIO -X POST "$BASE/comunidade-denuncias" `
   -H "Content-Type: application/json" `
-  -d '{"id_post":ID_POST,"motivo":"Conteúdo inadequado"}'
+  -d '{"id_post":ID_POST,"motivo":"Conteúdo inapropriado"}'
+
+curl.exe -i -b $COOKIE_OUTRO_USUARIO -X POST "$BASE/comunidade-denuncias" `
+  -H "Content-Type: application/json" `
+  -d '{"id_post":ID_POST,"motivo":"Spam ou publicidade"}'
+
+curl.exe -i -b $COOKIE_OUTRO_USUARIO -X POST "$BASE/comunidade-denuncias" `
+  -H "Content-Type: application/json" `
+  -d '{"id_midia":ID_MIDIA,"motivo":"Informação falsa"}'
 
 curl.exe -i -b $COOKIE_OUTRO_USUARIO -X POST "$BASE/comunidade-denuncias" `
   -H "Content-Type: application/json" `
   -d '{"id_post":ID_POST,"id_midia":ID_MIDIA,"motivo":"Dois alvos"}'
 ```
 
-Espere `201` e confirme a linha em `comunidade_denuncia`; a segunda chamada retorna `400`.
+Espere `201`, `409`, `201` e `400`, respectivamente. O `409` comprova que o mesmo usuário
+não pode denunciar duas vezes a mesma publicação. Confirme no banco que a foto também
+gerou uma linha com `id_midia`, e apenas um dos dois alvos é preenchido por denúncia.
 
-### Moderação administrativa de posts denunciados
+### Moderação administrativa de posts e fotos denunciados
 
 Liste todas as denúncias e filtre as pendentes. Usuário comum deve receber `403`:
 
@@ -905,7 +971,21 @@ curl.exe -i -b $COOKIE_ADMIN "$BASE/comunidade-denuncias?status=pendente"
 curl.exe -i -b $COOKIE_COMUM "$BASE/comunidade-denuncias?status=pendente"
 ```
 
-Mantenha uma publicação e remova outra:
+Busca, período e paginação das duas abas usam os mesmos valores:
+
+```powershell
+curl.exe -i -b $COOKIE_ADMIN -G "$BASE/comunidade-denuncias" `
+  --data-urlencode "status=todas" --data-urlencode "busca=spam" `
+  --data-urlencode "dias=7" --data-urlencode "limite=10" --data-urlencode "offset=0"
+curl.exe -i -b $COOKIE_ADMIN -G "$BASE/comunidade-denuncias" `
+  --data-urlencode "status=todas" --data-urlencode "busca=spam" `
+  --data-urlencode "dias=7" --data-urlencode "limite=10" --data-urlencode "offset=10"
+```
+
+Confirme no JSON os campos `contadores`, `total` e `tem_mais`, e que nenhum item
+anterior ao período selecionado aparece.
+
+Mantenha uma publicação e remova outra publicação ou foto:
 
 ```powershell
 curl.exe -i -b $COOKIE_ADMIN -X PUT "$BASE/comunidade-denuncias/ID_DENUNCIA_MANTER" `
@@ -921,9 +1001,11 @@ curl.exe -i -b $COOKIE_ADMIN "$BASE/comunidade-denuncias?status=removido"
 curl.exe -i -b $COOKIE_COMUM "$BASE/comunidade-posts?evento_id=ID_EVENTO"
 ```
 
-As duas decisões devem responder `200`. A publicação mantida continua no feed; a removida
-deixa de aparecer, mas permanece no histórico administrativo. Repetir a mesma decisão deve
-retornar `409`.
+As duas decisões devem responder `200`. O conteúdo mantido continua visível; o removido
+deixa de aparecer, mas permanece no histórico administrativo. Para uma foto removida,
+confirme também que o arquivo desapareceu de `assets/uploads/comunidade/`. Repetir a mesma
+decisão deve retornar `409`. Com SMTP configurado, confirme o e-mail de resultado ao
+denunciante e, quando houver remoção, o e-mail ao autor do conteúdo.
 
 ### Eventos passados fora da descoberta
 

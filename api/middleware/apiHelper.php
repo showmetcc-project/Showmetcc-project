@@ -192,11 +192,11 @@ function normalizarDenunciaComunidadeApi(array $denuncia): array
     return normalizarRegistroApi(
         $denuncia,
         [
-            'id_denuncia', 'id_post', 'id_denunciante', 'id_admin_moderacao',
+            'id_denuncia', 'id_post', 'id_midia', 'id_denunciante', 'id_admin_moderacao',
             'id_evento', 'id_autor'
         ],
         [],
         [],
-        ['data_denuncia', 'data_moderacao', 'data_post']
+        ['data_denuncia', 'data_moderacao', 'data_post', 'data_midia']
     );
 }

@@ -81,6 +81,19 @@ body.pagina-comunidades, body.pagina-comunidade-evento { background:var(--com-fu
 .modal-denuncia { border-color:var(--com-rosa); }
 .modal-denuncia .modal-header { align-items:flex-start; }
 .modal-denuncia-subtitulo { margin:5px 0 0; color:var(--com-sec); font-size:.9rem; }
+.dialog-denuncia {
+  width:min(520px, calc(100vw - 24px));
+  max-width:none;
+  max-height:calc(100dvh - 24px);
+  margin:auto;
+  padding:0;
+  border:0;
+  background:transparent;
+  color:#fff;
+  overflow:auto;
+}
+.dialog-denuncia::backdrop { background:rgba(0,0,0,.78); }
+.dialog-denuncia .modal-dialog { width:100%; margin:0; }
 .opcoes-denuncia { display:grid; gap:9px; margin:0; padding:0; border:0; }
 .opcoes-denuncia legend { margin-bottom:10px; color:#fff; font-size:1rem; font-weight:700; }
 .opcao-denuncia { position:relative; margin:0 !important; cursor:pointer; }
@@ -131,3 +144,76 @@ body.pagina-comunidades, body.pagina-comunidade-evento { background:var(--com-fu
   .post-respostas { margin-left:10px; padding-left:10px; }
 }
 @media (max-width:420px) { .comunidade-galeria { grid-template-columns:1fr; } }
+
+.comunidade-aviso-somente-leitura {
+  display:flex;
+  align-items:center;
+  gap:10px;
+  margin:0 0 18px;
+  padding:12px 16px;
+  border:1px solid rgba(255,255,255,.18);
+  border-radius:14px;
+  background:#121212;
+  color:#bdbdbd;
+}
+.comunidade-aviso-somente-leitura i { color:var(--com-verde); }
+.resposta-acoes, .form-edicao-acoes { display:flex; flex-wrap:wrap; gap:8px; margin-top:10px; }
+.resposta-acoes button, .form-edicao-acoes button { min-height:40px; padding:8px 13px; border:1px solid #333; border-radius:12px; background:#232323; color:#fff; }
+.acao-editar-comunidade,
+.post-acoes .acao-editar-comunidade,
+.resposta-acoes .acao-editar-comunidade,
+.form-edicao-acoes .acao-editar-comunidade { border-color:var(--com-rosa); background:var(--com-rosa); color:#fff; font-weight:700; }
+.acao-editar-comunidade:hover,
+.post-acoes .acao-editar-comunidade:hover,
+.resposta-acoes .acao-editar-comunidade:hover,
+.form-edicao-acoes .acao-editar-comunidade:hover { border-color:#dd0060; background:#dd0060; color:#fff; transform:translateY(-2px); box-shadow:0 8px 20px rgba(221,0,96,.25); }
+.form-edicao-acoes .acao-salvar-comunidade {
+  border-color:var(--com-verde);
+  background:var(--com-verde);
+  color:#000;
+  font-weight:700;
+}
+.form-edicao-acoes .acao-salvar-comunidade:hover {
+  border-color:#00dd00;
+  background:#00dd00;
+  color:#000;
+  transform:translateY(-2px);
+  box-shadow:0 8px 20px rgba(0,221,0,.22);
+}
+.post-acoes .acao-icone-comunidade,
+.resposta-acoes .acao-icone-comunidade {
+  display:inline-grid;
+  place-items:center;
+  width:44px;
+  min-width:44px;
+  min-height:44px;
+  padding:0;
+  border:1px solid #333;
+  border-radius:50%;
+  background:transparent;
+  color:#aaa;
+  box-shadow:none;
+}
+.post-acoes .acao-icone-comunidade.acao-editar-comunidade,
+.resposta-acoes .acao-icone-comunidade.acao-editar-comunidade {
+  border-color:rgba(255,0,110,.42);
+  background:transparent;
+  color:var(--com-rosa);
+}
+.post-acoes .acao-icone-comunidade:hover,
+.resposta-acoes .acao-icone-comunidade:hover,
+.post-acoes .acao-icone-comunidade.acao-editar-comunidade:hover,
+.resposta-acoes .acao-icone-comunidade.acao-editar-comunidade:hover {
+  border-color:var(--com-rosa);
+  background:rgba(255,0,110,.12);
+  color:var(--com-rosa);
+  transform:none;
+  box-shadow:none;
+}
+.form-edicao-comunidade { display:grid; gap:10px; margin:14px 0; padding:14px; border:1px solid rgba(255,0,110,.45); border-radius:14px; background:#111; }
+.form-edicao-comunidade select,
+.form-edicao-comunidade textarea,
+.form-edicao-comunidade input { width:100%; min-height:44px; padding:11px 13px; border:1px solid #333; border-radius:12px; background:#232323; color:#fff; }
+.form-edicao-comunidade textarea:focus,
+.form-edicao-comunidade input:focus,
+.form-edicao-comunidade select:focus { border-color:var(--com-rosa); outline:none; }

@@ -22,8 +22,6 @@
   <link href="assets/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
   <link href="assets/vendor/bootstrap-icons/bootstrap-icons.css" rel="stylesheet">
   <link href="assets/vendor/aos/aos.css" rel="stylesheet">
-  <link href="assets/vendor/glightbox/css/glightbox.min.css" rel="stylesheet">
-  <link href="assets/vendor/swiper/swiper-bundle.min.css" rel="stylesheet">
 
   <!-- CSS da página -->
   <link href="assets/css/cadastroEvento.css" rel="stylesheet">
@@ -155,6 +153,7 @@
                                 ['valor' => 'Workshop', 'icone' => 'bi-easel2'],
                                 ['valor' => 'Oficina', 'icone' => 'bi-tools'],
                                 ['valor' => 'Gastronômico', 'icone' => 'bi-cup-hot'],
+                                ['valor' => 'Literatura', 'icone' => 'bi-book'],
                             ];
                             foreach ($categoriasEvento as $indice => $categoria):
                                 $idCategoria = 'categoriaEvento' . $indice;

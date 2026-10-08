@@ -112,6 +112,8 @@ if ($metodo === 'GET') {
 }
 
 if ($metodo === 'POST') {
+    $idUsuario = exigirUsuarioComum();
+
     if ($id !== null) {
         responder(['erro' => 'Não informe ID para criar uma publicação'], 400);
     }
@@ -142,7 +144,67 @@ if ($metodo === 'POST') {
     responder(['mensagem' => 'Publicação criada com sucesso', 'id_post' => (int) $idPost], 201);
 }
 
+if ($metodo === 'PUT') {
+    $idUsuario = exigirUsuarioComum();
+
+    if ($id === null) {
+        responder(['erro' => 'Informe o ID da publicação na URL'], 400);
+    }
+
+    $dados = lerJson();
+    $stmt = $conn->prepare(
+        "SELECT id_usuario, categoria, texto
+         FROM comunidade_post
+         WHERE id_post = ? AND status_post = 'ativo'
+         LIMIT 1"
+    );
+    $stmt->bind_param('i', $id);
+    executarStatementApi($stmt);
+    $post = $stmt->get_result()->fetch_assoc();
+    $stmt->close();
+
+    if (!$post) {
+        responder(['erro' => 'Publicação não encontrada'], 404);
+    }
+
+    if ((int) $post['id_usuario'] !== $idUsuario) {
+        responder(['erro' => 'Você só pode editar sua própria publicação'], 403);
+    }
+
+    $categoria = trim((string) ($dados['categoria'] ?? $post['categoria']));
+    $texto = trim((string) ($dados['texto'] ?? $post['texto']));
+
+    if (!in_array($categoria, $categoriasPermitidas, true) || $texto === '') {
+        responder(['erro' => 'Categoria válida e texto são obrigatórios'], 400);
+    }
+
+    if (tamanhoTextoApi($texto) > 5000) {
+        responder(['erro' => 'texto deve ter no máximo 5000 caracteres'], 400);
+    }
+
+    $stmt = $conn->prepare(
+        "UPDATE comunidade_post
+         SET categoria = ?, texto = ?
+         WHERE id_post = ? AND id_usuario = ? AND status_post = 'ativo'"
+    );
+    $stmt->bind_param('ssii', $categoria, $texto, $id, $idUsuario);
+    executarStatementApi($stmt);
+    $stmt->close();
+
+    responder([
+        'mensagem' => 'Publicação atualizada com sucesso',
+        'post' => normalizarPostComunidadeApi([
+            'id_post' => $id,
+            'id_usuario' => $idUsuario,
+            'categoria' => $categoria,
+            'texto' => $texto,
+        ]),
+    ]);
+}
+
 if ($metodo === 'DELETE') {
+    $idUsuario = exigirUsuarioComum();
+
     if ($id === null) {
         responder(['erro' => 'Informe o ID da publicação na URL'], 400);
     }

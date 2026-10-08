@@ -186,58 +186,6 @@ h5, h6 {
 
 
 
-/* PHP Email Form Messages
-------------------------------*/
-.php-email-form .error-message {
-  display: none;
-  background: #df1529;
-  color: #ffffff;
-  text-align: left;
-  padding: 15px;
-  margin-bottom: 24px;
-  font-weight: 600;
-}
-
-.php-email-form .sent-message {
-  display: none;
-  color: #ffffff;
-  background: #059652;
-  text-align: center;
-  padding: 15px;
-  margin-bottom: 24px;
-  font-weight: 600;
-}
-
-.php-email-form .loading {
-  display: none;
-  background: var(--surface-color);
-  text-align: center;
-  padding: 15px;
-  margin-bottom: 24px;
-}
-
-.php-email-form .loading:before {
-  content: "";
-  display: inline-block;
-  border-radius: 50%;
-  width: 24px;
-  height: 24px;
-  margin: 0 10px -6px 0;
-  border: 3px solid var(--accent-color);
-  border-top-color: var(--surface-color);
-  animation: php-email-form-loading 1s linear infinite;
-}
-
-@keyframes php-email-form-loading {
-  0% {
-    transform: rotate(0deg);
-  }
-
-  100% {
-    transform: rotate(360deg);
-  }
-}
-
 /*--------------------------------------------------------------
 # Global Header
 --------------------------------------------------------------*/
@@ -3930,7 +3878,6 @@ body {
 .btn-login,
 .cadastro-btn,
 .btn-enviar,
-.btn-editar,
 .btn-salvar,
 .btn-comprar,
 .btn-detalhes,
@@ -3946,7 +3893,6 @@ body {
 .btn-login:hover,
 .cadastro-btn:hover,
 .btn-enviar:hover,
-.btn-editar:hover,
 .btn-salvar:hover,
 .btn-comprar:hover,
 .btn-detalhes:hover,
@@ -3960,18 +3906,36 @@ body {
   box-shadow: 0 8px 20px rgb(0 221 0 / 24%) !important;
 }
 
-/* No modo de edição do perfil, a ação principal passa a ser rosa. */
-button.btn-editar.salvar-alteracoes {
+/* Edição usa o rosa da marca em todos os contextos. */
+.btn-editar:not(.salvar-alteracoes),
+.botao-editar-planejamento,
+.acao-editar-comunidade:not(.acao-icone-comunidade) {
   background: var(--showme-secondary) !important;
   border-color: var(--showme-secondary) !important;
   color: #ffffff !important;
+  font-weight: 700 !important;
 }
 
-button.btn-editar.salvar-alteracoes:hover {
+.btn-editar:not(.salvar-alteracoes):hover,
+.botao-editar-planejamento:hover,
+.acao-editar-comunidade:not(.acao-icone-comunidade):hover {
   background: var(--showme-secondary-hover) !important;
   border-color: var(--showme-secondary-hover) !important;
   color: #ffffff !important;
   box-shadow: 0 8px 20px rgb(221 0 96 / 28%) !important;
+}
+
+button.btn-editar.salvar-alteracoes {
+  background: var(--showme-primary) !important;
+  border-color: var(--showme-primary) !important;
+  color: #000000 !important;
+}
+
+button.btn-editar.salvar-alteracoes:hover {
+  background: var(--showme-primary-hover) !important;
+  border-color: var(--showme-primary-hover) !important;
+  color: #000000 !important;
+  box-shadow: 0 8px 20px rgb(0 221 0 / 28%) !important;
 }
 
 .btn-planejamento,
@@ -4325,10 +4289,30 @@ body.showme-modal-aberto {
   color: var(--showme-secondary, #ff006e);
 }
 
+.showme-toast-conteudo {
+  min-width: 0;
+}
+
 .showme-toast p {
   margin: 0;
   color: #fff;
   line-height: 1.4;
+}
+
+.showme-toast-acao {
+  display: inline-flex;
+  align-items: center;
+  min-height: 28px;
+  margin-top: 6px;
+  color: var(--showme-primary, #00ff00);
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.showme-toast-acao:hover,
+.showme-toast-acao:focus-visible {
+  color: var(--showme-primary-hover, #00dd00);
 }
 
 .showme-toast-fechar {

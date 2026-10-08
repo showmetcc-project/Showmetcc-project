@@ -6,3 +6,5 @@ Os arquivos desta pasta registram etapas anteriores do TCC e **não descrevem o 
 - `conceitualShowme.xml`: modelo conceitual antigo, preservado apenas como histórico do projeto.
 
 Para o esquema vigente, consulte `assets/banco/showme.sql`. Para o contrato atual da API, consulte `api/swagger.yaml`.
+
+A auditoria do estado vigente está em `docs/auditoriaAtual.md`.

@@ -1,6 +1,7 @@
 <?php
 
-session_start();
+require_once __DIR__ . '/../config/sessao.php';
+iniciarSessaoSegura();
 
 require __DIR__ . '/../config/conexao.php';
 require '../api_spotify/spotify_config.php';

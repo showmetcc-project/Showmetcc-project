@@ -1,4 +1,7 @@
-<?php session_start(); ?>
+<?php
+require_once __DIR__ . '/config/sessao.php';
+iniciarSessaoSegura();
+?>
 <!DOCTYPE html>
 <html lang="pt-br">
 

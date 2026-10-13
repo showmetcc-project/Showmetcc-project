@@ -8,11 +8,13 @@ function responderLogin(array $usuario): void
     $_SESSION['id_user'] = (int) $usuario['id_user'];
     $_SESSION['nome_user'] = $usuario['nome_user'];
     $_SESSION['tipo_usuario'] = $usuario['tipo_usuario'];
+    $tokenCsrf = renovarTokenCsrf();
 
     unset($usuario['senha_user'], $usuario['google_id']);
     responder([
         'mensagem' => 'Login realizado com sucesso',
-        'usuario' => normalizarUsuarioApi($usuario)
+        'usuario' => normalizarUsuarioApi($usuario),
+        'csrf_token' => $tokenCsrf,
     ], 201);
 }
 
@@ -268,7 +270,10 @@ switch ($metodo) {
             responder(['erro' => 'Usuário da sessão não encontrado'], 401);
         }
 
-        responder(['usuario' => normalizarUsuarioApi($usuario)]);
+        responder([
+            'usuario' => normalizarUsuarioApi($usuario),
+            'csrf_token' => obterTokenCsrf(),
+        ]);
 
     case 'POST':
         $dados = lerJson();

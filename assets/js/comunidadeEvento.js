@@ -404,6 +404,7 @@
 
     function denunciarConteudo(alvo) {
         if (usuarioAdmin) return;
+
         alvoDenunciaAtual = alvo;
         const formulario = document.getElementById('formDenuncia');
         formulario.reset();
@@ -411,7 +412,11 @@
         document.getElementById('outroMotivoDenuncia').required = false;
         document.getElementById('btnEnviarDenuncia').disabled = true;
         const modal = document.getElementById('modalDenuncia');
-        if (!modal.open) modal.showModal();
+        if (!modal.open) {
+            modal.showModal();
+        }
+
+        document.getElementById('modalDenunciaTitulo').focus();
     }
 
     async function enviarDenuncia(evento) {
@@ -516,6 +521,7 @@
         }
         if (!usuarioAdmin && Number(midia.id_usuario) !== idUsuario) {
             const denunciar = botao('bi-flag', 'Denunciar');
+            denunciar.classList.add('botao-denunciar-midia');
             denunciar.addEventListener('click', () => denunciarConteudo({id_midia: midia.id_midia}));
             acoes.append(denunciar);
         }
@@ -686,10 +692,18 @@
         formularioDenuncia.addEventListener('submit', enviarDenuncia);
         const modalDenuncia = document.getElementById('modalDenuncia');
         modalDenuncia.querySelectorAll('[data-fechar-denuncia]').forEach((botaoFechar) => {
-            botaoFechar.addEventListener('click', () => modalDenuncia.close('cancelada'));
+            botaoFechar.addEventListener('click', () => {
+                if (modalDenuncia.open) modalDenuncia.close('cancelada');
+            });
         });
         modalDenuncia.addEventListener('click', (evento) => {
-            if (evento.target === modalDenuncia) modalDenuncia.close('cancelada');
+            if (evento.target === modalDenuncia && modalDenuncia.open) {
+                modalDenuncia.close('cancelada');
+            }
+        });
+        modalDenuncia.addEventListener('cancel', (evento) => {
+            evento.preventDefault();
+            if (modalDenuncia.open) modalDenuncia.close('cancelada');
         });
         modalDenuncia.addEventListener('close', () => {
             alvoDenunciaAtual = null;

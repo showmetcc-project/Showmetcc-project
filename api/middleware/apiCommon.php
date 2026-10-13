@@ -3,7 +3,7 @@
 header('Content-Type: application/json; charset=UTF-8');
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
-header('Access-Control-Allow-Headers: Content-Type');
+header('Access-Control-Allow-Headers: Content-Type, X-CSRF-Token');
 
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     http_response_code(200);
@@ -60,6 +60,37 @@ function obterIdApi(): ?int
     return (int) $idInformado;
 }
 
-if (session_status() !== PHP_SESSION_ACTIVE) {
-    session_start();
+require_once dirname(__DIR__, 2) . '/config/sessao.php';
+
+iniciarSessaoSegura();
+
+function obterTokenCsrf(): string
+{
+    if (empty($_SESSION['csrf_token']) || !is_string($_SESSION['csrf_token'])) {
+        $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+    }
+
+    return $_SESSION['csrf_token'];
+}
+
+function renovarTokenCsrf(): string
+{
+    $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+    return $_SESSION['csrf_token'];
+}
+
+function validarTokenCsrf(): void
+{
+    $tokenEnviado = $_SERVER['HTTP_X_CSRF_TOKEN'] ?? '';
+    $tokenSessao = $_SESSION['csrf_token'] ?? '';
+
+    if (!is_string($tokenEnviado) || !is_string($tokenSessao)
+        || $tokenEnviado === '' || $tokenSessao === ''
+        || !hash_equals($tokenSessao, $tokenEnviado)) {
+        responder(['erro' => 'Token CSRF inválido ou ausente.'], 403);
+    }
+}
+
+if (in_array($_SERVER['REQUEST_METHOD'], ['POST', 'PUT', 'DELETE'], true)) {
+    validarTokenCsrf();
 }

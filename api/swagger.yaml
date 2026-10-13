@@ -21,6 +21,23 @@ tags:
   - name: Comunidades
 
 paths:
+  /csrf:
+    get:
+      tags: [Sessões]
+      summary: Retorna o token CSRF da sessão atual
+      responses:
+        '200':
+          description: Token emitido ou reutilizado para a sessão atual
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [csrf_token]
+                properties:
+                  csrf_token:
+                    type: string
+                    description: Envie este valor no cabeçalho X-CSRF-Token em POST, PUT e DELETE.
+
   /sessoes:
     get:
       tags: [Sessões]

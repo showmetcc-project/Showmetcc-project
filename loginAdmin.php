@@ -1,7 +1,6 @@
 <?php
-if (session_status() !== PHP_SESSION_ACTIVE) {
-  session_start();
-}
+require_once __DIR__ . '/config/sessao.php';
+iniciarSessaoSegura();
 ?>
 <!DOCTYPE html>
 <html lang="pt-br">
@@ -92,6 +91,7 @@ if (session_status() !== PHP_SESSION_ACTIVE) {
 
   </main>
 
+  <script src="assets/js/csrf.js"></script>
   <script src="assets/js/main.js"></script>
 
   <script>

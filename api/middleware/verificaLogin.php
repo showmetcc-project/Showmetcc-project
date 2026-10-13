@@ -1,10 +1,10 @@
 <?php
 
+require_once dirname(__DIR__, 2) . '/config/sessao.php';
+
 function exigirLogin(): int
 {
-    if (session_status() !== PHP_SESSION_ACTIVE) {
-        session_start();
-    }
+    iniciarSessaoSegura();
 
     if (!isset($_SESSION['id_user'])) {
         responder(['erro' => 'Autenticação necessária'], 401);

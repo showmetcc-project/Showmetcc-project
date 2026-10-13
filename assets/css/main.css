@@ -241,7 +241,7 @@ h5, h6 {
   height: 44px;
   padding: 0;
   border: 2px solid var(--cabecalho-verde);
-  border-radius: 12px;
+  border-radius: 10px;
   background: #0a0a0a;
   color: var(--cabecalho-verde);
   font-size: 1.35rem;
@@ -317,7 +317,7 @@ h5, h6 {
     padding: 10px 0;
     visibility: hidden;
     border: 1px solid var(--cabecalho-verde);
-    border-radius: 12px;
+    border-radius: 10px;
     background: #0a0a0a;
     opacity: 0;
   }
@@ -728,7 +728,7 @@ h5, h6 {
   padding: 0;
   overflow: visible;
   border: 2px solid var(--showme-primary, #00ff00);
-  border-radius: 20px;
+  border-radius: 15px;
   background: #0a0a0a;
   color: #ffffff;
   box-shadow: 0 22px 70px rgb(0 0 0 / 72%);
@@ -2271,7 +2271,7 @@ section,
 .services .service-item {
   width: 100%;
   border: 0;
-  border-radius: 20px;
+  border-radius: 15px;
   min-height: 200px;
   display: flex;
   flex-direction: column;
@@ -2340,7 +2340,7 @@ body.ods-modal-aberto {
   padding: 0;
   overflow: hidden;
   border: 3px solid var(--ods-cor);
-  border-radius: 20px;
+  border-radius: 15px;
   background: #000000;
   color: #ffffff;
   box-shadow: 0 22px 70px rgba(0, 0, 0, .72);
@@ -2626,7 +2626,7 @@ body.ods-modal-aberto {
 .faq-2 .faq-container .faq-item {
   background: #141414;
   border: 2px solid #00ff00;
-  border-radius: 18px;
+  border-radius: 15px;
   margin-bottom: 12px;
   overflow: hidden;
   position: relative;
@@ -2839,7 +2839,7 @@ body.ods-modal-aberto {
 .login-card{
     background:#000;
     border:3px solid #00ff00;
-    border-radius:18px;
+    border-radius:15px;
     padding:35px;
 }
 
@@ -3076,7 +3076,7 @@ label{
 .login-card{
     background:#000;
     border:3px solid #00ff00;
-    border-radius:18px;
+    border-radius:15px;
     padding:40px;
     max-width:650px;
     margin:auto;
@@ -3225,7 +3225,7 @@ label{
 .cadastro-card{
     background:#000;
     border:3px solid #ff006e;
-    border-radius:22px;
+    border-radius:18px;
     padding:40px;
 }
 
@@ -3537,7 +3537,7 @@ label{
 .card-evento{
     background:#111;
     border:2px solid #00ff00;
-    border-radius:18px;
+    border-radius:15px;
     overflow:hidden;
     position:relative;
     transition:.3s;
@@ -3852,7 +3852,7 @@ body {
 .pagina-admin .evento-card {
   background: var(--showme-surface) !important;
   border: 2px solid var(--showme-primary) !important;
-  border-radius: 18px !important;
+  border-radius: 15px !important;
   color: var(--showme-text);
   font-family: var(--showme-font-family) !important;
 }
@@ -3958,7 +3958,7 @@ button.btn-editar.salvar-alteracoes:hover {
 .origem-rota input {
   background: var(--showme-surface-alt) !important;
   border: 1px solid var(--showme-border) !important;
-  border-radius: 14px !important;
+  border-radius: 5px !important;
   color: var(--showme-text) !important;
 }
 
@@ -3967,8 +3967,9 @@ main form select,
 main form textarea {
   background: var(--showme-surface-alt) !important;
   border: 1px solid var(--showme-border) !important;
-  border-radius: 14px !important;
+  border-radius: 4px !important;
   color: var(--showme-text) !important;
+  padding: 4px;
 }
 
 .form-control:focus,
@@ -4166,7 +4167,7 @@ body.showme-modal-aberto {
   width: min(100%, 480px);
   padding: 28px;
   border: 2px solid var(--showme-secondary, #ff006e);
-  border-radius: 22px;
+  border-radius: 18px;
   background: #000000;
   box-shadow: 0 20px 55px rgb(0 0 0 / 58%);
   color: #fff;
@@ -4209,7 +4210,7 @@ body.showme-modal-aberto {
 .showme-confirmacao-acoes button {
   min-height: 44px;
   padding: 10px 18px;
-  border-radius: 12px;
+  border-radius: 10px;
   font-weight: 700;
   transition: transform .2s ease, box-shadow .2s ease, background .2s ease;
 }
@@ -4268,7 +4269,7 @@ body.showme-modal-aberto {
   min-height: 58px;
   padding: 13px 12px 13px 16px;
   border: 2px solid var(--showme-primary, #00ff00);
-  border-radius: 16px;
+  border-radius: 15px;
   background: #121212;
   box-shadow: 0 12px 34px rgb(0 0 0 / 45%);
   color: #fff;

@@ -405,6 +405,7 @@ $atributosRequerLogin = !$usuarioLogado
   </dialog>
 <?php endif; ?>
 
+<script src="assets/js/csrf.js"></script>
 <?php if ($mostrarBusca && !$buscaComunidadesNavbar): ?>
   <script src="assets/js/buscaEventos.js" defer></script>
 <?php endif; ?>

@@ -968,12 +968,21 @@ body {
     }
 
     .botoes-duplos {
-        flex-direction: column;
+        flex-direction: row;
+        flex-wrap: nowrap;
+        gap: 8px;
     }
 
-    .btn-detalhes,
-    .btn-planejamento {
-        width: 100%;
+    .botoes-duplos .btn-detalhes,
+    .botoes-duplos .btn-planejamento {
+        flex: 1 1 0;
+        min-width: 0;
+        width: auto;
+        min-height: 44px;
+        padding: 8px 10px;
+        font-size: clamp(.75rem, 3.4vw, .9rem);
+        line-height: 1.2;
+        white-space: normal;
     }
 
     .calendario-card {

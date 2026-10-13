@@ -119,43 +119,43 @@ require __DIR__ . '/cabecalho.php';
 </div>
 
 <dialog id="modalDenuncia" class="dialog-denuncia" aria-labelledby="modalDenunciaTitulo">
-  <div class="modal-dialog modal-dialog-centered"><div class="modal-content modal-comunidade modal-denuncia">
-    <div class="modal-header">
+  <form id="formDenuncia" class="dialog-denuncia-conteudo" novalidate>
+    <header class="dialog-denuncia-cabecalho">
       <div>
-        <h2 id="modalDenunciaTitulo" class="modal-title">Denunciar conteúdo</h2>
+        <h2 id="modalDenunciaTitulo" class="modal-title" tabindex="-1">Denunciar conteúdo</h2>
         <p class="modal-denuncia-subtitulo">Selecione o motivo para enviar à equipe de moderação.</p>
       </div>
-      <button type="button" class="btn-close" data-fechar-denuncia aria-label="Fechar"></button>
+      <button type="button" class="dialog-denuncia-fechar" data-fechar-denuncia aria-label="Fechar denúncia">
+        <i class="bi bi-x-lg" aria-hidden="true"></i>
+      </button>
+    </header>
+    <div class="dialog-denuncia-corpo">
+      <fieldset class="opcoes-denuncia">
+        <legend>Motivo da denúncia</legend>
+        <?php foreach ([
+            'Conteúdo inapropriado' => 'bi-exclamation-octagon',
+            'Spam ou publicidade' => 'bi-megaphone',
+            'Informação falsa' => 'bi-shield-exclamation',
+            'Discurso de ódio' => 'bi-chat-square-x',
+            'Outro motivo' => 'bi-three-dots',
+        ] as $motivo => $icone): ?>
+          <label class="opcao-denuncia">
+            <input type="radio" name="motivoDenuncia" value="<?= htmlspecialchars($motivo, ENT_QUOTES, 'UTF-8') ?>" required>
+            <span><i class="bi <?= $icone ?>" aria-hidden="true"></i><?= htmlspecialchars($motivo, ENT_QUOTES, 'UTF-8') ?></span>
+          </label>
+        <?php endforeach; ?>
+      </fieldset>
+      <div id="campoOutroMotivo" class="campo-outro-motivo" hidden>
+        <label for="outroMotivoDenuncia">Descreva o outro motivo</label>
+        <textarea id="outroMotivoDenuncia" rows="3" maxlength="80" placeholder="Explique brevemente o motivo da denúncia"></textarea>
+        <small>Até 80 caracteres.</small>
+      </div>
     </div>
-    <form id="formDenuncia">
-      <div class="modal-body">
-        <fieldset class="opcoes-denuncia">
-          <legend>Motivo da denúncia</legend>
-          <?php foreach ([
-              'Conteúdo inapropriado' => 'bi-exclamation-octagon',
-              'Spam ou publicidade' => 'bi-megaphone',
-              'Informação falsa' => 'bi-shield-exclamation',
-              'Discurso de ódio' => 'bi-chat-square-x',
-              'Outro motivo' => 'bi-three-dots',
-          ] as $motivo => $icone): ?>
-            <label class="opcao-denuncia">
-              <input type="radio" name="motivoDenuncia" value="<?= htmlspecialchars($motivo, ENT_QUOTES, 'UTF-8') ?>" required>
-              <span><i class="bi <?= $icone ?>" aria-hidden="true"></i><?= htmlspecialchars($motivo, ENT_QUOTES, 'UTF-8') ?></span>
-            </label>
-          <?php endforeach; ?>
-        </fieldset>
-        <div id="campoOutroMotivo" class="campo-outro-motivo" hidden>
-          <label for="outroMotivoDenuncia">Descreva o outro motivo</label>
-          <textarea id="outroMotivoDenuncia" rows="3" maxlength="80" placeholder="Explique brevemente o motivo da denúncia"></textarea>
-          <small>Até 80 caracteres.</small>
-        </div>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn-denuncia-cancelar" data-fechar-denuncia>Cancelar</button>
-        <button id="btnEnviarDenuncia" type="submit" class="btn-denuncia-enviar" disabled>Enviar denúncia</button>
-      </div>
-    </form>
-  </div></div>
+    <footer class="dialog-denuncia-rodape">
+      <button type="button" class="btn-denuncia-cancelar" data-fechar-denuncia>Cancelar</button>
+      <button id="btnEnviarDenuncia" type="submit" class="btn-denuncia-enviar" disabled>Enviar denúncia</button>
+    </footer>
+  </form>
 </dialog>
 <?php endif; ?>
 

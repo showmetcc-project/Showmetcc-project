@@ -409,10 +409,6 @@ function salvarImagemRedimensionadaUpload(
     int $alturaDestino,
     int $qualidade = 86
 ): array {
-    if (!extension_loaded('gd')) {
-        throw new RuntimeException('A extensão GD precisa estar habilitada para processar imagens');
-    }
-
     if (!preg_match('/^[a-z0-9_-]+$/', $subpasta)) {
         throw new InvalidArgumentException('Subpasta de upload inválida');
     }
@@ -471,6 +467,44 @@ function salvarImagemRedimensionadaUpload(
         throw new UploadInvalidoException('As dimensões da imagem não são permitidas');
     }
 
+    $diretorioBase = dirname(__DIR__, 2) . DIRECTORY_SEPARATOR . 'assets' . DIRECTORY_SEPARATOR . 'uploads';
+    $diretorioDestino = $diretorioBase . DIRECTORY_SEPARATOR . $subpasta;
+
+    /*
+     * O recorte no navegador já entrega a imagem nas dimensões finais. Em instalações
+     * locais em que o PHP do Apache não carregue GD, preservamos o envio validando
+     * rigorosamente MIME, conteúdo e dimensões exatas antes de mover o arquivo.
+     * Assim, não aceitamos uma imagem crua sem o redimensionamento do servidor.
+     */
+    if (!extension_loaded('gd')) {
+        if ($larguraOrigem !== $larguraDestino || $alturaOrigem !== $alturaDestino) {
+            throw new UploadInvalidoException('Não foi possível processar a imagem. Ajuste o recorte e tente novamente.');
+        }
+
+        if (!is_dir($diretorioDestino) && !mkdir($diretorioDestino, 0755, true) && !is_dir($diretorioDestino)) {
+            throw new RuntimeException('Não foi possível preparar o diretório de upload');
+        }
+
+        $extensoes = [
+            'image/jpeg' => 'jpg',
+            'image/png' => 'png',
+            'image/webp' => 'webp',
+        ];
+        $nomeAleatorio = bin2hex(random_bytes(16)) . '.' . $extensoes[$mime];
+        $destino = $diretorioDestino . DIRECTORY_SEPARATOR . $nomeAleatorio;
+
+        if (!move_uploaded_file($temporario, $destino)) {
+            throw new RuntimeException('Não foi possível salvar a imagem enviada');
+        }
+
+        return [
+            'tipo_midia' => 'foto',
+            'caminho_arquivo' => "assets/uploads/{$subpasta}/{$nomeAleatorio}",
+            'largura' => $larguraDestino,
+            'altura' => $alturaDestino,
+        ];
+    }
+
     $conteudo = @file_get_contents($temporario);
     $origem = $conteudo === false ? false : @imagecreatefromstring($conteudo);
     if ($origem === false) {
@@ -521,9 +555,6 @@ function salvarImagemRedimensionadaUpload(
         imagedestroy($destinoImagem);
         throw new RuntimeException('Não foi possível redimensionar a imagem');
     }
-
-    $diretorioBase = dirname(__DIR__, 2) . DIRECTORY_SEPARATOR . 'assets' . DIRECTORY_SEPARATOR . 'uploads';
-    $diretorioDestino = $diretorioBase . DIRECTORY_SEPARATOR . $subpasta;
 
     if (!is_dir($diretorioDestino) && !mkdir($diretorioDestino, 0755, true) && !is_dir($diretorioDestino)) {
         imagedestroy($destinoImagem);

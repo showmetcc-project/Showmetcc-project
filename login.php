@@ -61,10 +61,6 @@ $googleClientId = is_array($googleConfig) ? trim((string) ($googleConfig['client
                     data-google-success-url="inicio.php"
                     data-google-text="continue_with"></div>
 
-                <a href="api_spotify/spotify_login.php" class="social-btn spotify-btn">
-                    <i class="bi bi-spotify"></i> Continuar com Spotify
-                </a>
-
                 <div class="divider">
                     <span>ou</span>
                 </div>

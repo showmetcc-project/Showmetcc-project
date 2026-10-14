@@ -23,20 +23,6 @@ CREATE TABLE usuario (
     UNIQUE KEY uk_usuario_google (google_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-CREATE TABLE spotify (
-    id_spotify             INT PRIMARY KEY AUTO_INCREMENT,
-    id_user                INT NOT NULL,
-
-    spotify_id              VARCHAR(100),
-
-    artistas_mais_tocados   VARCHAR(255),
-    generos_preferidos      VARCHAR(255),
-
-    FOREIGN KEY (id_user)
-        REFERENCES usuario(id_user)
-        ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
 CREATE TABLE artista (
     id_artista       INT PRIMARY KEY AUTO_INCREMENT,
     nome_artista     VARCHAR(150) NOT NULL,

@@ -2876,9 +2876,17 @@ body.ods-modal-aberto {
   transform: translateY(-2px);
 }
 
-@media (max-width: 767.98px) {
+@media (max-width: 768px) {
   .services .ods-grid {
     gap: 14px;
+  }
+
+  .services .service-item {
+    width: 90%;
+    max-width: min(90%, 280px);
+    flex: 0 1 90%;
+    margin-inline: auto;
+    padding: 12px 10px;
   }
 
   .services .service-item h4 {
@@ -2886,6 +2894,7 @@ body.ods-modal-aberto {
   }
 
   .services .service-item p {
+    margin-top: 6px;
     font-size: 16px;
   }
 }
@@ -3009,23 +3018,33 @@ body.ods-modal-aberto {
   }
 }
 
-@media (max-width: 767.98px) {
+@media (max-width: 768px) {
 
   .work-process-grid {
-    gap: 14px;
+    gap: 12px;
   }
 
   .work-process-grid .steps-item {
+    width: 100%;
+    max-width: min(90%, 360px);
     flex-basis: 100%;
-    max-width: 420px;
+    margin-inline: auto;
   }
 
   .work-process .steps-image {
-    padding: 12px 14px 0;
+    padding: 10px 14px 0;
   }
 
   .work-process .steps-content {
-    padding: 8px 14px 16px;
+    padding: 8px 14px 14px;
+  }
+
+  .work-process .steps-content h3 {
+    margin-bottom: 6px;
+  }
+
+  .work-process .steps-content p {
+    margin-bottom: 10px;
   }
 
   .work-process .icone-etapa {

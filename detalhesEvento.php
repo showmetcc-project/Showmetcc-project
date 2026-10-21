@@ -31,7 +31,7 @@ $idUsuarioSessao = isset($_SESSION['id_user']) ? (int) $_SESSION['id_user'] : 0;
     data-user-id="<?= $idUsuarioSessao ?>">
     <?php
     $tipoCabecalho = 'D';
-    $configuracaoCabecalho = ['fallback' => 'inicio.php'];
+    $configuracaoCabecalho = ['fallback' => 'index.php'];
     require __DIR__ . '/cabecalho.php';
     ?>
 
@@ -43,12 +43,15 @@ $idUsuarioSessao = isset($_SESSION['id_user']) ? (int) $_SESSION['id_user'] : 0;
 
         <div id="conteudoEvento" hidden>
             <div class="banner-evento">
-                <img id="imagemEvento" src="assets/img/bannerEventoPadrao.png" alt="">
+                <img id="imagemEvento" src="assets/img/bannerEventoPadrao.png" alt="Imagem de divulgação do evento">
             </div>
 
             <div class="container conteudo-principal">
-                <span id="badgeGratuidade" class="badge-gratuidade"></span>
-                <span id="badgeEncerrado" class="badge-evento-encerrado" hidden>Evento encerrado</span>
+                <div class="badges-evento-topo">
+                    <span id="badgeGratuidade" class="badge-gratuidade"></span>
+                    <span id="badgeClassificacao" class="selo-classificacao" hidden></span>
+                    <span id="badgeEncerrado" class="badge-evento-encerrado" hidden>Evento encerrado</span>
+                </div>
                 <h1 id="tituloEvento" class="titulo-evento"></h1>
 
                 <div class="infos-rapidas">
@@ -96,7 +99,6 @@ $idUsuarioSessao = isset($_SESSION['id_user']) ? (int) $_SESSION['id_user'] : 0;
                         <aside class="detalhes-lateral-sticky" aria-label="Ações do evento">
                         <div class="acesso-evento-card">
                             <h3>Acesso ao Evento</h3>
-                            <span id="badgeAcessoEvento" class="badge-acesso-evento" hidden></span>
                             <p id="textoAcessoEvento"></p>
                             <a id="linkAcessoEvento" href="#" target="_blank" rel="noopener noreferrer" class="btn-acesso-evento" hidden>
                                 Comprar ingressos

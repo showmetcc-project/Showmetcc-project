@@ -100,28 +100,23 @@ iniciarSessaoSegura();
 
       <div class="container">
 
-        <div class="row gy-4">
+        <div class="ods-grid">
 
-          <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="100">
-            <button type="button" id="ods3" class="service-item ods-card" data-ods-modal="modalOds3" aria-controls="modalOds3" aria-haspopup="dialog">
-              <h4>ODS 3</h4>
-              <p>Saúde e Bem-Estar</p>
-            </button>
-          </div>
+          <button type="button" id="ods3" class="service-item ods-card" data-ods-modal="modalOds3" aria-controls="modalOds3" aria-haspopup="dialog" data-aos="fade-up" data-aos-delay="100">
+            <h4>ODS 3</h4>
+            <p>Saúde e Bem-Estar</p>
+          </button>
 
-          <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="200">
-            <button type="button" id="ods4" class="service-item ods-card" data-ods-modal="modalOds4" aria-controls="modalOds4" aria-haspopup="dialog">
-              <h4>ODS 4</h4>
-              <p>Educação de Qualidade</p>
-            </button>
-          </div>
+          <button type="button" id="ods4" class="service-item ods-card" data-ods-modal="modalOds4" aria-controls="modalOds4" aria-haspopup="dialog" data-aos="fade-up" data-aos-delay="200">
+            <h4>ODS 4</h4>
+            <p>Educação de Qualidade</p>
+          </button>
 
-          <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="300">
-            <button type="button" id="ods10" class="service-item ods-card" data-ods-modal="modalOds10" aria-controls="modalOds10" aria-haspopup="dialog">
-              <h4>ODS 10</h4>
-              <p>Redução das Desigualdades</p>
-            </button>
-          </div>
+          <button type="button" id="ods10" class="service-item ods-card" data-ods-modal="modalOds10" aria-controls="modalOds10" aria-haspopup="dialog" data-aos="fade-up" data-aos-delay="300">
+            <h4>ODS 10</h4>
+            <p>Redução das Desigualdades</p>
+          </button>
+
         </div>
       </div>
 
@@ -171,120 +166,108 @@ iniciarSessaoSegura();
         <h2><span class="verde">Como</span> Funciona</h2>
       </div>
 
-      <div class="container" data-aos="fade-up" data-aos-delay="100">
+      <div class="work-process-grid">
 
-        <div class="row gy-5">
-
-          <div class="col-lg-3 col-md-6" data-aos="fade-up" data-aos-delay="200">
-            <div class="steps-item">
-              <div class="steps-image">
-                <span class="icone-etapa icone-etapa-descubra" role="img" aria-label="Ícone musical"></span>
-              </div>
-              <div class="steps-content">
-                <h3><span class="verde">Descubra Eventos</span></h3>
-                <p>Explore eventos culturais perto de você ou em qualquer lugar do Brasil</p>
-                <div class="steps-features">
-                  <div class="feature-item">
-                    <i class="bi bi-check-circle"></i>
-                    <span>Mais Acessibilidade</span>
-                  </div>
-                  <div class="feature-item">
-                    <i class="bi bi-check-circle"></i>
-                    <span>Eventos Próximos</span>
-                  </div>
-                  <div class="feature-item">
-                    <i class="bi bi-check-circle"></i>
-                    <span>Diversas Categorias</span>
-                  </div>
-                </div>
-              </div>
-            </div><!-- End Steps Item -->
+        <div class="steps-item" data-aos="fade-up" data-aos-delay="200">
+          <div class="steps-image">
+            <span class="icone-etapa icone-etapa-descubra" role="img" aria-label="Ícone musical"></span>
           </div>
-
-          <div class="col-lg-3 col-md-6" data-aos="fade-up" data-aos-delay="300">
-            <div class="steps-item">
-              <div class="steps-image">
-                <span class="icone-etapa icone-etapa-planeje" role="img" aria-label="Ícone de calendário"></span>
+          <div class="steps-content">
+            <h3><span class="verde">Descubra Eventos</span></h3>
+            <p>Explore eventos culturais perto de você ou em qualquer lugar do Brasil</p>
+            <div class="steps-features">
+              <div class="feature-item">
+                <i class="bi bi-check-circle"></i>
+                <span>Mais Acessibilidade</span>
               </div>
-              <div class="steps-content">
-                <h3><span class="rosa"> Planeje Viagens</span></h3>
-                <p>Calcule transporte, hospedagem e organize seu orçamento completo</p>
-                <div class="steps-features">
-                  <div class="feature-item">
-                    <i class="bi bi-check-circle"></i>
-                    <span>Cálculo de Gastos</span>
-                  </div>
-                  <div class="feature-item">
-                    <i class="bi bi-check-circle"></i>
-                    <span>Planejamento Completo</span>
-                  </div>
-                  <div class="feature-item">
-                    <i class="bi bi-check-circle"></i>
-                    <span>Organização Simplificada</span>
-                  </div>
-                </div>
+              <div class="feature-item">
+                <i class="bi bi-check-circle"></i>
+                <span>Eventos Próximos</span>
               </div>
-            </div><!-- End Steps Item -->
+              <div class="feature-item">
+                <i class="bi bi-check-circle"></i>
+                <span>Diversas Categorias</span>
+              </div>
+            </div>
           </div>
+        </div><!-- End Steps Item -->
 
-          <div class="col-lg-3 col-md-6" data-aos="fade-up" data-aos-delay="400">
-            <div class="steps-item">
-              <div class="steps-image">
-                <span class="icone-etapa icone-etapa-rotas" role="img" aria-label="Ícone de localização"></span>
-              </div>
-              <div class="steps-content">
-                <h3><span class="verde"> Rotas e Locais</span> </h3>
-                <p>Veja rotas otimizadas e descubra o melhor caminho até o evento</p>
-                <div class="steps-features">
-                  <div class="feature-item">
-                    <i class="bi bi-check-circle"></i>
-                    <span>Locais Verificados</span>
-                  </div>
-                  <div class="feature-item">
-                    <i class="bi bi-check-circle"></i>
-                    <span>Descubra Locais</span>
-                  </div>
-                  <div class="feature-item">
-                    <i class="bi bi-check-circle"></i>
-                    <span>Locais Recomendados</span>
-                  </div>
-                </div>
-              </div>
-            </div><!-- End Steps Item -->
+        <div class="steps-item" data-aos="fade-up" data-aos-delay="300">
+          <div class="steps-image">
+            <span class="icone-etapa icone-etapa-planeje" role="img" aria-label="Ícone de calendário"></span>
           </div>
-
-          <div class="col-lg-3 col-md-6" data-aos="fade-up" data-aos-delay="400">
-            <div class="steps-item">
-              <div class="steps-image">
-                <span class="icone-etapa icone-etapa-compartilhe" role="img" aria-label="Ícone de pessoas"></span>
+          <div class="steps-content">
+            <h3><span class="rosa">Planeje Viagens</span></h3>
+            <p>Calcule transporte, hospedagem e organize seu orçamento completo</p>
+            <div class="steps-features">
+              <div class="feature-item">
+                <i class="bi bi-check-circle"></i>
+                <span>Cálculo de Gastos</span>
               </div>
-              <div class="steps-content">
-                <h3><span class="rosa">Compartilhe</span></h3>
-                <p>Converse nas comunidades dos eventos e compartilhe suas experiências</p>
-                <div class="steps-features">
-                  <div class="feature-item">
-                    <i class="bi bi-check-circle"></i>
-                    <span>Compartilhamento de Experiências</span>
-                  </div>
-                  <div class="feature-item">
-                    <i class="bi bi-check-circle"></i>
-                    <span>Conversas por evento</span>
-                  </div>
-                  <div class="feature-item">
-                    <i class="bi bi-check-circle"></i>
-                    <span>Comunidade Ativa</span>
-                  </div>
-                </div>
+              <div class="feature-item">
+                <i class="bi bi-check-circle"></i>
+                <span>Planejamento Completo</span>
               </div>
-            </div><!-- End Steps Item -->
+              <div class="feature-item">
+                <i class="bi bi-check-circle"></i>
+                <span>Organização Simplificada</span>
+              </div>
+            </div>
           </div>
+        </div><!-- End Steps Item -->
 
+        <div class="steps-item" data-aos="fade-up" data-aos-delay="400">
+          <div class="steps-image">
+            <span class="icone-etapa icone-etapa-rotas" role="img" aria-label="Ícone de localização"></span>
+          </div>
+          <div class="steps-content">
+            <h3><span class="verde">Rotas e Locais</span></h3>
+            <p>Veja rotas otimizadas e descubra o melhor caminho até o evento</p>
+            <div class="steps-features">
+              <div class="feature-item">
+                <i class="bi bi-check-circle"></i>
+                <span>Locais Verificados</span>
+              </div>
+              <div class="feature-item">
+                <i class="bi bi-check-circle"></i>
+                <span>Descubra Locais</span>
+              </div>
+              <div class="feature-item">
+                <i class="bi bi-check-circle"></i>
+                <span>Locais Recomendados</span>
+              </div>
+            </div>
+          </div>
+        </div><!-- End Steps Item -->
 
-        </div>
+        <div class="steps-item" data-aos="fade-up" data-aos-delay="400">
+          <div class="steps-image">
+            <span class="icone-etapa icone-etapa-compartilhe" role="img" aria-label="Ícone de pessoas"></span>
+          </div>
+          <div class="steps-content">
+            <h3><span class="rosa">Compartilhe</span></h3>
+            <p>Converse nas comunidades dos eventos e compartilhe suas experiências</p>
+            <div class="steps-features">
+              <div class="feature-item">
+                <i class="bi bi-check-circle"></i>
+                <span>Compartilhamento de Experiências</span>
+              </div>
+              <div class="feature-item">
+                <i class="bi bi-check-circle"></i>
+                <span>Conversas por evento</span>
+              </div>
+              <div class="feature-item">
+                <i class="bi bi-check-circle"></i>
+                <span>Comunidade Ativa</span>
+              </div>
+            </div>
+          </div>
+        </div><!-- End Steps Item -->
 
       </div>
 
     </section><!-- /Work Process Section -->
+
 
 
 
@@ -307,9 +290,11 @@ iniciarSessaoSegura();
 
       <div class="container clube-fidelidade-planos">
         <div class="row g-4 justify-content-center">
-          <div class="col-12 col-md-6" data-aos="fade-up" data-aos-delay="100">
+          <div class="col-12 col-lg-6" data-aos="fade-up" data-aos-delay="100">
             <article class="plano-fidelidade plano-mensal">
-              <h3>Plano mensal</h3>
+              <header class="plano-fidelidade-cabecalho">
+                <h3>Plano mensal</h3>
+              </header>
               <p class="plano-fidelidade-subtitulo">Flexibilidade para acompanhar seu ritmo.</p>
 
               <p class="plano-fidelidade-preco">
@@ -327,11 +312,12 @@ iniciarSessaoSegura();
             </article>
           </div>
 
-          <div class="col-12 col-md-6" data-aos="fade-up" data-aos-delay="200">
+          <div class="col-12 col-lg-6" data-aos="fade-up" data-aos-delay="200">
             <article class="plano-fidelidade plano-anual">
-              <span class="plano-fidelidade-badge">Economize R$ 36/ano</span>
-
-              <h3>Plano anual</h3>
+              <header class="plano-fidelidade-cabecalho">
+                <h3>Plano anual</h3>
+                <span class="plano-fidelidade-badge">Economize R$ 36/ano</span>
+              </header>
               <p class="plano-fidelidade-subtitulo">Os mesmos benefícios, por menos.</p>
 
               <p class="plano-fidelidade-preco">

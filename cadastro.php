@@ -60,7 +60,7 @@ $googleClientId = is_array($googleConfig) ? trim((string) ($googleConfig['client
           data-google-client-id="<?= htmlspecialchars($googleClientId, ENT_QUOTES, 'UTF-8') ?>"
           data-google-endpoint="api/sessoes/"
           data-google-error-target="mensagemCadastro"
-          data-google-success-url="inicio.php"
+          data-google-success-url="index.php"
           data-google-text="signup_with"></div>
 
         <div class="divider">
@@ -136,9 +136,18 @@ $googleClientId = is_array($googleConfig) ? trim((string) ($googleConfig['client
                 name="senha"
                 id="senha"
                 minlength="6"
+                autocomplete="new-password"
                 required>
+              <button class="login-alternar-senha cadastro-alternar-senha" type="button" aria-label="Mostrar senha" aria-pressed="false" aria-controls="senha" title="Mostrar senha">
+                <i class="bi bi-eye" aria-hidden="true"></i>
+              </button>
             </div>
 
+          </div>
+
+          <div class="cadastro-termos-consentimento">
+            <input id="aceiteTermos" name="aceiteTermos" type="checkbox" value="1" required>
+            <label for="aceiteTermos">Li e concordo com os <a href="termos.php" target="_blank">Termos de Uso</a></label>
           </div>
 
           <button type="submit" class="cadastro-btn">
@@ -163,41 +172,9 @@ $googleClientId = is_array($googleConfig) ? trim((string) ($googleConfig['client
 
   </main>
 
-  <script>
-    const formCadastro = document.getElementById('formCadastro');
-    const mensagemCadastro = document.getElementById('mensagemCadastro');
-
-    formCadastro.addEventListener('submit', async (evento) => {
-      evento.preventDefault();
-      mensagemCadastro.className = 'alert d-none';
-      const formulario = new FormData(formCadastro);
-
-      try {
-        const resposta = await fetch('api/apiUsuarios.php', {
-          method: 'POST',
-          headers: {'Content-Type': 'application/json'},
-          body: JSON.stringify({
-            nome: formulario.get('nome'),
-            sobrenome: formulario.get('sobrenome'),
-            email: formulario.get('email'),
-            senha: formulario.get('senha')
-          })
-        });
-        const dados = await resposta.json();
-
-        if (!resposta.ok) {
-          throw new Error(dados.erro || 'Não foi possível concluir o cadastro.');
-        }
-
-        window.location.href = 'login.php?sucesso=1';
-      } catch (erro) {
-        mensagemCadastro.textContent = erro.message;
-        mensagemCadastro.className = 'alert alert-danger';
-      }
-    });
-  </script>
-
   <script src="assets/js/csrf.js"></script>
+  <script src="assets/js/cadastro.js" defer></script>
+  <script src="assets/js/loginPasswordToggle.js" defer></script>
   <script src="https://accounts.google.com/gsi/client" async defer></script>
   <script src="assets/js/googleLogin.js" defer></script>
   <script src="assets/js/cabecalho.js" defer></script>

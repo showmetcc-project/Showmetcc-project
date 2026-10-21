@@ -139,8 +139,8 @@ function normalizarPlanejamentoApi(array $planejamento): array
         ['gratuidade', 'hospedagem_necessaria'],
         [
             'distancia_km', 'orcamento_total', 'custo_ingresso',
-            'custo_transporte', 'custo_hospedagem', 'investimento_total',
-            'valor_ingresso_minimo', 'valor_ingresso_maximo'
+            'custo_transporte', 'custo_hospedagem',
+            'investimento_total', 'valor_ingresso_minimo', 'valor_ingresso_maximo'
         ]
     );
 }
@@ -192,7 +192,7 @@ function normalizarDenunciaComunidadeApi(array $denuncia): array
     return normalizarRegistroApi(
         $denuncia,
         [
-            'id_denuncia', 'id_post', 'id_midia', 'id_denunciante', 'id_admin_moderacao',
+            'id_denuncia', 'id_post', 'id_resposta', 'id_midia', 'id_denunciante', 'id_admin_moderacao',
             'id_evento', 'id_autor'
         ],
         [],

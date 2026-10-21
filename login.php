@@ -34,7 +34,7 @@ $googleClientId = is_array($googleConfig) ? trim((string) ($googleConfig['client
 </head>
 
 
-<body class="index-page">
+<body class="index-page login-comum-page">
 
     <a href="institucional.php" class="voltar-home-auth" data-voltar-fallback="institucional.php" aria-label="Voltar para a página anterior" title="Voltar">
         <i class="bi bi-arrow-left"></i>
@@ -58,7 +58,7 @@ $googleClientId = is_array($googleConfig) ? trim((string) ($googleConfig['client
                     data-google-client-id="<?= htmlspecialchars($googleClientId, ENT_QUOTES, 'UTF-8') ?>"
                     data-google-endpoint="api/sessoes/"
                     data-google-error-target="mensagemLogin"
-                    data-google-success-url="inicio.php"
+                    data-google-success-url="index.php"
                     data-google-text="continue_with"></div>
 
                 <div class="divider">
@@ -76,31 +76,22 @@ $googleClientId = is_array($googleConfig) ? trim((string) ($googleConfig['client
                 <form id="formLogin">
 
                     <div class="mb-3">
-                        <label>E-mail</label>
-
-                        <div class="input-group custom-input">
-
-                            <span class="input-group-text">
-                            <i class="bi bi-envelope-fill"></i>
-                        </span>
-
-                            <input type="email" class="form-control" name="email" placeholder="seu@gmail.com" required>
+                        <label for="emailLogin">E-mail</label>
+                        <div class="login-input-box">
+                            <span class="login-input-icone"><i class="bi bi-envelope-fill" aria-hidden="true"></i></span>
+                            <input id="emailLogin" type="email" class="form-control login-input" name="email" placeholder="seu@gmail.com" autocomplete="email" required>
                         </div>
-
                     </div>
 
                     <div class="mb-3">
-                        <label>Senha</label>
-
-                        <div class="input-group custom-input">
-
-                            <span class="input-group-text">
-                            <i class="bi bi-lock-fill"></i>
-                        </span>
-
-                            <input type="password" class="form-control" name="senha" placeholder="••••••••" required>
+                        <label for="senhaLogin">Senha</label>
+                        <div class="login-input-box">
+                            <span class="login-input-icone"><i class="bi bi-lock-fill" aria-hidden="true"></i></span>
+                            <input id="senhaLogin" type="password" class="form-control login-input" name="senha" placeholder="••••••••" autocomplete="current-password" aria-label="Senha" required>
+                            <button class="login-alternar-senha" type="button" aria-label="Mostrar senha" aria-pressed="false" aria-controls="senhaLogin" title="Mostrar senha">
+                                <i class="bi bi-eye" aria-hidden="true"></i>
+                            </button>
                         </div>
-
                     </div>
 
                     <button type="submit" class="btn-login">Entrar</button>
@@ -121,40 +112,9 @@ $googleClientId = is_array($googleConfig) ? trim((string) ($googleConfig['client
         </div>
 
     </main>
-    <script>
-        const formLogin = document.getElementById('formLogin');
-        const mensagemLogin = document.getElementById('mensagemLogin');
-
-        formLogin.addEventListener('submit', async (evento) => {
-            evento.preventDefault();
-            mensagemLogin.className = 'alert d-none';
-
-            const formulario = new FormData(formLogin);
-
-            try {
-                const resposta = await fetch('api/sessoes/', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({
-                        email: formulario.get('email'),
-                        senha: formulario.get('senha')
-                    })
-                });
-                const dados = await resposta.json();
-
-                if (!resposta.ok) {
-                    throw new Error(dados.erro || 'Não foi possível entrar.');
-                }
-
-                window.location.href = 'inicio.php';
-            } catch (erro) {
-                mensagemLogin.textContent = erro.message;
-                mensagemLogin.className = 'alert alert-danger';
-            }
-        });
-    </script>
-
     <script src="assets/js/csrf.js"></script>
+    <script src="assets/js/login.js" defer></script>
+    <script src="assets/js/loginPasswordToggle.js" defer></script>
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     <script src="assets/js/googleLogin.js" defer></script>
     <script src="assets/js/cabecalho.js" defer></script>

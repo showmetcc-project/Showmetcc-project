@@ -105,8 +105,8 @@ switch ($metodo) {
                     (r.custo_ingresso + r.custo_transporte + r.custo_hospedagem) AS investimento_total,
                     e.nome_evento, e.cep_evento, e.endereco_evento,
                     e.numero_endereco, e.cidade_evento, e.uf, e.data_evento, e.horario_evento,
-                    e.imagem_evento, e.gratuidade, e.valor_ingresso_minimo,
-                    e.valor_ingresso_maximo, e.status_evento
+                    e.classificacao_indicativa, e.imagem_evento, e.alt_imagem, e.gratuidade,
+                    e.valor_ingresso_minimo, e.valor_ingresso_maximo, e.status_evento
              FROM rota r
              INNER JOIN evento e ON e.id_evento = r.id_evento
              WHERE r.id_user = ?

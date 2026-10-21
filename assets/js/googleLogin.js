@@ -1,6 +1,8 @@
 (function () {
     'use strict';
 
+    let larguraRenderizada = 0;
+
     function mostrarMensagem(idElemento, texto, tipo) {
         const elemento = document.getElementById(idElemento);
 
@@ -45,7 +47,7 @@
             clientId: recipiente.dataset.googleClientId || '',
             endpoint: recipiente.dataset.googleEndpoint || 'api/sessoes/',
             errorTarget: recipiente.dataset.googleErrorTarget || '',
-            successUrl: recipiente.dataset.googleSuccessUrl || 'inicio.php',
+            successUrl: recipiente.dataset.googleSuccessUrl || 'index.php',
             text: recipiente.dataset.googleText || 'continue_with'
         };
 
@@ -66,17 +68,29 @@
             }
         });
 
-        const larguraBotao = Math.min(recipiente.clientWidth || 320, 400).toString();
+        const desenharBotao = () => {
+            const largura = Math.max(120, Math.min(recipiente.clientWidth || 320, 400));
+            if (largura === larguraRenderizada) return;
 
-        window.google.accounts.id.renderButton(recipiente, {
-            type: 'standard',
-            theme: 'outline',
-            size: 'large',
-            text: configuracao.text,
-            shape: 'rectangular',
-            logo_alignment: 'left',
-            width: larguraBotao
-        });
+            larguraRenderizada = largura;
+            recipiente.replaceChildren();
+            window.google.accounts.id.renderButton(recipiente, {
+                type: 'standard',
+                theme: 'outline',
+                size: 'large',
+                text: configuracao.text,
+                shape: 'rectangular',
+                logo_alignment: 'left',
+                width: String(largura)
+            });
+        };
+
+        desenharBotao();
+        if (typeof ResizeObserver === 'function') {
+            new ResizeObserver(desenharBotao).observe(recipiente);
+        } else {
+            window.addEventListener('resize', desenharBotao);
+        }
     }
 
     window.addEventListener('load', renderizarBotao);

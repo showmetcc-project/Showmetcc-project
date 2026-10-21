@@ -451,14 +451,116 @@
               overflow-wrap: anywhere;
           }
 
-          .campo-valor-planejamento {
-              display: grid;
-              gap: 7px;
-              margin-top: 22px;
+          .gastos-planejamento {
+              margin-top: 8px;
           }
 
-          .campo-valor-planejamento label {
+          .gastos-planejamento h3 {
+              display: flex;
+              align-items: center;
+              gap: 8px;
+              margin: 0 0 14px;
+              color: #fff;
+          }
+
+          .gastos-planejamento h3 i {
+              color: var(--verde);
+          }
+
+          .campos-gastos-planejamento {
+              display: grid;
+              grid-template-columns: minmax(0, 1fr);
+              gap: 16px;
+              margin-top: 16px;
+          }
+
+          .campo-gasto {
+              display: grid;
+              align-content: start;
+              gap: 7px;
+              min-width: 0;
+          }
+
+          .campo-gasto-etapa {
+              width: 100%;
+              max-width: none;
+              margin: 16px 0 4px;
+          }
+
+          .alerta-custo-evento {
+              margin: 6px 0 2px;
+              padding: 10px 12px;
+              font-size: 12px;
+          }
+
+          .campo-gasto label {
               margin: 0;
+          }
+
+          .ajuda-campo {
+              color: #888;
+              font-size: 12px;
+              line-height: 1.45;
+          }
+
+          .campo-gasto input[type="number"]:disabled {
+              opacity: .55;
+              cursor: not-allowed;
+          }
+
+          .opcao-ingresso-gratuito {
+              display: inline-flex;
+              align-items: center;
+              gap: 8px;
+              width: fit-content;
+              margin: 2px 0 0;
+              color: #ccc;
+              font-size: 12px;
+              line-height: 1.35;
+              cursor: pointer;
+          }
+
+          .opcao-ingresso-gratuito input[type="checkbox"] {
+              width: 18px;
+              height: 18px;
+              min-width: 18px;
+              margin: 0;
+              padding: 0;
+              border-radius: 4px;
+              accent-color: var(--verde);
+              cursor: pointer;
+          }
+
+          .resumo-gastos-etapa span {
+              color: #ddd;
+          }
+
+          .resumo-gastos-etapa small {
+              overflow-wrap: anywhere;
+          }
+
+          .etapa > .nota-gastos-planejamento {
+              display: flex;
+              align-items: flex-start;
+              gap: 8px;
+              margin: 14px 0 0;
+              padding: 12px 14px;
+              border-left: 3px solid var(--verde);
+              border-radius: 6px;
+              background: rgba(0, 255, 0, .04);
+              color: #bbb;
+              font-size: 12px;
+              line-height: 1.55;
+          }
+
+          .nota-gastos-planejamento i {
+              flex: 0 0 auto;
+              margin-top: 2px;
+              color: var(--verde);
+          }
+
+          .nota-gastos-planejamento strong {
+              color: #fff;
           }
           /* =========================================================
                BOTÕES PRINCIPAIS
@@ -520,9 +622,9 @@
               display: flex;
               align-items: center;
               justify-content: center;
-              color: #b026ff;
+              color: var(--rosa-hover);
               font-size: 30px;
-              filter: drop-shadow(0 0 5px #b026ff) drop-shadow(0 0 12px #b026ff);
+              filter: drop-shadow(0 0 5px var(--rosa-hover)) drop-shadow(0 0 12px var(--rosa-hover));
           }
           
           .localizacao-box {
@@ -601,43 +703,6 @@
               border-color: #333 !important;
           }
           /* =========================================================
-               INFORMAÇÕES DA ROTA
-               ========================================================= */
-          
-          .informacoes-rota {
-              display: grid;
-              grid-template-columns: repeat(2, 1fr);
-              gap: 12px;
-              margin-top: 15px;
-          }
-          
-          .info-rota {
-              padding: 15px;
-              border-radius: 10px;
-              background: rgba(255, 255, 255, .025);
-              border: 1px solid rgba(255, 255, 255, .08);
-          }
-          
-          .info-rota i {
-              color: var(--verde);
-              font-size: 19px;
-              margin-right: 7px;
-          }
-          
-          .info-rota span {
-              display: block;
-              color: #888;
-              font-size: 11px;
-              margin-top: 7px;
-          }
-          
-          .info-rota strong {
-              display: block;
-              color: #fff;
-              font-size: 15px;
-              margin-top: 3px;
-          }
-          /* =========================================================
                MENSAGEM ROTA
                ========================================================= */
           
@@ -681,6 +746,10 @@
               padding: 10px 0;
               color: #aaa;
               font-size: 13px;
+          }
+
+          .linha-resumo[hidden] {
+              display: none !important;
           }
           
           .linha-resumo span:last-child {
@@ -779,6 +848,7 @@
 
           .acoes-google-agenda {
               display: flex;
+              flex-wrap: wrap;
               align-items: center;
               justify-content: space-between;
               gap: 14px;
@@ -820,9 +890,26 @@
               display: none;
           }
 
+          .acoes-google-agenda a.ver-google-agenda {
+              border: 1px solid rgba(0, 255, 0, .55);
+              background: transparent;
+              color: var(--verde);
+          }
+
+          .acoes-google-agenda a.ver-google-agenda:hover,
+          .acoes-google-agenda a.ver-google-agenda:focus-visible {
+              background: var(--verde);
+              color: #000;
+          }
+
           .modal-conflito-agenda {
+              position: fixed;
+              inset: 0;
               width: min(92vw, 520px);
+              max-height: min(90dvh, 640px);
+              margin: auto;
               padding: 0;
+              overflow-y: auto;
               border: 2px solid var(--rosa);
               border-radius: 20px;
               background: #141414;
@@ -1227,9 +1314,7 @@
               .opcoes {
                   grid-template-columns: 1fr;
               }
-              .informacoes-rota {
-                  grid-template-columns: 1fr;
-              }
+              .campos-gastos-planejamento,
               .campos-rota-planejamento,
               .resultado-hospedagem-grid {
                   grid-template-columns: 1fr;
@@ -1244,4 +1329,10 @@
               .botoes button {
                   width: 100%;
               }
+          }
+
+          /* Elementos exclusivos da versão impressa do resumo. */
+          .rodape-impressao,
+          .nome-evento-poster {
+              display: none;
           }

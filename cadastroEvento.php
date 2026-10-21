@@ -1,4 +1,8 @@
-<?php require_once __DIR__ . '/config/verificaUsuarioComum.php'; ?>
+<?php
+require_once __DIR__ . '/config/verificaUsuarioComum.php';
+require_once __DIR__ . '/config/categoriasEvento.php';
+require_once __DIR__ . '/config/classificacoesIndicativas.php';
+?>
 <!DOCTYPE html>
 <html lang="pt-BR">
 
@@ -39,7 +43,7 @@
         'titulo_primario' => 'Cadastrar',
         'titulo_secundario' => 'Evento',
         'icone' => 'bi-calendar-plus',
-        'fallback' => 'inicio.php',
+        'fallback' => 'index.php',
     ];
     require __DIR__ . '/cabecalho.php';
     ?>
@@ -83,6 +87,23 @@
                 </div>
 
                 <div class="mb-3">
+                    <label class="form-label" for="altImagemEvento">
+                        Texto Alternativo da Imagem (Acessibilidade)
+                    </label>
+                    <input
+                        id="altImagemEvento"
+                        name="alt_imagem"
+                        type="text"
+                        class="form-control"
+                        maxlength="255"
+                        placeholder="Ex: Vocalista da banda cantando no palco sob iluminação azul"
+                        aria-describedby="ajudaAltImagemEvento">
+                    <div id="ajudaAltImagemEvento" class="form-text">
+                        Descreva brevemente a imagem para pessoas com deficiência visual que utilizam leitores de tela.
+                    </div>
+                </div>
+
+                <div class="mb-3">
                     <label class="form-label" for="nomeEvento">Nome do evento <span class="campo-obrigatorio" aria-hidden="true">*</span></label>
 
                     <input
@@ -96,7 +117,7 @@
                 </div>
 
                 <div class="row">
-                    <div class="col-md-4 mb-3">
+                    <div class="col-md-6 mb-3">
                         <label class="form-label" for="cepEvento">
                             CEP <span class="campo-obrigatorio" aria-hidden="true">*</span>
                         </label>
@@ -105,7 +126,7 @@
                             placeholder="00000-000" required>
                     </div>
 
-                    <div class="col-md-8 mb-3">
+                    <div class="col-md-6 mb-3">
                         <label class="form-label" for="numeroEvento">Número</label>
                         <input id="numeroEvento" name="numero_endereco" type="text" class="form-control"
                             maxlength="20" placeholder="Ex: 1000 (opcional)">
@@ -145,16 +166,14 @@
                         <p class="ajuda-categorias">Clique nas categorias que descrevem o evento.</p>
                         <div class="grade-categorias">
                             <?php
-                            $categoriasEvento = [
-                                ['valor' => 'Música', 'icone' => 'bi-music-note-beamed'],
-                                ['valor' => 'Cinema', 'icone' => 'bi-film'],
-                                ['valor' => 'Show Nacional', 'icone' => 'bi-mic'],
-                                ['valor' => 'Show Internacional', 'icone' => 'bi-globe-americas'],
-                                ['valor' => 'Workshop', 'icone' => 'bi-easel2'],
-                                ['valor' => 'Oficina', 'icone' => 'bi-tools'],
-                                ['valor' => 'Gastronômico', 'icone' => 'bi-cup-hot'],
-                                ['valor' => 'Literatura', 'icone' => 'bi-book'],
-                            ];
+                            $iconesCategorias = iconesCategoriasEvento();
+                            $categoriasEvento = array_map(
+                                static fn (string $categoria): array => [
+                                    'valor' => $categoria,
+                                    'icone' => $iconesCategorias[$categoria] ?? 'bi-tag',
+                                ],
+                                categoriasEventoOficiais()
+                            );
                             foreach ($categoriasEvento as $indice => $categoria):
                                 $idCategoria = 'categoriaEvento' . $indice;
                             ?>
@@ -172,16 +191,36 @@
 
                 <div class="row">
 
+                    <div class="col-12 mb-3">
+                        <label class="form-label" for="classificacaoIndicativaEvento">
+                            Classificação indicativa <span class="campo-obrigatorio" aria-hidden="true">*</span>
+                        </label>
+
+                        <select id="classificacaoIndicativaEvento" name="classificacao_indicativa"
+                            class="form-select w-100" required>
+                            <?php foreach (classificacoesIndicativasOficiais() as $classificacao): ?>
+                                <option value="<?= htmlspecialchars($classificacao, ENT_QUOTES, 'UTF-8') ?>"
+                                    <?= $classificacao === classificacaoIndicativaPadrao() ? 'selected' : '' ?>>
+                                    <?= htmlspecialchars($classificacao, ENT_QUOTES, 'UTF-8') ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+
+                </div>
+
+                <div class="row">
+
                     <div class="col-md-6 mb-3">
                         <label class="form-label" for="dataEvento">Data <span class="campo-obrigatorio" aria-hidden="true">*</span></label>
 
-                    <input id="dataEvento" name="data_evento" type="date" class="form-control" required>
+                        <input id="dataEvento" name="data_evento" type="date" class="form-control w-100" required>
                     </div>
 
                     <div class="col-md-6 mb-3">
                         <label class="form-label" for="horarioEvento">Horário <span class="campo-obrigatorio" aria-hidden="true">*</span></label>
 
-                        <input id="horarioEvento" name="horario_evento" type="time" class="form-control" required>
+                        <input id="horarioEvento" name="horario_evento" type="time" class="form-control w-100" required>
                     </div>
 
                 </div>
@@ -237,6 +276,16 @@
                     <label class="form-label" for="nomeArtistaSolicitado">Nome do artista / atração <span class="campo-obrigatorio" aria-hidden="true">*</span></label>
                     <input id="nomeArtistaSolicitado" name="nome_artista_solicitado" type="text"
                         class="form-control" maxlength="150" placeholder="Ex: Banda Exemplo" required>
+                </div>
+
+                <div class="mb-3" id="campoGeneroArtista" hidden>
+                    <label class="form-label" for="generoArtistaSolicitado">Gênero Musical do Artista</label>
+                    <input id="generoArtistaSolicitado" name="genero_artista" type="text"
+                        class="form-control" maxlength="100" placeholder="Ex: MPB, Rock, Sertanejo"
+                        aria-describedby="generoArtistaAjuda" disabled>
+                    <div id="generoArtistaAjuda" class="form-text">
+                        Opcional. Ajuda o ShowMe a recomendar eventos parecidos com os que você curte.
+                    </div>
                 </div>
 
                 <div class="mb-5">

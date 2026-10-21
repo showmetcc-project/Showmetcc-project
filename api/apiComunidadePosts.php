@@ -21,7 +21,8 @@ if ($metodo === 'GET') {
         }
 
         $stmt = $conn->prepare(
-            "SELECT e.id_evento, e.nome_evento, e.imagem_evento, e.data_evento,
+            "SELECT e.id_evento, e.nome_evento, e.imagem_evento, e.alt_imagem,
+                    e.cidade_evento, e.data_evento, e.classificacao_indicativa,
                     (SELECT COUNT(*)
                      FROM comunidade_post cp
                      WHERE cp.id_evento = e.id_evento AND cp.status_post = 'ativo') AS total_posts,
@@ -94,7 +95,8 @@ if ($metodo === 'GET') {
              FROM comunidade_resposta r
              INNER JOIN usuario u ON u.id_user = r.id_usuario
              INNER JOIN comunidade_post p ON p.id_post = r.id_post
-             WHERE p.id_evento = ? AND p.status_post = \'ativo\'
+                         WHERE p.id_evento = ? AND p.status_post = \'ativo\'
+                             AND r.status_resposta = \'ativo\'
              ORDER BY r.data_criacao ASC, r.id_resposta ASC'
         );
         $stmt->bind_param('i', $idEvento);

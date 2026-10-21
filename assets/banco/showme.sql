@@ -62,8 +62,10 @@ CREATE TABLE evento (
     valor_ingresso_minimo DECIMAL(10,2),
     valor_ingresso_maximo DECIMAL(10,2),
     categoria_evento   VARCHAR(255) NOT NULL,
+    classificacao_indicativa VARCHAR(20) NOT NULL DEFAULT 'Livre',
     link_oficial       VARCHAR(255) NOT NULL,
     imagem_evento      VARCHAR(255) NOT NULL,
+    alt_imagem         VARCHAR(255),
     status_evento      ENUM('ativo', 'cancelado') NOT NULL DEFAULT 'ativo',
 
     INDEX idx_evento_data (data_evento),
@@ -165,6 +167,7 @@ CREATE TABLE comunidade_resposta (
     id_post       INT NOT NULL,
     id_usuario    INT NOT NULL,
     texto         TEXT NOT NULL,
+    status_resposta ENUM('ativo', 'removido') NOT NULL DEFAULT 'ativo',
     data_criacao  DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     FOREIGN KEY (id_post) REFERENCES comunidade_post(id_post) ON DELETE CASCADE,
@@ -199,6 +202,7 @@ CREATE TABLE comunidade_midia (
 CREATE TABLE comunidade_denuncia (
     id_denuncia   INT PRIMARY KEY AUTO_INCREMENT,
     id_post       INT NULL,
+    id_resposta   INT NULL,
     id_midia      INT NULL,
     id_usuario    INT NOT NULL,
     motivo        VARCHAR(100) NOT NULL,
@@ -207,15 +211,18 @@ CREATE TABLE comunidade_denuncia (
     data_moderacao DATETIME NULL,
     id_admin_moderacao INT NULL,
     UNIQUE KEY uk_denuncia_post_usuario (id_post, id_usuario),
+    UNIQUE KEY uk_denuncia_resposta_usuario (id_resposta, id_usuario),
     UNIQUE KEY uk_denuncia_midia_usuario (id_midia, id_usuario),
 
     FOREIGN KEY (id_post) REFERENCES comunidade_post(id_post) ON DELETE CASCADE,
+    FOREIGN KEY (id_resposta) REFERENCES comunidade_resposta(id_resposta) ON DELETE CASCADE,
     FOREIGN KEY (id_midia) REFERENCES comunidade_midia(id_midia) ON DELETE CASCADE,
     FOREIGN KEY (id_usuario) REFERENCES usuario(id_user) ON DELETE CASCADE,
     FOREIGN KEY (id_admin_moderacao) REFERENCES usuario(id_user) ON DELETE SET NULL,
     CONSTRAINT chk_comunidade_denuncia_alvo CHECK (
-        (id_post IS NOT NULL AND id_midia IS NULL)
-        OR (id_post IS NULL AND id_midia IS NOT NULL)
+        (id_post IS NOT NULL AND id_resposta IS NULL AND id_midia IS NULL)
+        OR (id_post IS NULL AND id_resposta IS NOT NULL AND id_midia IS NULL)
+        OR (id_post IS NULL AND id_resposta IS NULL AND id_midia IS NOT NULL)
     )
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
@@ -225,6 +232,7 @@ CREATE TABLE solicitacao (
     nome_evento          VARCHAR(100) NOT NULL,
     status_solicitacao   ENUM('pendente', 'aprovado', 'recusado') NOT NULL DEFAULT 'pendente',
     foto                 VARCHAR(255) NOT NULL,
+    alt_imagem           VARCHAR(255),
     horario_evento       TIME NOT NULL,
     data_evento          DATE NOT NULL,
     cep_evento           CHAR(8) NOT NULL,
@@ -234,6 +242,7 @@ CREATE TABLE solicitacao (
     cidade_evento        VARCHAR(100) NOT NULL,
     uf                   CHAR(2) NOT NULL,
     categoria_evento     VARCHAR(255) NOT NULL,
+    classificacao_indicativa VARCHAR(20) NOT NULL DEFAULT 'Livre',
     link_oficial         VARCHAR(255) NOT NULL,
     gratuidade            BOOLEAN NOT NULL DEFAULT FALSE,
     valor_ingresso_minimo DECIMAL(10,2),
@@ -241,6 +250,7 @@ CREATE TABLE solicitacao (
     descricao_evento      VARCHAR(1000) NOT NULL,
     descricao_artista     VARCHAR(1000) NOT NULL,
     nome_artista_solicitado VARCHAR(150) NOT NULL,
+    genero_artista        VARCHAR(100),
     data_solicitacao      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     FOREIGN KEY (id_user)

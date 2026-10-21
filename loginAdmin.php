@@ -33,7 +33,7 @@ iniciarSessaoSegura();
 </head>
 
 
-<body class="index-page com-cabecalho-padrao">
+<body class="index-page login-admin-page">
 
   <a href="institucional.php" class="voltar-home-auth" data-voltar-fallback="institucional.php" aria-label="Voltar para a página anterior" title="Voltar">
     <i class="bi bi-arrow-left" aria-hidden="true"></i>
@@ -57,21 +57,21 @@ iniciarSessaoSegura();
 
           <div class="mb-4">
             <label for="email">E-mail</label>
-
-            <input id="email" name="email" type="email" class="form-control login-input" placeholder="admin@gmail.com" required>
+            <div class="login-input-box">
+              <span class="login-input-icone"><i class="bi bi-envelope-fill" aria-hidden="true"></i></span>
+              <input id="email" name="email" type="email" class="form-control login-input" placeholder="admin@gmail.com" autocomplete="username" required>
+            </div>
           </div>
 
           <div class="mb-4">
             <label for="senha">Senha</label>
-
-            <div class="password-wrapper">
-
-              <input id="senha" name="senha" type="password" class="form-control login-input" placeholder="••••••••" required>
-
-               
-
+            <div class="login-input-box">
+              <span class="login-input-icone"><i class="bi bi-lock-fill" aria-hidden="true"></i></span>
+              <input id="senha" name="senha" type="password" class="form-control login-input" placeholder="••••••••" autocomplete="current-password" aria-label="Senha" required>
+              <button class="login-alternar-senha" type="button" aria-label="Mostrar senha" aria-pressed="false" aria-controls="senha" title="Mostrar senha">
+                <i class="bi bi-eye" aria-hidden="true"></i>
+              </button>
             </div>
-
           </div>
 
           <button type="submit" class="btn-login">
@@ -82,7 +82,7 @@ iniciarSessaoSegura();
 
         <p class="bottom-text">
           Não é administrador?
-          <a href="inicio.php">Voltar para a área do usuário.</a>
+          <a href="login.php">Voltar para a área do usuário.</a>
         </p>
 
       </div>
@@ -92,44 +92,9 @@ iniciarSessaoSegura();
   </main>
 
   <script src="assets/js/csrf.js"></script>
+  <script src="assets/js/loginAdmin.js" defer></script>
+  <script src="assets/js/loginPasswordToggle.js" defer></script>
   <script src="assets/js/main.js"></script>
-
-  <script>
-    const formLoginAdmin = document.getElementById('formLoginAdmin');
-    const mensagemLoginAdmin = document.getElementById('mensagemLoginAdmin');
-
-    formLoginAdmin.addEventListener('submit', async (evento) => {
-      evento.preventDefault();
-      mensagemLoginAdmin.className = 'alert d-none';
-      const formulario = new FormData(formLoginAdmin);
-
-      try {
-        const resposta = await fetch('api/apiSessoes.php', {
-          method: 'POST',
-          headers: {'Content-Type': 'application/json'},
-          body: JSON.stringify({
-            email: formulario.get('email'),
-            senha: formulario.get('senha')
-          })
-        });
-        const dados = await resposta.json();
-
-        if (!resposta.ok) {
-          throw new Error(dados.erro || 'Não foi possível entrar.');
-        }
-
-        if (dados.usuario.tipo_usuario !== 'admin') {
-          await fetch('api/sessoes/', {method: 'DELETE'});
-          throw new Error('Esta conta não possui perfil de administrador.');
-        }
-
-        window.location.href = 'admin.php';
-      } catch (erro) {
-        mensagemLoginAdmin.textContent = erro.message;
-        mensagemLoginAdmin.className = 'alert alert-danger';
-      }
-    });
-  </script>
 
   <script src="assets/js/cabecalho.js" defer></script>
   <?php require_once __DIR__ . '/acessibilidade.php'; ?>

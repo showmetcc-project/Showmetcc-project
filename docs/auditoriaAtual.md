@@ -18,12 +18,12 @@ A antiga funcionalidade de Avaliações foi removida por completo e substituída
 
 Os principais pontos ainda incompletos são:
 
-- dados do Spotify são gravados, mas não influenciam recomendações ou outra parte visível do sistema;
+- a tabela legada `spotify` foi removida; a recomendação personalizada usa favoritos e rotas do usuário;
 - `preferencias` e `evento.num_evento` permanecem no schema sem função atual;
 - o endpoint de excluir conta existe, mas não há controle correspondente no Perfil;
 - faltam proteção CSRF, limitação de tentativas de login e endurecimento explícito dos cookies de sessão;
 - o planejamento depende de serviços externos consultados diretamente pelo navegador;
-- “Recomendados para Você” usa os primeiros eventos retornados pela API, não uma recomendação personalizada ou um campo de destaque;
+- “Recomendados para Você” usa favoritos e rotas para priorizar categorias e gêneros musicais, com a data mais próxima como desempate;
 - o Clube de Fidelidade é apenas uma apresentação institucional, sem assinatura ou cobrança funcional.
 
 ## 2. Arquitetura e organização
@@ -35,7 +35,7 @@ As páginas ficam na raiz e usam PHP principalmente para sessão, includes e con
 | Área | Página | JavaScript principal | Proteção |
 |---|---|---|---|
 | Institucional | `institucional.php` | `main.js`, `odsModais.js`, formulário de contato | Pública |
-| Descoberta/Home | `inicio.php` | `inicio.js`, `buscaEventos.js`, `favoritosToggle.js` | Pública, com ações protegidas |
+| Descoberta/Home | `index.php` | `inicio.js`, `buscaEventos.js` | Pública, com ações protegidas |
 | Login comum | `login.php` | lógica local + `googleLogin.js` | Pública |
 | Login administrativo | `loginAdmin.php` | lógica local | Pública |
 | Cadastro de usuário | `cadastro.php` | `googleLogin.js` | Pública |
@@ -51,8 +51,7 @@ As páginas ficam na raiz e usam PHP principalmente para sessão, includes e con
 Não foi encontrada página normal consultando MySQL diretamente. As exceções fora de `api/` têm justificativa específica:
 
 - `forms/contact.php`: handler JSON de e-mail, sem acesso ao banco;
-- `googleCalendarConectar.php` e `googleCalendarCallback.php`: início/callback OAuth;
-- `api_spotify/spotify_callback.php`: integração legada que ainda consulta o banco diretamente e merece reorganização futura.
+- `googleCalendarConectar.php` e `googleCalendarCallback.php`: início/callback OAuth.
 
 ### 2.2 Camada REST
 
@@ -65,34 +64,33 @@ O `.htaccess` de `api/` publica URLs amigáveis e encaminha para arquivos camelC
 | Eventos | `apiEventos.php` | Descoberta, busca, solicitação, moderação e administração |
 | Favoritos | `apiFavoritos.php` | Lista, inclusão e remoção |
 | Planejamento | `apiPlanejamento.php` | CRUD da tabela `rota` |
-| Google Agenda | `apiGoogleCalendar.php` | Status, desconexão, conflito e exportação |
+| Google Agenda | `apiGoogleCalendar.php` | Status, desconexão, conflito, verificação por data e exportação |
 | Posts | `apiComunidadePosts.php` | Resumo de comunidades e CRUD de publicações |
 | Respostas | `apiComunidadeRespostas.php` | Criação, edição e exclusão de respostas |
 | Curtidas | `apiComunidadeCurtidas.php` | Toggle de curtida |
 | Mídias | `apiComunidadeMidia.php` | Galeria, upload e exclusão |
-| Denúncias | `apiComunidadeDenuncias.php` | Registro, listagem e moderação |
+| Denúncias | `apiComunidadeDenuncias.php` | Registro, listagem e moderação de publicações, respostas e mídias |
 
 `api/middleware/apiCommon.php` centraliza CORS, `OPTIONS`, sessão, leitura JSON, respostas e ID positivo. `apiHelper.php` centraliza execução de statements, limites e normalização de tipos/datas. Os helpers de login/admin separam 401 de 403.
 
 ### 2.3 Banco de dados
 
-O projeto usa um schema único em `assets/banco/showme.sql`, conforme a decisão de não manter migrações separadas.
+O schema base fica em `assets/banco/showme.sql`; ajustes incrementais para ambientes já existentes ficam em `assets/banco/migrar*.sql`.
 
 | Tabela | Uso atual |
 |---|---|
 | `usuario` | Conta, papel, Google, avatar e banner |
-| `solicitacao` | Evento enviado pelo usuário antes da moderação |
-| `evento` | Evento aprovado/publicado |
-| `artista` / `artista_evento` | Artistas associados ao evento |
+| `solicitacao` | Evento enviado pelo usuário antes da moderação (inclui `alt_imagem`) |
+| `evento` | Evento aprovado/publicado (inclui `alt_imagem`) |
+| `artista` / `artista_evento` | Artistas associados ao evento, incluindo gênero musical opcional |
 | `favoritos` | Toggle de evento salvo |
 | `rota` | Planejamento finalizado, custos e deslocamento |
 | `comunidade_post` | Publicações textuais por evento |
-| `comunidade_resposta` | Respostas de um nível |
+| `comunidade_resposta` | Respostas de um nível, com remoção lógica |
 | `comunidade_curtida` | Curtida única por usuário/post |
 | `comunidade_midia` | Fotos da galeria |
-| `comunidade_denuncia` | Denúncia de post ou mídia e decisão administrativa |
+| `comunidade_denuncia` | Denúncia de publicação, resposta ou mídia e decisão administrativa |
 | `google_calendar_token` | Tokens da Agenda por usuário |
-| `spotify` | Dados importados do Spotify, ainda sem consumo funcional posterior |
 | `preferencias` | Sem leitura ou escrita no código atual |
 
 As relações principais usam `ON DELETE CASCADE`. A origem do evento aprovado é preservada por `evento.id_solicitacao_origem`, com FK e `UNIQUE`. `num_evento` não é mais usado para esse vínculo.
@@ -101,7 +99,7 @@ As relações principais usam `ON DELETE CASCADE`. A origem do evento aprovado �
 
 ### 3.1 Entrada pública
 
-O domínio raiz serve `institucional.php` via `DirectoryIndex`. Não existe mais `index.php`.
+O domínio raiz serve `index.php` via `DirectoryIndex`. A página institucional continua disponível em `institucional.php`.
 
 Sem sessão, o visitante pode:
 
@@ -136,6 +134,8 @@ O rodapé aparece atualmente em Home, Institucional e Comunidades. As páginas d
 
 `acessibilidade.php` é carregado pelo cabeçalho compartilhado e diretamente nas três telas de autenticação. Ele reúne VLibras, o bundle local da biblioteca de acessibilidade e os ajustes próprios do ShowMe. O widget oferece tamanho de texto, espaçamento, altura de linha, guia de leitura, inversão, escala de cinza, cursor ampliado, redução de animação, sublinhado e fonte para dislexia.
 
+As imagens de evento têm texto alternativo próprio. O campo opcional `alt_imagem` (VARCHAR(255) em `evento` e `solicitacao`) é preenchido no cadastro do evento e na edição do painel. A API devolve o valor em todas as listagens; cards, carrosséis, busca, detalhes, Meus Eventos, planejamentos e comunidades aplicam `ShowMeA11y.textoAltImagemEvento`, que usa o texto cadastrado e, quando vazio, gera "Imagem de divulgação para o evento [Nome do Evento] - [Cidade]". A migração fica em `assets/banco/migrarAltImagemEvento.sql`.
+
 O Swagger UI foi corretamente mantido sem esses widgets por ser documentação técnica.
 
 ## 4. Design system atual
@@ -155,7 +155,7 @@ Os tokens principais estão no começo de `assets/css/main.css`:
 | Texto | `#ffffff` / `#bdbdbd` | Texto principal/secundário |
 | Admin | `#ffd84f` / `#00d4ff` | Destaques restritos ao painel |
 
-Cores oficiais de Google, Spotify e ODS são tratadas como exceções de marca.
+Cores oficiais de Google e ODS são tratadas como exceções de marca.
 
 A semântica atual é razoavelmente consistente:
 
@@ -195,8 +195,7 @@ O cadastro público sempre grava `tipo_usuario='comum'`. Administradores só exi
 Login comum aceita:
 
 - e-mail e senha com `password_verify`;
-- ID token do Google validado pela biblioteca oficial, com vínculo por `google_id` ou e-mail;
-- Spotify, por um fluxo separado e ainda legado.
+- ID token do Google validado pela biblioteca oficial, com vínculo por `google_id` ou e-mail.
 
 Conta criada somente pelo Google recebe `senha_user=NULL` e o login tradicional devolve mensagem específica. O login regenera o ID da sessão. Logout usa `DELETE /api/sessoes` após confirmação visual.
 
@@ -224,7 +223,7 @@ O Perfil também conecta/desconecta o Google Agenda. O endpoint de excluir a con
 
 1. O usuário abre `cadastroEvento.php`.
 2. Informa CEP; BrasilAPI preenche o endereço e o usuário complementa o número quando existir.
-3. Seleciona uma ou mais categorias, gratuidade/preço, artista, descrições, data/horário, link e foto.
+3. Seleciona uma ou mais categorias, a classificação indicativa (Livre, 6, 10, 12, 14, 16 ou 18 anos), gratuidade/preço, artista, descrições, data/horário, link e foto.
 4. `POST /api/eventos` grava uma `solicitacao` pendente e salva a foto validada.
 5. O admin pesquisa, filtra por período/status e recebe os registros em lotes de 10.
 6. Antes da decisão, o admin pode corrigir a solicitação.
@@ -238,11 +237,11 @@ Eventos ativos futuros aparecem na Home/busca. Eventos passados deixam a descobe
 
 ### 5.4 Busca e Home
 
-A busca considera nome, cidade, categoria e artista com prepared statement e escape dos curingas de `LIKE`. O autocomplete limita resultados; a confirmação troca os carrosséis por um grid dentro da própria Home e atualiza `?busca=` sem navegar para outra página.
+A busca considera nome, cidade, categoria e artista com prepared statement e escape dos curingas de `LIKE`. O autocomplete limita resultados; a confirmação troca os carrosséis por um grid dentro da própria Home e atualiza `?busca=` sem navegar para outra página. O painel de filtros oferece, no mesmo formato do seletor de categorias, um seletor de classificação indicativa com a opção “Qualquer classificação” e os valores oficiais (Livre, 6, 10, 12, 14, 16 e 18 anos). A escolha atualiza tanto o autocomplete quanto o grid da Home e persiste na URL (`?classificacao=12%20anos`); a API também aceita mais de uma classificação separada por vírgula, combinada por OU.
 
-A Home organiza os mesmos eventos em categorias sobrepostas: Música, Perto de Você, Cinema, Workshops, Oficinas, Gastronômicos, Literatura, Shows Internacionais, Shows Nacionais e Em Breve. Apesar do nome, “Perto de Você” ainda procura termos como `local` e `regional` na categoria; não calcula proximidade geográfica do visitante.
+A Home organiza os mesmos eventos em 10 carrosséis: “Em Breve” (eventos a partir de hoje, ordenados pelas datas mais próximas) seguido das 9 categorias oficiais — Música e Shows, Cinema e Audiovisual, Teatro e Dança, Artes Visuais e Exposições, Literatura, Gastronomia, Oficinas e Workshops, Cultura Popular e Regional e Geek e Cultura Pop. A lista canônica fica em `config/categoriasEvento.php` e é a mesma usada no cadastro de eventos, no filtro de busca e no retorno de `/api/eventos?listar_locais=1`.
 
-O banner “Recomendados para Você” usa até os cinco primeiros eventos válidos retornados pela API. Não existe coluna `destaque` nem algoritmo baseado em Spotify, preferências, localização ou histórico. Portanto o nome “Recomendados” ainda representa curadoria cronológica, não personalização.
+O banner “Recomendados para Você” usa até os cinco primeiros eventos válidos retornados pela API. Para usuários logados, `/api/eventos` calcula pesos a partir das categorias e dos gêneros musicais dos eventos favoritados e das rotas salvas, ordena os eventos por esse peso e usa a data mais próxima como desempate. A Home também reordena os carrosséis de categoria conforme os pesos retornados. Usuários deslogados ou sem histórico continuam vendo a ordem cronológica padrão.
 
 ### 5.5 Favoritos e Meus Eventos
 
@@ -258,20 +257,26 @@ Meus Eventos possui abas Favoritos, Planejados e Calendário:
 
 ### 5.6 Planejamento
 
-O planejamento é um fluxo em etapas: orçamento, transporte, rota, hospedagem e resumo.
+O planejamento é um fluxo em etapas: orçamento e custos, transporte, rota, hospedagem e resumo.
 
 Ele persiste em `rota`:
 
 - transporte, origem, distância e tempo;
 - orçamento total;
-- custo de ingresso, transporte e hospedagem;
+- valor do ingresso, transporte e hospedagem;
 - necessidade/nome da hospedagem.
 
-Existe apenas um planejamento por usuário/evento. Custos podem ser zero quando o usuário não precisa daquele item. A tela oferece links externos para transportes, mapas e hospedagem, calcula a rota quando possível e permite entrada manual como fallback.
+A etapa de orçamento define o orçamento planejado total e o ingresso. Transporte e hospedagem têm campos monetários próprios nas etapas correspondentes e são persistidos em `custo_transporte` e `custo_hospedagem`, sem fusão. O campo legado de gastos extras foi removido da interface, da API e do banco; em ambientes que ainda possuem a coluna `custo_outros`, aplique `assets/banco/migrarRemocaoCustoOutrosRota.sql`. O ingresso é pré-preenchido com o valor mínimo oficial, exibe a faixa mínima/máxima quando disponível e só pode ser menor quando "Ingresso gratuito / Cortesia" está marcado; o valor máximo é apenas orientativo e não bloqueia o valor exato pago pelo usuário. O total de gastos é atualizado em tempo real como ingresso + transporte + hospedagem, e o saldo é o orçamento planejado menos esse total. O resumo e a impressão discriminam cada custo.
 
-Finalizar é uma ação confirmada. O toast de criação oferece “Ver meus planejados”; edição não repete esse link. O resumo final pode ser impresso/salvo em PDF com layout branco próprio. Eventos encerrados podem ter o resumo consultado, mas não editado.
+Existe apenas um planejamento por usuário/evento. Custos podem ser zero quando o usuário não precisa daquele item. A tela oferece links externos para transportes, mapas e hospedagem, calcula a rota quando possível e permite entrada manual como fallback. A distância em km é sempre preenchida pelo cálculo da rota, independentemente do meio de transporte escolhido (a distância física é a mesma); o tempo estimado é automático apenas para carro e Uber e permanece manual para ônibus e avião. Os campos monetários de transporte e hospedagem ocupam toda a largura útil do formulário e ficam alinhados à esquerda, como os demais campos.
 
-Com Google Agenda conectado, a API verifica conflito na finalização e permite continuar ou cancelar. Depois é possível exportar uma vez para a agenda. Não existe sincronização contínua.
+Na página de detalhes, o botão de planejamento consulta o planejamento do usuário para o evento. Sem planejamento, ele mantém “Planejar viagem”; com planejamento, muda para “Ver meu planejamento”, usa o mesmo estilo do botão de favoritado (fundo transparente, borda e texto verdes) e abre o resumo/edição existente. Eventos encerrados sem planejamento continuam bloqueados, mas um planejamento já salvo permanece consultável.
+
+Finalizar é uma ação confirmada. O toast de criação oferece “Ver meus planejados”; edição não repete esse link. O resumo final pode ser impresso/salvo em PDF com layout branco próprio, em estilo cartaz urbano preto e branco (`assets/css/impressao.css`): faixa preta no título, seções com bordas fortes, fonte Oswald em caixa alta e checklist manual em “Dicas de Viagem”. Eventos encerrados podem ter o resumo consultado, mas não editado.
+
+Com Google Agenda conectado, a API verifica conflito na finalização e permite continuar ou cancelar. Depois é possível exportar uma vez para a agenda. Não existe sincronização contínua. Ao abrir o planejamento, a tela também abre um modal de aviso quando já existem compromissos na mesma data do evento, considerando os planejamentos do próprio usuário e os eventos da agenda conectada. Compromissos da agenda com o mesmo nome do evento planejado são ignorados, pois representam o próprio evento. Na edição, o `id_rota` é enviado às verificações e o evento determinístico do próprio planejamento é descartado, tanto na checagem por período quanto no aviso da mesma data; só os demais compromissos geram alerta. O modal de conflito usa posicionamento fixo centralizado.
+
+O botão “Adicionar ao Google Agenda” consulta se o evento determinístico já existe ao revisitar o planejamento. Se já foi exportado, o botão de adicionar é ocultado e o resumo exibe apenas o link “Ver no Google Agenda”. O estado não depende mais apenas da ação imediata de exportar.
 
 ### 5.7 Comunidades
 
@@ -340,7 +345,7 @@ Falhas de envio não revertem transações de negócio. Não foi feito envio rea
 4. **Papel em sessão:** o middleware admin confia em `$_SESSION['tipo_usuario']`; rebaixar o usuário no banco não invalida uma sessão já aberta.
 5. **CORS:** `Access-Control-Allow-Origin: *` é adequado ao uso atual na mesma origem, mas não suporta cookies em front separado.
 6. **Serviços externos no cliente:** BrasilAPI, Nominatim, Overpass/OSRM e mapas podem sofrer indisponibilidade, CORS ou limites de uso sem controle do servidor ShowMe.
-7. **Segredos locais:** os arquivos reais de e-mail/Google estão ignorados corretamente, mas `api_spotify/spotify_config.php` ainda segue um padrão legado separado que merece revisão antes de publicar.
+7. **Segredos locais:** os arquivos reais de e-mail/Google estão ignorados corretamente e devem permanecer fora do versionamento.
 
 ## 7. Código ou dados sem função completa
 
@@ -350,12 +355,10 @@ Falhas de envio não revertem transações de negócio. Não foi feito envio rea
 |---|---|---|
 | `evento.num_evento` | Sempre pode voltar `null`; não participa mais do vínculo solicitação→evento | Remover do schema/API após confirmar que nenhuma base externa usa a coluna |
 | `preferencias` | Nenhum PHP/JS lê ou grava a tabela | Implementar preferências reais ou remover |
-| Dados da tabela `spotify` | Callback grava artistas/gêneros, mas Home/API não consome | Integrar à recomendação ou retirar o botão/fluxo |
-| `api_spotify/` | Backend próprio fora do padrão REST, consulta banco diretamente e possui configuração independente | Refatorar para a API ou declarar formalmente como integração legada |
 | Clube de Fidelidade | Cards e preços são somente informativos | Deixar explícito “em breve” ou implementar assinatura/pagamento |
 | `DELETE /api/usuarios/{id}` | Backend completo, sem botão no Perfil | Adicionar ação sensível ou retirar do escopo público documentado |
 | Cancelar evento (`status_evento`) | API aceita edição para `cancelado`; painel não oferece campo específico | Adicionar ação “Cancelar” ou manter como recurso técnico |
-| `artista.genero_artista` / `imagem_artista` | Detalhes exibem se houver, mas aprovação cria apenas o nome | Criar manutenção administrativa ou aceitar preenchimento só via SQL |
+| `artista.imagem_artista` | Detalhes exibem se houver, mas não há fluxo de upload no cadastro | Criar manutenção administrativa ou aceitar preenchimento só via SQL |
 
 ### Não é código morto
 
@@ -398,23 +401,29 @@ A auditoria antiga permanece em `docs/historico/auditoriaBackend.md` justamente 
 ## 9. Evidências desta revisão
 
 - 52/52 arquivos PHP passaram em `php -l`.
-- `/`, `institucional.php`, `inicio.php`, `/api/eventos` e `/api/docs/` responderam HTTP 200.
+- `/`, `index.php`, `institucional.php`, `/api/eventos` e `/api/docs/` responderam HTTP 200.
 - `perfilUsuario.php` sem sessão respondeu 302 para `login.php`.
 - `admin.php` sem sessão respondeu 302 para `loginAdmin.php`.
 - A listagem administrativa foi exercitada com sessão de teste: evento aprovado sem linha correspondente em `evento` apareceu em `removido`, deixou `aprovado` e os contadores permaneceram coerentes.
 - Home foi renderizada em Chrome headless; carrosséis de um, dois e três itens ficaram centralizados.
+- A recomendação foi exercitada com usuário com histórico, usuário sem histórico e visitante; a Home reordenou carrosséis apenas no caso personalizado e manteve a ordem cronológica nos demais.
+- O campo de gênero foi exibido/ocultado dinamicamente no cadastro e no modal administrativo; aprovação e edição gravaram `artista.genero_artista`.
+- O fluxo de planejamento foi exercitado com ingresso, transporte e hospedagem separados; resumo, persistência, edição e PDF em uma única página A4 foram validados.
+- O filtro de classificação foi validado na Home como seletor único com “Qualquer classificação” e na API (`Livre` e `12 anos,14 anos`), com rejeição de valor inválido.
+- O botão de detalhes foi validado com e sem planejamento, e o estado dinâmico do Google Agenda foi exercitado com resposta simulada de evento já exportado, exibindo somente o link.
+- Os campos de transporte/hospedagem foram medidos em largura total alinhados à esquerda, e o modal de conflito foi confirmado no centro exato do viewport.
 - `git diff --check` não apontou erro de whitespace antes do commit funcional.
 
-Não foram executadas ações destrutivas contra a base atual nem chamadas reais a SMTP/OAuth externo durante esta atualização documental.
+A remoção da tabela legada `spotify` foi feita pela migração `assets/banco/migrarRemocaoSpotify.sql` (tabela vazia no ambiente local). Nenhum evento, usuário, favorito ou rota real foi removido; os registros de teste foram apagados ao final.
 
 ## 10. Prioridades recomendadas
 
 1. Implementar CSRF e endurecer cookies de sessão.
-2. Decidir o destino do Spotify e da tabela `preferencias`; hoje não existe recomendação personalizada real.
+2. Decidir o destino da tabela `preferencias`, que continua sem leitura ou escrita no código.
 3. Remover `num_evento` depois da confirmação final de compatibilidade.
 4. Adicionar exclusão de conta à interface ou retirar o caso de uso visível da documentação do produto.
 5. Modularizar `planejamento.php` sem alterar seu comportamento.
-6. Criar uma decisão de produto para “destaque/recomendação” e “perto de você” baseada em dado real.
+6. Evoluir a recomendação com sinais adicionais, como localização e feedback explícito do usuário.
 7. Adicionar manutenção administrativa de artista e ação explícita de cancelar evento, se permanecerem no escopo.
 8. Criar rate limiting para login, contato e denúncias.
 9. Automatizar no CI pelo menos lint PHP e validação do OpenAPI.

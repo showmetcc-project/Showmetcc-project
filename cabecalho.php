@@ -1,4 +1,6 @@
 <?php
+require_once __DIR__ . '/config/classificacoesIndicativas.php';
+
 $usuarioLogado = isset($_SESSION['id_user']);
 $usuarioAdmin = $usuarioLogado && (($_SESSION['tipo_usuario'] ?? '') === 'admin');
 $urlAreaUsuario = $usuarioAdmin ? 'admin.php' : 'perfilUsuario.php';
@@ -34,7 +36,7 @@ $atributosRequerLogin = !$usuarioLogado
 <?php if ($tipoCabecalho === 'C'): ?>
   <?php
   $mostrarVoltar = (bool) ($configuracaoCabecalho['mostrar_voltar'] ?? true);
-  $fallbackVoltar = $escaparCabecalho($configuracaoCabecalho['fallback'] ?? 'inicio.php');
+  $fallbackVoltar = $escaparCabecalho($configuracaoCabecalho['fallback'] ?? 'index.php');
   $iconeCabecalho = trim((string) ($configuracaoCabecalho['icone'] ?? ''));
   $tituloPrimario = $escaparCabecalho($configuracaoCabecalho['titulo_primario'] ?? '');
   $tituloSecundario = $escaparCabecalho($configuracaoCabecalho['titulo_secundario'] ?? '');
@@ -92,7 +94,7 @@ $atributosRequerLogin = !$usuarioLogado
   </header>
 
 <?php elseif ($tipoCabecalho === 'D'): ?>
-  <?php $fallbackVoltar = $escaparCabecalho($configuracaoCabecalho['fallback'] ?? 'inicio.php'); ?>
+  <?php $fallbackVoltar = $escaparCabecalho($configuracaoCabecalho['fallback'] ?? 'index.php'); ?>
   <nav id="header" data-usuario-logado="<?= $usuarioLogado ? '1' : '0' ?>" class="cabecalho-minimo" aria-label="Navegação de retorno">
     <button
       type="button"
@@ -110,7 +112,7 @@ $atributosRequerLogin = !$usuarioLogado
     data-usuario-logado="<?= $usuarioLogado ? '1' : '0' ?>"
     class="header d-flex align-items-center fixed-top <?= $tipoCabecalho === 'A' ? 'cabecalho-home' : 'cabecalho-institucional' ?>">
     <div class="container-fluid container-xl position-relative cabecalho-navbar-conteudo">
-      <a href="<?= $usuarioLogado ? 'inicio.php' : 'institucional.php' ?>" class="logo d-flex align-items-center" aria-label="ShowMe - página inicial">
+      <a href="<?= $usuarioLogado ? 'index.php' : 'institucional.php' ?>" class="logo d-flex align-items-center" aria-label="ShowMe - página inicial">
         <img src="assets/img/showme.png" alt="ShowMe">
       </a>
 
@@ -127,44 +129,107 @@ $atributosRequerLogin = !$usuarioLogado
           </button>
 
           <div class="cabecalho-busca-area collapse" id="buscaCabecalhoArea">
+            <div class="busca-flutuante-backdrop d-none" data-backdrop-busca></div>
             <form
               class="busca-cabecalho<?= $buscaComunidadesNavbar ? ' busca-comunidades-navbar' : '' ?>"
-              <?= $buscaComunidadesNavbar ? '' : 'action="inicio.php" method="get"' ?>
+              <?= $buscaComunidadesNavbar ? '' : 'action="index.php" method="get"' ?>
               role="search"
               <?= $buscaComunidadesNavbar ? 'novalidate' : '' ?>>
-              <div class="busca-cabecalho-campo">
-                <input
-                  id="<?= $buscaComunidadesNavbar ? 'buscaComunidades' : 'buscaCabecalho' ?>"
-                  <?= $buscaComunidadesNavbar ? '' : 'name="busca"' ?>
-                  type="search"
-                  value="<?= $buscaComunidadesNavbar ? '' : $termoBuscaCabecalho ?>"
-                  placeholder="<?= $buscaComunidadesNavbar ? 'Buscar comunidades por evento...' : 'Buscar eventos...' ?>"
-                  aria-label="<?= $buscaComunidadesNavbar ? 'Buscar comunidades por nome do evento' : 'Buscar eventos por nome, cidade, categoria ou artista' ?>"
-                  <?= $buscaComunidadesNavbar ? '' : 'aria-controls="sugestoesBusca" aria-autocomplete="list"' ?>
-                  autocomplete="off"
-                  spellcheck="false"
-                >
-                <button
-                  type="button"
-                  class="busca-cabecalho-limpar"
-                  data-limpar-busca
-                  aria-label="Limpar busca"
-                  hidden>
-                  <i class="bi bi-x-lg" aria-hidden="true"></i>
-                </button>
-                <button type="submit" class="busca-cabecalho-enviar" aria-label="Confirmar busca">
-                  <i class="bi bi-search" aria-hidden="true"></i>
-                </button>
+              <div class="busca-cabecalho-wrap position-relative">
+                <div class="busca-cabecalho-campo">
+                  <input
+                    id="<?= $buscaComunidadesNavbar ? 'buscaComunidades' : 'buscaCabecalho' ?>"
+                    <?= $buscaComunidadesNavbar ? '' : 'name="busca"' ?>
+                    type="search"
+                    value="<?= $buscaComunidadesNavbar ? '' : $termoBuscaCabecalho ?>"
+                    placeholder="<?= $buscaComunidadesNavbar ? 'Buscar comunidades por evento...' : 'Buscar eventos...' ?>"
+                    aria-label="<?= $buscaComunidadesNavbar ? 'Buscar comunidades por nome do evento' : 'Buscar eventos por nome, cidade, categoria ou artista' ?>"
+                    <?= $buscaComunidadesNavbar ? '' : 'aria-controls="containerBuscaFlutuante" aria-autocomplete="list" aria-expanded="false"' ?>
+                    autocomplete="off"
+                    spellcheck="false"
+                  >
+                  <button
+                    type="button"
+                    class="busca-cabecalho-limpar"
+                    data-limpar-busca
+                    aria-label="Limpar busca"
+                    hidden>
+                    <i class="bi bi-x-lg" aria-hidden="true"></i>
+                  </button>
+                  <button type="submit" class="busca-cabecalho-enviar" aria-label="Confirmar busca">
+                    <i class="bi bi-search" aria-hidden="true"></i>
+                  </button>
+                </div>
+                <?php if (!$buscaComunidadesNavbar): ?>
+                <section id="containerBuscaFlutuante" class="container-busca-flutuante d-none" aria-label="Busca e filtros de eventos">
+                  <button type="button" class="container-busca-fechar" data-fechar-busca aria-label="Fechar busca" title="Fechar busca">
+                    <i class="bi bi-x-lg" aria-hidden="true"></i>
+                  </button>
+                  <div class="busca-flutuante-coluna busca-flutuante-filtros">
+                    <h2>Filtrar eventos</h2>
+                    <label class="grupo-filtros-busca" for="filtroCategoriaBusca">
+                      <span>Categoria</span>
+                      <select id="filtroCategoriaBusca">
+                        <option value="">Todas as categorias</option>
+                      </select>
+                    </label>
+                    <label class="grupo-filtros-busca" for="filtroClassificacaoBusca">
+                      <span>Classificação indicativa</span>
+                      <select id="filtroClassificacaoBusca">
+                        <option value="">Qualquer classificação</option>
+                        <?php foreach (classificacoesIndicativasOficiais() as $classificacao): ?>
+                          <option value="<?= htmlspecialchars($classificacao, ENT_QUOTES, 'UTF-8') ?>">
+                            <?= htmlspecialchars($classificacao, ENT_QUOTES, 'UTF-8') ?>
+                          </option>
+                        <?php endforeach; ?>
+                      </select>
+                    </label>
+                    <fieldset class="grupo-filtros-busca">
+                      <legend>Ingresso</legend>
+                      <div class="chips-filtro" role="group" aria-label="Filtrar por ingresso">
+                        <button type="button" class="chip-filtro ativo" data-filtro-preco="todos" aria-pressed="true">Todos</button>
+                        <button type="button" class="chip-filtro" data-filtro-preco="gratuitos" aria-pressed="false">Gratuitos</button>
+                        <button type="button" class="chip-filtro" data-filtro-preco="pagos" aria-pressed="false">Pagos</button>
+                      </div>
+                      <label class="filtro-preco-slider" for="filtroPrecoMaximo">
+                        <span>Preço máximo</span>
+                        <output id="filtroPrecoValor" for="filtroPrecoMaximo">R$ 2.000+</output>
+                        <input id="filtroPrecoMaximo" type="range" min="0" max="2000" step="50" value="2000">
+                      </label>
+                    </fieldset>
+                    <fieldset class="grupo-filtros-busca">
+                      <legend>Período</legend>
+                      <div class="chips-filtro" role="group" aria-label="Filtrar por período">
+                        <button type="button" class="chip-filtro ativo" data-filtro-data="qualquer" aria-pressed="true">Qualquer data</button>
+                        <button type="button" class="chip-filtro" data-filtro-data="hoje" aria-pressed="false">Hoje</button>
+                        <button type="button" class="chip-filtro" data-filtro-data="amanha" aria-pressed="false">Amanhã</button>
+                        <button type="button" class="chip-filtro" data-filtro-data="fim-de-semana" aria-pressed="false">Este fim de semana</button>
+                        <button type="button" class="chip-filtro" data-filtro-data="nesta-semana" aria-pressed="false">Nesta semana</button>
+                        <button type="button" class="chip-filtro" data-filtro-data="proxima-semana" aria-pressed="false">Na próxima semana</button>
+                        <button type="button" class="chip-filtro" data-filtro-data="neste-mes" aria-pressed="false">Neste mês</button>
+                        <button type="button" class="chip-filtro" data-filtro-data="proximo-mes" aria-pressed="false">No próximo mês</button>
+                      </div>
+                    </fieldset>
+                    <div class="filtros-localidade">
+                      <label class="grupo-filtros-busca" for="filtroUfBusca">
+                        <span>UF</span>
+                        <select id="filtroUfBusca"><option value="">Todas as UFs</option></select>
+                      </label>
+                      <label class="grupo-filtros-busca" for="filtroCidadeBusca">
+                        <span>Cidade</span>
+                        <select id="filtroCidadeBusca"><option value="">Todas as cidades</option></select>
+                      </label>
+                    </div>
+                    <button type="button" class="filtros-busca-limpar" data-limpar-filtros>Limpar filtros</button>
+                  </div>
+                  <div class="busca-flutuante-coluna busca-flutuante-resultados">
+                    <div id="resultadosBuscaTempoReal" class="resultados-busca-tempo-real" role="listbox" aria-label="Eventos encontrados" aria-live="polite">
+                      <p class="resultados-busca-vazio">Digite para buscar eventos ou selecione filtros.</p>
+                    </div>
+                  </div>
+                </section>
+                <?php endif; ?>
               </div>
-              <?php if (!$buscaComunidadesNavbar): ?>
-              <div
-                id="sugestoesBusca"
-                class="sugestoes-busca"
-                role="listbox"
-                aria-label="Sugestões de eventos"
-                hidden
-              ></div>
-              <?php endif; ?>
             </form>
           </div>
       <?php endif; ?>
@@ -182,7 +247,7 @@ $atributosRequerLogin = !$usuarioLogado
               <li><a href="meusEventos.php"<?= $atributosRequerLogin ?>><i class="bi bi-calendar-event" aria-hidden="true"></i><span>Meus Eventos</span></a></li>
               <?php endif; ?>
               <?php if ($menuComunidades): ?>
-                <li><a href="inicio.php" class="nav-inicio"><i class="bi bi-house-door" aria-hidden="true"></i><span>Início</span></a></li>
+                <li><a href="index.php" class="nav-inicio"><i class="bi bi-house-door" aria-hidden="true"></i><span>Início</span></a></li>
               <?php else: ?>
                 <li><a href="comunidade.php"<?= $atributosRequerLogin ?>><i class="bi bi-people" aria-hidden="true"></i><span>Comunidade</span></a></li>
               <?php endif; ?>
@@ -218,7 +283,7 @@ $atributosRequerLogin = !$usuarioLogado
               <li><a href="meusEventos.php"<?= $atributosRequerLogin ?>><i class="bi bi-calendar-event" aria-hidden="true"></i><span>Meus Eventos</span></a></li>
               <?php endif; ?>
               <li>
-                <a href="inicio.php" class="nav-inicio">
+                <a href="index.php" class="nav-inicio">
                   <i class="bi bi-house-door" aria-hidden="true"></i>
                   <span>Início</span>
                 </a>
@@ -286,7 +351,7 @@ $atributosRequerLogin = !$usuarioLogado
                 <li><a href="meusEventos.php"<?= $atributosRequerLogin ?>><i class="bi bi-calendar-event" aria-hidden="true"></i><span>Meus Eventos</span></a></li>
                 <?php endif; ?>
                 <?php if ($menuComunidades): ?>
-                  <li><a href="inicio.php" class="nav-inicio"><i class="bi bi-house-door" aria-hidden="true"></i><span>Início</span></a></li>
+                  <li><a href="index.php" class="nav-inicio"><i class="bi bi-house-door" aria-hidden="true"></i><span>Início</span></a></li>
                 <?php else: ?>
                   <li><a href="comunidade.php"<?= $atributosRequerLogin ?>><i class="bi bi-people" aria-hidden="true"></i><span>Comunidade</span></a></li>
                 <?php endif; ?>
@@ -328,7 +393,7 @@ $atributosRequerLogin = !$usuarioLogado
                 <li><a href="meusEventos.php"<?= $atributosRequerLogin ?>><i class="bi bi-calendar-event" aria-hidden="true"></i><span>Meus Eventos</span></a></li>
                 <?php endif; ?>
                 <li>
-                  <a href="inicio.php" class="nav-inicio">
+                  <a href="index.php" class="nav-inicio">
                     <i class="bi bi-house-door" aria-hidden="true"></i>
                     <span>Início</span>
                   </a>

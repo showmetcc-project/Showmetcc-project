@@ -15,6 +15,8 @@
     const camposValor = document.getElementById('camposValorIngresso');
     const valorMinimo = document.getElementById('valorIngressoMinimo');
     const valorMaximo = document.getElementById('valorIngressoMaximo');
+    const campoGeneroArtista = document.getElementById('campoGeneroArtista');
+    const inputGeneroArtista = document.getElementById('generoArtistaSolicitado');
     const categorias = formulario
         ? [...formulario.querySelectorAll('input[name="categoria_evento[]"]')]
         : [];
@@ -63,6 +65,30 @@
         categorias.forEach(function (categoria) {
             categoria.closest('.opcao-categoria')?.classList.toggle('selecionada', categoria.checked);
         });
+    }
+
+    function normalizarCategoria(valor) {
+        return String(valor || '')
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '')
+            .toLowerCase();
+    }
+
+    function atualizarCampoGeneroArtista() {
+        if (!campoGeneroArtista || !inputGeneroArtista) return;
+
+        const musical = categorias.some(function (categoria) {
+            if (!categoria.checked) return false;
+            const valor = normalizarCategoria(categoria.value);
+            return valor.includes('musica') || valor.includes('musical');
+        });
+
+        campoGeneroArtista.hidden = !musical;
+        inputGeneroArtista.disabled = !musical;
+
+        if (!musical) {
+            inputGeneroArtista.value = '';
+        }
     }
 
     botaoCategorias?.addEventListener('click', function () {
@@ -235,6 +261,7 @@
     categorias.forEach(function (categoria) {
         categoria.addEventListener('change', function () {
             atualizarResumoCategorias();
+            atualizarCampoGeneroArtista();
             const possuiCategoria = categorias.some((item) => item.checked);
             botaoCategorias?.setAttribute('aria-invalid', String(!possuiCategoria));
             erroCategorias.textContent = possuiCategoria
@@ -243,6 +270,7 @@
         });
     });
     atualizarResumoCategorias();
+    atualizarCampoGeneroArtista();
 
     formulario.addEventListener('submit', async function (evento) {
         evento.preventDefault();
@@ -291,6 +319,7 @@
             atualizarFotoSelecionada();
             atualizarCamposValor();
             atualizarResumoCategorias();
+            atualizarCampoGeneroArtista();
             definirPainelCategoriasAberto(false);
             botaoCategorias?.setAttribute('aria-invalid', 'false');
             erroCategorias.textContent = '';

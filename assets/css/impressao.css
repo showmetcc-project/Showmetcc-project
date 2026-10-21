@@ -1,0 +1,428 @@
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@500;600&family=Oswald:wght@600;700&display=swap');
+
+/* =========================================================================
+   SHOWME — IMPRESSÃO DO RESUMO DO PLANEJAMENTO
+   Estilo: poster urbano / lambe-lambe brutalista, estritamente preto e branco.
+   Carregada apenas em @media print por planejamento.php.
+   Objetivo: pôster completo em uma única página A4.
+   ========================================================================= */
+
+@page {
+    size: A4 portrait;
+    margin: 12mm;
+}
+
+@media print {
+    html,
+    body.pagina-planejamento {
+        width: 100% !important;
+        min-height: 0 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        background: #fff !important;
+        color: #000 !important;
+        filter: none !important;
+        -webkit-filter: none !important;
+    }
+
+    body.pagina-planejamento {
+        print-color-adjust: exact;
+        -webkit-print-color-adjust: exact;
+    }
+
+    /* ---------------------------------------------------------------------
+       ESTRUTURA: imprime somente a etapa final
+       --------------------------------------------------------------------- */
+    body.pagina-planejamento > * {
+        display: none !important;
+    }
+
+    body.pagina-planejamento > main.planejamento-container {
+        display: block !important;
+        width: 100% !important;
+        max-width: none !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        background: #fff !important;
+    }
+
+    body.pagina-planejamento .planejamento-container > .row,
+    body.pagina-planejamento .planejamento-container .col-lg-9,
+    body.pagina-planejamento .card-planejamento {
+        display: block !important;
+        width: 100% !important;
+        max-width: none !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        border: 0 !important;
+        border-radius: 0 !important;
+        background: #fff !important;
+        box-shadow: none !important;
+    }
+
+    body.pagina-planejamento .progresso,
+    body.pagina-planejamento .etapa:not(#etapa5),
+    body.pagina-planejamento #etapa5 > :not(.titulo-card):not(.nome-evento-poster):not(.resumo-box):not(.dicas):not(.rodape-impressao) {
+        display: none !important;
+    }
+
+    /* Altura mínima + distribuição das linhas: preenche a folha sem quebrar. */
+    body.pagina-planejamento #etapa5 {
+        display: flex !important;
+        flex-wrap: wrap !important;
+        align-content: space-between !important;
+        justify-content: space-between !important;
+        width: 100% !important;
+        min-height: 268mm !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        background: #fff !important;
+        break-inside: avoid;
+        page-break-inside: avoid;
+    }
+
+    /* ---------------------------------------------------------------------
+       BASE MONOCROMÁTICA E TEXTO INFORMATIVO LEGÍVEL
+       --------------------------------------------------------------------- */
+    body.pagina-planejamento #etapa5,
+    body.pagina-planejamento #etapa5 * {
+        background: transparent !important;
+        border-color: #000 !important;
+        box-shadow: none !important;
+        color: #000 !important;
+        filter: none !important;
+        -webkit-filter: none !important;
+        font-family: 'Inter', 'Roboto', Arial, Helvetica, sans-serif !important;
+        font-stretch: normal !important;
+        font-weight: 500 !important;
+        letter-spacing: .5px !important;
+        line-height: 1.3 !important;
+        text-shadow: none !important;
+        text-transform: none !important;
+        word-spacing: normal !important;
+    }
+
+    body.pagina-planejamento #etapa5 i {
+        display: none !important;
+    }
+
+    /* ---------------------------------------------------------------------
+       CABEÇALHO GIGANTE: faixa preta com título branco centralizado
+       --------------------------------------------------------------------- */
+    body.pagina-planejamento #etapa5 > .titulo-card {
+        box-sizing: border-box !important;
+        display: block !important;
+        flex: 0 0 100% !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        margin: 0 0 10px !important;
+        padding: 10px !important;
+        border: 2px solid #000 !important;
+        border-radius: 0 !important;
+        background: #000 !important;
+        color: #fff !important;
+        text-align: center !important;
+        print-color-adjust: exact;
+        -webkit-print-color-adjust: exact;
+        break-inside: avoid;
+        page-break-inside: avoid;
+    }
+
+    body.pagina-planejamento #etapa5 > .titulo-card h2 {
+        box-sizing: border-box !important;
+        display: block !important;
+        width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        background: transparent !important;
+        color: #fff !important;
+        font-family: 'Oswald', 'Bebas Neue', Impact, 'Arial Narrow', sans-serif !important;
+        font-size: 36px !important;
+        font-stretch: condensed !important;
+        font-weight: 700 !important;
+        letter-spacing: 2px !important;
+        line-height: .95 !important;
+        text-align: center !important;
+        text-transform: uppercase !important;
+        print-color-adjust: exact;
+        -webkit-print-color-adjust: exact;
+    }
+
+    /* ---------------------------------------------------------------------
+       NOME DO EVENTO: atração principal em escala de pôster
+       --------------------------------------------------------------------- */
+    body.pagina-planejamento #etapa5 > .nome-evento-poster {
+        box-sizing: border-box !important;
+        display: block !important;
+        flex: 0 0 100% !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        margin: 0 0 12px !important;
+        padding: 0 0 10px !important;
+        border: 0 !important;
+        border-bottom: 6px solid #000 !important;
+        background: transparent !important;
+        break-inside: avoid;
+        page-break-inside: avoid;
+    }
+
+    body.pagina-planejamento #etapa5 .nome-evento-poster-rotulo {
+        display: inline-block !important;
+        margin: 0 0 4px !important;
+        padding: 3px 7px !important;
+        background: #000 !important;
+        color: #fff !important;
+        font-family: 'Oswald', 'Bebas Neue', Impact, 'Arial Narrow', sans-serif !important;
+        font-size: 10px !important;
+        font-weight: 700 !important;
+        letter-spacing: .18em !important;
+        line-height: 1.1 !important;
+        text-transform: uppercase !important;
+    }
+
+    body.pagina-planejamento #etapa5 #nomeEventoPoster {
+        display: block !important;
+        width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        color: #000 !important;
+        font-family: 'Oswald', 'Bebas Neue', Impact, 'Arial Narrow', sans-serif !important;
+        font-size: 40px !important;
+        font-stretch: condensed !important;
+        font-weight: 700 !important;
+        letter-spacing: -.01em !important;
+        line-height: 1 !important;
+        overflow-wrap: break-word !important;
+        text-transform: uppercase !important;
+    }
+
+    /* ---------------------------------------------------------------------
+       CARDS SÓLIDOS: EVENTO, CUSTOS, ORÇAMENTO E ROTA
+       --------------------------------------------------------------------- */
+    body.pagina-planejamento #etapa5 > .resumo-box {
+        box-sizing: border-box !important;
+        display: flex !important;
+        flex-direction: column !important;
+        flex: 0 0 100% !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        margin: 0 0 12px !important;
+        padding: 12px !important;
+        border: 2px solid #000 !important;
+        border-radius: 0 !important;
+        background: #fff !important;
+        break-inside: avoid;
+        page-break-inside: avoid;
+    }
+
+    body.pagina-planejamento #etapa5 > .resumo-custos,
+    body.pagina-planejamento #etapa5 > .resumo-orcamento {
+        flex: 0 0 48% !important;
+        width: 48% !important;
+        max-width: 48% !important;
+    }
+
+    /* Custos discriminados, sem quebrar os rótulos no card estreito. */
+    body.pagina-planejamento #etapa5 > .resumo-custos .linha-resumo {
+        flex-wrap: nowrap !important;
+    }
+
+    body.pagina-planejamento #etapa5 > .resumo-custos .linha-resumo span:first-child {
+        white-space: nowrap !important;
+    }
+
+    body.pagina-planejamento #etapa5 .resumo-box h3,
+    body.pagina-planejamento #etapa5 .dicas h3 {
+        display: flex !important;
+        align-items: center !important;
+        gap: 8px !important;
+        margin: 0 0 8px !important;
+        padding: 0 !important;
+        color: #000 !important;
+        font-family: 'Oswald', 'Bebas Neue', Impact, 'Arial Narrow', sans-serif !important;
+        font-size: 24px !important;
+        font-stretch: condensed !important;
+        font-weight: 700 !important;
+        letter-spacing: .02em !important;
+        line-height: 1 !important;
+        text-transform: uppercase !important;
+    }
+
+    /* Quadrado preto literal antes de cada título de seção. */
+    body.pagina-planejamento #etapa5 .resumo-box h3::before,
+    body.pagina-planejamento #etapa5 .dicas h3::before {
+        content: "■" !important;
+        display: inline-block !important;
+        flex: 0 0 auto !important;
+        width: auto !important;
+        height: auto !important;
+        background: transparent !important;
+        color: #000 !important;
+        font-family: 'Oswald', 'Bebas Neue', Impact, 'Arial Narrow', sans-serif !important;
+        font-size: .78em !important;
+        line-height: 1 !important;
+    }
+
+    /* Dados sem linhas de tabela: tipografia limpa e alto contraste. */
+    body.pagina-planejamento #etapa5 .linha-resumo {
+        display: flex !important;
+        align-items: baseline !important;
+        justify-content: space-between !important;
+        gap: 6mm !important;
+        margin: 0 !important;
+        padding: 4px 0 !important;
+        border: 0 !important;
+        font-family: 'Inter', 'Roboto', Arial, Helvetica, sans-serif !important;
+        font-size: 10.5pt !important;
+        letter-spacing: .5px !important;
+        line-height: 1.3 !important;
+        text-transform: none !important;
+    }
+
+    body.pagina-planejamento #etapa5 .linha-resumo[hidden] {
+        display: none !important;
+    }
+
+    body.pagina-planejamento #etapa5 .linha-resumo span:first-child {
+        flex: 0 0 auto !important;
+        font-family: 'Inter', 'Roboto', Arial, Helvetica, sans-serif !important;
+        font-weight: 600 !important;
+        letter-spacing: .5px !important;
+        line-height: 1.3 !important;
+        text-transform: uppercase !important;
+    }
+
+    body.pagina-planejamento #etapa5 .linha-resumo span:last-child {
+        flex: 1 1 auto !important;
+        font-family: 'Inter', 'Roboto', Arial, Helvetica, sans-serif !important;
+        font-size: 10.5pt !important;
+        font-weight: 600 !important;
+        letter-spacing: .5px !important;
+        line-height: 1.3 !important;
+        text-align: right !important;
+        text-transform: none !important;
+    }
+
+    /* O nome já aparece em destaque no topo do pôster. */
+    body.pagina-planejamento #etapa5 .linha-nome-evento {
+        display: none !important;
+    }
+
+    /* Totais e saldo: faixas pretas de largura total no rodapé dos cards. */
+    body.pagina-planejamento #etapa5 .linha-resumo.total {
+        align-items: center !important;
+        margin: auto -12px -12px !important;
+        padding: 8px 12px !important;
+        border: 0 !important;
+        background: #000 !important;
+        color: #fff !important;
+        font-family: 'Oswald', 'Bebas Neue', Impact, 'Arial Narrow', sans-serif !important;
+        font-size: 22px !important;
+        font-stretch: condensed !important;
+        font-weight: 700 !important;
+        line-height: 1 !important;
+        text-transform: uppercase !important;
+        print-color-adjust: exact;
+        -webkit-print-color-adjust: exact;
+    }
+
+    body.pagina-planejamento #etapa5 .linha-resumo.total span {
+        color: #fff !important;
+        font-family: 'Oswald', 'Bebas Neue', Impact, 'Arial Narrow', sans-serif !important;
+        font-size: 22px !important;
+        font-stretch: condensed !important;
+        font-weight: 700 !important;
+        line-height: 1 !important;
+        text-transform: uppercase !important;
+    }
+
+    body.pagina-planejamento #etapa5 .linha-resumo.total span:first-child::after {
+        content: ":";
+    }
+
+    body.pagina-planejamento #etapa5 .resumo-box hr {
+        display: none !important;
+    }
+
+    /* ---------------------------------------------------------------------
+       DICAS DE VIAGEM: bloco espesso com checklist em 2 colunas
+       --------------------------------------------------------------------- */
+    body.pagina-planejamento #etapa5 > .dicas {
+        box-sizing: border-box !important;
+        display: grid !important;
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+        column-gap: 14px !important;
+        row-gap: 8px !important;
+        flex: 0 0 100% !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        margin: 0 0 12px !important;
+        padding: 12px !important;
+        border: 2px solid #000 !important;
+        border-radius: 0 !important;
+        background: #fff !important;
+        break-inside: avoid;
+        page-break-inside: avoid;
+    }
+
+    body.pagina-planejamento #etapa5 .dicas h3 {
+        grid-column: 1 / -1;
+        margin-bottom: 0 !important;
+    }
+
+    body.pagina-planejamento #etapa5 .dicas p {
+        display: flex !important;
+        align-items: flex-start !important;
+        gap: 7px !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        color: #000 !important;
+        font-family: 'Inter', 'Roboto', Arial, Helvetica, sans-serif !important;
+        font-size: 10pt !important;
+        font-weight: 500 !important;
+        letter-spacing: .5px !important;
+        line-height: 1.3 !important;
+        text-transform: none !important;
+    }
+
+    body.pagina-planejamento #etapa5 .dicas p::before {
+        box-sizing: border-box;
+        content: "";
+        display: block;
+        flex: 0 0 16px;
+        width: 16px;
+        height: 16px;
+        margin-top: 1px;
+        border: 2px solid #000;
+        background: #fff;
+    }
+
+    body.pagina-planejamento #etapa5 .dicas p span {
+        flex: 1 1 auto;
+    }
+
+    /* ---------------------------------------------------------------------
+       RODAPÉ DE ENCERRAMENTO
+       --------------------------------------------------------------------- */
+    body.pagina-planejamento #etapa5 > .rodape-impressao {
+        box-sizing: border-box !important;
+        display: block !important;
+        flex: 0 0 100% !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        margin: 0 !important;
+        padding: 6px 0 0 !important;
+        border: 0 !important;
+        border-top: 1px solid #000 !important;
+        color: #000 !important;
+        font-family: 'Inter', 'Roboto', Arial, Helvetica, sans-serif !important;
+        font-size: 10px !important;
+        font-weight: 500 !important;
+        letter-spacing: .5px !important;
+        line-height: 1.3 !important;
+        text-align: center !important;
+        text-transform: uppercase !important;
+        break-inside: avoid;
+        page-break-inside: avoid;
+    }
+}

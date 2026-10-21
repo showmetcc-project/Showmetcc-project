@@ -65,7 +65,7 @@ if ($metodo === 'GET') {
     }
 
     $baseDenuncias = "SELECT * FROM (
-                SELECT d.id_denuncia, d.id_post, NULL AS id_midia,
+                SELECT d.id_denuncia, d.id_post, NULL AS id_resposta, NULL AS id_midia,
                        'post' AS tipo_alvo, d.id_usuario AS id_denunciante,
                        d.motivo, d.status_denuncia, d.data_criacao AS data_denuncia,
                        d.data_moderacao, d.id_admin_moderacao,
@@ -79,7 +79,7 @@ if ($metodo === 'GET') {
                        denunciante.nome_user AS denunciante_nome,
                        denunciante.sobrenome AS denunciante_sobrenome,
                        denunciante.email_user AS denunciante_email,
-                       e.nome_evento AS comunidade_nome, e.imagem_evento AS comunidade_imagem
+                       e.nome_evento AS comunidade_nome, e.imagem_evento AS comunidade_imagem, e.alt_imagem AS comunidade_alt_imagem, e.cidade_evento AS comunidade_cidade
                 FROM comunidade_denuncia d
                 INNER JOIN comunidade_post p ON p.id_post = d.id_post
                 INNER JOIN usuario autor ON autor.id_user = p.id_usuario
@@ -89,7 +89,7 @@ if ($metodo === 'GET') {
 
                 UNION ALL
 
-                SELECT d.id_denuncia, NULL AS id_post, d.id_midia,
+                SELECT d.id_denuncia, NULL AS id_post, NULL AS id_resposta, d.id_midia,
                        'midia' AS tipo_alvo, d.id_usuario AS id_denunciante,
                        d.motivo, d.status_denuncia, d.data_criacao AS data_denuncia,
                        d.data_moderacao, d.id_admin_moderacao,
@@ -103,13 +103,38 @@ if ($metodo === 'GET') {
                        denunciante.nome_user AS denunciante_nome,
                        denunciante.sobrenome AS denunciante_sobrenome,
                        denunciante.email_user AS denunciante_email,
-                       e.nome_evento AS comunidade_nome, e.imagem_evento AS comunidade_imagem
+                       e.nome_evento AS comunidade_nome, e.imagem_evento AS comunidade_imagem, e.alt_imagem AS comunidade_alt_imagem, e.cidade_evento AS comunidade_cidade
                 FROM comunidade_denuncia d
                 INNER JOIN comunidade_midia m ON m.id_midia = d.id_midia
                 INNER JOIN usuario autor ON autor.id_user = m.id_usuario
                 INNER JOIN usuario denunciante ON denunciante.id_user = d.id_usuario
                 INNER JOIN evento e ON e.id_evento = m.id_evento
                 WHERE d.id_midia IS NOT NULL
+
+                  UNION ALL
+
+                  SELECT d.id_denuncia, NULL AS id_post, d.id_resposta, NULL AS id_midia,
+                      'resposta' AS tipo_alvo, d.id_usuario AS id_denunciante,
+                      d.motivo, d.status_denuncia, d.data_criacao AS data_denuncia,
+                      d.data_moderacao, d.id_admin_moderacao,
+                      p.id_evento, r.id_usuario AS id_autor,
+                      'Resposta' AS categoria_post, r.texto AS texto_post,
+                      r.status_resposta AS status_post, r.data_criacao AS data_post,
+                      NULL AS caminho_midia, NULL AS legenda_midia,
+                      NULL AS status_midia, NULL AS data_midia,
+                      autor.nome_user AS autor_nome, autor.sobrenome AS autor_sobrenome,
+                      autor.email_user AS autor_email, autor.foto_perfil AS autor_foto,
+                      denunciante.nome_user AS denunciante_nome,
+                      denunciante.sobrenome AS denunciante_sobrenome,
+                      denunciante.email_user AS denunciante_email,
+                      e.nome_evento AS comunidade_nome, e.imagem_evento AS comunidade_imagem, e.alt_imagem AS comunidade_alt_imagem, e.cidade_evento AS comunidade_cidade
+                  FROM comunidade_denuncia d
+                  INNER JOIN comunidade_resposta r ON r.id_resposta = d.id_resposta
+                  INNER JOIN comunidade_post p ON p.id_post = r.id_post
+                  INNER JOIN usuario autor ON autor.id_user = r.id_usuario
+                  INNER JOIN usuario denunciante ON denunciante.id_user = d.id_usuario
+                  INNER JOIN evento e ON e.id_evento = p.id_evento
+                  WHERE d.id_resposta IS NOT NULL
             ) AS lista_denuncias";
     $filtrosDenuncias = " WHERE (? = 'todas' OR status_denuncia = ?)
                            AND (? = 0 OR data_denuncia >= DATE_SUB(NOW(), INTERVAL ? DAY))
@@ -196,13 +221,15 @@ if ($metodo === 'POST') {
     $idUsuario = exigirUsuarioComum();
     $dados = lerJson();
     $idPost = filter_var($dados['id_post'] ?? null, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
+    $idResposta = filter_var($dados['id_resposta'] ?? null, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
     $idMidia = filter_var($dados['id_midia'] ?? null, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
     $motivo = trim((string) ($dados['motivo'] ?? ''));
     $temPost = $idPost !== false && $idPost !== null;
+    $temResposta = $idResposta !== false && $idResposta !== null;
     $temMidia = $idMidia !== false && $idMidia !== null;
 
-    if ($temPost === $temMidia || $motivo === '') {
-        responder(['erro' => 'Informe motivo e exatamente um alvo: id_post ou id_midia'], 400);
+    if (((int) $temPost + (int) $temResposta + (int) $temMidia) !== 1 || $motivo === '') {
+        responder(['erro' => 'Informe motivo e exatamente um alvo: id_post, id_resposta ou id_midia'], 400);
     }
 
     if (tamanhoTextoApi($motivo) > 100) {
@@ -232,6 +259,17 @@ if ($metodo === 'POST') {
         );
         $idAlvo = $idPost;
         $colunaAlvo = 'id_post';
+    } elseif ($temResposta) {
+        $stmt = $conn->prepare(
+            "SELECT r.id_usuario
+             FROM comunidade_resposta r
+             INNER JOIN comunidade_post p ON p.id_post = r.id_post
+             WHERE r.id_resposta = ? AND r.status_resposta = 'ativo'
+               AND p.status_post = 'ativo'
+             LIMIT 1"
+        );
+        $idAlvo = $idResposta;
+        $colunaAlvo = 'id_resposta';
     } else {
         $stmt = $conn->prepare(
             "SELECT id_usuario
@@ -272,12 +310,13 @@ if ($metodo === 'POST') {
     $stmt->close();
 
     $stmt = $conn->prepare(
-        'INSERT INTO comunidade_denuncia (id_post, id_midia, id_usuario, motivo)
-         VALUES (?, ?, ?, ?)'
+        'INSERT INTO comunidade_denuncia (id_post, id_resposta, id_midia, id_usuario, motivo)
+         VALUES (?, ?, ?, ?, ?)'
     );
     $valorPost = $temPost ? $idPost : null;
+    $valorResposta = $temResposta ? $idResposta : null;
     $valorMidia = $temMidia ? $idMidia : null;
-    $stmt->bind_param('iiis', $valorPost, $valorMidia, $idUsuario, $motivo);
+    $stmt->bind_param('iiiis', $valorPost, $valorResposta, $valorMidia, $idUsuario, $motivo);
 
     try {
         executarStatementApi($stmt);
@@ -314,7 +353,7 @@ if ($metodo === 'PUT') {
 
     try {
         $stmt = $conn->prepare(
-            'SELECT id_post, id_midia, status_denuncia
+            'SELECT id_post, id_resposta, id_midia, status_denuncia
              FROM comunidade_denuncia
              WHERE id_denuncia = ?
              LIMIT 1 FOR UPDATE'
@@ -334,8 +373,10 @@ if ($metodo === 'PUT') {
             responder(['erro' => 'Esta denúncia já foi analisada'], 409);
         }
 
-        $tipoAlvo = $denuncia['id_post'] !== null ? 'post' : 'midia';
-        $idAlvo = (int) ($denuncia['id_post'] ?? $denuncia['id_midia']);
+        $tipoAlvo = $denuncia['id_resposta'] !== null
+            ? 'resposta'
+            : ($denuncia['id_post'] !== null ? 'post' : 'midia');
+        $idAlvo = (int) ($denuncia['id_resposta'] ?? $denuncia['id_post'] ?? $denuncia['id_midia']);
 
         if ($tipoAlvo === 'post') {
             $stmt = $conn->prepare(
@@ -346,6 +387,17 @@ if ($metodo === 'PUT') {
                  INNER JOIN evento e ON e.id_evento = p.id_evento
                  INNER JOIN usuario u ON u.id_user = p.id_usuario
                  WHERE p.id_post = ? LIMIT 1 FOR UPDATE'
+            );
+        } elseif ($tipoAlvo === 'resposta') {
+            $stmt = $conn->prepare(
+                'SELECT r.id_usuario, r.status_resposta AS status_conteudo,
+                        r.texto AS descricao_conteudo, e.nome_evento,
+                        u.nome_user, u.sobrenome, u.email_user
+                 FROM comunidade_resposta r
+                 INNER JOIN comunidade_post p ON p.id_post = r.id_post
+                 INNER JOIN evento e ON e.id_evento = p.id_evento
+                 INNER JOIN usuario u ON u.id_user = r.id_usuario
+                 WHERE r.id_resposta = ? LIMIT 1 FOR UPDATE'
             );
         } else {
             $stmt = $conn->prepare(
@@ -375,7 +427,11 @@ if ($metodo === 'PUT') {
             responder(['erro' => 'O conteúdo já foi removido'], 409);
         }
 
-        $colunaAlvo = $tipoAlvo === 'post' ? 'id_post' : 'id_midia';
+        $colunaAlvo = match ($tipoAlvo) {
+            'post' => 'id_post',
+            'resposta' => 'id_resposta',
+            default => 'id_midia',
+        };
         $stmt = $conn->prepare(
             "SELECT u.nome_user, u.sobrenome, u.email_user
              FROM comunidade_denuncia d
@@ -393,6 +449,8 @@ if ($metodo === 'PUT') {
         if ($acao === 'remover') {
             if ($tipoAlvo === 'post') {
                 $stmt = $conn->prepare("UPDATE comunidade_post SET status_post = 'removido' WHERE id_post = ?");
+            } elseif ($tipoAlvo === 'resposta') {
+                $stmt = $conn->prepare("UPDATE comunidade_resposta SET status_resposta = 'removido' WHERE id_resposta = ?");
             } else {
                 $stmt = $conn->prepare("UPDATE comunidade_midia SET status_midia = 'removido' WHERE id_midia = ?");
                 $caminhoMidiaRemovida = $conteudo['caminho_arquivo'];

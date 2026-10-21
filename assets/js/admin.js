@@ -179,6 +179,56 @@
         }
     }
 
+    function definirCategoriasSelecionadas(valor) {
+        const selecao = document.getElementById('categoriaEventoEdicao');
+        if (!selecao) return;
+
+        const escolhidas = String(valor || '')
+            .split(',')
+            .map((item) => item.trim().toLowerCase())
+            .filter(Boolean);
+
+        Array.from(selecao.options).forEach((opcao) => {
+            opcao.selected = escolhidas.includes(opcao.value.trim().toLowerCase());
+        });
+    }
+
+    function lerCategoriasSelecionadas() {
+        const selecao = document.getElementById('categoriaEventoEdicao');
+        if (!selecao) return '';
+
+        return Array.from(selecao.selectedOptions)
+            .map((opcao) => opcao.value)
+            .join(', ');
+    }
+
+    function normalizarCategoriaAdmin(valor) {
+        return String(valor || '')
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '')
+            .toLowerCase();
+    }
+
+    function atualizarCampoGeneroArtistaEdicao() {
+        const selecao = document.getElementById('categoriaEventoEdicao');
+        const campo = document.getElementById('campoGeneroArtistaEdicao');
+        const input = document.getElementById('generoArtistaEdicao');
+
+        if (!selecao || !campo || !input) return;
+
+        const musical = Array.from(selecao.selectedOptions).some(function (opcao) {
+            const valor = normalizarCategoriaAdmin(opcao.value);
+            return valor.includes('musica') || valor.includes('musical');
+        });
+
+        campo.hidden = !musical;
+        input.disabled = !musical;
+
+        if (!musical) {
+            input.value = '';
+        }
+    }
+
     function preencherFormularioEvento(solicitacao) {
         document.getElementById('idSolicitacaoEdicao').value = String(solicitacao.id_solicitacao);
         document.getElementById('nomeEventoEdicao').value = solicitacao.nome_evento || '';
@@ -188,7 +238,8 @@
         document.getElementById('ruaEventoEdicao').value = solicitacao.rua_evento || '';
         document.getElementById('cidadeEventoEdicao').value = solicitacao.cidade_evento || '';
         document.getElementById('ufEventoEdicao').value = solicitacao.uf || '';
-        document.getElementById('categoriaEventoEdicao').value = solicitacao.categoria_evento || '';
+        definirCategoriasSelecionadas(solicitacao.categoria_evento);
+        document.getElementById('classificacaoIndicativaEdicao').value = solicitacao.classificacao_indicativa || 'Livre';
         document.getElementById('linkOficialEdicao').value = solicitacao.link_oficial || '';
         document.getElementById('dataEventoEdicao').value = solicitacao.data_evento || '';
         document.getElementById('horarioEventoEdicao').value = solicitacao.horario_evento
@@ -198,8 +249,11 @@
         document.getElementById('valorMinimoEdicao').value = solicitacao.valor_ingresso_minimo || '';
         document.getElementById('valorMaximoEdicao').value = solicitacao.valor_ingresso_maximo || '';
         document.getElementById('descricaoEventoEdicao').value = solicitacao.descricao_evento || '';
+        document.getElementById('altImagemEdicao').value = solicitacao.alt_imagem || '';
         document.getElementById('descricaoArtistaEdicao').value = solicitacao.descricao_artista || '';
         document.getElementById('nomeArtistaSolicitadoEdicao').value = solicitacao.nome_artista_solicitado || '';
+        document.getElementById('generoArtistaEdicao').value = solicitacao.genero_artista || '';
+        atualizarCampoGeneroArtistaEdicao();
     }
 
     function configurarModalEdicao(solicitacao, modo) {
@@ -218,6 +272,7 @@
         document.querySelectorAll('.campo-apenas-solicitacao').forEach((campo) => {
             campo.hidden = editandoEvento;
         });
+        atualizarCampoGeneroArtistaEdicao();
         modalEdicao.show();
     }
 
@@ -251,15 +306,22 @@
             rua_evento: document.getElementById('ruaEventoEdicao').value.trim(),
             cidade_evento: document.getElementById('cidadeEventoEdicao').value.trim(),
             uf: document.getElementById('ufEventoEdicao').value.trim(),
-            categoria_evento: document.getElementById('categoriaEventoEdicao').value.trim(),
+            categoria_evento: lerCategoriasSelecionadas(),
+            classificacao_indicativa: document.getElementById('classificacaoIndicativaEdicao').value,
             link_oficial: document.getElementById('linkOficialEdicao').value.trim(),
             data_evento: document.getElementById('dataEventoEdicao').value,
             horario_evento: document.getElementById('horarioEventoEdicao').value,
             gratuidade: document.getElementById('gratuidadeEdicao').value === 'true',
             valor_ingresso_minimo: document.getElementById('valorMinimoEdicao').value,
             valor_ingresso_maximo: document.getElementById('valorMaximoEdicao').value,
-            descricao_evento: document.getElementById('descricaoEventoEdicao').value.trim()
+            descricao_evento: document.getElementById('descricaoEventoEdicao').value.trim(),
+            alt_imagem: document.getElementById('altImagemEdicao').value.trim()
         };
+
+        const campoGeneroArtista = document.getElementById('generoArtistaEdicao');
+        if (campoGeneroArtista && !campoGeneroArtista.disabled) {
+            dadosEdicao.genero_artista = campoGeneroArtista.value.trim();
+        }
 
         if (!editandoEvento) {
             dadosEdicao.descricao_artista = document.getElementById('descricaoArtistaEdicao').value.trim();
@@ -393,7 +455,7 @@
         const imagem = document.createElement('img');
         imagem.className = 'evento-foto';
         imagem.src = caminhoImagem(solicitacao.foto);
-        imagem.alt = `Foto de ${solicitacao.nome_evento}`;
+        imagem.alt = window.ShowMeA11y.textoAltImagemEvento(solicitacao);
         imagem.loading = 'lazy';
         imagem.addEventListener('error', function () {
             this.src = imagemPadrao;
@@ -443,6 +505,7 @@
                 solicitacao.numero_endereco, solicitacao.cidade_evento, solicitacao.uf]
                 .filter(Boolean).join(' · ')),
             criarCampo('Categoria', solicitacao.categoria_evento),
+            criarCampo('Classificação indicativa', solicitacao.classificacao_indicativa),
             criarCampo('Link oficial', solicitacao.link_oficial),
             criarCampo('Tipo', solicitacao.gratuidade ? 'Gratuito' : 'Pago'),
             criarCampo('Faixa de valor', solicitacao.gratuidade
@@ -451,6 +514,7 @@
                     .filter((valor) => valor !== null && valor !== '').join(' – ')),
             criarCampo('Descrição do evento', solicitacao.descricao_evento),
             criarCampo('Nome do artista / atração', solicitacao.nome_artista_solicitado),
+            criarCampo('Gênero musical do artista', solicitacao.genero_artista),
             criarCampo('Descrição do artista / atração', solicitacao.descricao_artista)
         );
         const colunaSolicitante = document.createElement('div');
@@ -621,7 +685,11 @@
         comunidade.className = 'denuncia-comunidade';
         const imagem = document.createElement('img');
         imagem.src = caminhoImagem(denuncia.comunidade_imagem);
-        imagem.alt = `Imagem de ${denuncia.comunidade_nome}`;
+        imagem.alt = window.ShowMeA11y.textoAltImagemEvento({
+            alt_imagem: denuncia.comunidade_alt_imagem,
+            nome_evento: denuncia.comunidade_nome,
+            cidade_evento: denuncia.comunidade_cidade
+        });
         imagem.loading = 'lazy';
         imagem.addEventListener('error', function () {
             this.src = imagemPadrao;
@@ -664,7 +732,9 @@
         categoria.className = 'denuncia-categoria';
         categoria.textContent = denuncia.tipo_alvo === 'midia'
             ? 'Foto da galeria'
-            : (denuncia.categoria_post || 'Sem categoria');
+            : (denuncia.tipo_alvo === 'resposta'
+                ? 'Resposta à publicação'
+                : (denuncia.categoria_post || 'Sem categoria'));
         const textoPost = document.createElement('p');
         textoPost.className = 'denuncia-texto';
         textoPost.textContent = denuncia.tipo_alvo === 'midia'
@@ -931,6 +1001,10 @@
         carregarSolicitacoes({reiniciar: true});
         carregarDenuncias({reiniciar: true});
     });
+    document.getElementById('categoriaEventoEdicao')?.addEventListener(
+        'change',
+        atualizarCampoGeneroArtistaEdicao
+    );
     formularioEdicao.addEventListener('submit', function (evento) {
         evento.preventDefault();
         salvarEdicaoSolicitacao();

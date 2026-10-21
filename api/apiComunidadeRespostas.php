@@ -74,13 +74,17 @@ if ($metodo === 'PUT') {
         responder(['erro' => 'texto deve ter no máximo 3000 caracteres'], 400);
     }
 
-    $stmt = $conn->prepare('SELECT id_usuario FROM comunidade_resposta WHERE id_resposta = ? LIMIT 1');
+    $stmt = $conn->prepare('SELECT id_usuario, status_resposta FROM comunidade_resposta WHERE id_resposta = ? LIMIT 1');
     $stmt->bind_param('i', $id);
     executarStatementApi($stmt);
     $resposta = $stmt->get_result()->fetch_assoc();
     $stmt->close();
 
     if (!$resposta) {
+        responder(['erro' => 'Resposta não encontrada'], 404);
+    }
+
+    if ($resposta['status_resposta'] !== 'ativo') {
         responder(['erro' => 'Resposta não encontrada'], 404);
     }
 
@@ -103,13 +107,17 @@ if ($metodo === 'DELETE') {
         responder(['erro' => 'Informe o ID da resposta na URL'], 400);
     }
 
-    $stmt = $conn->prepare('SELECT id_usuario FROM comunidade_resposta WHERE id_resposta = ? LIMIT 1');
+    $stmt = $conn->prepare('SELECT id_usuario, status_resposta FROM comunidade_resposta WHERE id_resposta = ? LIMIT 1');
     $stmt->bind_param('i', $id);
     executarStatementApi($stmt);
     $resposta = $stmt->get_result()->fetch_assoc();
     $stmt->close();
 
     if (!$resposta) {
+        responder(['erro' => 'Resposta não encontrada'], 404);
+    }
+
+    if ($resposta['status_resposta'] !== 'ativo') {
         responder(['erro' => 'Resposta não encontrada'], 404);
     }
 

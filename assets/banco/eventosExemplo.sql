@@ -15,7 +15,7 @@ INSERT INTO evento (
     'Avenida Francisco Matarazzo', 'São Paulo', 'SP',
     'Festival com artistas brasileiros, música ao vivo e experiências culturais.',
     '2026-11-14', '18:00:00', FALSE, 70.00, 180.00,
-    'Música, Show Nacional', 'https://example.com/festival-sons-da-cidade',
+    'Música e Shows', 'https://example.com/festival-sons-da-cidade',
     'assets/img/prontos/banner/grandes-palcos-01.webp', 'ativo'
 ),
 (
@@ -24,7 +24,7 @@ INSERT INTO evento (
     'Avenida Infante Dom Henrique', 'Rio de Janeiro', 'RJ',
     'Show internacional com ritmos latinos, dança e atrações convidadas.',
     '2026-12-05', '20:30:00', FALSE, 120.00, 350.00,
-    'Música, Show Internacional', 'https://example.com/noite-latina-global',
+    'Música e Shows', 'https://example.com/noite-latina-global',
     'assets/img/prontos/banner/grandes-palcos-02.webp', 'ativo'
 ),
 (
@@ -33,7 +33,7 @@ INSERT INTO evento (
     'Avenida Afonso Pena', 'Belo Horizonte', 'MG',
     'Exibições de produções nacionais acompanhadas de conversas sobre criação audiovisual.',
     '2026-11-21', '16:00:00', TRUE, NULL, NULL,
-    'Cinema, Workshop', 'https://example.com/mostra-cinema-brasileiro',
+    'Cinema e Audiovisual, Oficinas e Workshops', 'https://example.com/mostra-cinema-brasileiro',
     'assets/img/prontos/banner/luzes-noite-01.webp', 'ativo'
 ),
 (
@@ -42,7 +42,7 @@ INSERT INTO evento (
     'Rua XV de Novembro', 'Curitiba', 'PR',
     'Formação prática sobre arranjos, gravação, mixagem e produção independente.',
     '2027-01-16', '09:00:00', FALSE, 90.00, 150.00,
-    'Workshop, Música', 'https://example.com/workshop-producao-musical',
+    'Música e Shows, Oficinas e Workshops', 'https://example.com/workshop-producao-musical',
     'assets/img/prontos/banner/luzes-noite-02.webp', 'ativo'
 ),
 (
@@ -51,7 +51,7 @@ INSERT INTO evento (
     'Praça do Marco Zero', 'Recife', 'PE',
     'Atividade gratuita sobre enquadramento, luz e registro de apresentações culturais.',
     '2027-02-06', '14:00:00', TRUE, NULL, NULL,
-    'Oficina, Workshop', 'https://example.com/oficina-fotografia-palco',
+    'Oficinas e Workshops', 'https://example.com/oficina-fotografia-palco',
     'assets/img/prontos/banner/luzes-noite-03.webp', 'ativo'
 ),
 (
@@ -60,7 +60,7 @@ INSERT INTO evento (
     'Praça da Sé', 'Salvador', 'BA',
     'Experiência gastronômica com cozinhas regionais e oficinas de preparo.',
     '2027-02-20', '11:00:00', FALSE, 35.00, 90.00,
-    'Gastronômico, Oficina', 'https://example.com/festival-sabores-brasil',
+    'Gastronomia, Oficinas e Workshops', 'https://example.com/festival-sabores-brasil',
     'assets/img/prontos/banner/multidoes-01.webp', 'ativo'
 ),
 (
@@ -69,7 +69,7 @@ INSERT INTO evento (
     'Avenida Borges de Medeiros', 'Porto Alegre', 'RS',
     'Sessão de cinema ao ar livre com feira de produtores gastronômicos locais.',
     '2027-03-13', '18:30:00', TRUE, NULL, NULL,
-    'Cinema, Gastronômico', 'https://example.com/cinema-gastronomia',
+    'Cinema e Audiovisual, Gastronomia', 'https://example.com/cinema-gastronomia',
     'assets/img/prontos/banner/multidoes-02.webp', 'ativo'
 ),
 (
@@ -78,7 +78,7 @@ INSERT INTO evento (
     'Avenida Alberto Craveiro', 'Fortaleza', 'CE',
     'Encontro musical com artistas internacionais e convidados brasileiros.',
     '2027-03-27', '19:30:00', FALSE, 160.00, 480.00,
-    'Música, Show Internacional', 'https://example.com/vozes-do-mundo',
+    'Música e Shows', 'https://example.com/vozes-do-mundo',
     'assets/img/prontos/banner/multidoes-03.webp', 'ativo'
 ),
 (
@@ -87,7 +87,7 @@ INSERT INTO evento (
     'Praça Carlos Gomes', 'Campinas', 'SP',
     'Apresentações gratuitas e oficinas conduzidas por novos artistas da cena nacional.',
     '2027-04-10', '15:00:00', TRUE, NULL, NULL,
-    'Música, Show Nacional, Oficina', 'https://example.com/encontro-novos-talentos',
+    'Música e Shows, Oficinas e Workshops', 'https://example.com/encontro-novos-talentos',
     'assets/img/prontos/banner/grandes-palcos-03.webp', 'ativo'
 );
 
@@ -121,5 +121,12 @@ SELECT a.id_artista, e.id_evento
 FROM artista a
 INNER JOIN evento e ON e.nome_evento = 'Encontro Novos Talentos'
 WHERE a.nome_artista = 'Coletivo Novos Talentos';
+
+-- Classificação indicativa de exemplo (as demais permanecem 'Livre').
+UPDATE evento SET classificacao_indicativa = '16 anos' WHERE nome_evento = 'Noite Latina Global';
+UPDATE evento SET classificacao_indicativa = '12 anos' WHERE nome_evento = 'Mostra de Cinema Brasileiro';
+UPDATE evento SET classificacao_indicativa = '14 anos' WHERE nome_evento = 'Workshop de Produção Musical';
+UPDATE evento SET classificacao_indicativa = '14 anos' WHERE nome_evento = 'Cinema e Gastronomia ao Ar Livre';
+UPDATE evento SET classificacao_indicativa = '16 anos' WHERE nome_evento = 'Vozes do Mundo';
 
 COMMIT;

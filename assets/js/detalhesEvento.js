@@ -8,6 +8,7 @@
     let favoritoAtual = null;
     let mapaAtual = null;
     let eventoEncerrado = false;
+    let planejamentoDoEvento = null;
 
     function caminhoImagem(caminho) {
         const valor = String(caminho || '').trim();
@@ -163,15 +164,55 @@
             alvo.textContent = 'Não foi possível localizar este endereço no mapa.';
         }
     }
+    function configurarBotaoPlanejamento() {
+        const link = document.getElementById('linkPlanejamento');
+        if (!link) return;
+
+        const possuiPlanejamento = Boolean(planejamentoDoEvento);
+        const desabilitado = eventoEncerrado && !possuiPlanejamento;
+
+        link.classList.toggle('btn-planejamento-concluido', possuiPlanejamento);
+        link.classList.toggle('acao-desabilitada', desabilitado);
+        link.setAttribute('aria-disabled', String(desabilitado));
+
+        if (desabilitado) {
+            link.removeAttribute('href');
+        } else {
+            link.href = `planejamento.php?id=${idEvento}`;
+        }
+
+        if (possuiPlanejamento) {
+            link.innerHTML = '<i class="bi bi-check2-circle" aria-hidden="true"></i> Ver meu planejamento';
+            link.setAttribute('aria-label', 'Ver planejamento deste evento');
+        } else {
+            link.innerHTML = '<i class="bi bi-briefcase" aria-hidden="true"></i> Planejar viagem';
+            link.setAttribute('aria-label', 'Planejar viagem para este evento');
+        }
+    }
+
+    async function carregarPlanejamentoDoEvento() {
+        if (idUsuario < 1 || !idEvento) return;
+
+        try {
+            const resposta = await fetch('api/planejamento/', {headers: {Accept: 'application/json'}});
+            const dados = await lerJson(resposta);
+            if (!resposta.ok) return;
+
+            planejamentoDoEvento = (dados.planejamentos || []).find(
+                (planejamento) => Number(planejamento.id_evento) === idEvento
+            ) || null;
+            configurarBotaoPlanejamento();
+        } catch (erro) {
+            console.error('Falha ao consultar o planejamento do evento:', erro);
+        }
+    }
+
     function configurarAcessoEvento(evento) {
-        const badge = document.getElementById('badgeAcessoEvento');
         const texto = document.getElementById('textoAcessoEvento');
         const link = document.getElementById('linkAcessoEvento');
         const aviso = document.getElementById('avisoAcessoEvento');
         const gratuito = Boolean(evento.gratuidade);
 
-        badge.hidden = !gratuito;
-        badge.textContent = gratuito ? 'Entrada gratuita' : '';
         link.hidden = true;
         link.removeAttribute('href');
         aviso.hidden = true;
@@ -204,11 +245,22 @@
         eventoEncerrado = terminou(evento.data_evento);
         document.title = `${evento.nome_evento || 'Evento'} - ShowMe`;
         const imagem = document.getElementById('imagemEvento');
-        configurarImagem(imagem, evento.imagem_evento, evento.nome_evento || 'Evento');
+        configurarImagem(imagem, evento.imagem_evento, window.ShowMeA11y.textoAltImagemEvento(evento));
         imagem.classList.toggle('evento-encerrado-imagem', eventoEncerrado);
         const gratuidade = document.getElementById('badgeGratuidade');
         gratuidade.className = `badge-gratuidade ${evento.gratuidade ? 'gratuito' : 'pago'}`;
         gratuidade.textContent = evento.gratuidade ? 'Gratuito' : 'Pago';
+        const badgeClassificacao = document.getElementById('badgeClassificacao');
+        const valorClassificacao = String(evento.classificacao_indicativa || '').trim();
+        if (valorClassificacao) {
+            const chave = valorClassificacao.toLocaleLowerCase('pt-BR') === 'livre'
+                ? 'livre'
+                : (valorClassificacao.match(/\d+/) || ['livre'])[0];
+            badgeClassificacao.textContent = chave === 'livre' ? 'L' : chave;
+            badgeClassificacao.dataset.classificacao = chave;
+        }
+        window.ShowMeA11y.aplicarSemanticaClassificacao(badgeClassificacao, valorClassificacao);
+        badgeClassificacao.hidden = !valorClassificacao;
         document.getElementById('badgeEncerrado').hidden = !eventoEncerrado;
         document.getElementById('tituloEvento').textContent = evento.nome_evento || 'Evento sem nome';
         document.querySelector('#infoData span').textContent = formatarData(evento.data_evento);
@@ -220,44 +272,58 @@
         renderizarArtistas(evento.artistas);
         document.getElementById('nomeLocal').textContent = evento.endereco_evento || 'Endereço não informado';
         document.getElementById('enderecoLocal').textContent = endereco(evento);
-        const planejar = document.getElementById('linkPlanejamento'); planejar.href = `planejamento.php?id=${idEvento}`;
-        planejar.classList.toggle('acao-desabilitada', eventoEncerrado); planejar.setAttribute('aria-disabled', String(eventoEncerrado));
-        if (eventoEncerrado) planejar.removeAttribute('href');
-        const favorito = document.querySelector('.btn-favoritar'); favorito.disabled = eventoEncerrado; favorito.title = eventoEncerrado ? 'Evento encerrado' : '';
+        configurarBotaoPlanejamento();
+        definirFavoritosHabilitados(eventoEncerrado);
+        if (eventoEncerrado) botoesFavorito().forEach((botao) => { botao.title = 'Evento encerrado'; });
         document.getElementById('linkComunidade').href = `comunidadeEvento.php?id=${idEvento}`;
         configurarAcessoEvento(evento);
         document.getElementById('estadoPagina').hidden = true; document.getElementById('conteudoEvento').hidden = false;
         carregarMapa(evento);
     }
+    function botoesFavorito() {
+        return Array.from(document.querySelectorAll('.btn-favoritar'));
+    }
+    function definirFavoritosHabilitados(desabilitado) {
+        botoesFavorito().forEach((botao) => { botao.disabled = desabilitado; });
+    }
     function atualizarFavorito() {
-        const botao = document.querySelector('.btn-favoritar'), ativo = favoritoAtual !== null;
-        const icone = document.createElement('i'); icone.className = ativo ? 'bi bi-heart-fill' : 'bi bi-heart';
-        botao.replaceChildren(icone, document.createTextNode(ativo ? ' Favoritado' : ' Favoritar'));
-        botao.setAttribute('aria-pressed', String(ativo));
+        const ativo = favoritoAtual !== null;
+        const rotulo = ativo ? 'Remover dos favoritos' : 'Adicionar aos favoritos';
+        botoesFavorito().forEach((botao) => {
+            const icone = document.createElement('i');
+            icone.className = ativo ? 'bi bi-heart-fill' : 'bi bi-heart';
+            icone.setAttribute('aria-hidden', 'true');
+            botao.replaceChildren(icone, document.createTextNode(ativo ? ' Favoritado' : ' Favoritar'));
+            botao.setAttribute('aria-pressed', String(ativo));
+            botao.setAttribute('aria-label', rotulo);
+            botao.title = rotulo;
+        });
     }
     async function carregarFavorito() {
         if (idUsuario < 1 || eventoEncerrado) return;
-        const botao = document.querySelector('.btn-favoritar'); botao.disabled = true;
+        definirFavoritosHabilitados(true);
         try {
             const resposta = await fetch('api/favoritos/', {headers: {Accept: 'application/json'}});
             const dados = await lerJson(resposta); if (!resposta.ok) throw new Error(dados.erro);
             favoritoAtual = (dados.favoritos || []).find((f) => Number(f.id_evento) === idEvento) || null;
             atualizarFavorito();
-        } catch (erro) { console.error(erro); } finally { botao.disabled = eventoEncerrado; }
+        } catch (erro) { console.error(erro); } finally { definirFavoritosHabilitados(eventoEncerrado); }
     }
     function iniciarFavorito() {
-        const botao = document.querySelector('.btn-favoritar');
-        botao.addEventListener('click', async function () {
-            if (eventoEncerrado) return; this.disabled = true;
-            try {
-                const resposta = favoritoAtual
-                    ? await fetch(`api/favoritos/${favoritoAtual.id_favorito}`, {method: 'DELETE'})
-                    : await fetch('api/favoritos/', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({id_evento: idEvento})});
-                const dados = await lerJson(resposta); if (!resposta.ok) throw new Error(dados.erro || 'Não foi possível alterar o favorito.');
-                favoritoAtual = favoritoAtual ? null : dados.favorito; atualizarFavorito();
-            } catch (erro) {
-                window.ShowMeUI.toast(erro.message, {variante: 'erro'});
-            } finally { this.disabled = eventoEncerrado; }
+        botoesFavorito().forEach((botao) => {
+            botao.addEventListener('click', async function () {
+                if (eventoEncerrado) return;
+                definirFavoritosHabilitados(true);
+                try {
+                    const resposta = favoritoAtual
+                        ? await fetch(`api/favoritos/${favoritoAtual.id_favorito}`, {method: 'DELETE'})
+                        : await fetch('api/favoritos/', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({id_evento: idEvento})});
+                    const dados = await lerJson(resposta); if (!resposta.ok) throw new Error(dados.erro || 'Não foi possível alterar o favorito.');
+                    favoritoAtual = favoritoAtual ? null : dados.favorito; atualizarFavorito();
+                } catch (erro) {
+                    window.ShowMeUI.toast(erro.message, {variante: 'erro'});
+                } finally { definirFavoritosHabilitados(eventoEncerrado); }
+            });
         });
     }
     async function carregarPagina() {
@@ -265,7 +331,8 @@
         try {
             const resposta = await fetch(`api/eventos/${idEvento}`, {headers: {Accept: 'application/json'}});
             const dados = await lerJson(resposta); if (!resposta.ok || !dados.evento) throw new Error(dados.erro || 'Evento não encontrado.');
-            renderizarEvento(dados.evento); await carregarFavorito();
+            renderizarEvento(dados.evento);
+            await Promise.all([carregarFavorito(), carregarPlanejamentoDoEvento()]);
         } catch (erro) { mostrarErro(erro.message || 'Não foi possível carregar o evento.'); }
     }
     if (typeof window.AOS !== 'undefined') window.AOS.init();

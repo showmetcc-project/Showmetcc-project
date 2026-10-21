@@ -71,7 +71,7 @@ function criarCardFavorito(favorito) {
 
     const imagem = document.createElement('img');
     imagem.src = caminhoImagem(favorito.imagem_evento);
-    imagem.alt = favorito.nome_evento || 'Evento';
+    imagem.alt = window.ShowMeA11y.textoAltImagemEvento(favorito);
     imagem.loading = 'lazy';
     imagem.addEventListener('error', function () {
         this.src = imagemPadrao;
@@ -96,7 +96,12 @@ function criarCardFavorito(favorito) {
     detalhes.href = `detalhesEvento.php?id=${favorito.id_evento}`;
     detalhes.textContent = 'Ver detalhes';
 
-    info.append(titulo, local, data, detalhes);
+    info.append(titulo, local, data);
+    const classificacaoFavorito = criarInformacaoClassificacao(favorito.classificacao_indicativa);
+    if (classificacaoFavorito) {
+        info.append(classificacaoFavorito);
+    }
+    info.append(detalhes);
 
     const acoes = document.createElement('div');
     acoes.className = 'acoes';
@@ -256,6 +261,44 @@ function criarInformacao(icone, texto) {
     return linha;
 }
 
+// Converte a classificação oficial no par usado pelo selo oficial:
+// "Livre" -> "L" (verde) e "18 anos" -> "18".
+function dadosClassificacaoIndicativa(valor) {
+    const texto = String(valor || '').trim();
+
+    if (!texto) {
+        return null;
+    }
+
+    if (texto.toLowerCase() === 'livre') {
+        return {chave: 'livre', rotulo: 'L'};
+    }
+
+    const numero = texto.match(/\d+/);
+    return numero
+        ? {chave: numero[0], rotulo: numero[0]}
+        : {chave: 'livre', rotulo: texto};
+}
+
+function criarInformacaoClassificacao(valor) {
+    const dados = dadosClassificacaoIndicativa(valor);
+
+    if (!dados) {
+        return null;
+    }
+
+    const linha = document.createElement('p');
+    const elementoIcone = document.createElement('i');
+    elementoIcone.className = 'bi bi-shield-check';
+    const selo = document.createElement('span');
+    selo.className = 'selo-classificacao';
+    selo.dataset.classificacao = dados.chave;
+    selo.textContent = dados.rotulo;
+    window.ShowMeA11y.aplicarSemanticaClassificacao(selo, valor);
+    linha.append(elementoIcone, selo);
+    return linha;
+}
+
 function textoDeslocamento(planejamento) {
     return `${planejamento.meio_transporte} · ${planejamento.distancia_km} km · ${planejamento.tempo_estimado} min`;
 }
@@ -301,7 +344,7 @@ function criarCardPlanejado(planejamento) {
 
     const imagem = document.createElement('img');
     imagem.src = planejamento.imagem_evento || 'assets/img/bannerEventoPadrao.png';
-    imagem.alt = planejamento.nome_evento;
+    imagem.alt = window.ShowMeA11y.textoAltImagemEvento(planejamento);
 
     const info = document.createElement('div');
     info.className = 'info';
@@ -332,7 +375,12 @@ function criarCardPlanejado(planejamento) {
     verCalendario.textContent = 'Ver no calendário';
 
     botoes.append(detalhes, verCalendario);
-    info.append(titulo, local, data, deslocamento, botoes);
+    info.append(titulo, local, data, deslocamento);
+    const classificacaoPlanejamento = criarInformacaoClassificacao(planejamento.classificacao_indicativa);
+    if (classificacaoPlanejamento) {
+        info.append(classificacaoPlanejamento);
+    }
+    info.append(botoes);
 
     const acoes = document.createElement('div');
     acoes.className = 'acoes';
@@ -600,7 +648,7 @@ function renderizarResumoMes() {
         mensagem.textContent = 'Nenhum evento planejado neste mês.';
 
         const link = document.createElement('a');
-        link.href = 'inicio.php';
+        link.href = 'index.php';
         link.textContent = 'Explorar eventos →';
 
         vazio.append(mensagem, link);

@@ -3,7 +3,7 @@
   <div class="footer-line"></div>
 
   <div class="container footer-top">
-    <div class="row gy-4">
+    <div class="row gy-4 gx-lg-5">
       <div class="col-12 col-md-6 col-lg-4 footer-about">
         <h4 class="logo-footer">
           <span class="verde">Show</span><span class="rosa">Me</span>
@@ -54,7 +54,7 @@
       <div class="col-12 col-lg-4 footer-links">
         <h4>Informações</h4>
         <ul>
-          <li><a href="#">Termos de Uso</a></li>
+          <li><a href="termos.php">Termos de Uso</a></li>
           <li><a href="#">Política de Privacidade</a></li>
         </ul>
         <p class="copyright-text">© 2026 ShowMe. Todos os direitos reservados.</p>

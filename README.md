@@ -30,6 +30,18 @@ fluxo atual de ID token. Consulte a
 O arquivo `config/google.php` é ignorado pelo Git. O Client ID será exposto no HTML por
 definição do fluxo web; já o segredo não deve ser enviado ao navegador nem commitado.
 
+### Organização do código
+
+- `assets/css/`: estilos compartilhados (`main.css`) e estilos específicos de cada tela, incluindo `impressao.css` para o resumo em A4;
+- `assets/js/`: comportamento separado por responsabilidade, como `inicio.js`, `detalhesEvento.js`, `meusEventos.js`, `planejamento.js`, `cadastro.js`, `login.js` e `loginAdmin.js`;
+- `api/`: endpoints REST, com regras de negócio e persistência;
+- `api/middleware/`: autenticação, autorização, CSRF, uploads e integrações compartilhadas;
+- `config/`: conexão com o banco, sessão e credenciais locais não versionadas;
+- `assets/banco/`: schema base e migrações incrementais;
+- `docs/`: auditoria atual e documentos históricos do TCC.
+
+As páginas PHP da raiz concentram apenas a estrutura HTML e a proteção inicial de acesso. A leitura e a gravação de dados ficam na API, e os scripts de interface consomem esses endpoints.
+
 <div align="center">
 
 <img src="./assets/img/showme.png" width="40%" alt="Logotipo ShowMe">

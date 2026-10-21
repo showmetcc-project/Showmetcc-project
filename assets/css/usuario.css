@@ -311,7 +311,7 @@ body {
     border-radius: 12px;
     font-weight: 700;
     text-decoration: none;
-    transition: transform .2s ease, box-shadow .2s ease, background .2s ease;
+    transition: transform .2s ease, box-shadow .2s ease, background .2s ease, color .2s ease;
 }
 
 .btn-conectar-agenda {
@@ -331,6 +331,12 @@ body {
 .btn-desconectar-agenda:hover {
     transform: translateY(-2px);
     box-shadow: 0 6px 18px rgba(255, 0, 110, .22);
+}
+
+.btn-conectar-agenda:hover,
+.btn-conectar-agenda:focus-visible {
+    background: #000;
+    color: #00ff00;
 }
 
 .btn-desconectar-agenda:hover {

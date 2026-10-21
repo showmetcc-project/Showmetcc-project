@@ -35,6 +35,18 @@ body {
 .badge-gratuidade.gratuito { background: #00ff00; color: #111; }
 .badge-gratuidade.pago { background: #ff006e; color: #fff; }
 
+/* Linha superior: ingresso + classificação indicativa */
+.badges-evento-topo {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 12px;
+}
+
+.badges-evento-topo .badge-gratuidade { margin-bottom: 0; }
+.badges-evento-topo .badge-evento-encerrado { margin: 0; }
+
 #mapaEventoBanco {
     width: 100%;
     height: 300px;
@@ -206,6 +218,19 @@ a {
     margin-bottom: 0;
 }
 
+/* Mantém o mesmo ritmo vertical entre Sobre, Artistas e Local.
+   O padding superior de Artistas e Local é removido para que o intervalo
+   visual fique igual ao existente entre Local e a comunidade. */
+.detalhes-coluna-esquerda .secao-artistas,
+.detalhes-coluna-esquerda .secao-local {
+    padding-top: 0;
+}
+
+/* Evita que a margem padrão do parágrafo aumente o intervalo após "Sobre". */
+.detalhes-coluna-esquerda .secao > p {
+    margin-bottom: 0;
+}
+
 .secao h2 {
     color: #00ff00;
     font-size: 1.25rem;
@@ -338,16 +363,6 @@ a {
     text-align: center;
 }
 
-.badge-acesso-evento {
-    align-self: flex-start;
-    padding: 7px 13px;
-    border-radius: 999px;
-    background: #ff006e;
-    color: #fff;
-    font-size: 0.82rem;
-    font-weight: 700;
-}
-
 .btn-acesso-evento {
     display: inline-flex;
     align-items: center;
@@ -417,6 +432,23 @@ a {
 .btn-planejar:hover i,
 .btn-planejar:focus-visible i {
     color: #00ff00;
+}
+
+.btn-planejar.btn-planejamento-concluido {
+    background: transparent;
+    border: 2px solid #00ff00;
+    color: #00ff00;
+}
+
+.btn-planejar.btn-planejamento-concluido:hover,
+.btn-planejar.btn-planejamento-concluido:focus-visible {
+    background: #00dd00;
+    color: #000;
+}
+
+.btn-planejar.btn-planejamento-concluido:hover i,
+.btn-planejar.btn-planejamento-concluido:focus-visible i {
+    color: #000;
 }
 
 /* ==========================

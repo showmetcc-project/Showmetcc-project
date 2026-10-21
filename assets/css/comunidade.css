@@ -13,6 +13,9 @@ body.pagina-comunidades, body.pagina-comunidade-evento { background:var(--com-fu
 .comunidade-card img { width:100%; aspect-ratio:16/9; object-fit:cover; }
 .comunidade-card-corpo { padding:16px; }
 .comunidade-card h3 { margin:0 0 8px; font-family:'Anton','Oswald',sans-serif; font-size:1.35rem; }
+.comunidade-card-topo { display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:8px; }
+.comunidade-card-topo h3 { margin:0; }
+.comunidade-card-topo .selo-classificacao { flex:0 0 auto; }
 .comunidade-card p { margin:0; color:var(--com-sec); }
 .comunidade-card p i { color:var(--com-rosa); }
 .comunidade-estado { color:var(--com-sec); padding:24px 12px; }

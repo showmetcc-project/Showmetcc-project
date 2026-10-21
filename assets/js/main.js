@@ -179,16 +179,18 @@
   let resolverModal = null;
   let focoAnterior = null;
 
-  function garantirContainerToasts() {
+  function garantirContainerToasts(destino) {
     let container = document.getElementById('showmeToastContainer');
-    if (container) return container;
+    if (!container) {
+      container = document.createElement('div');
+      container.id = 'showmeToastContainer';
+      container.className = 'showme-toast-container';
+      container.setAttribute('aria-live', 'polite');
+      container.setAttribute('aria-atomic', 'false');
+    }
 
-    container = document.createElement('div');
-    container.id = 'showmeToastContainer';
-    container.className = 'showme-toast-container';
-    container.setAttribute('aria-live', 'polite');
-    container.setAttribute('aria-atomic', 'false');
-    document.body.append(container);
+    const recipiente = destino instanceof HTMLElement ? destino : document.body;
+    if (container.parentElement !== recipiente) recipiente.append(container);
     return container;
   }
 
@@ -236,7 +238,7 @@
 
     fechar.addEventListener('click', remover);
     notificacao.append(icone, conteudo, fechar);
-    garantirContainerToasts().append(notificacao);
+    garantirContainerToasts(opcoes.container).append(notificacao);
     temporizador = window.setTimeout(remover, duracao);
     return notificacao;
   }
@@ -334,5 +336,167 @@
     });
   }
 
-  window.ShowMeUI = Object.freeze({confirmar, toast});
+  /**
+   * Aviso informativo: mesmo visual da confirmação, com um único botão.
+   * Aceita opcoes.itens (array) para listar detalhes.
+   */
+  function avisar(opcoes = {}) {
+    if (modalAtual) finalizarConfirmacao(false);
+
+    const variante = opcoes.variante === 'edicao' ? 'edicao' : 'importante';
+    const tituloId = `showmeAvisoTitulo-${Date.now()}`;
+    focoAnterior = document.activeElement;
+
+    const overlay = document.createElement('div');
+    overlay.className = `showme-confirmacao-overlay showme-confirmacao-${variante}`;
+    overlay.setAttribute('role', 'dialog');
+    overlay.setAttribute('aria-modal', 'true');
+    overlay.setAttribute('aria-labelledby', tituloId);
+
+    const caixa = document.createElement('div');
+    caixa.className = 'showme-confirmacao showme-aviso';
+
+    const icone = document.createElement('i');
+    icone.className = `${opcoes.icone || 'bi bi-info-circle-fill'} showme-confirmacao-icone`;
+    icone.setAttribute('aria-hidden', 'true');
+
+    const titulo = document.createElement('h2');
+    titulo.id = tituloId;
+    titulo.textContent = String(opcoes.titulo || 'Aviso');
+
+    const texto = document.createElement('p');
+    texto.textContent = String(opcoes.texto || '');
+
+    const itens = Array.isArray(opcoes.itens)
+      ? opcoes.itens.map((item) => String(item || '').trim()).filter(Boolean)
+      : [];
+
+    const lista = document.createElement('ul');
+    lista.className = 'showme-aviso-lista';
+    itens.forEach((item) => {
+      const linha = document.createElement('li');
+      linha.textContent = item;
+      lista.append(linha);
+    });
+
+    const acoes = document.createElement('div');
+    acoes.className = 'showme-confirmacao-acoes';
+
+    const fechar = document.createElement('button');
+    fechar.type = 'button';
+    fechar.className = 'showme-confirmacao-confirmar';
+    fechar.textContent = String(opcoes.fecharTexto || 'Entendi');
+
+    fechar.addEventListener('click', () => finalizarConfirmacao(true));
+    overlay.addEventListener('click', (evento) => {
+      if (evento.target === overlay) finalizarConfirmacao(true);
+    });
+    overlay.addEventListener('keydown', (evento) => {
+      if (evento.key === 'Escape') {
+        evento.preventDefault();
+        finalizarConfirmacao(true);
+      }
+      if (evento.key === 'Tab') {
+        evento.preventDefault();
+        fechar.focus();
+      }
+    });
+
+    acoes.append(fechar);
+    caixa.append(icone, titulo, texto);
+    if (itens.length) caixa.append(lista);
+    caixa.append(acoes);
+    overlay.append(caixa);
+    document.body.append(overlay);
+    document.body.classList.add('showme-modal-aberto');
+    modalAtual = overlay;
+
+    return new Promise((resolver) => {
+      resolverModal = resolver;
+      window.requestAnimationFrame(() => fechar.focus());
+    });
+  }
+
+  window.ShowMeUI = Object.freeze({confirmar, avisar, toast});
+})();
+
+/**
+ * Acessibilidade compartilhada.
+ * Usa o texto alternativo cadastrado para a imagem do evento e, quando ele
+ * está vazio, gera a descrição padrão com o nome do evento e a cidade.
+ */
+(function () {
+  'use strict';
+
+  function textoAltImagemEvento(evento = {}) {
+    const altCadastrado = String(evento.alt_imagem ?? '').trim();
+
+    if (altCadastrado) {
+      return altCadastrado;
+    }
+
+    const nome = String(evento.nome_evento ?? '').trim() || 'evento sem nome';
+    const cidade = String(evento.cidade_evento ?? '').trim();
+
+    return `Imagem de divulgação para o evento ${nome}${cidade ? ` - ${cidade}` : ''}`;
+  }
+
+  const rotulosClassificacaoIndicativa = Object.freeze({
+    livre: 'Livre',
+    '6': '6 anos',
+    '10': '10 anos',
+    '12': '12 anos',
+    '14': '14 anos',
+    '16': '16 anos',
+    '18': '18 anos'
+  });
+
+  /**
+   * Gera o nome acessível completo do selo, independentemente de o banco
+   * armazenar "Livre"/"6 anos" ou apenas a chave numérica "6".
+   */
+  function ariaLabelClassificacaoIndicativa(valor) {
+    const texto = String(valor ?? '').trim();
+
+    if (!texto) {
+      return '';
+    }
+
+    const normalizado = texto.toLocaleLowerCase('pt-BR');
+    const chave = normalizado === 'livre' || normalizado === 'l'
+      ? 'livre'
+      : (texto.match(/\d+/) || [])[0];
+    const rotulo = rotulosClassificacaoIndicativa[chave] || texto;
+
+    return `Classificação indicativa: ${rotulo}`;
+  }
+
+  /**
+   * Aplica a semântica única dos selos: role="img", aria-label completo e
+   * nenhum title isolado. Também limpa os atributos quando o valor é vazio.
+   */
+  function aplicarSemanticaClassificacao(selo, valor) {
+    if (!(selo instanceof HTMLElement)) {
+      return;
+    }
+
+    const rotulo = ariaLabelClassificacaoIndicativa(valor);
+
+    if (!rotulo) {
+      selo.removeAttribute('role');
+      selo.removeAttribute('aria-label');
+      selo.removeAttribute('title');
+      return;
+    }
+
+    selo.setAttribute('role', 'img');
+    selo.setAttribute('aria-label', rotulo);
+    selo.removeAttribute('title');
+  }
+
+  window.ShowMeA11y = Object.freeze({
+    textoAltImagemEvento,
+    ariaLabelClassificacaoIndicativa,
+    aplicarSemanticaClassificacao
+  });
 })();

@@ -48,6 +48,33 @@
         return `A partir de ${formatarValor(minimo)}`;
     }
 
+    function dadosClassificacao(valor) {
+        const texto = String(valor || '').trim();
+        if (!texto) return null;
+        if (texto.toLowerCase() === 'livre') return {chave: 'livre', rotulo: 'L'};
+        const numero = texto.match(/\d+/);
+        return numero ? {chave: numero[0], rotulo: numero[0]} : {chave: 'livre', rotulo: texto};
+    }
+
+    function aplicarClassificacao(valor) {
+        const dados = dadosClassificacao(valor);
+        const info = document.getElementById('classificacaoComunidadeEvento');
+        if (info) {
+            const selo = info.querySelector('.selo-classificacao');
+
+            if (dados && selo) {
+                selo.textContent = dados.rotulo;
+                selo.dataset.classificacao = dados.chave;
+            }
+
+            if (selo) {
+                window.ShowMeA11y.aplicarSemanticaClassificacao(selo, valor);
+            }
+
+            info.hidden = !dados;
+        }
+    }
+
     function nome(pessoa) {
         return [pessoa.nome_user, pessoa.sobrenome].filter(Boolean).join(' ') || 'Usuário';
     }
@@ -65,6 +92,15 @@
         iconeElemento.setAttribute('aria-hidden', 'true');
         elemento.append(iconeElemento);
         if (texto) elemento.append(document.createTextNode(` ${texto}`));
+        return elemento;
+    }
+
+    function botaoDenunciar(tipo, alvo) {
+        const rotulo = `Denunciar ${tipo}`;
+        const elemento = botao('bi-flag', '', 'acao-icone-comunidade');
+        elemento.title = rotulo;
+        elemento.setAttribute('aria-label', rotulo);
+        elemento.addEventListener('click', () => denunciarConteudo(alvo));
         return elemento;
     }
 
@@ -290,6 +326,11 @@
             excluir.addEventListener('click', () => excluirResposta(item.id_resposta));
             acoes.append(editar, excluir);
             bloco.append(acoes);
+        } else if (!usuarioAdmin) {
+            const acoes = document.createElement('div');
+            acoes.className = 'resposta-acoes';
+            acoes.append(botaoDenunciar('resposta', {id_resposta: item.id_resposta}));
+            bloco.append(acoes);
         }
         return bloco;
     }
@@ -357,9 +398,7 @@
             excluir.addEventListener('click', () => excluirPost(post.id_post));
             acoes.append(editar, excluir);
         } else {
-            const denunciar = botao('bi-flag', 'Denunciar');
-            denunciar.addEventListener('click', () => denunciarConteudo({id_post: post.id_post}));
-            acoes.append(denunciar);
+            acoes.append(botaoDenunciar('publicação', {id_post: post.id_post}));
         }
 
         const formularioResposta = document.createElement('form');
@@ -440,7 +479,10 @@
             document.getElementById('modalDenuncia').close('enviada');
             window.ShowMeUI.toast('Denúncia registrada para revisão.', {variante: 'sucesso'});
         } catch (erro) {
-            window.ShowMeUI.toast(erro.message || 'Não foi possível denunciar.', {variante: 'erro'});
+            window.ShowMeUI.toast(erro.message || 'Não foi possível denunciar.', {
+                variante: 'erro',
+                container: document.getElementById('modalDenuncia')
+            });
             enviar.disabled = false;
         }
     }
@@ -520,9 +562,8 @@
             acoes.append(baixar);
         }
         if (!usuarioAdmin && Number(midia.id_usuario) !== idUsuario) {
-            const denunciar = botao('bi-flag', 'Denunciar');
+            const denunciar = botaoDenunciar('foto', {id_midia: midia.id_midia});
             denunciar.classList.add('botao-denunciar-midia');
-            denunciar.addEventListener('click', () => denunciarConteudo({id_midia: midia.id_midia}));
             acoes.append(denunciar);
         }
         dialog.showModal();
@@ -573,9 +614,10 @@
         const preco = document.getElementById('precoComunidadeEvento');
         preco.querySelector('span').textContent = faixaPreco(evento);
         preco.hidden = Boolean(evento.gratuidade);
+        aplicarClassificacao(evento.classificacao_indicativa);
         const imagem = document.getElementById('imagemComunidadeEvento');
         imagem.src = caminho(evento.imagem_evento);
-        imagem.alt = evento.nome_evento;
+        imagem.alt = window.ShowMeA11y.textoAltImagemEvento(evento);
         imagem.onerror = () => {
             imagem.onerror = null;
             imagem.src = fallback;

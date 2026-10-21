@@ -163,7 +163,7 @@ function enviarEmailModeracaoDenunciaShowMe(
         throw new InvalidArgumentException('E-mail de notificação da denúncia inválido');
     }
 
-    if (!in_array($tipoConteudo, ['post', 'midia'], true)) {
+    if (!in_array($tipoConteudo, ['post', 'resposta', 'midia'], true)) {
         throw new InvalidArgumentException('Tipo de conteúdo denunciado inválido');
     }
 
@@ -177,7 +177,11 @@ function enviarEmailModeracaoDenunciaShowMe(
 
     $nomeSeguro = htmlspecialchars($nomeUsuario !== '' ? $nomeUsuario : 'Olá', ENT_QUOTES, 'UTF-8');
     $eventoSeguro = htmlspecialchars($nomeEvento, ENT_QUOTES, 'UTF-8');
-    $rotuloConteudo = $tipoConteudo === 'post' ? 'publicação' : 'foto da galeria';
+    $rotuloConteudo = match ($tipoConteudo) {
+        'post' => 'publicação',
+        'resposta' => 'resposta',
+        default => 'foto da galeria',
+    };
 
     if ($papel === 'autor') {
         $mailer->Subject = 'Um conteúdo seu foi removido no ShowMe';

@@ -269,7 +269,7 @@ paths:
     delete:
       tags: [Usuários]
       summary: Apaga a própria conta
-      description: A exclusão em cascata do banco remove favoritos, avaliações, preferências, rotas, dados do Spotify e solicitações do usuário.
+      description: A exclusão em cascata do banco remove favoritos, avaliações, preferências, rotas e solicitações do usuário.
       security:
         - cookieAuth: []
       parameters:
@@ -291,9 +291,14 @@ paths:
   /eventos:
     get:
       tags: [Eventos]
-      summary: Lista eventos públicos ou solicitações para moderação
-      description: Sem parâmetros, lista somente eventos ativos com data igual ou posterior a hoje. Com busca, aplica o mesmo recorte de data e filtra por nome, cidade, categoria ou artista. Com solicitacoes, consulta a tabela de solicitações e exige uma sessão de administrador; nessa modalidade, busca, dias, limite e offset controlam a listagem administrativa paginada.
+      summary: Lista eventos públicos, locais de eventos ou solicitações para moderação
+      description: Sem parâmetros, lista somente eventos ativos com data igual ou posterior a hoje. Aceita filtros opcionais combináveis (busca, categoria/id_categoria, classificacao/classificacao_indicativa, ingresso/preco, valor_maximo/preco_max, uf, cidade, periodo e limite) mantendo o mesmo recorte de data. Com listar_locais=1, retorna UFs, pares cidade/UF e categorias distintas de eventos ativos. Com solicitacoes, consulta a tabela de solicitações e exige uma sessão de administrador; nessa modalidade, busca, dias, limite e offset controlam a listagem administrativa paginada.
       parameters:
+        - name: listar_locais
+          in: query
+          required: false
+          description: Use 1 para retornar as UFs, os pares cidade/UF e as categorias dos eventos ativos. Não pode ser combinado com busca ou ID.
+          schema: {type: integer, enum: [1]}
         - name: busca
           in: query
           required: false
@@ -301,6 +306,58 @@ paths:
           schema:
             type: string
           example: Festival
+        - name: categoria
+          in: query
+          required: false
+          description: Filtra os eventos cuja categoria contenha o valor informado. O alias id_categoria é aceito.
+          schema:
+            type: string
+          example: Música e Shows
+        - name: classificacao
+          in: query
+          required: false
+          description: Classificação indicativa oficial ou lista separada por vírgulas (Livre, 6 anos, 10 anos, 12 anos, 14 anos, 16 anos, 18 anos). O alias classificacao_indicativa é aceito. Eventos que correspondem a qualquer valor informado são retornados.
+          schema:
+            type: string
+          example: 12 anos,14 anos
+        - name: ingresso
+          in: query
+          required: false
+          description: Filtra por tipo de ingresso. O alias preco é aceito.
+          schema:
+            type: string
+            enum: [todos, gratuitos, pagos]
+            default: todos
+        - name: valor_maximo
+          in: query
+          required: false
+          description: Mantém eventos gratuitos e eventos pagos cujo ingresso mínimo seja menor ou igual a este valor. O alias preco_max é aceito.
+          schema:
+            type: number
+            minimum: 0
+          example: 500
+        - name: uf
+          in: query
+          required: false
+          description: Sigla da UF (duas letras) do evento.
+          schema:
+            type: string
+          example: SP
+        - name: cidade
+          in: query
+          required: false
+          description: Cidade do evento.
+          schema:
+            type: string
+          example: Campinas
+        - name: periodo
+          in: query
+          required: false
+          description: "Recorte de data: hoje (data_evento = hoje), amanha (amanhã), fim_de_semana (sábado e domingo do fim de semana corrente), nesta_semana (de hoje até o próximo domingo), proxima_semana (próxima segunda a domingo), neste_mes (de hoje ao fim do mês corrente) ou proximo_mes (do início ao fim do mês seguinte)."
+          schema:
+            type: string
+            enum: [hoje, amanha, fim_de_semana, nesta_semana, proxima_semana, neste_mes, proximo_mes]
+          example: fim_de_semana
         - name: limite
           in: query
           required: false
@@ -349,6 +406,26 @@ paths:
                         type: array
                         items:
                           $ref: '#/components/schemas/Evento'
+                      recomendacoes:
+                        type: object
+                        description: Presente quando a requisição é feita por usuário logado sem filtros.
+                        properties:
+                          personalizado:
+                            type: boolean
+                          categorias:
+                            type: array
+                            items:
+                              type: object
+                              properties:
+                                categoria: {type: string}
+                                peso: {type: integer}
+                          generos:
+                            type: array
+                            items:
+                              type: object
+                              properties:
+                                genero: {type: string}
+                                peso: {type: integer}
                   - type: object
                     properties:
                       solicitacoes:
@@ -367,6 +444,21 @@ paths:
                       limite: {type: integer, nullable: true}
                       offset: {type: integer}
                       tem_mais: {type: boolean}
+                  - type: object
+                    properties:
+                      ufs:
+                        type: array
+                        items: {type: string, example: SP}
+                      cidades:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            cidade: {type: string, example: Campinas}
+                            uf: {type: string, example: SP}
+                      categorias:
+                        type: array
+                        items: {type: string, example: 'Música e Shows'}
         '400':
           $ref: '#/components/responses/RequisicaoInvalida'
         '401':
@@ -666,10 +758,16 @@ paths:
           $ref: '#/components/responses/NaoAutenticado'
     post:
       tags: [Google Agenda]
-      summary: Verifica conflito ou exporta um planejamento
+      summary: Verifica conflito, consulta o dia, verifica exportação ou exporta um planejamento
       description: >-
-        verificar_conflito consulta a agenda somente nesta requisição. exportar cria
-        um evento único, com ID determinístico, sem sincronização posterior.
+        verificar_conflito consulta a agenda somente nesta requisição. verificar_data
+        retorna os compromissos de todo o dia do evento, usado para o aviso de
+        compromissos na mesma data no início do planejamento. verificar_exportado
+        informa se o evento determinístico do planejamento já existe na agenda.
+        exportar cria um evento único, com ID determinístico, sem sincronização
+        posterior. Em verificar_conflito e verificar_data, o id_rota opcional
+        identifica o próprio planejamento editado para que ele não seja tratado
+        como conflito.
       security:
         - cookieAuth: []
       requestBody:
@@ -679,6 +777,8 @@ paths:
             schema:
               oneOf:
                 - $ref: '#/components/schemas/GoogleAgendaConflitoEntrada'
+                - $ref: '#/components/schemas/GoogleAgendaVerificacaoDataEntrada'
+                - $ref: '#/components/schemas/GoogleAgendaExportadoEntrada'
                 - $ref: '#/components/schemas/GoogleAgendaExportacaoEntrada'
       responses:
         '200':
@@ -905,7 +1005,7 @@ paths:
   /comunidade-denuncias:
     get:
       tags: [Comunidades, Administração]
-      summary: Lista denúncias de publicações e fotos para moderação
+      summary: Lista denúncias de publicações, respostas e fotos para moderação
       description: Restrito a administradores. Retorna o conteúdo, autor, denunciante, comunidade, motivo e situação da denúncia.
       security: [{cookieAuth: []}]
       parameters:
@@ -960,8 +1060,8 @@ paths:
         '403': {$ref: '#/components/responses/Proibido'}
     post:
       tags: [Comunidades]
-      summary: Denuncia uma publicação ou foto
-      description: Exatamente um entre id_post e id_midia deve ser informado.
+      summary: Denuncia uma publicação, resposta ou foto
+      description: Exatamente um entre id_post, id_resposta e id_midia deve ser informado.
       security: [{cookieAuth: []}]
       requestBody:
         required: true
@@ -976,11 +1076,11 @@ paths:
   /comunidade-denuncias/{id}:
     put:
       tags: [Comunidades, Administração]
-      summary: Mantém ou remove uma publicação ou foto denunciada
+      summary: Mantém ou remove uma publicação, resposta ou foto denunciada
       description: >-
         Restrito a administradores. A decisão vale para todas as denúncias pendentes do
         mesmo conteúdo. A API envia e-mail aos denunciantes e, em caso de remoção, ao
-        autor. Posts usam exclusão lógica; fotos também têm o arquivo físico removido.
+        autor. Posts e respostas usam exclusão lógica; fotos também têm o arquivo físico removido.
       security: [{cookieAuth: []}]
       parameters: [{$ref: '#/components/parameters/IdNaRota'}]
       requestBody:
@@ -1263,6 +1363,10 @@ components:
           type: string
           maxLength: 255
           nullable: true
+        classificacao_indicativa:
+          type: string
+          maxLength: 20
+          nullable: true
         link_oficial:
           type: string
           format: uri
@@ -1272,6 +1376,11 @@ components:
           type: string
           maxLength: 255
           nullable: true
+        alt_imagem:
+          type: string
+          maxLength: 255
+          nullable: true
+          description: Texto alternativo acessível da imagem. Quando vazio, a interface gera a descrição padrão com nome do evento e cidade.
         status_evento:
           type: string
           enum: [ativo, cancelado]
@@ -1358,6 +1467,10 @@ components:
           type: string
           maxLength: 255
           nullable: true
+        classificacao_indicativa:
+          type: string
+          maxLength: 20
+          nullable: true
         link_oficial:
           type: string
           format: uri
@@ -1384,6 +1497,15 @@ components:
         nome_artista_solicitado:
           type: string
           maxLength: 150
+          nullable: true
+        genero_artista:
+          type: string
+          maxLength: 100
+          nullable: true
+          description: Gênero musical opcional do artista, usado nas recomendações da Home.
+        alt_imagem:
+          type: string
+          maxLength: 255
           nullable: true
 
     EventoAtualizacao:
@@ -1445,6 +1567,10 @@ components:
           type: string
           maxLength: 255
           nullable: true
+        classificacao_indicativa:
+          type: string
+          maxLength: 20
+          nullable: true
         link_oficial:
           type: string
           format: uri
@@ -1454,6 +1580,15 @@ components:
           type: string
           maxLength: 255
           nullable: true
+        alt_imagem:
+          type: string
+          maxLength: 255
+          nullable: true
+        genero_artista:
+          type: string
+          maxLength: 100
+          nullable: true
+          description: Atualiza o gênero musical do artista vinculado ao evento.
         status_evento:
           type: string
           enum: [ativo, cancelado]
@@ -1482,6 +1617,11 @@ components:
         foto:
           type: string
           format: binary
+        alt_imagem:
+          type: string
+          maxLength: 255
+          nullable: true
+          description: Texto alternativo acessível da foto do evento.
         horario_evento:
           type: string
           example: '20:00'
@@ -1518,7 +1658,11 @@ components:
           uniqueItems: true
           items:
             type: string
-            enum: [Música, Cinema, Show Nacional, Show Internacional, Workshop, Oficina, Gastronômico, Literatura]
+            enum: ['Música e Shows', 'Cinema e Audiovisual', 'Teatro e Dança', 'Artes Visuais e Exposições', 'Literatura', 'Gastronomia', 'Oficinas e Workshops', 'Cultura Popular e Regional', 'Geek e Cultura Pop']
+        classificacao_indicativa:
+          type: string
+          enum: [Livre, '6 anos', '10 anos', '12 anos', '14 anos', '16 anos', '18 anos']
+          default: Livre
         link_oficial:
           type: string
           format: uri
@@ -1552,6 +1696,11 @@ components:
           type: string
           maxLength: 150
           nullable: true
+        genero_artista:
+          type: string
+          maxLength: 100
+          nullable: true
+          description: Opcional; exibido no formulário quando a categoria de música é selecionada.
 
     SolicitacaoResultado:
       type: object
@@ -1565,6 +1714,9 @@ components:
           type: integer
           nullable: true
         foto:
+          type: string
+          nullable: true
+        alt_imagem:
           type: string
           nullable: true
 
@@ -1582,6 +1734,10 @@ components:
           enum: [pendente, aprovado, recusado]
         foto:
           type: string
+          nullable: true
+        alt_imagem:
+          type: string
+          maxLength: 255
           nullable: true
         horario_evento:
           type: string
@@ -1616,6 +1772,10 @@ components:
           type: string
           maxLength: 255
           nullable: true
+        classificacao_indicativa:
+          type: string
+          maxLength: 20
+          nullable: true
         link_oficial:
           type: string
           format: uri
@@ -1645,6 +1805,10 @@ components:
         nome_artista_solicitado:
           type: string
           maxLength: 150
+        genero_artista:
+          type: string
+          maxLength: 100
+          nullable: true
         data_solicitacao:
           type: string
           format: date-time
@@ -1693,6 +1857,7 @@ components:
         custo_transporte:
           type: number
           minimum: 0
+          description: Valor gasto com transporte (ida, volta e taxas).
         hospedagem_necessaria:
           type: boolean
         nome_hospedagem:
@@ -1702,6 +1867,7 @@ components:
         custo_hospedagem:
           type: number
           minimum: 0
+          description: Valor gasto com hospedagem; zerado quando hospedagem_necessaria é false.
 
     GoogleAgendaConflitoEntrada:
       type: object
@@ -1717,6 +1883,38 @@ components:
           type: integer
           minimum: 0
           description: Minutos de deslocamento incluídos antes do início do evento.
+        id_rota:
+          type: integer
+          minimum: 1
+          nullable: true
+          description: Planejamento editado; quando informado, o próprio evento exportado é ignorado na checagem de conflito.
+
+    GoogleAgendaVerificacaoDataEntrada:
+      type: object
+      required: [acao, id_evento]
+      properties:
+        acao:
+          type: string
+          enum: [verificar_data]
+        id_evento:
+          type: integer
+          minimum: 1
+        id_rota:
+          type: integer
+          minimum: 1
+          nullable: true
+          description: Planejamento editado; quando informado, o próprio evento exportado é ignorado no aviso da mesma data.
+
+    GoogleAgendaExportadoEntrada:
+      type: object
+      required: [acao, id_rota]
+      properties:
+        acao:
+          type: string
+          enum: [verificar_exportado]
+        id_rota:
+          type: integer
+          minimum: 1
 
     GoogleAgendaExportacaoEntrada:
       type: object
@@ -1758,6 +1956,7 @@ components:
         custo_transporte:
           type: number
           minimum: 0
+          description: Valor gasto com transporte (ida, volta e taxas).
         hospedagem_necessaria:
           type: boolean
         nome_hospedagem:
@@ -1767,6 +1966,7 @@ components:
         custo_hospedagem:
           type: number
           minimum: 0
+          description: Valor gasto com hospedagem; zerado quando hospedagem_necessaria é false.
 
     PlanejamentoRota:
       type: object
@@ -1791,6 +1991,7 @@ components:
           type: number
         custo_transporte:
           type: number
+          description: Valor gasto com transporte.
         hospedagem_necessaria:
           type: boolean
         nome_hospedagem:
@@ -1798,6 +1999,7 @@ components:
           nullable: true
         custo_hospedagem:
           type: number
+          description: Valor gasto com hospedagem.
 
     Planejamento:
       allOf:
@@ -1912,6 +2114,10 @@ components:
           type: integer
           minimum: 1
           nullable: true
+        id_resposta:
+          type: integer
+          minimum: 1
+          nullable: true
         id_midia:
           type: integer
           minimum: 1
@@ -1936,8 +2142,9 @@ components:
       properties:
         id_denuncia: {type: integer}
         id_post: {type: integer, nullable: true}
+        id_resposta: {type: integer, nullable: true}
         id_midia: {type: integer, nullable: true}
-        tipo_alvo: {type: string, enum: [post, midia]}
+        tipo_alvo: {type: string, enum: [post, resposta, midia]}
         id_denunciante: {type: integer}
         motivo: {type: string}
         status_denuncia: {type: string, enum: [pendente, mantido, removido]}

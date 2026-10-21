@@ -19,6 +19,13 @@
         if (!caminho) return fallback;
         return /^(https?:|data:|\/)/i.test(caminho) || caminho.startsWith('assets/') ? caminho : `assets/uploads/eventos/${caminho}`;
     }
+    function dadosClassificacao(valor) {
+        const texto = String(valor || '').trim();
+        if (!texto) return null;
+        if (texto.toLowerCase() === 'livre') return {chave: 'livre', rotulo: 'L'};
+        const numero = texto.match(/\d+/);
+        return numero ? {chave: numero[0], rotulo: numero[0]} : {chave: 'livre', rotulo: texto};
+    }
     function card(evento) {
         const coluna = document.createElement('div');
         coluna.className = 'col-12 col-md-6 col-lg-4';
@@ -27,17 +34,29 @@
         link.href = `comunidadeEvento.php?id=${encodeURIComponent(evento.id_evento)}`;
         const foto = document.createElement('img');
         foto.src = imagem(evento.imagem_evento);
-        foto.alt = evento.nome_evento || 'Evento';
+        foto.alt = window.ShowMeA11y.textoAltImagemEvento(evento);
         foto.loading = 'lazy';
         foto.onerror = () => { foto.onerror = null; foto.src = fallback; };
         const corpo = document.createElement('div');
         corpo.className = 'comunidade-card-corpo';
+        const topo = document.createElement('div');
+        topo.className = 'comunidade-card-topo';
         const titulo = document.createElement('h3');
         titulo.textContent = evento.nome_evento || 'Evento';
+        topo.append(titulo);
+        const classificacao = dadosClassificacao(evento.classificacao_indicativa);
+        if (classificacao) {
+            const selo = document.createElement('span');
+            selo.className = 'selo-classificacao';
+            selo.dataset.classificacao = classificacao.chave;
+            selo.textContent = classificacao.rotulo;
+            window.ShowMeA11y.aplicarSemanticaClassificacao(selo, evento.classificacao_indicativa);
+            topo.append(selo);
+        }
         const metrica = document.createElement('p');
         const total = Number(evento.total_posts) || 0;
         metrica.innerHTML = `<i class="bi bi-chat-dots" aria-hidden="true"></i> ${total} ${total === 1 ? 'publicação' : 'publicações'}`;
-        corpo.append(titulo, metrica);
+        corpo.append(topo, metrica);
         link.append(foto, corpo);
         coluna.append(link);
         return coluna;

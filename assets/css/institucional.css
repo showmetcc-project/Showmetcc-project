@@ -78,7 +78,6 @@
 }
 
 .pagina-sobre .plano-fidelidade {
-  position: relative;
   display: flex;
   box-sizing: border-box;
   width: 100%;
@@ -97,9 +96,12 @@
   transform: translateY(-4px);
 }
 
+/* Plano mensal: card base neutro, sem o verde neon.
+   Borda e fundo discretos, alinhados ao restante da seção. */
 .pagina-sobre .plano-mensal {
-  --plano-cor: #00ff00;
-  background: rgba(0, 255, 0, .08);
+  --plano-cor: #2a2a2a;
+  border: 1px solid #2a2a2a;
+  background: #141414;
 }
 
 .pagina-sobre .plano-anual {
@@ -107,16 +109,21 @@
   background: rgba(255, 0, 110, .08);
 }
 
+.pagina-sobre .plano-fidelidade-cabecalho {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px 14px;
+  margin-bottom: 6px;
+}
+
 .pagina-sobre .plano-fidelidade h3 {
   min-height: 1.25em;
-  margin: 0 0 6px;
+  margin: 0;
   color: var(--plano-cor);
   font-size: clamp(1.45rem, 2.4vw, 1.75rem);
   line-height: 1.25;
-}
-
-.pagina-sobre .plano-anual h3 {
-  padding-right: 170px;
 }
 
 .pagina-sobre .plano-fidelidade-subtitulo,
@@ -143,9 +150,9 @@
 }
 
 .pagina-sobre .plano-fidelidade-preco strong {
-  font-family: "Anton", "Oswald", sans-serif;
+  font-family: "Anton", "Oswald", sans-serif !important;
   font-size: clamp(2rem, 4vw, 2.75rem);
-  font-weight: 400;
+  font-weight: 900;
   line-height: 1;
 }
 
@@ -185,10 +192,8 @@
 }
 
 .pagina-sobre .plano-fidelidade-badge {
-  position: absolute;
-  top: 18px;
-  right: 20px;
-  max-width: 160px;
+  flex: 0 0 auto;
+  max-width: 100%;
   padding: 6px 11px;
   border-radius: 999px;
   background: #ff006e;
@@ -197,6 +202,21 @@
   font-weight: 700;
   line-height: 1.2;
   text-align: center;
+}
+
+/* Plano mensal neutro: título e ícone sem verde e separador interno discreto.
+   Estas regras vêm depois das regras base para vencerem no cascade. */
+.pagina-sobre .plano-mensal h3 {
+  color: #ffffff;
+}
+
+.pagina-sobre .plano-mensal .plano-fidelidade-divisor {
+  height: 1px;
+  background: #2a2a2a;
+}
+
+.pagina-sobre .plano-mensal .plano-fidelidade-beneficio i {
+  color: #bdbdbd;
 }
 
 @media (max-width: 767.98px) {
@@ -220,16 +240,6 @@
     padding-left: 16px;
   }
 
-  .pagina-sobre .work-process .steps-image {
-    justify-content: center;
-    margin-left: 0;
-  }
-
-  .pagina-sobre .work-process .steps-image img,
-  .pagina-sobre .work-process .icone-etapa {
-    width: 74px;
-  }
-
   .pagina-sobre .clube-fidelidade .section-title h2 {
     gap: 0 .2em;
   }
@@ -239,13 +249,7 @@
     min-height: 0;
   }
 
-  .pagina-sobre .plano-anual h3 {
-    padding-right: 155px;
-  }
-
-  .pagina-sobre .plano-fidelidade-badge {
-    top: 18px;
-    right: 18px;
-    max-width: 145px;
+  .pagina-sobre .plano-fidelidade-cabecalho {
+    gap: 8px 12px;
   }
 }

@@ -1,4 +1,4 @@
-DirectoryIndex institucional.php
+DirectoryIndex index.php
 
 RewriteEngine On
 RewriteRule ^cadastro-evento\.php$ /Showmetcc-project/cadastroEvento.php [R=301,L]

@@ -1,4 +1,8 @@
-<?php require_once __DIR__ . '/config/verificaAdmin.php'; ?>
+<?php
+require_once __DIR__ . '/config/verificaAdmin.php';
+require_once __DIR__ . '/config/categoriasEvento.php';
+require_once __DIR__ . '/config/classificacoesIndicativas.php';
+?>
 <!DOCTYPE html>
 <html lang="pt-BR">
 
@@ -216,13 +220,34 @@
                                 <input type="number" class="form-control" id="valorMaximoEdicao" min="0.01" step="0.01">
                             </div>
                             <div class="col-md-5">
-                                <label for="categoriaEventoEdicao" class="form-label">Categoria</label>
-                                <input type="text" class="form-control" id="categoriaEventoEdicao" maxlength="255"
-                                    placeholder="Ex.: Música, Show Nacional">
+                                <label for="categoriaEventoEdicao" class="form-label">
+                                    Categorias <span class="text-muted small fw-normal">(selecione uma ou mais)</span>
+                                </label>
+                                <select class="form-select" id="categoriaEventoEdicao" multiple size="6"
+                                    aria-describedby="categoriaEventoEdicaoAjuda">
+                                    <?php foreach (categoriasEventoOficiais() as $categoria): ?>
+                                    <option value="<?= htmlspecialchars($categoria, ENT_QUOTES, 'UTF-8') ?>">
+                                        <?= htmlspecialchars($categoria, ENT_QUOTES, 'UTF-8') ?>
+                                    </option>
+                                    <?php endforeach; ?>
+                                </select>
+                                <div id="categoriaEventoEdicaoAjuda" class="form-text">
+                                    Use Ctrl (Windows) ou Cmd (Mac) para marcar várias.
+                                </div>
                             </div>
                             <div class="col-md-7">
                                 <label for="linkOficialEdicao" class="form-label">Link oficial</label>
                                 <input type="url" class="form-control" id="linkOficialEdicao" maxlength="255">
+                            </div>
+                            <div class="col-md-4">
+                                <label for="classificacaoIndicativaEdicao" class="form-label">Classificação</label>
+                                <select class="form-select" id="classificacaoIndicativaEdicao">
+                                    <?php foreach (classificacoesIndicativasOficiais() as $classificacao): ?>
+                                    <option value="<?= htmlspecialchars($classificacao, ENT_QUOTES, 'UTF-8') ?>">
+                                        <?= htmlspecialchars($classificacao, ENT_QUOTES, 'UTF-8') ?>
+                                    </option>
+                                    <?php endforeach; ?>
+                                </select>
                             </div>
                             <div class="col-md-4">
                                 <label for="gratuidadeEdicao" class="form-label">Tipo</label>
@@ -234,6 +259,24 @@
                             <div class="col-12">
                                 <label for="descricaoEventoEdicao" class="form-label">Descrição do evento</label>
                                 <textarea class="form-control" id="descricaoEventoEdicao" rows="4" maxlength="1000"></textarea>
+                            </div>
+                            <div class="col-12">
+                                <label for="altImagemEdicao" class="form-label">Texto Alternativo da Imagem (Acessibilidade)</label>
+                                <input type="text" class="form-control" id="altImagemEdicao" maxlength="255"
+                                    placeholder="Ex: Vocalista da banda cantando no palco sob iluminação azul"
+                                    aria-describedby="altImagemEdicaoAjuda">
+                                <div id="altImagemEdicaoAjuda" class="form-text">
+                                    Descreva brevemente a imagem para pessoas com deficiência visual que utilizam leitores de tela.
+                                </div>
+                            </div>
+                            <div class="col-12" id="campoGeneroArtistaEdicao" hidden>
+                                <label for="generoArtistaEdicao" class="form-label">Gênero Musical do Artista</label>
+                                <input type="text" class="form-control" id="generoArtistaEdicao" maxlength="100"
+                                    placeholder="Ex: MPB, Rock, Sertanejo" disabled
+                                    aria-describedby="generoArtistaEdicaoAjuda">
+                                <div id="generoArtistaEdicaoAjuda" class="form-text">
+                                    Opcional. Usado para personalizar as recomendações da Home.
+                                </div>
                             </div>
                             <div class="col-12 campo-apenas-solicitacao">
                                 <label for="descricaoArtistaEdicao" class="form-label">Artista / atração</label>

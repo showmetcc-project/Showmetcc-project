@@ -12,9 +12,33 @@
   overflow: hidden;
 }
 
+/* Degradês laterais presos às bordas do container do carrossel.
+   Cobrem 100% da altura e suavizam o corte dos cards nas extremidades. */
+.carrossel-eventos .fade-left,
+.carrossel-eventos .fade-right {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  z-index: 5;
+  width: 80px;
+  height: 100%;
+  pointer-events: none;
+}
+
+.carrossel-eventos .fade-right {
+  right: 0;
+  background: linear-gradient(to left, rgba(10, 10, 10, 1) 0%, rgba(10, 10, 10, 0) 100%);
+}
+
+.carrossel-eventos .fade-left {
+  left: 0;
+  background: linear-gradient(to right, rgba(10, 10, 10, 1) 0%, rgba(10, 10, 10, 0) 100%);
+}
+
 .carrossel-wrapper {
-  --carrossel-fade-inicio: 6%;
-  --carrossel-fade-fim: 94%;
+  /* Largura fixa do degradê: não muda com o tamanho da tela, então as
+     extremidades continuam suavizadas em qualquer resolução. */
+  --carrossel-fade: 90px;
   display: block;
   width: calc(100% - 112px);
   margin: 0 auto;
@@ -22,16 +46,16 @@
   overflow: hidden;
   -webkit-mask-image: linear-gradient(
     to right,
-    transparent 0%,
-    #000 var(--carrossel-fade-inicio),
-    #000 var(--carrossel-fade-fim),
+    transparent 0,
+    #000 var(--carrossel-fade),
+    #000 calc(100% - var(--carrossel-fade)),
     transparent 100%
   );
   mask-image: linear-gradient(
     to right,
-    transparent 0%,
-    #000 var(--carrossel-fade-inicio),
-    #000 var(--carrossel-fade-fim),
+    transparent 0,
+    #000 var(--carrossel-fade),
+    #000 calc(100% - var(--carrossel-fade)),
     transparent 100%
   );
   -webkit-mask-repeat: no-repeat;
@@ -177,21 +201,16 @@
   margin: 0;
 }
 
-@media (max-width: 1199.98px) {
-  .carrossel-wrapper {
-    --carrossel-fade-inicio: 8%;
-    --carrossel-fade-fim: 92%;
-  }
-}
-
-@media (max-width: 991.98px) {
-  .carrossel-wrapper {
-    --carrossel-fade-inicio: 12%;
-    --carrossel-fade-fim: 88%;
-  }
-}
-
 @media (max-width: 767.98px) {
+  .carrossel-wrapper {
+    --carrossel-fade: 60px;
+  }
+
+  .carrossel-eventos .fade-left,
+  .carrossel-eventos .fade-right {
+    width: 56px;
+  }
+
   .eventos h3 {
     margin-left: 0;
     text-align: center;
@@ -212,8 +231,6 @@
   }
 
   .carrossel-wrapper {
-    --carrossel-fade-inicio: 20%;
-    --carrossel-fade-fim: 80%;
     width: 100%;
     padding-right: 15vw;
     padding-left: 15vw;
@@ -428,11 +445,6 @@
   background: #ff006e;
   color: #fff;
   z-index: 2;
-}
-
-.inicio .btn-toggle-favorito {
-  right: auto;
-  left: 10px;
 }
 
 .badge-evento.pago {

@@ -20,7 +20,8 @@ switch ($metodo) {
         $stmt = $conn->prepare(
             'SELECT f.id_favorito, e.id_evento, e.nome_evento, e.endereco_evento,
                     e.numero_endereco,
-                    e.cidade_evento, e.uf, e.data_evento, e.gratuidade, e.imagem_evento
+                    e.cidade_evento, e.uf, e.data_evento, e.classificacao_indicativa,
+                    e.gratuidade, e.imagem_evento, e.alt_imagem
              FROM favoritos f
              INNER JOIN evento e ON e.id_evento = f.id_evento
              WHERE f.id_user = ?

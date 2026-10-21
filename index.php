@@ -3,16 +3,16 @@ require_once __DIR__ . '/config/sessao.php';
 iniciarSessaoSegura();
 
 $secoesHome = [
-    ['id' => 'eventosMusicais', 'titulo' => 'Eventos Musicais', 'cor' => 'verde'],
-    ['id' => 'pertoVoce', 'titulo' => 'Perto de Você', 'cor' => 'rosa'],
-    ['id' => 'cinema', 'titulo' => 'Cinema', 'cor' => 'verde'],
-    ['id' => 'workshops', 'titulo' => 'Workshops', 'cor' => 'rosa'],
-    ['id' => 'oficinas', 'titulo' => 'Oficinas', 'cor' => 'verde'],
-    ['id' => 'gastronomicos', 'titulo' => 'Gastronômicos', 'cor' => 'rosa'],
-    ['id' => 'literatura', 'titulo' => 'Literatura', 'cor' => 'verde'],
-    ['id' => 'showsInternacionais', 'titulo' => 'Shows Internacionais', 'cor' => 'rosa'],
-    ['id' => 'showsNacionais', 'titulo' => 'Shows Nacionais', 'cor' => 'verde'],
     ['id' => 'emBreve', 'titulo' => 'Em Breve', 'cor' => 'rosa'],
+    ['id' => 'musicaShows', 'titulo' => 'Música e Shows', 'cor' => 'verde'],
+    ['id' => 'cinemaAudiovisual', 'titulo' => 'Cinema e Audiovisual', 'cor' => 'rosa'],
+    ['id' => 'teatroDanca', 'titulo' => 'Teatro e Dança', 'cor' => 'verde'],
+    ['id' => 'artesVisuais', 'titulo' => 'Artes Visuais e Exposições', 'cor' => 'rosa'],
+    ['id' => 'literatura', 'titulo' => 'Literatura', 'cor' => 'verde'],
+    ['id' => 'gastronomia', 'titulo' => 'Gastronomia', 'cor' => 'rosa'],
+    ['id' => 'oficinasWorkshops', 'titulo' => 'Oficinas e Workshops', 'cor' => 'verde'],
+    ['id' => 'culturaPopular', 'titulo' => 'Cultura Popular e Regional', 'cor' => 'rosa'],
+    ['id' => 'geekCulturaPop', 'titulo' => 'Geek e Cultura Pop', 'cor' => 'verde'],
 ];
 ?>
 <!doctype html>
@@ -92,6 +92,9 @@ $secoesHome = [
                 </h3>
 
                 <div class="carrossel-eventos">
+                    <div class="fade-left" aria-hidden="true"></div>
+                    <div class="fade-right" aria-hidden="true"></div>
+
                     <button
                         type="button"
                         class="btn-carrossel esquerda"
@@ -135,7 +138,6 @@ $secoesHome = [
     <script src="assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
     <script src="assets/vendor/swiper/swiper-bundle.min.js"></script>
     <script src="assets/js/main.js"></script>
-    <script src="assets/js/favoritosToggle.js"></script>
     <script src="assets/js/inicio.js"></script>
 </body>
 

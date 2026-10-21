@@ -32,7 +32,7 @@
         'titulo_primario' => 'Meus',
         'titulo_secundario' => 'Eventos',
         'icone' => 'bi-calendar-event',
-        'fallback' => 'inicio.php',
+        'fallback' => 'index.php',
     ];
     require __DIR__ . '/cabecalho.php';
     ?>
@@ -87,8 +87,6 @@
                             <button type="button" id="calendarioProximo" class="calendario-navegacao" aria-label="Próximo mês">
                                 <i class="bi bi-chevron-right" aria-hidden="true"></i>
                             </button>
-
-                            <button type="button" id="calendarioHoje" class="calendario-hoje">Hoje</button>
                         </div>
 
                         <div class="calendario-semana" aria-hidden="true">
@@ -142,7 +140,6 @@
     <script src="assets/vendor/aos/aos.js"></script>
     <script src="assets/js/main.js"></script>
     <script src="assets/js/meusEventos.js"></script>
-    <script>AOS.init();</script>
 
 </body>
 

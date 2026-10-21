@@ -75,6 +75,45 @@ function enderecoEventoGoogleCalendar(array $evento): string
     ], static fn ($valor) => trim((string) $valor) !== ''));
 }
 
+function idEventoGoogleCalendar(int $idUsuario, int $idRota): string
+{
+    // O ID determinístico evita duplicações e permite reconhecer o evento
+    // exportado ao revisitar o planejamento.
+    return '5a0e' . substr(hash('sha256', $idUsuario . ':' . $idRota), 0, 32);
+}
+
+function idGoogleEventoDoPlanejamento(mysqli $conn, int $idUsuario, int $idRota): ?string
+{
+    $stmt = $conn->prepare(
+        'SELECT id_rota FROM rota WHERE id_rota = ? AND id_user = ? LIMIT 1'
+    );
+    $stmt->bind_param('ii', $idRota, $idUsuario);
+    executarStatementApi($stmt);
+    $planejamento = $stmt->get_result()->fetch_assoc();
+    $stmt->close();
+
+    return $planejamento ? idEventoGoogleCalendar($idUsuario, $idRota) : null;
+}
+
+function idRotaIgnorarGoogleAgenda(array $dados): ?int
+{
+    if (!array_key_exists('id_rota', $dados) || $dados['id_rota'] === null || $dados['id_rota'] === '') {
+        return null;
+    }
+
+    $idRota = filter_var(
+        $dados['id_rota'],
+        FILTER_VALIDATE_INT,
+        ['options' => ['min_range' => 1]]
+    );
+
+    if ($idRota === false) {
+        responder(['erro' => 'id_rota deve ser um inteiro positivo'], 400);
+    }
+
+    return (int) $idRota;
+}
+
 $id = obterIdApi();
 
 if ($id !== null) {
@@ -116,7 +155,7 @@ switch ($metodo) {
         $dados = lerJson();
         $acao = trim((string) ($dados['acao'] ?? ''));
 
-        if (!in_array($acao, ['verificar_conflito', 'exportar'], true)) {
+        if (!in_array($acao, ['verificar_conflito', 'verificar_data', 'verificar_exportado', 'exportar'], true)) {
             responder(['erro' => 'Ação inválida para o Google Agenda'], 400);
         }
 
@@ -134,6 +173,7 @@ switch ($metodo) {
                 'conectado' => false,
                 'conflito' => false,
                 'conflitos' => [],
+                'exportado' => false,
                 'mensagem' => 'Google Agenda não está conectado',
             ]);
         }
@@ -145,6 +185,40 @@ switch ($metodo) {
         try {
             $cliente = clienteGoogleCalendarAutorizado($conn, $idUsuario);
             $servico = new Calendar($cliente);
+
+            if ($acao === 'verificar_exportado') {
+                $idRota = idRotaIgnorarGoogleAgenda($dados);
+
+                if ($idRota === null) {
+                    responder(['erro' => 'id_rota é obrigatório'], 400);
+                }
+
+                $idGoogleEvento = idGoogleEventoDoPlanejamento($conn, $idUsuario, $idRota);
+
+                if ($idGoogleEvento === null) {
+                    responder(['erro' => 'Planejamento não encontrado'], 404);
+                }
+
+                try {
+                    $eventoGoogle = $servico->events->get('primary', $idGoogleEvento);
+
+                    responder([
+                        'exportado' => true,
+                        'google_event_id' => $eventoGoogle->getId(),
+                        'html_link' => $eventoGoogle->getHtmlLink(),
+                    ]);
+                } catch (GoogleServiceException $erro) {
+                    if ((int) $erro->getCode() === 404) {
+                        responder([
+                            'exportado' => false,
+                            'google_event_id' => $idGoogleEvento,
+                            'html_link' => null,
+                        ]);
+                    }
+
+                    throw $erro;
+                }
+            }
 
             if ($acao === 'verificar_conflito') {
                 $idEvento = filter_var(
@@ -168,6 +242,11 @@ switch ($metodo) {
                     responder(['erro' => 'Evento não encontrado'], 404);
                 }
 
+                $idRotaIgnorar = idRotaIgnorarGoogleAgenda($dados);
+                $idGoogleAtual = $idRotaIgnorar === null
+                    ? null
+                    : idGoogleEventoDoPlanejamento($conn, $idUsuario, $idRotaIgnorar);
+
                 $janela = janelaEventoGoogleCalendar($evento, (int) $tempo);
                 $resultado = $servico->events->listEvents('primary', [
                     'timeMin' => $janela['inicio']->format(DATE_RFC3339),
@@ -180,6 +259,11 @@ switch ($metodo) {
 
                 foreach ($resultado->getItems() as $item) {
                     if ($item->getStatus() === 'cancelled') {
+                        continue;
+                    }
+
+                    // O próprio planejamento editado não é um conflito consigo mesmo.
+                    if ($idGoogleAtual !== null && $item->getId() === $idGoogleAtual) {
                         continue;
                     }
 
@@ -198,6 +282,78 @@ switch ($metodo) {
                         'inicio' => $janela['inicio']->format(DATE_RFC3339),
                         'fim' => $janela['fim']->format(DATE_RFC3339),
                     ],
+                ]);
+            }
+
+            if ($acao === 'verificar_data') {
+                $idEvento = filter_var(
+                    $dados['id_evento'] ?? null,
+                    FILTER_VALIDATE_INT,
+                    ['options' => ['min_range' => 1]]
+                );
+
+                if ($idEvento === false) {
+                    responder(['erro' => 'id_evento deve ser um inteiro válido'], 400);
+                }
+
+                $evento = buscarEventoParaAgenda($conn, (int) $idEvento);
+
+                if ($evento === null) {
+                    responder(['erro' => 'Evento não encontrado'], 404);
+                }
+
+                $data = trim((string) ($evento['data_evento'] ?? ''));
+
+                if ($data === '') {
+                    responder([
+                        'conectado' => true,
+                        'conflito' => false,
+                        'conflitos' => [],
+                        'data' => null,
+                    ]);
+                }
+
+                $configuracao = configuracaoGoogleCalendar();
+                $fuso = new DateTimeZone($configuracao['timezone'] ?: API_FUSO_HORARIO);
+                $inicio = new DateTimeImmutable($data . ' 00:00:00', $fuso);
+                $fim = $inicio->modify('+1 day');
+
+                $idRotaIgnorar = idRotaIgnorarGoogleAgenda($dados);
+                $idGoogleAtual = $idRotaIgnorar === null
+                    ? null
+                    : idGoogleEventoDoPlanejamento($conn, $idUsuario, $idRotaIgnorar);
+
+                $resultado = $servico->events->listEvents('primary', [
+                    'timeMin' => $inicio->format(DATE_RFC3339),
+                    'timeMax' => $fim->format(DATE_RFC3339),
+                    'singleEvents' => true,
+                    'orderBy' => 'startTime',
+                    'maxResults' => 50,
+                ]);
+                $conflitos = [];
+
+                foreach ($resultado->getItems() as $item) {
+                    if ($item->getStatus() === 'cancelled') {
+                        continue;
+                    }
+
+                    // Ignora o evento do planejamento que está sendo editado.
+                    if ($idGoogleAtual !== null && $item->getId() === $idGoogleAtual) {
+                        continue;
+                    }
+
+                    $conflitos[] = [
+                        'titulo' => $item->getSummary() ?: 'Compromisso sem título',
+                        'inicio' => $item->getStart()?->getDateTime() ?: $item->getStart()?->getDate(),
+                        'fim' => $item->getEnd()?->getDateTime() ?: $item->getEnd()?->getDate(),
+                    ];
+                }
+
+                responder([
+                    'conectado' => true,
+                    'conflito' => count($conflitos) > 0,
+                    'conflitos' => $conflitos,
+                    'data' => $data,
                 ]);
             }
 
@@ -239,7 +395,7 @@ switch ($metodo) {
 
             $eventoGoogle = new GoogleCalendarEvent([
                 // ID determinístico impede duplicação em cliques/recarregamentos posteriores.
-                'id' => '5a0e' . substr(hash('sha256', $idUsuario . ':' . $idRota), 0, 32),
+                'id' => idEventoGoogleCalendar($idUsuario, $idRota),
                 'summary' => $planejamento['nome_evento'],
                 'description' => $descricao,
                 'location' => enderecoEventoGoogleCalendar($planejamento),

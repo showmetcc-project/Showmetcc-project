@@ -30,7 +30,7 @@ require __DIR__ . '/cabecalho.php';
     <div id="estadoComunidade" class="container comunidade-estado" role="status">Carregando comunidade...</div>
     <div id="conteudoComunidade" hidden>
         <div class="comunidade-evento-banner">
-            <img id="imagemComunidadeEvento" src="assets/img/bannerEventoPadrao.png" alt="">
+            <img id="imagemComunidadeEvento" src="assets/img/bannerEventoPadrao.png" alt="Imagem de divulgação do evento">
         </div>
         <section class="container comunidade-evento-identidade">
             <p>Comunidade do evento</p>
@@ -45,6 +45,7 @@ require __DIR__ . '/cabecalho.php';
                 <span id="dataComunidadeEvento"><i class="bi bi-calendar3" aria-hidden="true"></i><span></span></span>
                 <span id="localComunidadeEvento" hidden><i class="bi bi-geo-alt-fill" aria-hidden="true"></i><span></span></span>
                 <span id="categoriaComunidadeEvento" hidden><i class="bi bi-tags-fill" aria-hidden="true"></i><span></span></span>
+                <span id="classificacaoComunidadeEvento" hidden><span class="selo-classificacao"></span></span>
                 <span id="precoComunidadeEvento" hidden><i class="bi bi-currency-dollar" aria-hidden="true"></i><span></span></span>
             </div>
         </section>

@@ -299,6 +299,30 @@ curl.exe -i "$BASE/eventos/"
 curl.exe -i -X DELETE "$BASE/eventos/"
 ```
 
+### GET /eventos?listar_locais=1 — UFs e cidades de eventos ativos
+
+A resposta deve conter `ufs` sem duplicatas e `cidades` como pares de `cidade`/`uf` distintos,
+considerando somente eventos com `status_evento='ativo'`. O parâmetro deve retornar `400`
+se combinado com busca ou informado com valor diferente de `1`.
+
+```powershell
+curl.exe -i "$BASE/eventos/?listar_locais=1"
+curl.exe -i -G "$BASE/eventos/" --data-urlencode "listar_locais=0"
+curl.exe -i -G "$BASE/eventos/" --data-urlencode "listar_locais=1" --data-urlencode "busca=Campinas"
+```
+
+### GET /eventos?classificacao= — filtro por classificação indicativa
+
+Aceita um valor oficial ou uma lista separada por vírgulas. A resposta deve conter apenas
+eventos com a classificação informada (OU entre os valores) e deve retornar `400` para
+classificação desconhecida.
+
+```powershell
+curl.exe -i -G "$BASE/eventos/" --data-urlencode "classificacao=Livre"
+curl.exe -i -G "$BASE/eventos/" --data-urlencode "classificacao=12 anos,14 anos"
+curl.exe -i -G "$BASE/eventos/" --data-urlencode "classificacao=Invalida"
+```
+
 ### GET /eventos?busca= — busca por nome, cidade e artista
 
 Substitua os termos pelos dados existentes no banco. As três respostas devem conter o
@@ -377,8 +401,9 @@ curl.exe -i -b $COOKIE_COMUM -X POST "$BASE/eventos/" `
   -F "cidade_evento=Sao Paulo" `
   -F "uf=SP" `
   -F "categoria_evento[]=Música" `
-  -F "categoria_evento[]=Show Nacional" `
+  -F "categoria_evento[]=Música e Shows" `
   -F "categoria_evento[]=Literatura" `
+  -F "classificacao_indicativa=14 anos" `
   -F "link_oficial=https://example.com/festival" `
   -F "data_evento=2026-12-20" `
   -F "horario_evento=20:00" `
@@ -386,8 +411,12 @@ curl.exe -i -b $COOKIE_COMUM -X POST "$BASE/eventos/" `
   -F "descricao_evento=Evento cultural" `
   -F "descricao_artista=Artistas locais" `
   -F "nome_artista_solicitado=Banda Exemplo" `
+  -F "alt_imagem=Vocalista da banda cantando no palco sob iluminação azul" `
   -F "foto=@$FOTO_1"
 ```
+
+O campo `alt_imagem` é opcional e aceita até 255 caracteres. Quando omitido,
+a interface gera `Imagem de divulgação para o evento [nome] - [cidade]`.
 
 ### POST /eventos — erro 401
 
@@ -582,7 +611,7 @@ curl.exe -i -b $COOKIE_COMUM -X POST "$BASE/eventos/" `
   -F "cidade_evento=Campinas" `
   -F "uf=SP" `
   -F "categoria_evento[]=Música" `
-  -F "categoria_evento[]=Show Nacional" `
+  -F "categoria_evento[]=Música e Shows" `
   -F "link_oficial=https://example.com/festival-reuso" `
   -F "data_evento=2026-12-22" `
   -F "horario_evento=21:30" `
@@ -732,6 +761,11 @@ Substitua os IDs pelos registros do seu banco. A tabela `rota` possui a restriç
 `(id_user, id_evento)`, portanto remova um planejamento anterior do mesmo evento antes do
 teste de criação.
 
+A interface envia os custos separadamente: `custo_ingresso`, `custo_transporte` e
+`custo_hospedagem`. O campo `custo_hospedagem` é zerado pela API quando
+`hospedagem_necessaria` é `false`. Em bancos que ainda possuem a coluna legada
+`custo_outros`, aplique `assets/banco/migrarRemocaoCustoOutrosRota.sql`.
+
 ### POST /planejamento — sucesso
 
 ```powershell
@@ -781,7 +815,8 @@ curl.exe -i "$BASE/planejamento/"
 ```
 
 A resposta autenticada deve incluir os dados da rota e do evento, incluindo
-`nome_evento`, `data_evento`, `imagem_evento`, custos persistidos e `investimento_total`.
+`nome_evento`, `data_evento`, `imagem_evento`, `custo_ingresso`, `custo_transporte`,
+`custo_hospedagem` e `investimento_total`.
 
 ### PUT /planejamento/{id_rota} — sucesso e erro 404
 
@@ -939,6 +974,26 @@ Confirme também que o último DELETE removeu o arquivo de `assets/uploads/comun
 
 ### POST /comunidade-denuncias — persistência
 
+Em bancos já existentes, aplique uma vez a atualização de esquema abaixo antes dos testes.
+O arquivo `assets/banco/showme.sql` já contém essa estrutura para instalações novas.
+
+```sql
+ALTER TABLE comunidade_resposta
+  ADD COLUMN status_resposta ENUM('ativo', 'removido') NOT NULL DEFAULT 'ativo';
+
+ALTER TABLE comunidade_denuncia
+  DROP CONSTRAINT chk_comunidade_denuncia_alvo,
+  ADD COLUMN id_resposta INT NULL AFTER id_post,
+  ADD UNIQUE KEY uk_denuncia_resposta_usuario (id_resposta, id_usuario),
+  ADD CONSTRAINT fk_comunidade_denuncia_resposta
+    FOREIGN KEY (id_resposta) REFERENCES comunidade_resposta(id_resposta) ON DELETE CASCADE,
+  ADD CONSTRAINT chk_comunidade_denuncia_alvo CHECK (
+    (id_post IS NOT NULL AND id_resposta IS NULL AND id_midia IS NULL)
+    OR (id_post IS NULL AND id_resposta IS NOT NULL AND id_midia IS NULL)
+    OR (id_post IS NULL AND id_resposta IS NULL AND id_midia IS NOT NULL)
+  );
+```
+
 ```powershell
 curl.exe -i -b $COOKIE_OUTRO_USUARIO -X POST "$BASE/comunidade-denuncias" `
   -H "Content-Type: application/json" `
@@ -954,14 +1009,23 @@ curl.exe -i -b $COOKIE_OUTRO_USUARIO -X POST "$BASE/comunidade-denuncias" `
 
 curl.exe -i -b $COOKIE_OUTRO_USUARIO -X POST "$BASE/comunidade-denuncias" `
   -H "Content-Type: application/json" `
+  -d '{"id_resposta":ID_RESPOSTA,"motivo":"Discurso de ódio"}'
+
+curl.exe -i -b $COOKIE_OUTRO_USUARIO -X POST "$BASE/comunidade-denuncias" `
+  -H "Content-Type: application/json" `
   -d '{"id_post":ID_POST,"id_midia":ID_MIDIA,"motivo":"Dois alvos"}'
+
+curl.exe -i -b $COOKIE_OUTRO_USUARIO -X POST "$BASE/comunidade-denuncias" `
+  -H "Content-Type: application/json" `
+  -d '{"id_post":ID_POST,"id_resposta":ID_RESPOSTA,"motivo":"Dois alvos"}'
 ```
 
-Espere `201`, `409`, `201` e `400`, respectivamente. O `409` comprova que o mesmo usuário
-não pode denunciar duas vezes a mesma publicação. Confirme no banco que a foto também
-gerou uma linha com `id_midia`, e apenas um dos dois alvos é preenchido por denúncia.
+Espere `201`, `409`, `201`, `201`, `400` e `400`, respectivamente. Os `409`/`400` comprovam
+que não se pode repetir a denúncia do mesmo conteúdo nem informar alvos múltiplos. Confirme
+no banco que cada denúncia preenche apenas uma coluna de alvo (`id_post`, `id_resposta` ou
+`id_midia`).
 
-### Moderação administrativa de posts e fotos denunciados
+### Moderação administrativa de posts, respostas e fotos denunciados
 
 Liste todas as denúncias e filtre as pendentes. Usuário comum deve receber `403`:
 
@@ -985,7 +1049,7 @@ curl.exe -i -b $COOKIE_ADMIN -G "$BASE/comunidade-denuncias" `
 Confirme no JSON os campos `contadores`, `total` e `tem_mais`, e que nenhum item
 anterior ao período selecionado aparece.
 
-Mantenha uma publicação e remova outra publicação ou foto:
+Mantenha uma publicação e remova uma resposta denunciada:
 
 ```powershell
 curl.exe -i -b $COOKIE_ADMIN -X PUT "$BASE/comunidade-denuncias/ID_DENUNCIA_MANTER" `
@@ -1002,8 +1066,8 @@ curl.exe -i -b $COOKIE_COMUM "$BASE/comunidade-posts?evento_id=ID_EVENTO"
 ```
 
 As duas decisões devem responder `200`. O conteúdo mantido continua visível; o removido
-deixa de aparecer, mas permanece no histórico administrativo. Para uma foto removida,
-confirme também que o arquivo desapareceu de `assets/uploads/comunidade/`. Repetir a mesma
+deixa de aparecer, mas permanece no histórico administrativo. Para a resposta removida,
+confirme que ela some do feed e que a publicação pai continua visível. Repetir a mesma
 decisão deve retornar `409`. Com SMTP configurado, confirme o e-mail de resultado ao
 denunciante e, quando houver remoção, o e-mail ao autor do conteúdo.
 
@@ -1128,12 +1192,27 @@ curl.exe -i -b $COOKIE_COMUM -H "Content-Type: application/json" `
   -d '{"acao":"verificar_conflito","id_evento":1,"tempo_estimado":60}' `
   "$BASE/google-calendar"
 
+# Ao editar um planejamento, envie id_rota para ignorar o próprio evento exportado
+curl.exe -i -b $COOKIE_COMUM -H "Content-Type: application/json" `
+  -d '{"acao":"verificar_conflito","id_evento":1,"id_rota":1,"tempo_estimado":60}' `
+  "$BASE/google-calendar"
+
+# Consultar os compromissos de todo o dia do evento (aviso de mesma data)
+curl.exe -i -b $COOKIE_COMUM -H "Content-Type: application/json" `
+  -d '{"acao":"verificar_data","id_evento":1,"id_rota":1}' `
+  "$BASE/google-calendar"
+
 # Exportar planejamento uma única vez (substitua id_rota)
 curl.exe -i -b $COOKIE_COMUM -H "Content-Type: application/json" `
   -d '{"acao":"exportar","id_rota":1}' `
   "$BASE/google-calendar"
 
-# Repetir o comando anterior deve informar que o evento já existia, sem duplicá-lo.
+# Confirmar que o planejamento já está exportado (deve retornar exportado=true e html_link)
+curl.exe -i -b $COOKIE_COMUM -H "Content-Type: application/json" `
+  -d '{"acao":"verificar_exportado","id_rota":1}' `
+  "$BASE/google-calendar"
+
+# Repetir o comando de exportação deve informar que o evento já existia, sem duplicá-lo.
 
 # Desconectar
 curl.exe -i -b $COOKIE_COMUM -X DELETE "$BASE/google-calendar"

@@ -4945,30 +4945,6 @@ body.showme-modal-aberto {
   box-shadow: 0 7px 22px rgb(0 255 0 / 22%);
 }
 
-/* Conflito de agenda: alerta em magenta, com reforço brutalista. */
-.showme-confirmacao-conflito .showme-confirmacao {
-  border-width: 3px;
-  border-color: var(--showme-secondary, #ff006e);
-  box-shadow: 6px 6px 0 #000, 0 20px 55px rgb(0 0 0 / 58%);
-}
-
-.showme-confirmacao-conflito .showme-confirmacao-icone,
-.showme-confirmacao-conflito .showme-confirmacao h2 {
-  color: var(--showme-secondary, #ff006e);
-}
-
-.showme-confirmacao-conflito .showme-confirmacao-confirmar {
-  border: 2px solid #000;
-  background: var(--showme-secondary, #ff006e);
-  color: #000;
-  box-shadow: 3px 3px 0 #000;
-}
-
-.showme-confirmacao-conflito .showme-confirmacao-confirmar:hover {
-  background: var(--showme-secondary-hover, #dd0060);
-  box-shadow: 5px 5px 0 #000, 0 7px 22px rgb(255 0 110 / 25%);
-}
-
 .showme-confirmacao-saindo {
   animation: showme-overlay-saida .18s ease-in both;
 }

@@ -259,7 +259,7 @@
   function confirmar(opcoes = {}) {
     if (modalAtual) finalizarConfirmacao(false);
 
-    const variante = ['importante', 'edicao', 'conflito'].includes(opcoes.variante)
+    const variante = ['importante', 'edicao'].includes(opcoes.variante)
       ? opcoes.variante
       : 'destrutiva';
     const tituloId = `showmeConfirmacaoTitulo-${Date.now()}`;
@@ -279,9 +279,7 @@
       ? 'bi bi-exclamation-triangle-fill showme-confirmacao-icone'
       : variante === 'edicao'
         ? 'bi bi-pencil-square showme-confirmacao-icone'
-        : variante === 'conflito'
-          ? 'bi bi-calendar-x showme-confirmacao-icone'
-          : 'bi bi-question-circle-fill showme-confirmacao-icone';
+        : 'bi bi-question-circle-fill showme-confirmacao-icone';
     icone.setAttribute('aria-hidden', 'true');
 
     const titulo = document.createElement('h2');
@@ -345,14 +343,13 @@
   function avisar(opcoes = {}) {
     if (modalAtual) finalizarConfirmacao(false);
 
-    const variante = ['edicao', 'conflito'].includes(opcoes.variante)
-      ? opcoes.variante
-      : 'importante';
+    // Avisos usam o estilo base rosa; o verde fica reservado às confirmações.
+    const variante = opcoes.variante === 'edicao' ? 'edicao' : '';
     const tituloId = `showmeAvisoTitulo-${Date.now()}`;
     focoAnterior = document.activeElement;
 
     const overlay = document.createElement('div');
-    overlay.className = `showme-confirmacao-overlay showme-confirmacao-${variante}`;
+    overlay.className = `showme-confirmacao-overlay${variante ? ` showme-confirmacao-${variante}` : ''}`;
     overlay.setAttribute('role', 'dialog');
     overlay.setAttribute('aria-modal', 'true');
     overlay.setAttribute('aria-labelledby', tituloId);

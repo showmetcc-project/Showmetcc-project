@@ -910,10 +910,9 @@
               margin: auto;
               padding: 0;
               overflow-y: auto;
-              border: 3px solid var(--rosa);
+              border: 2px solid var(--rosa);
               border-radius: 20px;
               background: #141414;
-              box-shadow: 6px 6px 0 #000;
               color: #fff;
           }
 
@@ -972,30 +971,12 @@
               border-radius: 10px;
               background: #232323;
               color: #fff;
-              font-family: inherit;
               font-weight: 700;
-              cursor: pointer;
-              transition: background .2s ease, color .2s ease, box-shadow .2s ease, transform .2s ease;
-          }
-
-          .acoes-conflito-agenda button:hover,
-          .acoes-conflito-agenda button:focus-visible {
-              border-color: var(--rosa);
-              color: var(--rosa);
           }
 
           .acoes-conflito-agenda button[value="finalizar"] {
-              border: 2px solid #000;
+              border-color: var(--rosa);
               background: var(--rosa);
-              color: #000;
-              box-shadow: 3px 3px 0 #000;
-          }
-
-          .acoes-conflito-agenda button[value="finalizar"]:hover,
-          .acoes-conflito-agenda button[value="finalizar"]:focus-visible {
-              background: var(--rosa-hover);
-              color: #000;
-              box-shadow: 5px 5px 0 #000;
           }
           /* =========================================================
                DICAS

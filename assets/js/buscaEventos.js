@@ -14,6 +14,15 @@
     'proximo-mes'
   ];
   const PRECOS_VALIDOS = ['todos', 'gratuitos', 'pagos'];
+  const ROTULOS_PERIODO = {
+    hoje: 'Hoje',
+    amanha: 'Amanhã',
+    'fim-de-semana': 'Este fim de semana',
+    'nesta-semana': 'Nesta semana',
+    'proxima-semana': 'Na próxima semana',
+    'neste-mes': 'Neste mês',
+    'proximo-mes': 'No próximo mês'
+  };
 
   function iniciarBuscaCabecalho() {
     const formulario = document.querySelector('.busca-cabecalho');
@@ -28,6 +37,9 @@
     const filtroCidade = document.getElementById('filtroCidadeBusca');
     const sliderPreco = document.getElementById('filtroPrecoMaximo');
     const saidaPreco = document.getElementById('filtroPrecoValor');
+    const controlesBuscaHome = document.getElementById('controlesBuscaHome');
+    const tagsBuscaHome = document.getElementById('tagsBuscaHome');
+    const botaoLimparBuscaHome = document.querySelector('[data-limpar-busca-home]');
     const estaNaHome = Boolean(document.querySelector('main.inicio'));
     const classificacoesValidas = new Set(
       filtroClassificacao
@@ -83,6 +95,125 @@
         || filtros.uf !== ''
         || filtros.cidade !== ''
         || filtros.precoMax < PRECO_MAXIMO_SLIDER;
+    }
+
+    function formatarPrecoFiltro(valor) {
+      return Number(valor).toLocaleString('pt-BR', {
+        style: 'currency',
+        currency: 'BRL',
+        maximumFractionDigits: 0
+      });
+    }
+
+    function filtrosAtivosDaBusca(termo = campo.value.trim()) {
+      const ativos = [];
+
+      if (termo) {
+        ativos.push({chave: 'busca', rotulo: `Busca: “${termo}”`});
+      }
+      if (filtros.categoria) {
+        ativos.push({chave: 'categoria', rotulo: `Categoria: ${filtros.categoria}`});
+      }
+      if (filtros.classificacao) {
+        ativos.push({chave: 'classificacao', rotulo: `Classificação: ${filtros.classificacao}`});
+      }
+      if (filtros.preco !== 'todos') {
+        ativos.push({
+          chave: 'preco',
+          rotulo: `Ingresso: ${filtros.preco === 'gratuitos' ? 'Gratuitos' : 'Pagos'}`
+        });
+      }
+      if (filtros.data !== 'qualquer') {
+        ativos.push({
+          chave: 'data',
+          rotulo: `Período: ${ROTULOS_PERIODO[filtros.data] || filtros.data}`
+        });
+      }
+      if (filtros.uf) {
+        ativos.push({chave: 'uf', rotulo: `UF: ${filtros.uf}`});
+      }
+      if (filtros.cidade) {
+        ativos.push({chave: 'cidade', rotulo: `Cidade: ${filtros.cidade}`});
+      }
+      if (filtros.precoMax < PRECO_MAXIMO_SLIDER) {
+        ativos.push({chave: 'precoMax', rotulo: `Preço: até ${formatarPrecoFiltro(filtros.precoMax)}`});
+      }
+
+      return ativos;
+    }
+
+    function renderizarControlesBuscaHome() {
+      if (!controlesBuscaHome || !tagsBuscaHome) {
+        return;
+      }
+
+      const ativos = filtrosAtivosDaBusca();
+      controlesBuscaHome.hidden = ativos.length === 0;
+      tagsBuscaHome.replaceChildren(...ativos.map((filtro) => {
+        const tag = document.createElement('button');
+        tag.type = 'button';
+        tag.className = 'filtro-ativo-busca';
+        tag.dataset.removerFiltro = filtro.chave;
+        tag.setAttribute('aria-label', `Remover filtro: ${filtro.rotulo}`);
+
+        const texto = document.createElement('span');
+        texto.textContent = filtro.rotulo;
+
+        const icone = document.createElement('i');
+        icone.className = 'bi bi-x-lg';
+        icone.setAttribute('aria-hidden', 'true');
+
+        tag.append(texto, icone);
+        return tag;
+      }));
+    }
+
+    function removerFiltroAtivo(chave) {
+      if (chave === 'busca') {
+        campo.value = '';
+      } else if (chave === 'categoria') {
+        filtros.categoria = '';
+      } else if (chave === 'classificacao') {
+        filtros.classificacao = '';
+      } else if (chave === 'preco') {
+        filtros.preco = 'todos';
+      } else if (chave === 'data') {
+        filtros.data = 'qualquer';
+      } else if (chave === 'uf') {
+        filtros.uf = '';
+        atualizarOpcoesCidade();
+      } else if (chave === 'cidade') {
+        filtros.cidade = '';
+      } else if (chave === 'precoMax') {
+        filtros.precoMax = PRECO_MAXIMO_SLIDER;
+      }
+
+      atualizarControlesFiltros();
+      atualizarBotaoLimpar();
+      renderizarControlesBuscaHome();
+      aplicarBuscaNaHome(campo.value.trim());
+      agendarBusca(false, !campo.value.trim() && !filtrosAtivos());
+    }
+
+    function limparTudoBusca() {
+      window.clearTimeout(temporizador);
+      campo.value = '';
+      requisicaoAtual?.abort();
+      requisicaoAtual = null;
+      filtros.categoria = '';
+      filtros.classificacao = '';
+      filtros.preco = 'todos';
+      filtros.cidade = '';
+      filtros.uf = '';
+      filtros.data = 'qualquer';
+      filtros.precoMax = PRECO_MAXIMO_SLIDER;
+      atualizarOpcoesCidade();
+      atualizarControlesFiltros();
+      atualizarBotaoLimpar();
+      renderizarControlesBuscaHome();
+      aplicarBuscaNaHome('');
+      fecharContainerBusca();
+      campo.blur();
     }
 
     function periodoDaData(data) {
@@ -142,11 +273,17 @@
         return;
       }
 
+      renderizarControlesBuscaHome();
+
       if (!termo && !filtrosAtivos()) {
         const urlAtual = new URL(window.location.href);
         const urlInicial = new URL('index.php', window.location.href);
-        if (registrarHistorico && urlAtual.href !== urlInicial.href) {
-          window.history.pushState({}, '', urlInicial);
+        if (urlAtual.href !== urlInicial.href) {
+          if (registrarHistorico) {
+            window.history.pushState({}, '', urlInicial);
+          } else {
+            window.history.replaceState({}, '', urlInicial);
+          }
         }
         emitirBusca('');
         return;
@@ -155,8 +292,12 @@
       const urlAtual = new URL(window.location.href);
       const urlNova = urlDaBusca(termo);
 
-      if (registrarHistorico && urlAtual.href !== urlNova.href) {
-        window.history.pushState({busca: termo, filtros: {...filtros}}, '', urlNova);
+      if (urlAtual.href !== urlNova.href) {
+        if (registrarHistorico) {
+          window.history.pushState({busca: termo, filtros: {...filtros}}, '', urlNova);
+        } else {
+          window.history.replaceState({busca: termo, filtros: {...filtros}}, '', urlNova);
+        }
       }
 
       emitirBusca(termo);
@@ -225,6 +366,7 @@
       }
 
       atualizarOpcoesCidade();
+      renderizarControlesBuscaHome();
     }
 
     async function carregarLocais() {
@@ -369,10 +511,22 @@
       }
     }
 
-    function agendarBusca() {
+    function agendarBusca(atualizarHome = false, fecharSeVazio = false) {
       window.clearTimeout(temporizador);
       atualizarBotaoLimpar();
+      renderizarControlesBuscaHome();
       temporizador = window.setTimeout(function () {
+        const termo = campo.value.trim();
+
+        if (atualizarHome) {
+          aplicarBuscaNaHome(termo, false);
+        }
+
+        if (fecharSeVazio && !termo && !filtrosAtivos()) {
+          fecharContainerBusca();
+          return;
+        }
+
         executarBusca();
       }, 300);
     }
@@ -389,7 +543,7 @@
 
     // Atualiza em tempo real enquanto o usuário digita.
     campo.addEventListener('input', function () {
-      agendarBusca();
+      agendarBusca(true, true);
     });
 
     formulario.querySelectorAll('[data-filtro-preco]').forEach((botao) => {
@@ -431,6 +585,7 @@
     sliderPreco?.addEventListener('input', () => {
       filtros.precoMax = Number(sliderPreco.value);
       atualizarControlesFiltros();
+      renderizarControlesBuscaHome();
       aplicarBuscaNaHome(campo.value.trim(), false);
       window.clearTimeout(temporizador);
       temporizador = window.setTimeout(executarBusca, 250);
@@ -445,8 +600,28 @@
       filtros.data = 'qualquer';
       filtros.precoMax = PRECO_MAXIMO_SLIDER;
       atualizarOpcoesCidade();
+      renderizarControlesBuscaHome();
       aplicarFiltros();
     });
+
+    tagsBuscaHome?.addEventListener('click', (evento) => {
+      const botao = evento.target.closest('[data-remover-filtro]');
+      if (!botao) return;
+
+      const tags = [...tagsBuscaHome.querySelectorAll('[data-remover-filtro]')];
+      const indice = tags.indexOf(botao);
+      removerFiltroAtivo(botao.dataset.removerFiltro);
+
+      const restantes = tagsBuscaHome.querySelectorAll('[data-remover-filtro]');
+      const proximo = restantes[Math.min(indice, restantes.length - 1)];
+      if (proximo) {
+        proximo.focus();
+      } else if (botaoLimparBuscaHome && !botaoLimparBuscaHome.closest('[hidden]')) {
+        botaoLimparBuscaHome.focus();
+      }
+    });
+
+    botaoLimparBuscaHome?.addEventListener('click', limparTudoBusca);
 
     campo.addEventListener('keydown', function (evento) {
       if (evento.key === 'Escape') {
@@ -473,13 +648,21 @@
     });
 
     botaoLimpar?.addEventListener('click', function () {
+      window.clearTimeout(temporizador);
       campo.value = '';
       requisicaoAtual?.abort();
       requisicaoAtual = null;
       atualizarBotaoLimpar();
+      renderizarControlesBuscaHome();
 
       if (estaNaHome) {
         aplicarBuscaNaHome('');
+      }
+
+      if (!filtrosAtivos()) {
+        fecharContainerBusca();
+        campo.blur();
+        return;
       }
 
       campo.focus();
@@ -503,6 +686,7 @@
       campo.value = termo;
       atualizarControlesFiltros();
       atualizarBotaoLimpar();
+      renderizarControlesBuscaHome();
       aplicarBuscaNaHome(termo, false);
       if (!containerFlutuante.classList.contains('d-none')) executarBusca();
     });
@@ -515,6 +699,7 @@
 
     atualizarControlesFiltros();
     atualizarBotaoLimpar();
+    renderizarControlesBuscaHome();
   }
 
   if (document.readyState === 'loading') {

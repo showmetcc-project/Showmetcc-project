@@ -220,7 +220,7 @@ function renderizarModalPersonalizacao(
 
                 <div class="col-12 col-md-4">
                     <div class="stat-card h-100">
-                        <i class="bi bi-chat-square-text-fill stat-icon"></i>
+                        <i class="bi bi-people-fill stat-icon"></i>
                         <h3 data-estatistica="publicacoes_comunidade" aria-live="polite">&mdash;</h3>
                         <p>Publicações na Comunidade</p>
                     </div>

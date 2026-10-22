@@ -106,6 +106,20 @@
         display: none !important;
     }
 
+    /* O mapa/rota é o único ícone preservado no poster impresso. */
+    body.pagina-planejamento #etapa5 .rota-resumo h3 .icone-rota-impressao {
+        display: inline-block !important;
+        flex: 0 0 auto !important;
+        color: #000 !important;
+        font-size: 1em !important;
+        line-height: 1 !important;
+    }
+
+    body.pagina-planejamento #etapa5 .resumo-box.rota-resumo h3::before {
+        content: none !important;
+        display: none !important;
+    }
+
     /* ---------------------------------------------------------------------
        CABEÇALHO GIGANTE: faixa preta com título branco centralizado
        --------------------------------------------------------------------- */

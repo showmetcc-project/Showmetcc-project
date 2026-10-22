@@ -182,10 +182,10 @@
         }
 
         if (possuiPlanejamento) {
-            link.innerHTML = '<i class="bi bi-check2-circle" aria-hidden="true"></i> Ver meu planejamento';
-            link.setAttribute('aria-label', 'Ver planejamento deste evento');
+            link.innerHTML = '<i class="bi bi-map-fill" aria-hidden="true"></i> Ver Meu Planejamento <i class="bi bi-check-circle-fill selo-planejamento-concluido" aria-hidden="true"></i>';
+            link.setAttribute('aria-label', 'Ver meu planejamento deste evento, já planejado');
         } else {
-            link.innerHTML = '<i class="bi bi-briefcase" aria-hidden="true"></i> Planejar viagem';
+            link.innerHTML = '<i class="bi bi-map-fill" aria-hidden="true"></i> Planejar Viagem';
             link.setAttribute('aria-label', 'Planejar viagem para este evento');
         }
     }

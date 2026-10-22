@@ -8,7 +8,7 @@ iniciarSessaoSegura();
 <head>
   <meta charset="utf-8">
   <meta content="width=device-width, initial-scale=1.0" name="viewport">
-  <title>Showme</title>
+  <title>ShowMe</title>
   <meta name="description" content="">
   <meta name="keywords" content="">
 
@@ -55,8 +55,15 @@ iniciarSessaoSegura();
         <div class="container">
           <div class="" data-aos="zoom-out">
 
-            <h1 class="h1banner">Viva Experiências</h1>
-            <p class="pbanner">Democratizando o acesso à cultura e conectando você aos melhores eventos</p>
+            <h1 class="h1banner" aria-label="ShowMe — categorias de eventos culturais">
+              <span class="hero-bloco hero-bloco-titulo" aria-hidden="true">
+                <span class="hero-titulo-medidor" data-hero-typewriter-medidor></span>
+                <span class="hero-titulo-conteudo">
+                  <span class="hero-titulo-texto" data-hero-typewriter>Tradições Regionais</span><span class="hero-titulo-cursor"></span>
+                </span>
+              </span>
+            </h1>
+            <p class="pbanner"><span class="hero-bloco hero-bloco-slogan">Mostrando o que há de melhor da cultura!</span></p>
             <a href="#sobre"><i class="bi bi-chevron-down"></i></a>
           </div>
         </div>

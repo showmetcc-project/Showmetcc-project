@@ -1658,7 +1658,7 @@ components:
           uniqueItems: true
           items:
             type: string
-            enum: ['Música e Shows', 'Cinema e Audiovisual', 'Teatro e Dança', 'Artes Visuais e Exposições', 'Literatura', 'Gastronomia', 'Oficinas e Workshops', 'Cultura Popular e Regional', 'Geek e Cultura Pop']
+            enum: ['Música e Shows', 'Cinema e Audiovisual', 'Teatro e Dança', 'Artes Visuais e Exposições', 'Literatura', 'Gastronomia', 'Oficinas e Workshops', 'Tradições Regionais', 'Geek e Cultura Pop']
         classificacao_indicativa:
           type: string
           enum: [Livre, '6 anos', '10 anos', '12 anos', '14 anos', '16 anos', '18 anos']

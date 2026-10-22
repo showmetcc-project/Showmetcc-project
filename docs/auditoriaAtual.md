@@ -166,9 +166,11 @@ A semântica atual é razoavelmente consistente:
 
 ### 4.2 Tipografia
 
-- títulos `h1`–`h4` e cabeçalhos de subpágina: Anton/Oswald;
+- títulos `h1`–`h4` e cabeçalhos de subpágina: Anton/Oswald; nos cards, os títulos usam `letter-spacing` sutil e limite de duas linhas para preservar a leitura em nomes longos;
 - corpo, navegação, formulários e botões: Open Sans/Poppins/Jost/Segoe UI;
 - Bootstrap Icons é a biblioteca visual padrão; não foram encontradas referências Font Awesome nas páginas atuais.
+- símbolos oficiais: `bi-map-fill` representa planejamento/rota em botões, abas, perfil, etapas e resumo impresso; `bi-people-fill` representa comunidade no perfil e no acesso à comunidade do evento.
+- no Hero da página Institucional, o bloco verde do título alterna categorias com efeito de digitação; um medidor invisível reserva a largura do bloco e o loop é desativado em `prefers-reduced-motion`.
 
 ### 4.3 Formas, caixas e bordas
 
@@ -237,9 +239,9 @@ Eventos ativos futuros aparecem na Home/busca. Eventos passados deixam a descobe
 
 ### 5.4 Busca e Home
 
-A busca considera nome, cidade, categoria e artista com prepared statement e escape dos curingas de `LIKE`. O autocomplete limita resultados; a confirmação troca os carrosséis por um grid dentro da própria Home e atualiza `?busca=` sem navegar para outra página. O painel de filtros oferece, no mesmo formato do seletor de categorias, um seletor de classificação indicativa com a opção “Qualquer classificação” e os valores oficiais (Livre, 6, 10, 12, 14, 16 e 18 anos). A escolha atualiza tanto o autocomplete quanto o grid da Home e persiste na URL (`?classificacao=12%20anos`); a API também aceita mais de uma classificação separada por vírgula, combinada por OU.
+A busca considera nome, cidade, categoria e artista com prepared statement e escape dos curingas de `LIKE`. O autocomplete limita resultados; a confirmação troca os carrosséis por um grid dentro da própria Home e atualiza `?busca=` sem navegar para outra página. O grid também é atualizado em tempo real enquanto o usuário digita ou apaga o termo, com debounce e `replaceState` para não poluir o histórico. Abaixo do título “Resultados para...” ficam tags removíveis dos filtros ativos e o botão “Limpar filtros e pesquisa”; ao esvaziar a busca sem filtros, a Home volta à listagem padrão sem recarregar. O painel de filtros oferece, no mesmo formato do seletor de categorias, um seletor de classificação indicativa com a opção “Qualquer classificação” e os valores oficiais (Livre, 6, 10, 12, 14, 16 e 18 anos). A escolha atualiza tanto o autocomplete quanto o grid da Home e persiste na URL (`?classificacao=12%20anos`); a API também aceita mais de uma classificação separada por vírgula, combinada por OU.
 
-A Home organiza os mesmos eventos em 10 carrosséis: “Em Breve” (eventos a partir de hoje, ordenados pelas datas mais próximas) seguido das 9 categorias oficiais — Música e Shows, Cinema e Audiovisual, Teatro e Dança, Artes Visuais e Exposições, Literatura, Gastronomia, Oficinas e Workshops, Cultura Popular e Regional e Geek e Cultura Pop. A lista canônica fica em `config/categoriasEvento.php` e é a mesma usada no cadastro de eventos, no filtro de busca e no retorno de `/api/eventos?listar_locais=1`.
+A Home organiza os mesmos eventos em 10 carrosséis: “Em Breve” (eventos a partir de hoje, ordenados pelas datas mais próximas) seguido das 9 categorias oficiais — Música e Shows, Cinema e Audiovisual, Teatro e Dança, Artes Visuais e Exposições, Literatura, Gastronomia, Oficinas e Workshops, Tradições Regionais e Geek e Cultura Pop. A lista canônica fica em `config/categoriasEvento.php` e é a mesma usada no cadastro de eventos, no filtro de busca e no retorno de `/api/eventos?listar_locais=1`.
 
 O banner “Recomendados para Você” usa até os cinco primeiros eventos válidos retornados pela API. Para usuários logados, `/api/eventos` calcula pesos a partir das categorias e dos gêneros musicais dos eventos favoritados e das rotas salvas, ordena os eventos por esse peso e usa a data mais próxima como desempate. A Home também reordena os carrosséis de categoria conforme os pesos retornados. Usuários deslogados ou sem histórico continuam vendo a ordem cronológica padrão.
 

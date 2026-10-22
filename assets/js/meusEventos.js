@@ -359,7 +359,7 @@ function criarCardPlanejado(planejamento) {
             .join(', ') || 'Local não informado'
     );
     const data = criarInformacao('bi bi-calendar3', formatarDataEvento(planejamento.data_evento));
-    const deslocamento = criarInformacao('bi bi-signpost-2', textoDeslocamento(planejamento));
+    const deslocamento = criarInformacao('bi bi-map-fill', textoDeslocamento(planejamento));
 
     const botoes = document.createElement('div');
     botoes.className = 'botoes-duplos';
@@ -367,7 +367,7 @@ function criarCardPlanejado(planejamento) {
     const detalhes = document.createElement('a');
     detalhes.className = 'btn-detalhes';
     detalhes.href = `planejamento.php?id=${planejamento.id_evento}&resumo=1`;
-    detalhes.textContent = 'Ver planejamento';
+    detalhes.innerHTML = '<i class="bi bi-map-fill" aria-hidden="true"></i> Ver planejamento';
 
     const verCalendario = document.createElement('a');
     verCalendario.className = 'btn-planejamento';

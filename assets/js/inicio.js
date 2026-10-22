@@ -18,8 +18,8 @@
         {id: 'literatura', categoria: 'Literatura', termos: ['literatura', 'literario', 'livro', 'leitura']},
         {id: 'gastronomia', categoria: 'Gastronomia', termos: ['gastronomia', 'gastronomico']},
         {id: 'oficinasWorkshops', categoria: 'Oficinas e Workshops', termos: ['oficinas e workshops', 'oficina', 'workshop', 'workshops']},
-        {id: 'culturaPopular', categoria: 'Cultura Popular e Regional', termos: ['cultura popular e regional', 'cultura popular', 'regional']},
-        {id: 'geekCulturaPop', categoria: 'Geek e Cultura Pop', termos: ['geek e cultura pop', 'geek', 'cultura pop'], excluir: ['cultura popular']}
+        {id: 'culturaPopular', categoria: 'Tradições Regionais', termos: ['tradicoes regionais', 'tradicoes', 'regional']},
+        {id: 'geekCulturaPop', categoria: 'Geek e Cultura Pop', termos: ['geek e cultura pop', 'geek', 'cultura pop'], excluir: ['popular e regional']}
     ];
 
     function normalizarTexto(valor) {

@@ -23,7 +23,7 @@ function categoriasEventoOficiais(): array
         'Literatura',
         'Gastronomia',
         'Oficinas e Workshops',
-        'Cultura Popular e Regional',
+        'Tradições Regionais',
         'Geek e Cultura Pop',
     ];
 }
@@ -44,7 +44,7 @@ function iconesCategoriasEvento(): array
         'Literatura' => 'bi-book',
         'Gastronomia' => 'bi-cup-hot',
         'Oficinas e Workshops' => 'bi-easel2',
-        'Cultura Popular e Regional' => 'bi-people',
+        'Tradições Regionais' => 'bi-people',
         'Geek e Cultura Pop' => 'bi-joystick',
     ];
 }

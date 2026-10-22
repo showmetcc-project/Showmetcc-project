@@ -501,3 +501,99 @@
     aplicarSemanticaClassificacao
   });
 })();
+
+/**
+ * Efeito de digitação do título do Hero.
+ * O texto visível é apenas decorativo; o h1 mantém um aria-label estável.
+ * A lista também alimenta o medidor invisível que reserva a largura do bloco.
+ */
+(function () {
+  'use strict';
+
+  const alvo = document.querySelector('[data-hero-typewriter]');
+  if (!alvo) return;
+
+  const frases = [
+    'Tradições Regionais',
+    'Shows e Festivais',
+    'Teatro e Dança',
+    'Geek e Cultura Pop',
+    'Artes Visuais',
+    'Cinemas e Mostras'
+  ];
+  const medidor = document.querySelector('[data-hero-typewriter-medidor]');
+  const movimentoReduzido = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+  if (medidor) {
+    medidor.replaceChildren(...frases.map((frase) => {
+      const item = document.createElement('span');
+      item.textContent = frase;
+      return item;
+    }));
+  }
+
+  if (movimentoReduzido.matches) {
+    alvo.textContent = frases[0];
+    return;
+  }
+
+  const VELOCIDADE_DIGITACAO = 65;
+  const VELOCIDADE_APAGAMENTO = 32;
+  const PAUSA_COMPLETA = 2000;
+  const PAUSA_ENTRE_FRASES = 350;
+  const PAUSA_RETOMADA = 350;
+
+  let indiceFrase = 0;
+  let posicao = 0;
+  let apagando = false;
+  let temporizador = null;
+
+  alvo.textContent = '';
+
+  function agendar(atraso) {
+    window.clearTimeout(temporizador);
+    temporizador = window.setTimeout(proximoPasso, atraso);
+  }
+
+  function proximoPasso() {
+    if (document.hidden) return;
+
+    const frase = frases[indiceFrase];
+
+    if (!apagando) {
+      if (posicao < frase.length) {
+        posicao += 1;
+        alvo.textContent = frase.slice(0, posicao);
+        agendar(VELOCIDADE_DIGITACAO);
+        return;
+      }
+
+      apagando = true;
+      agendar(PAUSA_COMPLETA);
+      return;
+    }
+
+    if (posicao > 0) {
+      posicao -= 1;
+      alvo.textContent = frase.slice(0, posicao);
+      agendar(VELOCIDADE_APAGAMENTO);
+      return;
+    }
+
+    apagando = false;
+    indiceFrase = (indiceFrase + 1) % frases.length;
+    posicao = 0;
+    agendar(PAUSA_ENTRE_FRASES);
+  }
+
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) {
+      window.clearTimeout(temporizador);
+      return;
+    }
+
+    agendar(PAUSA_RETOMADA);
+  });
+
+  agendar(PAUSA_ENTRE_FRASES);
+})();

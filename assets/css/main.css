@@ -2561,6 +2561,17 @@ section,
   position: relative;
   min-height: 100vh;
   overflow: hidden;
+  background: #000;
+}
+
+/* Overlay escuro entre o vídeo e o conteúdo do Hero. */
+.hero::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: rgba(0, 0, 0, 0.35);
+  pointer-events: none;
 }
 
 .hero video {
@@ -2595,6 +2606,116 @@ section,
   font-weight: 600;
  
 }
+
+/* Blocos brutalistas fixos do título e do slogan. */
+.hero .hero-bloco {
+  display: inline-block;
+  box-sizing: border-box;
+  max-width: 100%;
+  padding: 4px 16px;
+  border-radius: 0;
+  transform-origin: center;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.hero .hero-bloco-titulo {
+  display: inline-grid;
+  grid-template-areas: "titulo";
+  align-items: center;
+  justify-items: start;
+  min-height: 1.35em;
+  background-color: #00ff00;
+  color: #ff006e;
+}
+
+.hero .hero-bloco-titulo > * {
+  grid-area: titulo;
+}
+
+/* Mantém a largura do bloco baseada na maior categoria, sem "tremer" durante
+   a digitação. O texto do medidor fica invisível, mas ocupa o mesmo espaço. */
+.hero .hero-titulo-medidor {
+  display: grid;
+  grid-template-areas: "medida";
+  visibility: hidden;
+  pointer-events: none;
+  user-select: none;
+}
+
+.hero .hero-titulo-medidor > span {
+  grid-area: medida;
+  padding-right: 0.26em;
+  white-space: nowrap;
+}
+
+.hero .hero-titulo-conteudo {
+  display: inline-flex;
+  align-items: center;
+  width: max-content;
+  max-width: 100%;
+  white-space: nowrap;
+}
+
+.hero .hero-titulo-texto {
+  display: inline-block;
+  min-height: 1.2em;
+}
+
+.hero .hero-titulo-cursor {
+  display: inline-block;
+  flex: 0 0 auto;
+  width: 0.12em;
+  height: 1em;
+  margin-left: 0.09em;
+  background-color: currentColor;
+  animation: hero-cursor-blink 0.9s steps(1, end) infinite;
+}
+
+@keyframes hero-cursor-blink {
+  0%,
+  49% {
+    opacity: 1;
+  }
+
+  50%,
+  100% {
+    opacity: 0;
+  }
+}
+
+.hero .hero-bloco-slogan {
+  background-color: #ff006e;
+  color: #00ff00;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .hero .hero-bloco-titulo:hover,
+  .hero .hero-bloco-slogan:hover {
+    transform: translateY(-2px) scale(1.03);
+  }
+
+  .hero .hero-bloco-titulo:hover {
+    box-shadow: 0 8px 20px rgb(0 255 0 / 24%);
+  }
+
+  .hero .hero-bloco-slogan:hover {
+    box-shadow: 0 8px 20px rgb(255 0 110 / 24%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero .hero-bloco {
+    transition: none;
+  }
+
+  .hero .hero-titulo-cursor {
+    animation: none;
+    opacity: 1;
+  }
+}
+
 .hero i {
   display: block;
   color: #00ff00;
@@ -2623,7 +2744,7 @@ section,
 
 @media (max-width: 575.98px) {
   .hero h1 {
-    font-size: 28px;
+    font-size: clamp(24px, 8.5vw, 28px);
     line-height: 36px;
   }
 
@@ -4493,6 +4614,40 @@ body {
 .card-evento strong,
 .card-evento .evento-nome {
   color: var(--showme-text) !important;
+}
+
+/* Títulos dos cards: espaçamento sutil e até duas linhas para manter a
+   legibilidade em nomes longos sem comprimir os caracteres. */
+.card-evento .card-conteudo h4,
+.card-evento .info h3,
+.card-evento .evento-nome {
+  letter-spacing: .035em;
+  line-height: 1.28;
+  white-space: normal;
+  overflow-wrap: break-word;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Mesma legibilidade nos títulos dos cards da página Institucional. */
+.pagina-sobre .services .service-item h4,
+.pagina-sobre .work-process .steps-item h3,
+.pagina-sobre .clube-fidelidade .plano-fidelidade h3,
+.pagina-sobre .faq-2 .faq-item h3 {
+  letter-spacing: .035em;
+  line-height: 1.28;
+  white-space: normal;
+  overflow-wrap: break-word;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .card-evento p,

@@ -161,6 +161,91 @@
   color: #bdbdbd;
 }
 
+.resultados-busca-home-controles {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 12px;
+  margin: -10px 0 26px;
+}
+
+.resultados-busca-home-controles[hidden] {
+  display: none;
+}
+
+.resultados-busca-home-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  min-width: 0;
+}
+
+.filtro-ativo-busca {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  max-width: 100%;
+  min-width: 0;
+  min-height: 36px;
+  padding: 5px 10px 5px 12px;
+  border: 2px solid #ff006e;
+  border-radius: 999px;
+  background: #111111;
+  color: #ffffff;
+  font-family: inherit;
+  font-size: .82rem;
+  font-weight: 700;
+  letter-spacing: .015em;
+  line-height: 1.2;
+  text-align: left;
+  white-space: normal;
+  cursor: pointer;
+  transition: background .2s ease, color .2s ease, transform .2s ease, box-shadow .2s ease;
+}
+
+.filtro-ativo-busca:hover,
+.filtro-ativo-busca:focus-visible {
+  background: #ff006e;
+  color: #000000;
+  box-shadow: 3px 3px 0 #000000;
+  transform: translate(-1px, -1px);
+}
+
+.filtro-ativo-busca i {
+  font-size: .75rem;
+}
+
+.resultados-busca-home-limpar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  max-width: 100%;
+  min-width: 0;
+  min-height: 44px;
+  padding: 8px 14px;
+  border: 2px solid #000000;
+  border-radius: 8px;
+  background: #ff006e;
+  color: #000000;
+  font-family: inherit;
+  font-weight: 700;
+  letter-spacing: .015em;
+  line-height: 1.2;
+  text-align: center;
+  white-space: normal;
+  cursor: pointer;
+  box-shadow: 3px 3px 0 #000000;
+  transition: background .2s ease, transform .2s ease, box-shadow .2s ease;
+}
+
+.resultados-busca-home-limpar:hover,
+.resultados-busca-home-limpar:focus-visible {
+  background: #dd0060;
+  transform: translate(-1px, -1px);
+  box-shadow: 5px 5px 0 #000000;
+}
+
 .resultados-busca-home-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -537,4 +622,19 @@
     font-size: 16px;
   }
 
+  .resultados-busca-home-controles {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .resultados-busca-home-tags,
+  .resultados-busca-home-limpar {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .resultados-busca-home-limpar {
+    padding-inline: 10px;
+    font-size: .86rem;
+  }
 }

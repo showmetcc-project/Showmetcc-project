@@ -11,7 +11,7 @@ $secoesHome = [
     ['id' => 'literatura', 'titulo' => 'Literatura', 'cor' => 'verde'],
     ['id' => 'gastronomia', 'titulo' => 'Gastronomia', 'cor' => 'rosa'],
     ['id' => 'oficinasWorkshops', 'titulo' => 'Oficinas e Workshops', 'cor' => 'verde'],
-    ['id' => 'culturaPopular', 'titulo' => 'Cultura Popular e Regional', 'cor' => 'rosa'],
+    ['id' => 'culturaPopular', 'titulo' => 'Tradições Regionais', 'cor' => 'rosa'],
     ['id' => 'geekCulturaPop', 'titulo' => 'Geek e Cultura Pop', 'cor' => 'verde'],
 ];
 ?>
@@ -73,6 +73,14 @@ $secoesHome = [
                 <h2>Resultados para <span id="termoBuscaHome"></span></h2>
                 <p id="resumoBuscaHome"></p>
             </header>
+
+            <div id="controlesBuscaHome" class="resultados-busca-home-controles" hidden>
+                <div id="tagsBuscaHome" class="resultados-busca-home-tags" aria-label="Filtros ativos"></div>
+                <button type="button" class="resultados-busca-home-limpar" data-limpar-busca-home>
+                    <i class="bi bi-x-circle" aria-hidden="true"></i>
+                    Limpar filtros e pesquisa
+                </button>
+            </div>
 
             <div
                 id="resultadosBuscaHomeGrid"

@@ -89,7 +89,7 @@ $idUsuarioSessao = isset($_SESSION['id_user']) ? (int) $_SESSION['id_user'] : 0;
                                 <p>Troque dicas, combine trajetos e veja fotos compartilhadas por outras pessoas.</p>
                             </div>
                             <a id="linkComunidade" href="comunidadeEvento.php" class="btn-acessar-comunidade">
-                                <i class="bi bi-chat-dots" aria-hidden="true"></i>
+                                <i class="bi bi-people-fill" aria-hidden="true"></i>
                                 Acessar comunidade
                             </a>
                         </section>
@@ -112,8 +112,8 @@ $idUsuarioSessao = isset($_SESSION['id_user']) ? (int) $_SESSION['id_user'] : 0;
                         </button>
 
                         <a id="linkPlanejamento" href="planejamento.php" class="btn-acao btn-planejar">
-                            <i class="bi bi-briefcase" aria-hidden="true"></i>
-                            Planejar viagem
+                            <i class="bi bi-map-fill" aria-hidden="true"></i>
+                            Planejar Viagem
                         </a>
                         </aside>
                     </div>

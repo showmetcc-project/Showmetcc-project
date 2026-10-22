@@ -59,7 +59,7 @@ $idEvento = (int) $idInformado;
         $configuracaoCabecalho = [
             'titulo_primario' => 'Planejamento',
             'titulo_secundario' => 'do Evento',
-            'icone' => 'bi-signpost-split',
+            'icone' => 'bi-map-fill',
             'fallback' => 'meusEventos.php',
         ];
         require __DIR__ . '/cabecalho.php';
@@ -395,7 +395,7 @@ $idEvento = (int) $idInformado;
 
                     <div class="titulo-card">
 
-                        <i class="bi bi-geo-alt-fill"></i>
+                        <i class="bi bi-map-fill"></i>
 
                         <h2>
                             Planeje sua rota
@@ -433,7 +433,7 @@ $idEvento = (int) $idInformado;
 
                         <button type="button" onclick="centralizarEvento()">
 
-                    <i class="bi bi-map"></i>
+                    <i class="bi bi-map-fill"></i>
 
                     Ver localização
 
@@ -453,7 +453,7 @@ $idEvento = (int) $idInformado;
 
                         <h3>
 
-                            <i class="bi bi-signpost-split"></i> De onde você vai sair?
+                            <i class="bi bi-map-fill"></i> De onde você vai sair?
 
                         </h3>
 
@@ -520,7 +520,7 @@ $idEvento = (int) $idInformado;
 
 
                     <div class="dados-rota-planejamento">
-                        <h3><i class="bi bi-signpost-split" aria-hidden="true"></i> Dados da rota</h3>
+                        <h3><i class="bi bi-map-fill" aria-hidden="true"></i> Dados da rota</h3>
                         <p id="instrucoesDadosRota">A distância e o tempo estimado são preenchidos automaticamente ao calcular a rota.</p>
                         <div class="campos-rota-planejamento">
                             <div>
@@ -558,7 +558,7 @@ $idEvento = (int) $idInformado;
 
                             <button type="button" onclick="abrirGoogleMaps()">
 
-                        <i class="bi bi-map"></i>
+                        <i class="bi bi-map-fill"></i>
 
                         Google Maps
 
@@ -938,7 +938,7 @@ $idEvento = (int) $idInformado;
 
                         <h3>
 
-                            <i class="bi bi-map"></i> Rota da viagem
+                            <i class="bi bi-map-fill icone-rota-impressao"></i> Rota da viagem
 
                         </h3>
 

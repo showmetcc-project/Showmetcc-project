@@ -451,6 +451,19 @@ a {
     color: #000;
 }
 
+/* Selo de estado concluído: mapa/rota + check verde. */
+.btn-planejar .selo-planejamento-concluido {
+    flex: 0 0 auto;
+    color: #00ff00;
+    font-size: 1.1rem;
+    line-height: 1;
+}
+
+.btn-planejar.btn-planejamento-concluido:hover .selo-planejamento-concluido,
+.btn-planejar.btn-planejamento-concluido:focus-visible .selo-planejamento-concluido {
+    color: #000;
+}
+
 /* ==========================
    FOOTER — mesmo padrão das outras páginas
 ========================== */

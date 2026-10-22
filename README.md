@@ -37,7 +37,7 @@ definição do fluxo web; já o segredo não deve ser enviado ao navegador nem c
 - `api/`: endpoints REST, com regras de negócio e persistência;
 - `api/middleware/`: autenticação, autorização, CSRF, uploads e integrações compartilhadas;
 - `config/`: conexão com o banco, sessão e credenciais locais não versionadas;
-- `assets/banco/`: schema base e migrações incrementais;
+- `assets/banco/`: schema base (`showme.sql`) e carga opcional de eventos de exemplo (`eventosExemplo.sql`);
 - `docs/`: auditoria atual e documentos históricos do TCC.
 
 As páginas PHP da raiz concentram apenas a estrutura HTML e a proteção inicial de acesso. A leitura e a gravação de dados ficam na API, e os scripts de interface consomem esses endpoints.

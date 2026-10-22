@@ -259,7 +259,7 @@
   function confirmar(opcoes = {}) {
     if (modalAtual) finalizarConfirmacao(false);
 
-    const variante = ['importante', 'edicao'].includes(opcoes.variante)
+    const variante = ['importante', 'edicao', 'conflito'].includes(opcoes.variante)
       ? opcoes.variante
       : 'destrutiva';
     const tituloId = `showmeConfirmacaoTitulo-${Date.now()}`;
@@ -279,7 +279,9 @@
       ? 'bi bi-exclamation-triangle-fill showme-confirmacao-icone'
       : variante === 'edicao'
         ? 'bi bi-pencil-square showme-confirmacao-icone'
-        : 'bi bi-question-circle-fill showme-confirmacao-icone';
+        : variante === 'conflito'
+          ? 'bi bi-calendar-x showme-confirmacao-icone'
+          : 'bi bi-question-circle-fill showme-confirmacao-icone';
     icone.setAttribute('aria-hidden', 'true');
 
     const titulo = document.createElement('h2');
@@ -343,7 +345,9 @@
   function avisar(opcoes = {}) {
     if (modalAtual) finalizarConfirmacao(false);
 
-    const variante = opcoes.variante === 'edicao' ? 'edicao' : 'importante';
+    const variante = ['edicao', 'conflito'].includes(opcoes.variante)
+      ? opcoes.variante
+      : 'importante';
     const tituloId = `showmeAvisoTitulo-${Date.now()}`;
     focoAnterior = document.activeElement;
 

@@ -75,7 +75,7 @@ O `.htaccess` de `api/` publica URLs amigáveis e encaminha para arquivos camelC
 
 ### 2.3 Banco de dados
 
-O schema base fica em `assets/banco/showme.sql`; ajustes incrementais para ambientes já existentes ficam em `assets/banco/migrar*.sql`.
+O schema base fica em `assets/banco/showme.sql` e já contém a estrutura final do banco; não há scripts de migração separados.
 
 | Tabela | Uso atual |
 |---|---|
@@ -134,7 +134,7 @@ O rodapé aparece atualmente em Home, Institucional e Comunidades. As páginas d
 
 `acessibilidade.php` é carregado pelo cabeçalho compartilhado e diretamente nas três telas de autenticação. Ele reúne VLibras, o bundle local da biblioteca de acessibilidade e os ajustes próprios do ShowMe. O widget oferece tamanho de texto, espaçamento, altura de linha, guia de leitura, inversão, escala de cinza, cursor ampliado, redução de animação, sublinhado e fonte para dislexia.
 
-As imagens de evento têm texto alternativo próprio. O campo opcional `alt_imagem` (VARCHAR(255) em `evento` e `solicitacao`) é preenchido no cadastro do evento e na edição do painel. A API devolve o valor em todas as listagens; cards, carrosséis, busca, detalhes, Meus Eventos, planejamentos e comunidades aplicam `ShowMeA11y.textoAltImagemEvento`, que usa o texto cadastrado e, quando vazio, gera "Imagem de divulgação para o evento [Nome do Evento] - [Cidade]". A migração fica em `assets/banco/migrarAltImagemEvento.sql`.
+As imagens de evento têm texto alternativo próprio. O campo opcional `alt_imagem` (VARCHAR(255) em `evento` e `solicitacao`) é preenchido no cadastro do evento e na edição do painel. A API devolve o valor em todas as listagens; cards, carrosséis, busca, detalhes, Meus Eventos, planejamentos e comunidades aplicam `ShowMeA11y.textoAltImagemEvento`, que usa o texto cadastrado e, quando vazio, gera "Imagem de divulgação para o evento [Nome do Evento] - [Cidade]". O campo já faz parte do schema base.
 
 O Swagger UI foi corretamente mantido sem esses widgets por ser documentação técnica.
 
@@ -266,7 +266,7 @@ Ele persiste em `rota`:
 - valor do ingresso, transporte e hospedagem;
 - necessidade/nome da hospedagem.
 
-A etapa de orçamento define o orçamento planejado total e o ingresso. Transporte e hospedagem têm campos monetários próprios nas etapas correspondentes e são persistidos em `custo_transporte` e `custo_hospedagem`, sem fusão. O campo legado de gastos extras foi removido da interface, da API e do banco; em ambientes que ainda possuem a coluna `custo_outros`, aplique `assets/banco/migrarRemocaoCustoOutrosRota.sql`. O ingresso é pré-preenchido com o valor mínimo oficial, exibe a faixa mínima/máxima quando disponível e só pode ser menor quando "Ingresso gratuito / Cortesia" está marcado; o valor máximo é apenas orientativo e não bloqueia o valor exato pago pelo usuário. O total de gastos é atualizado em tempo real como ingresso + transporte + hospedagem, e o saldo é o orçamento planejado menos esse total. O resumo e a impressão discriminam cada custo.
+A etapa de orçamento define o orçamento planejado total e o ingresso. Transporte e hospedagem têm campos monetários próprios nas etapas correspondentes e são persistidos em `custo_transporte` e `custo_hospedagem`, sem fusão. O campo legado de gastos extras foi removido da interface, da API e do banco. O ingresso é pré-preenchido com o valor mínimo oficial, exibe a faixa mínima/máxima quando disponível e só pode ser menor quando "Ingresso gratuito / Cortesia" está marcado; o valor máximo é apenas orientativo e não bloqueia o valor exato pago pelo usuário. O total de gastos é atualizado em tempo real como ingresso + transporte + hospedagem, e o saldo é o orçamento planejado menos esse total. O resumo e a impressão discriminam cada custo.
 
 Existe apenas um planejamento por usuário/evento. Custos podem ser zero quando o usuário não precisa daquele item. A tela oferece links externos para transportes, mapas e hospedagem, calcula a rota quando possível e permite entrada manual como fallback. A distância em km é sempre preenchida pelo cálculo da rota, independentemente do meio de transporte escolhido (a distância física é a mesma); o tempo estimado é automático apenas para carro e Uber e permanece manual para ônibus e avião. Os campos monetários de transporte e hospedagem ocupam toda a largura útil do formulário e ficam alinhados à esquerda, como os demais campos.
 
@@ -274,7 +274,7 @@ Na página de detalhes, o botão de planejamento consulta o planejamento do usu�
 
 Finalizar é uma ação confirmada. O toast de criação oferece “Ver meus planejados”; edição não repete esse link. O resumo final pode ser impresso/salvo em PDF com layout branco próprio, em estilo cartaz urbano preto e branco (`assets/css/impressao.css`): faixa preta no título, seções com bordas fortes, fonte Oswald em caixa alta e checklist manual em “Dicas de Viagem”. Eventos encerrados podem ter o resumo consultado, mas não editado.
 
-Com Google Agenda conectado, a API verifica conflito na finalização e permite continuar ou cancelar. Depois é possível exportar uma vez para a agenda. Não existe sincronização contínua. Ao abrir o planejamento, a tela também abre um modal de aviso quando já existem compromissos na mesma data do evento, considerando os planejamentos do próprio usuário e os eventos da agenda conectada. Compromissos da agenda com o mesmo nome do evento planejado são ignorados, pois representam o próprio evento. Na edição, o `id_rota` é enviado às verificações e o evento determinístico do próprio planejamento é descartado, tanto na checagem por período quanto no aviso da mesma data; só os demais compromissos geram alerta. O modal de conflito usa posicionamento fixo centralizado.
+Com Google Agenda conectado, a API verifica conflito na finalização e permite continuar ou cancelar. Depois é possível exportar uma vez para a agenda. Não existe sincronização contínua. Ao abrir o planejamento, a tela também abre um modal de aviso quando já existem compromissos na mesma data do evento, considerando os planejamentos do próprio usuário e os eventos da agenda conectada. Compromissos da agenda com o mesmo nome do evento planejado são ignorados, pois representam o próprio evento. Na edição, o `id_rota` é enviado às verificações e o evento determinístico do próprio planejamento é descartado, tanto na checagem por período quanto no aviso da mesma data; só os demais compromissos geram alerta. O modal de conflito usa posicionamento fixo centralizado. Os avisos de conflito usam magenta neon, com borda reforçada e botão de atenção, enquanto o verde permanece reservado a confirmações e mensagens de sucesso.
 
 O botão “Adicionar ao Google Agenda” consulta se o evento determinístico já existe ao revisitar o planejamento. Se já foi exportado, o botão de adicionar é ocultado e o resumo exibe apenas o link “Ver no Google Agenda”. O estado não depende mais apenas da ação imediata de exportar.
 
@@ -414,7 +414,7 @@ A auditoria antiga permanece em `docs/historico/auditoriaBackend.md` justamente 
 - Os campos de transporte/hospedagem foram medidos em largura total alinhados à esquerda, e o modal de conflito foi confirmado no centro exato do viewport.
 - `git diff --check` não apontou erro de whitespace antes do commit funcional.
 
-A remoção da tabela legada `spotify` foi feita pela migração `assets/banco/migrarRemocaoSpotify.sql` (tabela vazia no ambiente local). Nenhum evento, usuário, favorito ou rota real foi removido; os registros de teste foram apagados ao final.
+A tabela legada `spotify` foi removida do schema (estava vazia no ambiente local). Nenhum evento, usuário, favorito ou rota real foi removido; os registros de teste foram apagados ao final.
 
 ## 10. Prioridades recomendadas
 

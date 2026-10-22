@@ -763,8 +763,8 @@ teste de criação.
 
 A interface envia os custos separadamente: `custo_ingresso`, `custo_transporte` e
 `custo_hospedagem`. O campo `custo_hospedagem` é zerado pela API quando
-`hospedagem_necessaria` é `false`. Em bancos que ainda possuem a coluna legada
-`custo_outros`, aplique `assets/banco/migrarRemocaoCustoOutrosRota.sql`.
+`hospedagem_necessaria` é `false`. O schema atual (`assets/banco/showme.sql`) não
+possui a coluna legada `custo_outros`.
 
 ### POST /planejamento — sucesso
 

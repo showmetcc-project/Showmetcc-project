@@ -2661,7 +2661,7 @@ titulo: 'Conflito no Google Agenda',
 texto: 'Há outro compromisso no período deste evento, considerando também o tempo de deslocamento.',
 confirmarTexto: 'Finalizar mesmo assim',
 cancelarTexto: 'Cancelar',
-variante: 'importante'
+variante: 'conflito'
         });
     }
 
@@ -3041,7 +3041,7 @@ return;
         texto: 'Nota: Você já possui compromissos agendados nesta mesma data.',
         itens: nomes,
         icone: 'bi bi-calendar2-week',
-        variante: 'importante',
+        variante: 'conflito',
         fecharTexto: 'Entendi'
     });
 }

@@ -22,9 +22,9 @@ function validarTokenCsrfPagina(?string $tokenEnviado): bool
     iniciarSessaoSegura();
     $tokenSessao = $_SESSION['csrf_token_pagina'] ?? '';
 
-    return is_string($tokenSessao)
-        && $tokenSessao !== ''
-        && is_string($tokenEnviado)
-        && $tokenEnviado !== ''
-        && hash_equals($tokenSessao, $tokenEnviado);
+    return is_string($tokenSessao) &&
+        $tokenSessao !== '' &&
+        is_string($tokenEnviado) &&
+        $tokenEnviado !== '' &&
+        hash_equals($tokenSessao, $tokenEnviado);
 }

@@ -70,10 +70,8 @@ try {
         <p><strong>Nome:</strong> {$nomeSeguro}</p>
         <p><strong>E-mail:</strong> {$emailSeguro}</p>
         <p><strong>Mensagem:</strong><br>{$mensagemSegura}</p>";
-    $mailer->AltBody = "Nova mensagem pelo site ShowMe\n\n"
-        . "Nome: {$nome}\n"
-        . "E-mail: {$email}\n\n"
-        . "Mensagem:\n{$mensagem}";
+    $mailer->AltBody =
+        "Nova mensagem pelo site ShowMe\n\n" . "Nome: {$nome}\n" . "E-mail: {$email}\n\n" . "Mensagem:\n{$mensagem}";
     $mailer->send();
 
     responderContato(['sucesso' => true]);

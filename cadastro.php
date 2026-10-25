@@ -1,7 +1,5 @@
 <?php
-$googleConfig = is_file(__DIR__ . '/config/google.php')
-  ? require __DIR__ . '/config/google.php'
-  : [];
+$googleConfig = is_file(__DIR__ . '/config/google.php') ? require __DIR__ . '/config/google.php' : [];
 $googleClientId = is_array($googleConfig) ? trim((string) ($googleConfig['client_id'] ?? '')) : '';
 ?>
 <!DOCTYPE html>

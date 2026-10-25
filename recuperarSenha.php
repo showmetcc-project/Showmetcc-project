@@ -10,12 +10,8 @@ $tipoMensagem = '';
 $enviado = isset($_GET['enviado']);
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $tokenCsrf = isset($_POST['csrf_token']) && is_string($_POST['csrf_token'])
-        ? $_POST['csrf_token']
-        : null;
-    $email = isset($_POST['email']) && is_string($_POST['email'])
-        ? trim($_POST['email'])
-        : '';
+    $tokenCsrf = isset($_POST['csrf_token']) && is_string($_POST['csrf_token']) ? $_POST['csrf_token'] : null;
+    $email = isset($_POST['email']) && is_string($_POST['email']) ? trim($_POST['email']) : '';
 
     if (!validarTokenCsrfPagina($tokenCsrf)) {
         $mensagem = 'A sessão do formulário expirou. Atualize a página e tente novamente.';
@@ -32,7 +28,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 'SELECT id_user, nome_user, email_user
                  FROM usuario
                  WHERE email_user = ?
-                 LIMIT 1'
+                 LIMIT 1',
             );
             $stmt->bind_param('s', $email);
             $stmt->execute();
@@ -46,7 +42,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     'SELECT COUNT(*) AS total
                      FROM recuperacao_senha
                      WHERE id_usuario = ?
-                     AND criado_em >= DATE_SUB(NOW(), INTERVAL 15 MINUTE)'
+                     AND criado_em >= DATE_SUB(NOW(), INTERVAL 15 MINUTE)',
                 );
                 $stmt->bind_param('i', $idUsuario);
                 $stmt->execute();
@@ -59,7 +55,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         'UPDATE recuperacao_senha
                          SET usado_em = NOW()
                          WHERE id_usuario = ?
-                         AND usado_em IS NULL'
+                         AND usado_em IS NULL',
                     );
                     $stmt->bind_param('i', $idUsuario);
                     $stmt->execute();
@@ -72,7 +68,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $stmt = $conn->prepare(
                         'INSERT INTO recuperacao_senha
                             (id_usuario, token_hash, expira_em, ip_solicitante)
-                         VALUES (?, ?, DATE_ADD(NOW(), INTERVAL 1 HOUR), ?)'
+                         VALUES (?, ?, DATE_ADD(NOW(), INTERVAL 1 HOUR), ?)',
                     );
                     $stmt->bind_param('iss', $idUsuario, $tokenHash, $ipSolicitante);
                     $stmt->execute();
@@ -85,13 +81,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         enviarEmailRecuperacaoSenhaShowMe(
                             (string) $usuario['email_user'],
                             (string) $usuario['nome_user'],
-                            $link
+                            $link,
                         );
                     } catch (Throwable $erroEnvio) {
                         // Não deixa um token válido sem que o e-mail tenha sido entregue.
-                        $stmt = $conn->prepare(
-                            'DELETE FROM recuperacao_senha WHERE id_recuperacao = ?'
-                        );
+                        $stmt = $conn->prepare('DELETE FROM recuperacao_senha WHERE id_recuperacao = ?');
                         $stmt->bind_param('i', $idRecuperacao);
                         $stmt->execute();
                         $stmt->close();
@@ -101,7 +95,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
 
             header('Location: recuperarSenha.php?enviado=1', true, 303);
-            exit;
+            exit();
         } catch (Throwable $erro) {
             error_log('Falha ao solicitar recuperação de senha: ' . $erro->getMessage());
             $mensagem = 'Não foi possível processar a solicitação agora. Tente novamente em alguns instantes.';
@@ -160,7 +154,11 @@ $tokenCsrf = obterTokenCsrfPagina();
                 <?php endif; ?>
 
                 <form id="formRecuperarSenha" method="post" action="recuperarSenha.php" novalidate>
-                    <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($tokenCsrf, ENT_QUOTES, 'UTF-8') ?>">
+                    <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(
+                        $tokenCsrf,
+                        ENT_QUOTES,
+                        'UTF-8',
+                    ) ?>">
 
                     <div class="mb-3">
                         <label for="emailRecuperacao">E-mail</label>

@@ -25,7 +25,7 @@ switch ($metodo) {
              FROM favoritos f
              INNER JOIN evento e ON e.id_evento = f.id_evento
              WHERE f.id_user = ?
-             ORDER BY e.data_evento DESC, f.id_favorito DESC'
+             ORDER BY e.data_evento DESC, f.id_favorito DESC',
         );
         $stmt->bind_param('i', $idUsuario);
         executarStatementApi($stmt);
@@ -62,9 +62,7 @@ switch ($metodo) {
         }
         $stmt->close();
 
-        $stmt = $conn->prepare(
-            'SELECT id_favorito FROM favoritos WHERE id_user = ? AND id_evento = ? LIMIT 1'
-        );
+        $stmt = $conn->prepare('SELECT id_favorito FROM favoritos WHERE id_user = ? AND id_evento = ? LIMIT 1');
         $stmt->bind_param('ii', $idUsuario, $idEvento);
         executarStatementApi($stmt);
         $stmt->store_result();
@@ -81,22 +79,23 @@ switch ($metodo) {
         $idFavorito = $conn->insert_id;
         $stmt->close();
 
-        responder([
-            'mensagem' => 'Favorito adicionado com sucesso',
-            'favorito' => normalizarFavoritoApi([
-                'id_favorito' => $idFavorito,
-                'id_evento' => $idEvento,
-            ])
-        ], 201);
+        responder(
+            [
+                'mensagem' => 'Favorito adicionado com sucesso',
+                'favorito' => normalizarFavoritoApi([
+                    'id_favorito' => $idFavorito,
+                    'id_evento' => $idEvento,
+                ]),
+            ],
+            201,
+        );
 
     case 'DELETE':
         if ($id === null) {
             responder(['erro' => 'Informe o ID do favorito na URL'], 400);
         }
 
-        $stmt = $conn->prepare(
-            'DELETE FROM favoritos WHERE id_favorito = ? AND id_user = ?'
-        );
+        $stmt = $conn->prepare('DELETE FROM favoritos WHERE id_favorito = ? AND id_user = ?');
         $stmt->bind_param('ii', $id, $idUsuario);
         executarStatementApi($stmt);
         $removido = $stmt->affected_rows;

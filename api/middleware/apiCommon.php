@@ -33,10 +33,13 @@ function lerJson(bool $detalharErro = false): array
 
     if (json_last_error() !== JSON_ERROR_NONE || !is_array($dados)) {
         if ($detalharErro) {
-            responder([
-                'erro' => 'Corpo JSON inválido',
-                'detalhes' => json_last_error_msg()
-            ], 400);
+            responder(
+                [
+                    'erro' => 'Corpo JSON inválido',
+                    'detalhes' => json_last_error_msg(),
+                ],
+                400,
+            );
         }
 
         responder(['erro' => 'Corpo JSON inválido'], 400);
@@ -84,9 +87,13 @@ function validarTokenCsrf(): void
     $tokenEnviado = $_SERVER['HTTP_X_CSRF_TOKEN'] ?? '';
     $tokenSessao = $_SESSION['csrf_token'] ?? '';
 
-    if (!is_string($tokenEnviado) || !is_string($tokenSessao)
-        || $tokenEnviado === '' || $tokenSessao === ''
-        || !hash_equals($tokenSessao, $tokenEnviado)) {
+    if (
+        !is_string($tokenEnviado) ||
+        !is_string($tokenSessao) ||
+        $tokenEnviado === '' ||
+        $tokenSessao === '' ||
+        !hash_equals($tokenSessao, $tokenEnviado)
+    ) {
         responder(['erro' => 'Token CSRF inválido ou ausente.'], 403);
     }
 }
@@ -106,10 +113,9 @@ function obterRegistrosLimiteSessao(string $chave, int $janelaSegundos): array
     }
 
     $limiteTemporal = time() - $janelaSegundos;
-    $registros = array_values(array_filter(
-        $registros,
-        static fn($registro) => is_int($registro) && $registro > $limiteTemporal
-    ));
+    $registros = array_values(
+        array_filter($registros, static fn($registro) => is_int($registro) && $registro > $limiteTemporal),
+    );
 
     if ($registros === []) {
         unset($_SESSION['limites_sessao'][$chave]);
@@ -120,12 +126,8 @@ function obterRegistrosLimiteSessao(string $chave, int $janelaSegundos): array
     return $registros;
 }
 
-function verificarLimiteSessao(
-    string $chave,
-    int $limite,
-    int $janelaSegundos,
-    string $mensagem
-): void {
+function verificarLimiteSessao(string $chave, int $limite, int $janelaSegundos, string $mensagem): void
+{
     $registros = obterRegistrosLimiteSessao($chave, $janelaSegundos);
 
     if (count($registros) < $limite) {
@@ -134,10 +136,13 @@ function verificarLimiteSessao(
 
     $segundos = max(1, min($registros) + $janelaSegundos - time());
     header('Retry-After: ' . $segundos);
-    responder([
-        'erro' => $mensagem,
-        'tentar_novamente_em' => $segundos,
-    ], 429);
+    responder(
+        [
+            'erro' => $mensagem,
+            'tentar_novamente_em' => $segundos,
+        ],
+        429,
+    );
 }
 
 function registrarTentativaSessao(string $chave, int $janelaSegundos): void

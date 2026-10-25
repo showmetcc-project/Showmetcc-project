@@ -46,7 +46,9 @@
     }
 
     function formatarData(data) {
-        const partes = String(data || '').split('-').map(Number);
+        const partes = String(data || '')
+            .split('-')
+            .map(Number);
 
         if (partes.length !== 3 || partes.some((parte) => !Number.isInteger(parte))) {
             return 'Data não informada';
@@ -57,7 +59,7 @@
 
     function formatarDataHora(dataHora) {
         const correspondencia = String(dataHora || '').match(
-            /^(\d{4})-(\d{2})-(\d{2})[ T](\d{2}):(\d{2})(?::(\d{2}))?/
+            /^(\d{4})-(\d{2})-(\d{2})[ T](\d{2}):(\d{2})(?::(\d{2}))?/,
         );
 
         if (!correspondencia) {
@@ -70,17 +72,19 @@
             Number(correspondencia[3]),
             Number(correspondencia[4]),
             Number(correspondencia[5]),
-            Number(correspondencia[6] || 0)
+            Number(correspondencia[6] || 0),
         );
         return data.toLocaleString('pt-BR');
     }
 
     function statusLegivel(status) {
-        return {
-            pendente: 'Pendente',
-            aprovado: 'Aprovada',
-            recusado: 'Recusada'
-        }[status] || status;
+        return (
+            {
+                pendente: 'Pendente',
+                aprovado: 'Aprovada',
+                recusado: 'Recusada',
+            }[status] || status
+        );
     }
 
     function situacaoSolicitacao(solicitacao) {
@@ -95,7 +99,7 @@
 
     function mostrarMensagem(texto, tipo = 'danger') {
         window.ShowMeUI.toast(texto, {
-            variante: tipo === 'success' ? 'sucesso' : 'erro'
+            variante: tipo === 'success' ? 'sucesso' : 'erro',
         });
     }
 
@@ -112,7 +116,6 @@
     }
 
     function atualizarContadores(quantidades = {}) {
-
         document.getElementById('contadorTodas').textContent = quantidades.todas;
         document.getElementById('contadorPendentes').textContent = quantidades.pendente;
         document.getElementById('contadorAprovadas').textContent = quantidades.aprovado;
@@ -128,12 +131,13 @@
 
         const deveModerar = await window.ShowMeUI.confirmar({
             titulo: status === 'aprovado' ? 'Aprovar evento' : 'Reprovar evento',
-            texto: status === 'aprovado'
-                ? `Deseja aprovar “${solicitacao.nome_evento}” e publicá-lo como evento?`
-                : `Deseja reprovar “${solicitacao.nome_evento}”? A solicitação deixará de ficar pendente.`,
+            texto:
+                status === 'aprovado'
+                    ? `Deseja aprovar “${solicitacao.nome_evento}” e publicá-lo como evento?`
+                    : `Deseja reprovar “${solicitacao.nome_evento}”? A solicitação deixará de ficar pendente.`,
             confirmarTexto: status === 'aprovado' ? 'Aprovar' : 'Reprovar',
             cancelarTexto: 'Cancelar',
-            variante: status === 'aprovado' ? 'importante' : 'destrutiva'
+            variante: status === 'aprovado' ? 'importante' : 'destrutiva',
         });
 
         if (!deveModerar) {
@@ -141,16 +145,18 @@
         }
 
         const card = lista.querySelector(`[data-solicitacao-id="${solicitacao.id_solicitacao}"]`);
-        card?.querySelectorAll('button').forEach((botao) => { botao.disabled = true; });
+        card?.querySelectorAll('button').forEach((botao) => {
+            botao.disabled = true;
+        });
 
         try {
             const resposta = await fetch(`api/eventos/${solicitacao.id_solicitacao}`, {
                 method: 'PUT',
-                headers: {'Content-Type': 'application/json', Accept: 'application/json'},
+                headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
                 body: JSON.stringify({
                     acao: 'moderar',
-                    status_solicitacao: status
-                })
+                    status_solicitacao: status,
+                }),
             });
             const dados = await lerJson(resposta);
 
@@ -161,21 +167,21 @@
 
             if (!resposta.ok) {
                 if (resposta.status === 409 || resposta.status === 404) {
-                    await carregarSolicitacoes({reiniciar: true, exibirCarregamento: false});
+                    await carregarSolicitacoes({ reiniciar: true, exibirCarregamento: false });
                 }
                 throw new Error(dados.erro || 'Não foi possível analisar a solicitação.');
             }
 
-            await carregarSolicitacoes({reiniciar: true, exibirCarregamento: false});
+            await carregarSolicitacoes({ reiniciar: true, exibirCarregamento: false });
             window.ShowMeUI.toast(
-                status === 'aprovado'
-                    ? 'Evento aprovado com sucesso.'
-                    : 'Evento reprovado com sucesso.',
-                {variante: 'sucesso'}
+                status === 'aprovado' ? 'Evento aprovado com sucesso.' : 'Evento reprovado com sucesso.',
+                { variante: 'sucesso' },
             );
         } catch (erro) {
             mostrarMensagem(erro.message);
-            card?.querySelectorAll('button').forEach((botao) => { botao.disabled = false; });
+            card?.querySelectorAll('button').forEach((botao) => {
+                botao.disabled = false;
+            });
         }
     }
 
@@ -239,7 +245,8 @@
         document.getElementById('cidadeEventoEdicao').value = solicitacao.cidade_evento || '';
         document.getElementById('ufEventoEdicao').value = solicitacao.uf || '';
         definirCategoriasSelecionadas(solicitacao.categoria_evento);
-        document.getElementById('classificacaoIndicativaEdicao').value = solicitacao.classificacao_indicativa || 'Livre';
+        document.getElementById('classificacaoIndicativaEdicao').value =
+            solicitacao.classificacao_indicativa || 'Livre';
         document.getElementById('linkOficialEdicao').value = solicitacao.link_oficial || '';
         document.getElementById('dataEventoEdicao').value = solicitacao.data_evento || '';
         document.getElementById('horarioEventoEdicao').value = solicitacao.horario_evento
@@ -259,9 +266,7 @@
     function configurarModalEdicao(solicitacao, modo) {
         const editandoEvento = modo === 'evento';
         formularioEdicao.dataset.modo = modo;
-        formularioEdicao.dataset.idAlvo = String(
-            editandoEvento ? solicitacao.id_evento : solicitacao.id_solicitacao
-        );
+        formularioEdicao.dataset.idAlvo = String(editandoEvento ? solicitacao.id_evento : solicitacao.id_solicitacao);
         preencherFormularioEvento(solicitacao);
         document.getElementById('tituloModalEditarSolicitacao').textContent = editandoEvento
             ? 'Editar evento publicado'
@@ -315,7 +320,7 @@
             valor_ingresso_minimo: document.getElementById('valorMinimoEdicao').value,
             valor_ingresso_maximo: document.getElementById('valorMaximoEdicao').value,
             descricao_evento: document.getElementById('descricaoEventoEdicao').value.trim(),
-            alt_imagem: document.getElementById('altImagemEdicao').value.trim()
+            alt_imagem: document.getElementById('altImagemEdicao').value.trim(),
         };
 
         const campoGeneroArtista = document.getElementById('generoArtistaEdicao');
@@ -334,7 +339,7 @@
                 texto: 'As informações publicadas serão alteradas e o usuário que cadastrou o evento será avisado por e-mail.',
                 confirmarTexto: 'Salvar alterações',
                 cancelarTexto: 'Cancelar',
-                variante: 'edicao'
+                variante: 'edicao',
             });
             if (!confirmou) return;
         }
@@ -344,8 +349,8 @@
         try {
             const resposta = await fetch(`api/eventos/${idAlvo}`, {
                 method: 'PUT',
-                headers: {'Content-Type': 'application/json', Accept: 'application/json'},
-                body: JSON.stringify(dadosEdicao)
+                headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+                body: JSON.stringify(dadosEdicao),
             });
             const dados = await lerJson(resposta);
 
@@ -356,21 +361,21 @@
 
             if (!resposta.ok) {
                 if (resposta.status === 409 || resposta.status === 404) {
-                    await carregarSolicitacoes({reiniciar: true, exibirCarregamento: false});
+                    await carregarSolicitacoes({ reiniciar: true, exibirCarregamento: false });
                 }
                 throw new Error(dados.erro || 'Não foi possível salvar as correções.');
             }
 
             modalEdicao.hide();
-            await carregarSolicitacoes({reiniciar: true, exibirCarregamento: false});
+            await carregarSolicitacoes({ reiniciar: true, exibirCarregamento: false });
             window.ShowMeUI.toast(
                 editandoEvento
                     ? 'Evento atualizado. O responsável será notificado por e-mail.'
                     : 'Alterações salvas. A solicitação já pode ser aprovada.',
-                {variante: 'sucesso'}
+                { variante: 'sucesso' },
             );
         } catch (erro) {
-            window.ShowMeUI.toast(erro.message, {variante: 'erro'});
+            window.ShowMeUI.toast(erro.message, { variante: 'erro' });
         } finally {
             botaoSalvar.disabled = false;
         }
@@ -387,7 +392,7 @@
             texto: `Tem certeza que deseja remover “${solicitacao.nome_evento}”? Favoritos, planejamentos e a comunidade associados também serão removidos. O responsável será avisado por e-mail.`,
             confirmarTexto: 'Remover evento',
             cancelarTexto: 'Cancelar',
-            variante: 'destrutiva'
+            variante: 'destrutiva',
         });
         if (!confirmou) return;
 
@@ -400,7 +405,7 @@
         try {
             const resposta = await fetch(`api/eventos/${solicitacao.id_evento}`, {
                 method: 'DELETE',
-                headers: {Accept: 'application/json'}
+                headers: { Accept: 'application/json' },
             });
             const dados = await lerJson(resposta);
             if (resposta.status === 401 || resposta.status === 403) {
@@ -410,11 +415,10 @@
             if (!resposta.ok) {
                 throw new Error(dados.erro || 'Não foi possível remover o evento.');
             }
-            await carregarSolicitacoes({reiniciar: true, exibirCarregamento: false});
-            window.ShowMeUI.toast(
-                'Evento removido. O responsável será notificado por e-mail.',
-                {variante: 'sucesso'}
-            );
+            await carregarSolicitacoes({ reiniciar: true, exibirCarregamento: false });
+            window.ShowMeUI.toast('Evento removido. O responsável será notificado por e-mail.', {
+                variante: 'sucesso',
+            });
         } catch (erro) {
             mostrarMensagem(erro.message);
             card?.querySelectorAll('button, a').forEach((controle) => {
@@ -439,9 +443,10 @@
 
     function criarCard(solicitacao, expandido) {
         const card = document.createElement('article');
-        const statusVisual = solicitacao.status_solicitacao === 'aprovado' && !solicitacao.id_evento
-            ? 'removido'
-            : solicitacao.status_solicitacao;
+        const statusVisual =
+            solicitacao.status_solicitacao === 'aprovado' && !solicitacao.id_evento
+                ? 'removido'
+                : solicitacao.status_solicitacao;
         card.className = `evento-card status-${statusVisual}${expandido ? ' expandido' : ''}`;
         card.dataset.solicitacaoId = String(solicitacao.id_solicitacao);
 
@@ -457,9 +462,13 @@
         imagem.src = caminhoImagem(solicitacao.foto);
         imagem.alt = window.ShowMeA11y.textoAltImagemEvento(solicitacao);
         imagem.loading = 'lazy';
-        imagem.addEventListener('error', function () {
-            this.src = imagemPadrao;
-        }, {once: true});
+        imagem.addEventListener(
+            'error',
+            function () {
+                this.src = imagemPadrao;
+            },
+            { once: true },
+        );
 
         const resumo = document.createElement('span');
         const titulo = document.createElement('h3');
@@ -468,9 +477,7 @@
         local.textContent = solicitacao.endereco_evento || 'Endereço não informado';
         const data = document.createElement('small');
         data.className = 'd-block';
-        const horario = solicitacao.horario_evento
-            ? ` às ${String(solicitacao.horario_evento).slice(0, 5)}`
-            : '';
+        const horario = solicitacao.horario_evento ? ` às ${String(solicitacao.horario_evento).slice(0, 5)}` : '';
         data.textContent = `${formatarData(solicitacao.data_evento)}${horario} · ${solicitacao.gratuidade ? 'Gratuito' : 'Pago'}`;
         resumo.append(titulo, local, data);
         info.append(imagem, resumo);
@@ -501,21 +508,33 @@
         const colunaEvento = document.createElement('div');
         colunaEvento.className = 'col-md-6';
         colunaEvento.append(
-            criarCampo('Endereço', [solicitacao.endereco_evento || solicitacao.rua_evento,
-                solicitacao.numero_endereco, solicitacao.cidade_evento, solicitacao.uf]
-                .filter(Boolean).join(' · ')),
+            criarCampo(
+                'Endereço',
+                [
+                    solicitacao.endereco_evento || solicitacao.rua_evento,
+                    solicitacao.numero_endereco,
+                    solicitacao.cidade_evento,
+                    solicitacao.uf,
+                ]
+                    .filter(Boolean)
+                    .join(' · '),
+            ),
             criarCampo('Categoria', solicitacao.categoria_evento),
             criarCampo('Classificação indicativa', solicitacao.classificacao_indicativa),
             criarCampo('Link oficial', solicitacao.link_oficial),
             criarCampo('Tipo', solicitacao.gratuidade ? 'Gratuito' : 'Pago'),
-            criarCampo('Faixa de valor', solicitacao.gratuidade
-                ? 'Entrada gratuita'
-                : [solicitacao.valor_ingresso_minimo, solicitacao.valor_ingresso_maximo]
-                    .filter((valor) => valor !== null && valor !== '').join(' – ')),
+            criarCampo(
+                'Faixa de valor',
+                solicitacao.gratuidade
+                    ? 'Entrada gratuita'
+                    : [solicitacao.valor_ingresso_minimo, solicitacao.valor_ingresso_maximo]
+                          .filter((valor) => valor !== null && valor !== '')
+                          .join(' – '),
+            ),
             criarCampo('Descrição do evento', solicitacao.descricao_evento),
             criarCampo('Quem Estará Lá', solicitacao.nome_artista_solicitado),
             criarCampo('Gênero musical dos participantes', solicitacao.genero_artista),
-            criarCampo('Sobre quem estará lá', solicitacao.descricao_artista)
+            criarCampo('Sobre quem estará lá', solicitacao.descricao_artista),
         );
         const colunaSolicitante = document.createElement('div');
         colunaSolicitante.className = 'col-md-6';
@@ -523,7 +542,7 @@
             criarCampo('Data e hora', `${formatarData(solicitacao.data_evento)}${horario}`),
             criarCampo('Solicitado por', `${nomeSolicitante(solicitacao)} · ${solicitacao.email_user}`),
             criarCampo('Enviado em', formatarDataHora(solicitacao.data_solicitacao)),
-            criarCampo('Situação', situacaoSolicitacao(solicitacao))
+            criarCampo('Situação', situacaoSolicitacao(solicitacao)),
         );
         linha.append(colunaEvento, colunaSolicitante);
         corpo.append(linha);
@@ -539,7 +558,7 @@
             rodape.append(
                 editar,
                 criarBotaoModeracao(solicitacao, 'aprovado'),
-                criarBotaoModeracao(solicitacao, 'recusado')
+                criarBotaoModeracao(solicitacao, 'recusado'),
             );
         } else if (solicitacao.status_solicitacao === 'aprovado' && solicitacao.id_evento) {
             const editarEvento = document.createElement('button');
@@ -590,11 +609,13 @@
     }
 
     function statusDenunciaLegivel(status) {
-        return {
-            pendente: 'Pendente',
-            mantido: 'Mantido',
-            removido: 'Removido'
-        }[status] || status;
+        return (
+            {
+                pendente: 'Pendente',
+                mantido: 'Mantido',
+                removido: 'Removido',
+            }[status] || status
+        );
     }
 
     function nomePessoa(nome, sobrenome, fallback = 'Usuário') {
@@ -602,7 +623,6 @@
     }
 
     function atualizarContadoresDenuncias(quantidades = {}) {
-
         document.getElementById('contadorDenunciasAba').textContent = quantidades.pendente;
         document.getElementById('contadorDenunciasTodas').textContent = quantidades.todas;
         document.getElementById('contadorDenunciasPendentes').textContent = quantidades.pendente;
@@ -635,19 +655,21 @@
                 : 'O conteúdo continuará visível, a denúncia será marcada como mantida e o denunciante será notificado por e-mail.',
             confirmarTexto: removendo ? 'Remover' : 'Manter',
             cancelarTexto: 'Cancelar',
-            variante: removendo ? 'destrutiva' : 'importante'
+            variante: removendo ? 'destrutiva' : 'importante',
         });
 
         if (!deveModerar) return;
 
         const card = listaDenuncias.querySelector(`[data-denuncia-id="${denuncia.id_denuncia}"]`);
-        card?.querySelectorAll('button').forEach((botao) => { botao.disabled = true; });
+        card?.querySelectorAll('button').forEach((botao) => {
+            botao.disabled = true;
+        });
 
         try {
             const resposta = await fetch(`api/comunidade-denuncias/${denuncia.id_denuncia}`, {
                 method: 'PUT',
-                headers: {'Content-Type': 'application/json', Accept: 'application/json'},
-                body: JSON.stringify({acao})
+                headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+                body: JSON.stringify({ acao }),
             });
             const dados = await lerJson(resposta);
 
@@ -658,19 +680,18 @@
 
             if (!resposta.ok) {
                 if (resposta.status === 404 || resposta.status === 409) {
-                    await carregarDenuncias({reiniciar: true, exibirCarregamento: false});
+                    await carregarDenuncias({ reiniciar: true, exibirCarregamento: false });
                 }
                 throw new Error(dados.erro || 'Não foi possível moderar a denúncia.');
             }
 
-            await carregarDenuncias({reiniciar: true, exibirCarregamento: false});
-            window.ShowMeUI.toast(
-                removendo ? 'Conteúdo removido.' : 'Conteúdo mantido.',
-                {variante: 'sucesso'}
-            );
+            await carregarDenuncias({ reiniciar: true, exibirCarregamento: false });
+            window.ShowMeUI.toast(removendo ? 'Conteúdo removido.' : 'Conteúdo mantido.', { variante: 'sucesso' });
         } catch (erro) {
             mostrarMensagem(erro.message);
-            card?.querySelectorAll('button').forEach((botao) => { botao.disabled = false; });
+            card?.querySelectorAll('button').forEach((botao) => {
+                botao.disabled = false;
+            });
         }
     }
 
@@ -688,12 +709,16 @@
         imagem.alt = window.ShowMeA11y.textoAltImagemEvento({
             alt_imagem: denuncia.comunidade_alt_imagem,
             nome_evento: denuncia.comunidade_nome,
-            cidade_evento: denuncia.comunidade_cidade
+            cidade_evento: denuncia.comunidade_cidade,
         });
         imagem.loading = 'lazy';
-        imagem.addEventListener('error', function () {
-            this.src = imagemPadrao;
-        }, {once: true});
+        imagem.addEventListener(
+            'error',
+            function () {
+                this.src = imagemPadrao;
+            },
+            { once: true },
+        );
         const comunidadeTexto = document.createElement('div');
         const titulo = document.createElement('h3');
         titulo.textContent = denuncia.comunidade_nome || 'Comunidade do evento';
@@ -716,9 +741,13 @@
         const avatar = document.createElement('img');
         avatar.src = denuncia.autor_foto ? caminhoImagem(denuncia.autor_foto) : avatarPadrao;
         avatar.alt = '';
-        avatar.addEventListener('error', function () {
-            this.src = avatarPadrao;
-        }, {once: true});
+        avatar.addEventListener(
+            'error',
+            function () {
+                this.src = avatarPadrao;
+            },
+            { once: true },
+        );
         const autorTexto = document.createElement('div');
         const autorNome = document.createElement('strong');
         autorNome.textContent = nomePessoa(denuncia.autor_nome, denuncia.autor_sobrenome, 'Autor não encontrado');
@@ -730,16 +759,16 @@
         autor.append(avatar, autorTexto);
         const categoria = document.createElement('span');
         categoria.className = 'denuncia-categoria';
-        categoria.textContent = denuncia.tipo_alvo === 'midia'
-            ? 'Foto da galeria'
-            : (denuncia.tipo_alvo === 'resposta'
-                ? 'Resposta à publicação'
-                : (denuncia.categoria_post || 'Sem categoria'));
+        categoria.textContent =
+            denuncia.tipo_alvo === 'midia'
+                ? 'Foto da galeria'
+                : denuncia.tipo_alvo === 'resposta'
+                  ? 'Resposta à publicação'
+                  : denuncia.categoria_post || 'Sem categoria';
         const textoPost = document.createElement('p');
         textoPost.className = 'denuncia-texto';
-        textoPost.textContent = denuncia.tipo_alvo === 'midia'
-            ? (denuncia.legenda_midia || 'Imagem sem legenda.')
-            : denuncia.texto_post;
+        textoPost.textContent =
+            denuncia.tipo_alvo === 'midia' ? denuncia.legenda_midia || 'Imagem sem legenda.' : denuncia.texto_post;
         publicacao.append(autor, categoria);
         if (denuncia.tipo_alvo === 'midia') {
             const imagemDenunciada = document.createElement('img');
@@ -747,9 +776,13 @@
             imagemDenunciada.src = caminhoImagem(denuncia.caminho_midia);
             imagemDenunciada.alt = denuncia.legenda_midia || 'Foto denunciada da galeria';
             imagemDenunciada.loading = 'lazy';
-            imagemDenunciada.addEventListener('error', function () {
-                this.src = imagemPadrao;
-            }, {once: true});
+            imagemDenunciada.addEventListener(
+                'error',
+                function () {
+                    this.src = imagemPadrao;
+                },
+                { once: true },
+            );
             publicacao.append(imagemDenunciada);
         }
         publicacao.append(textoPost);
@@ -758,9 +791,15 @@
         detalhes.className = 'denuncia-detalhes';
         detalhes.append(
             criarDetalheDenuncia('Motivo da denúncia', denuncia.motivo, 'denuncia-motivo'),
-            criarDetalheDenuncia('Autor', `${nomePessoa(denuncia.autor_nome, denuncia.autor_sobrenome)} · ${denuncia.autor_email || 'e-mail não informado'}`),
+            criarDetalheDenuncia(
+                'Autor',
+                `${nomePessoa(denuncia.autor_nome, denuncia.autor_sobrenome)} · ${denuncia.autor_email || 'e-mail não informado'}`,
+            ),
             criarDetalheDenuncia('Denunciado em', formatarDataHora(denuncia.data_denuncia)),
-            criarDetalheDenuncia('Denunciado por', nomePessoa(denuncia.denunciante_nome, denuncia.denunciante_sobrenome))
+            criarDetalheDenuncia(
+                'Denunciado por',
+                nomePessoa(denuncia.denunciante_nome, denuncia.denunciante_sobrenome),
+            ),
         );
 
         if (denuncia.data_moderacao) {
@@ -830,9 +869,9 @@
             botao.disabled = true;
             botao.innerHTML = '<span class="spinner-border spinner-border-sm" aria-hidden="true"></span> Carregando...';
             if (tipo === 'denuncias') {
-                await carregarDenuncias({reiniciar: false, exibirCarregamento: false});
+                await carregarDenuncias({ reiniciar: false, exibirCarregamento: false });
             } else {
-                await carregarSolicitacoes({reiniciar: false, exibirCarregamento: false});
+                await carregarSolicitacoes({ reiniciar: false, exibirCarregamento: false });
             }
         });
         envoltorio.append(botao);
@@ -845,12 +884,12 @@
             busca: campoBusca.value.trim(),
             dias: campoPeriodo.value,
             limite: String(tamanhoLote),
-            offset: String(offset)
+            offset: String(offset),
         });
         return parametros;
     }
 
-    async function carregarDenuncias({reiniciar = true, exibirCarregamento = true} = {}) {
+    async function carregarDenuncias({ reiniciar = true, exibirCarregamento = true } = {}) {
         const sequenciaAtual = ++sequenciaDenuncias;
         const offset = reiniciar ? 0 : denuncias.length;
         if (exibirCarregamento) {
@@ -864,7 +903,7 @@
         try {
             const parametros = parametrosListagem(filtroDenunciaAtual, offset);
             const resposta = await fetch(`api/comunidade-denuncias?${parametros}`, {
-                headers: {Accept: 'application/json'}
+                headers: { Accept: 'application/json' },
             });
             const dados = await lerJson(resposta);
 
@@ -895,7 +934,7 @@
         }
     }
 
-    async function carregarSolicitacoes({reiniciar = true, exibirCarregamento = true} = {}) {
+    async function carregarSolicitacoes({ reiniciar = true, exibirCarregamento = true } = {}) {
         const sequenciaAtual = ++sequenciaSolicitacoes;
         const offset = reiniciar ? 0 : solicitacoes.length;
         if (exibirCarregamento) {
@@ -911,7 +950,7 @@
             parametros.delete('status');
             parametros.set('solicitacoes', filtroAtual);
             const resposta = await fetch(`api/eventos?${parametros}`, {
-                headers: {Accept: 'application/json'}
+                headers: { Accept: 'application/json' },
             });
             const dados = await lerJson(resposta);
 
@@ -946,7 +985,7 @@
             document.querySelectorAll('[data-filtro-evento]').forEach((item) => item.classList.remove('ativo'));
             this.classList.add('ativo');
             filtroAtual = this.dataset.filtroEvento;
-            carregarSolicitacoes({reiniciar: true});
+            carregarSolicitacoes({ reiniciar: true });
         });
     });
 
@@ -955,7 +994,7 @@
             document.querySelectorAll('[data-filtro-denuncia]').forEach((item) => item.classList.remove('ativo'));
             this.classList.add('ativo');
             filtroDenunciaAtual = this.dataset.filtroDenuncia;
-            carregarDenuncias({reiniciar: true});
+            carregarDenuncias({ reiniciar: true });
         });
     });
 
@@ -992,23 +1031,20 @@
     campoBusca.addEventListener('input', function () {
         window.clearTimeout(temporizadorBusca);
         temporizadorBusca = window.setTimeout(() => {
-            carregarSolicitacoes({reiniciar: true, exibirCarregamento: false});
-            carregarDenuncias({reiniciar: true, exibirCarregamento: false});
+            carregarSolicitacoes({ reiniciar: true, exibirCarregamento: false });
+            carregarDenuncias({ reiniciar: true, exibirCarregamento: false });
         }, 300);
     });
 
     campoPeriodo.addEventListener('change', function () {
-        carregarSolicitacoes({reiniciar: true});
-        carregarDenuncias({reiniciar: true});
+        carregarSolicitacoes({ reiniciar: true });
+        carregarDenuncias({ reiniciar: true });
     });
-    document.getElementById('categoriaEventoEdicao')?.addEventListener(
-        'change',
-        atualizarCampoGeneroArtistaEdicao
-    );
+    document.getElementById('categoriaEventoEdicao')?.addEventListener('change', atualizarCampoGeneroArtistaEdicao);
     formularioEdicao.addEventListener('submit', function (evento) {
         evento.preventDefault();
         salvarEdicaoSolicitacao();
     });
     carregarSolicitacoes();
     carregarDenuncias();
-}());
+})();

@@ -17,11 +17,11 @@
         try {
             const resposta = await fetch('api/sessoes/', {
                 method: 'POST',
-                headers: {'Content-Type': 'application/json'},
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     email: dadosFormulario.get('email'),
-                    senha: dadosFormulario.get('senha')
-                })
+                    senha: dadosFormulario.get('senha'),
+                }),
             });
             const dados = await resposta.json();
 
@@ -35,4 +35,4 @@
             mensagemLogin.className = 'alert alert-danger';
         }
     });
-}());
+})();

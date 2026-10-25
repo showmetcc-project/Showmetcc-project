@@ -1,7 +1,7 @@
 <?php
 require_once __DIR__ . '/config/verificaLogin.php';
 $idUsuarioSessao = (int) ($_SESSION['id_user'] ?? 0);
-$usuarioAdmin = (($_SESSION['tipo_usuario'] ?? '') === 'admin');
+$usuarioAdmin = ($_SESSION['tipo_usuario'] ?? '') === 'admin';
 ?>
 <!DOCTYPE html>
 <html lang="pt-BR">
@@ -18,7 +18,9 @@ $usuarioAdmin = (($_SESSION['tipo_usuario'] ?? '') === 'admin');
     <link href="assets/css/comunidade.css" rel="stylesheet">
     <link href="assets/css/main.css" rel="stylesheet">
 </head>
-<body class="cabecalho-tipo-d pagina-comunidade-evento" data-user-id="<?= $idUsuarioSessao ?>" data-user-type="<?= $usuarioAdmin ? 'admin' : 'comum' ?>">
+<body class="cabecalho-tipo-d pagina-comunidade-evento" data-user-id="<?= $idUsuarioSessao ?>" data-user-type="<?= $usuarioAdmin
+    ? 'admin'
+    : 'comum' ?>">
 <?php
 $tipoCabecalho = 'D';
 $configuracaoCabecalho = [
@@ -133,16 +135,27 @@ require __DIR__ . '/cabecalho.php';
     <div class="dialog-denuncia-corpo">
       <fieldset class="opcoes-denuncia">
         <legend>Motivo da denúncia</legend>
-        <?php foreach ([
-            'Conteúdo inapropriado' => 'bi-exclamation-octagon',
-            'Spam ou publicidade' => 'bi-megaphone',
-            'Informação falsa' => 'bi-shield-exclamation',
-            'Discurso de ódio' => 'bi-chat-square-x',
-            'Outro motivo' => 'bi-three-dots',
-        ] as $motivo => $icone): ?>
+        <?php foreach (
+            [
+                'Conteúdo inapropriado' => 'bi-exclamation-octagon',
+                'Spam ou publicidade' => 'bi-megaphone',
+                'Informação falsa' => 'bi-shield-exclamation',
+                'Discurso de ódio' => 'bi-chat-square-x',
+                'Outro motivo' => 'bi-three-dots',
+            ]
+            as $motivo => $icone
+        ): ?>
           <label class="opcao-denuncia">
-            <input type="radio" name="motivoDenuncia" value="<?= htmlspecialchars($motivo, ENT_QUOTES, 'UTF-8') ?>" required>
-            <span><i class="bi <?= $icone ?>" aria-hidden="true"></i><?= htmlspecialchars($motivo, ENT_QUOTES, 'UTF-8') ?></span>
+            <input type="radio" name="motivoDenuncia" value="<?= htmlspecialchars(
+                $motivo,
+                ENT_QUOTES,
+                'UTF-8',
+            ) ?>" required>
+            <span><i class="bi <?= $icone ?>" aria-hidden="true"></i><?= htmlspecialchars(
+    $motivo,
+    ENT_QUOTES,
+    'UTF-8',
+) ?></span>
           </label>
         <?php endforeach; ?>
       </fieldset>

@@ -17,9 +17,7 @@
     const valorMaximo = document.getElementById('valorIngressoMaximo');
     const campoGeneroArtista = document.getElementById('campoGeneroArtista');
     const inputGeneroArtista = document.getElementById('generoArtistaSolicitado');
-    const categorias = formulario
-        ? [...formulario.querySelectorAll('input[name="categoria_evento[]"]')]
-        : [];
+    const categorias = formulario ? [...formulario.querySelectorAll('input[name="categoria_evento[]"]')] : [];
     const seletorCategorias = document.getElementById('seletorCategoriasEvento');
     const botaoCategorias = document.getElementById('botaoCategoriasEvento');
     const painelCategorias = document.getElementById('painelCategoriasEvento');
@@ -168,7 +166,7 @@
         const arquivos = evento.dataTransfer?.files;
         if (!arquivos?.length) return;
         if (arquivos.length !== 1) {
-            window.ShowMeUI.toast('Envie somente uma foto do evento.', {variante: 'erro'});
+            window.ShowMeUI.toast('Envie somente uma foto do evento.', { variante: 'erro' });
             return;
         }
 
@@ -189,7 +187,9 @@
     }
 
     function formatarCep(valor) {
-        const numeros = String(valor || '').replace(/\D/g, '').slice(0, 8);
+        const numeros = String(valor || '')
+            .replace(/\D/g, '')
+            .slice(0, 8);
         return numeros.length > 5 ? `${numeros.slice(0, 5)}-${numeros.slice(5)}` : numeros;
     }
 
@@ -200,14 +200,19 @@
 
         try {
             const resposta = await fetch(`https://brasilapi.com.br/api/cep/v2/${encodeURIComponent(cep)}`, {
-                headers: {Accept: 'application/json'}
+                headers: { Accept: 'application/json' },
             });
             const dados = await lerRespostaJson(resposta);
             if (!resposta.ok) throw new Error('CEP não encontrado.');
             if (identificadorConsulta !== consultaCepAtual) return;
 
             const cidadeUf = [dados.city, dados.state].filter(Boolean).join(' - ');
-            const enderecoCompleto = [dados.street, dados.neighborhood, cidadeUf, `CEP ${formatarCep(dados.cep || cep)}`]
+            const enderecoCompleto = [
+                dados.street,
+                dados.neighborhood,
+                cidadeUf,
+                `CEP ${formatarCep(dados.cep || cep)}`,
+            ]
                 .filter(Boolean)
                 .join(', ');
 
@@ -218,7 +223,9 @@
             inputEndereco.value = enderecoCompleto;
             inputRua.value = String(dados.street || '').trim();
             inputCidade.value = String(dados.city || '').trim();
-            inputUf.value = String(dados.state || '').trim().toUpperCase();
+            inputUf.value = String(dados.state || '')
+                .trim()
+                .toUpperCase();
             cepConsultado = cep;
             statusCep.textContent = 'Endereço preenchido pela BrasilAPI.';
             statusCep.classList.add('sucesso');
@@ -264,9 +271,7 @@
             atualizarCampoGeneroArtista();
             const possuiCategoria = categorias.some((item) => item.checked);
             botaoCategorias?.setAttribute('aria-invalid', String(!possuiCategoria));
-            erroCategorias.textContent = possuiCategoria
-                ? ''
-                : 'Selecione pelo menos uma categoria.';
+            erroCategorias.textContent = possuiCategoria ? '' : 'Selecione pelo menos uma categoria.';
         });
     });
     atualizarResumoCategorias();
@@ -292,8 +297,11 @@
             if (cep.length !== 8 || cep !== cepConsultado || !inputEndereco.value) {
                 throw new Error('Informe um CEP válido e aguarde o preenchimento do endereço.');
             }
-            if (!camposValor.hidden && valorMaximo.value !== ''
-                && Number(valorMaximo.value) < Number(valorMinimo.value)) {
+            if (
+                !camposValor.hidden &&
+                valorMaximo.value !== '' &&
+                Number(valorMaximo.value) < Number(valorMinimo.value)
+            ) {
                 throw new Error('O valor máximo não pode ser menor que o valor mínimo.');
             }
             botaoEnviar.disabled = true;
@@ -301,7 +309,7 @@
 
             const resposta = await fetch('api/eventos/', {
                 method: 'POST',
-                body: new FormData(formulario)
+                body: new FormData(formulario),
             });
             const dados = await lerRespostaJson(resposta);
 
@@ -324,20 +332,20 @@
             botaoCategorias?.setAttribute('aria-invalid', 'false');
             erroCategorias.textContent = '';
             limparEndereco('Digite o CEP para preencher o endereço automaticamente.');
-            window.ShowMeUI.toast(
-                'Evento enviado para moderação! Aguarde a análise da equipe.',
-                {variante: 'sucesso', duracao: 5000}
-            );
+            window.ShowMeUI.toast('Evento enviado para moderação! Aguarde a análise da equipe.', {
+                variante: 'sucesso',
+                duracao: 5000,
+            });
 
             window.setTimeout(function () {
                 window.location.href = 'perfilUsuario.php';
             }, 5200);
         } catch (erro) {
             window.ShowMeUI.toast(erro.message || 'Não foi possível enviar o evento.', {
-                variante: 'erro'
+                variante: 'erro',
             });
             botaoEnviar.disabled = false;
             botaoEnviar.textContent = 'Enviar para análise';
         }
     });
-}());
+})();

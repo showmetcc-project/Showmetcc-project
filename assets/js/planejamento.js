@@ -16,25 +16,22 @@ const evento = {
     endereco: '',
     gratuidade: true,
     valorMinimo: 0,
-    valorMaximo: null
+    valorMaximo: null,
 };
 
 function atualizarLinksTransporte() {
-    const destinoEvento = evento.endereco
-        || [evento.cidade, evento.uf].filter(Boolean).join(' - ')
-        || evento.nome;
-    const destinoResumido = [evento.cidade, evento.uf].filter(Boolean).join(' - ')
-        || evento.nome;
+    const destinoEvento = evento.endereco || [evento.cidade, evento.uf].filter(Boolean).join(' - ') || evento.nome;
+    const destinoResumido = [evento.cidade, evento.uf].filter(Boolean).join(' - ') || evento.nome;
     const parametrosUber = new URLSearchParams({
         action: 'setPickup',
         pickup: 'my_location',
-        'dropoff[formatted_address]': destinoEvento
+        'dropoff[formatted_address]': destinoEvento,
     });
     const links = {
-        'Ônibus': `https://www.google.com/search?q=${encodeURIComponent(`passagens de ônibus para ${destinoResumido}`)}`,
-        'Carro': `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(destinoEvento)}`,
-        'Avião': `https://www.google.com/travel/flights?q=${encodeURIComponent(`voos para ${destinoResumido}`)}`,
-        'Uber': `https://m.uber.com/ul/?${parametrosUber}`
+        Ônibus: `https://www.google.com/search?q=${encodeURIComponent(`passagens de ônibus para ${destinoResumido}`)}`,
+        Carro: `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(destinoEvento)}`,
+        Avião: `https://www.google.com/travel/flights?q=${encodeURIComponent(`voos para ${destinoResumido}`)}`,
+        Uber: `https://m.uber.com/ul/?${parametrosUber}`,
     };
 
     document.querySelectorAll('[data-link-transporte]').forEach((link) => {
@@ -43,15 +40,13 @@ function atualizarLinksTransporte() {
 }
 
 function atualizarLinksHospedagem() {
-    const destinoBusca = [evento.cidade, evento.uf].filter(Boolean).join(', ')
-        || evento.endereco
-        || evento.nome;
+    const destinoBusca = [evento.cidade, evento.uf].filter(Boolean).join(', ') || evento.endereco || evento.nome;
     const destinoCodificado = encodeURIComponent(destinoBusca);
     const links = {
         'Booking.com': `https://www.booking.com/searchresults.pt-br.html?ss=${destinoCodificado}`,
-        'Airbnb': `https://www.airbnb.com.br/s/${destinoCodificado}/homes`,
+        Airbnb: `https://www.airbnb.com.br/s/${destinoCodificado}/homes`,
         'Hotels.com': `https://www.hoteis.com/Hotel-Search?destination=${destinoCodificado}`,
-        'HostelWorld': `https://www.hostelworld.com/st/hostels/?search_keywords=${destinoCodificado}`
+        HostelWorld: `https://www.hostelworld.com/st/hostels/?search_keywords=${destinoCodificado}`,
     };
 
     document.querySelectorAll('[data-link-hospedagem]').forEach((link) => {
@@ -68,10 +63,9 @@ async function carregarEvento() {
     }
 
     const eventoApi = dados.evento;
-    const enderecoBase = eventoApi.endereco_evento
-        || [eventoApi.rua_evento, eventoApi.cidade_evento, eventoApi.uf]
-            .filter(Boolean)
-            .join(', ');
+    const enderecoBase =
+        eventoApi.endereco_evento ||
+        [eventoApi.rua_evento, eventoApi.cidade_evento, eventoApi.uf].filter(Boolean).join(', ');
     const rua = String(eventoApi.rua_evento || '').trim();
     const numero = String(eventoApi.numero_endereco || '').trim();
     let enderecoComNumero = String(enderecoBase || '').trim();
@@ -79,9 +73,7 @@ async function carregarEvento() {
         const complemento = enderecoComNumero.slice(rua.length).replace(/^\s*,\s*/, '');
         enderecoComNumero = [rua, numero, complemento].filter(Boolean).join(', ');
     } else if (!enderecoComNumero) {
-        enderecoComNumero = [rua, numero, eventoApi.cidade_evento, eventoApi.uf]
-            .filter(Boolean)
-            .join(', ');
+        enderecoComNumero = [rua, numero, eventoApi.cidade_evento, eventoApi.uf].filter(Boolean).join(', ');
     }
 
     Object.assign(evento, {
@@ -96,9 +88,7 @@ async function carregarEvento() {
         endereco: enderecoComNumero,
         gratuidade: Boolean(eventoApi.gratuidade),
         valorMinimo: Number(eventoApi.valor_ingresso_minimo || 0),
-        valorMaximo: eventoApi.valor_ingresso_maximo === null
-            ? null
-            : Number(eventoApi.valor_ingresso_maximo)
+        valorMaximo: eventoApi.valor_ingresso_maximo === null ? null : Number(eventoApi.valor_ingresso_maximo),
     });
 
     const campoIngresso = document.getElementById('custoIngresso');
@@ -121,7 +111,7 @@ async function carregarEvento() {
     document.getElementById('nomeEventoPoster').textContent = evento.nome;
     document.getElementById('resumoDataHorarioEvento').textContent = formatarDataHorarioEvento(
         evento.data,
-        evento.horario
+        evento.horario,
     );
     document.getElementById('resumoLocalEvento').textContent = evento.endereco || 'Local não informado';
     document.getElementById('resumoDestino').textContent = evento.endereco || evento.nome;
@@ -149,7 +139,9 @@ async function carregarEvento() {
 }
 
 function formatarDataHorarioEvento(dataEvento, horarioEvento) {
-    const partesData = String(dataEvento || '').split('-').map(Number);
+    const partesData = String(dataEvento || '')
+        .split('-')
+        .map(Number);
     let dataFormatada = 'Data não informada';
 
     if (partesData.length === 3 && partesData.every(Number.isInteger)) {
@@ -160,7 +152,7 @@ function formatarDataHorarioEvento(dataEvento, horarioEvento) {
             dataFormatada = new Intl.DateTimeFormat('pt-BR', {
                 day: '2-digit',
                 month: 'long',
-                year: 'numeric'
+                year: 'numeric',
             }).format(data);
         }
     }
@@ -168,7 +160,6 @@ function formatarDataHorarioEvento(dataEvento, horarioEvento) {
     const horario = String(horarioEvento || '').slice(0, 5);
     return horario ? `${dataFormatada}, às ${horario}` : dataFormatada;
 }
-
 
 /* =========================================================
    CONFIGURAÇÕES
@@ -183,17 +174,15 @@ function lerValorMonetario(id) {
 }
 
 function lerCustoIngresso() {
-    return lerValorMonetario("custoIngresso");
+    return lerValorMonetario('custoIngresso');
 }
 
 function lerCustoTransporte() {
-    return lerValorMonetario("custoTransporte");
+    return lerValorMonetario('custoTransporte');
 }
 
 function lerCustoHospedagem() {
-    return hospedagemSelecionada
-        ? lerValorMonetario("custoHospedagem")
-        : 0;
+    return hospedagemSelecionada ? lerValorMonetario('custoHospedagem') : 0;
 }
 
 /* =========================================================
@@ -212,13 +201,13 @@ let marcadorDestino = null;
 
 let rotaLayer = null;
 
-let transporteSelecionado = "";
+let transporteSelecionado = '';
 
 let hospedagemSelecionada = false;
 
 let hospedagemDecidida = false;
 
-let hospedagemNome = "";
+let hospedagemNome = '';
 
 let rotaCalculada = false;
 
@@ -239,89 +228,58 @@ let idPlanejamentoExistente = null;
 */
 
 let etapaConcluida = {
-
     1: true,
 
     2: false,
 
     3: false,
 
-    4: false
-
+    4: false,
 };
-
 
 /* =========================================================
    FORMATAÇÃO DE MOEDA
 ========================================================= */
 
 function moeda(valor) {
-
-    return Number(valor || 0)
-        .toLocaleString(
-            "pt-BR", {
-                style: "currency",
-                currency: "BRL"
-            }
-        );
-
+    return Number(valor || 0).toLocaleString('pt-BR', {
+        style: 'currency',
+        currency: 'BRL',
+    });
 }
 
-
 function alternarIngressoGratuito() {
-    const campo = document.getElementById("custoIngresso");
-    const opcao = document.getElementById("ingressoGratuito");
+    const campo = document.getElementById('custoIngresso');
+    const opcao = document.getElementById('ingressoGratuito');
 
     if (opcao.checked) {
         valorIngressoAntesGratuito = lerCustoIngresso() || valorIngressoAntesGratuito;
-        campo.value = "0.00";
+        campo.value = '0.00';
         campo.disabled = true;
     } else {
         campo.disabled = false;
-        const valorRestaurado = valorIngressoAntesGratuito > 0
-            ? valorIngressoAntesGratuito
-            : evento.valorMinimo;
+        const valorRestaurado = valorIngressoAntesGratuito > 0 ? valorIngressoAntesGratuito : evento.valorMinimo;
         campo.value = Number(valorRestaurado || 0).toFixed(2);
     }
 
     atualizarResumo();
 }
 
-
 /* =========================================================
    MENSAGEM DA ROTA
 ========================================================= */
 
-function mostrarMensagem(
-    texto,
-    erro = false
-) {
-
-    const mensagem =
-        document.getElementById(
-            "mensagemRota"
-        );
-
+function mostrarMensagem(texto, erro = false) {
+    const mensagem = document.getElementById('mensagemRota');
 
     mensagem.textContent = texto;
 
-
     if (erro) {
-
-        mensagem.classList.add(
-            "erro-rota"
-        );
-
+        mensagem.classList.add('erro-rota');
     } else {
-
-        mensagem.classList.remove(
-            "erro-rota"
-        );
-
+        mensagem.classList.remove('erro-rota');
     }
-
 }
-
 
 /* =========================================================
    LOCALIZAR EVENTO PELO ENDEREÇO
@@ -338,12 +296,14 @@ function mostrarMensagem(
 ========================================================= */
 
 function coordenadasValidas(latitude, longitude) {
-    return Number.isFinite(latitude)
-        && Number.isFinite(longitude)
-        && latitude >= -90
-        && latitude <= 90
-        && longitude >= -180
-        && longitude <= 180;
+    return (
+        Number.isFinite(latitude) &&
+        Number.isFinite(longitude) &&
+        latitude >= -90 &&
+        latitude <= 90 &&
+        longitude >= -180 &&
+        longitude <= 180
+    );
 }
 
 async function localizarEventoPorCep() {
@@ -353,7 +313,7 @@ async function localizarEventoPorCep() {
     }
 
     const resposta = await fetch(`https://brasilapi.com.br/api/cep/v2/${cep}`, {
-        headers: {Accept: 'application/json'}
+        headers: { Accept: 'application/json' },
     });
     if (!resposta.ok) {
         return false;
@@ -366,19 +326,13 @@ async function localizarEventoPorCep() {
         return false;
     }
 
-    destino = {lat: latitude, lng: longitude};
+    destino = { lat: latitude, lng: longitude };
     return true;
 }
 
 async function localizarEvento() {
     try {
-        const endereco = [
-            evento.rua,
-            evento.numero,
-            evento.cidade,
-            evento.uf,
-            'Brasil'
-        ].filter(Boolean).join(', ');
+        const endereco = [evento.rua, evento.numero, evento.cidade, evento.uf, 'Brasil'].filter(Boolean).join(', ');
         const url =
             'https://nominatim.openstreetmap.org/search' +
             '?format=json' +
@@ -387,7 +341,7 @@ async function localizarEvento() {
             '&q=' +
             encodeURIComponent(endereco);
         const resposta = await fetch(url, {
-            headers: {Accept: 'application/json'}
+            headers: { Accept: 'application/json' },
         });
         const locais = await resposta.json();
 
@@ -401,7 +355,7 @@ async function localizarEvento() {
             throw new Error('Coordenadas inválidas.');
         }
 
-        destino = {lat: latitude, lng: longitude};
+        destino = { lat: latitude, lng: longitude };
         return true;
     } catch (erro) {
         try {
@@ -412,81 +366,55 @@ async function localizarEvento() {
             console.error(erroCep);
         }
         console.error(erro);
-        mostrarMensagem(
-            'Não foi possível localizar automaticamente o endereço do evento.',
-            true
-        );
+        mostrarMensagem('Não foi possível localizar automaticamente o endereço do evento.', true);
         return false;
     }
 }
-
 
 /* =========================================================
    TROCA DE ETAPAS
 ========================================================= */
 
 function proximaEtapa(numero) {
-
     /* =====================================================
        DESCOBRIR ETAPA ATUAL
     ===================================================== */
 
-    const etapaAtualElemento =
-        document.querySelector(".etapa.ativa");
+    const etapaAtualElemento = document.querySelector('.etapa.ativa');
 
     if (!etapaAtualElemento) {
         return;
     }
 
-    const etapaAtual =
-        Number(
-            etapaAtualElemento.id.replace("etapa", "")
-        );
-
+    const etapaAtual = Number(etapaAtualElemento.id.replace('etapa', ''));
 
     /* =====================================================
        PROTEÇÃO CONTRA PULAR ETAPA
     ===================================================== */
 
     if (numero !== etapaAtual + 1) {
-
         if (numero > etapaAtual + 1) {
-
-            notificarErroPlanejamento(
-                "Conclua as etapas anteriores antes de continuar."
-            );
-
+            notificarErroPlanejamento('Conclua as etapas anteriores antes de continuar.');
         }
 
         return;
     }
-
 
     /* =====================================================
        ETAPA 1 - ORÇAMENTO
     ===================================================== */
 
     if (etapaAtual === 1) {
+        const campoOrcamento = document.getElementById('orcamento');
+        const campoIngresso = document.getElementById('custoIngresso');
+        const opcaoIngressoGratuito = document.getElementById('ingressoGratuito');
 
-        const campoOrcamento =
-            document.getElementById("orcamento");
-        const campoIngresso =
-            document.getElementById("custoIngresso");
-        const opcaoIngressoGratuito =
-            document.getElementById("ingressoGratuito");
-
-        const orcamento =
-            Number(campoOrcamento.value);
-        const ingresso =
-            campoIngresso.value === '' ? 0 : Number(campoIngresso.value);
-        const ingressoGratuito =
-            opcaoIngressoGratuito.checked;
+        const orcamento = Number(campoOrcamento.value);
+        const ingresso = campoIngresso.value === '' ? 0 : Number(campoIngresso.value);
+        const ingressoGratuito = opcaoIngressoGratuito.checked;
 
         if (!orcamento || orcamento <= 0) {
-
-            notificarErroPlanejamento(
-                "Informe seu orçamento antes de continuar."
-            );
+            notificarErroPlanejamento('Informe seu orçamento antes de continuar.');
 
             campoOrcamento.focus();
 
@@ -494,10 +422,7 @@ function proximaEtapa(numero) {
         }
 
         if (!Number.isFinite(ingresso) || ingresso < 0) {
-
-            notificarErroPlanejamento(
-                "Informe um valor de ingresso igual ou maior que zero."
-            );
+            notificarErroPlanejamento('Informe um valor de ingresso igual ou maior que zero.');
 
             campoIngresso.focus();
 
@@ -505,9 +430,8 @@ function proximaEtapa(numero) {
         }
 
         if (!ingressoGratuito && ingresso < evento.valorMinimo) {
-
             notificarErroPlanejamento(
-                `O ingresso não pode ser menor que o valor mínimo oficial de ${moeda(evento.valorMinimo)}.`
+                `O ingresso não pode ser menor que o valor mínimo oficial de ${moeda(evento.valorMinimo)}.`,
             );
 
             campoIngresso.focus();
@@ -516,10 +440,7 @@ function proximaEtapa(numero) {
         }
 
         if (orcamento < ingresso) {
-
-            notificarErroPlanejamento(
-                `O orçamento precisa ser de pelo menos ${moeda(ingresso)}.`
-            );
+            notificarErroPlanejamento(`O orçamento precisa ser de pelo menos ${moeda(ingresso)}.`);
 
             campoOrcamento.focus();
 
@@ -530,32 +451,22 @@ function proximaEtapa(numero) {
         etapaConcluida[1] = true;
     }
 
-
     /* =====================================================
        ETAPA 2 - TRANSPORTE
     ===================================================== */
 
     if (etapaAtual === 2) {
-
         if (!transporteSelecionado) {
-
-            notificarErroPlanejamento(
-                "Escolha um meio de transporte antes de continuar."
-            );
+            notificarErroPlanejamento('Escolha um meio de transporte antes de continuar.');
 
             return;
         }
 
-        const campoCustoTransporte =
-            document.getElementById("custoTransporte");
-        const custoTransporte =
-            Number(campoCustoTransporte.value);
+        const campoCustoTransporte = document.getElementById('custoTransporte');
+        const custoTransporte = Number(campoCustoTransporte.value);
 
         if (!Number.isFinite(custoTransporte) || custoTransporte < 0) {
-
-            notificarErroPlanejamento(
-                "Informe um custo de transporte igual ou maior que zero."
-            );
+            notificarErroPlanejamento('Informe um custo de transporte igual ou maior que zero.');
 
             campoCustoTransporte.focus();
 
@@ -566,38 +477,26 @@ function proximaEtapa(numero) {
         etapaConcluida[2] = true;
     }
 
-
     /* =====================================================
        ETAPA 3 - ROTA
     ===================================================== */
 
     if (etapaAtual === 3) {
-
-        const mensagem =
-            document.getElementById("mensagemRota");
+        const mensagem = document.getElementById('mensagemRota');
 
         if (!origem) {
-
-            notificarErroPlanejamento(
-                "Defina seu ponto de partida para calcular a rota."
-            );
+            notificarErroPlanejamento('Defina seu ponto de partida para calcular a rota.');
 
             return;
         }
 
         if (!rotaCalculada) {
-
-            notificarErroPlanejamento(
-                "Calcule a rota antes de continuar."
-            );
+            notificarErroPlanejamento('Calcule a rota antes de continuar.');
 
             if (mensagem) {
+                mensagem.textContent = 'Você precisa calcular a rota antes de continuar.';
 
-                mensagem.textContent =
-                    "Você precisa calcular a rota antes de continuar.";
-
-                mensagem.classList.add("erro-rota");
-
+                mensagem.classList.add('erro-rota');
             }
 
             return;
@@ -624,13 +523,11 @@ function proximaEtapa(numero) {
         etapaConcluida[3] = true;
     }
 
-
     /* =====================================================
        ETAPA 4 - HOSPEDAGEM
     ===================================================== */
 
     if (etapaAtual === 4) {
-
         /*
          * O usuário precisa ter decidido:
          *
@@ -639,26 +536,17 @@ function proximaEtapa(numero) {
          */
 
         if (!hospedagemDecidida) {
-
-            notificarErroPlanejamento(
-                "Escolha se deseja hospedagem antes de continuar."
-            );
+            notificarErroPlanejamento('Escolha se deseja hospedagem antes de continuar.');
 
             return;
         }
 
         if (hospedagemSelecionada) {
-
-            const campoCustoHospedagem =
-                document.getElementById("custoHospedagem");
-            const custoHospedagem =
-                Number(campoCustoHospedagem.value);
+            const campoCustoHospedagem = document.getElementById('custoHospedagem');
+            const custoHospedagem = Number(campoCustoHospedagem.value);
 
             if (!Number.isFinite(custoHospedagem) || custoHospedagem < 0) {
-
-                notificarErroPlanejamento(
-                    "Informe um custo de hospedagem igual ou maior que zero."
-                );
+                notificarErroPlanejamento('Informe um custo de hospedagem igual ou maior que zero.');
 
                 campoCustoHospedagem.focus();
 
@@ -666,11 +554,9 @@ function proximaEtapa(numero) {
             }
         }
 
-
         /* Marca etapa 4 como concluída */
         etapaConcluida[4] = true;
     }
-
 
     /* =====================================================
        ATUALIZA RESUMO
@@ -678,40 +564,27 @@ function proximaEtapa(numero) {
 
     atualizarResumo();
 
-
     /* =====================================================
        ESCONDE TODAS AS ETAPAS
     ===================================================== */
 
-    document
-        .querySelectorAll(".etapa")
-        .forEach(etapa => {
-
-            etapa.classList.remove("ativa");
-
-        });
-
+    document.querySelectorAll('.etapa').forEach((etapa) => {
+        etapa.classList.remove('ativa');
+    });
 
     /* =====================================================
        MOSTRA PRÓXIMA ETAPA
     ===================================================== */
 
-    const proxima =
-        document.getElementById(
-            `etapa${numero}`
-        );
+    const proxima = document.getElementById(`etapa${numero}`);
 
     if (!proxima) {
-
-        console.error(
-            `Etapa ${numero} não encontrada.`
-        );
+        console.error(`Etapa ${numero} não encontrada.`);
 
         return;
     }
 
-    proxima.classList.add("ativa");
-
+    proxima.classList.add('ativa');
 
     /* =====================================================
        ATUALIZA TIMELINE
@@ -719,210 +592,96 @@ function proximaEtapa(numero) {
 
     atualizarTimeline(numero);
 
-
     /* =====================================================
        ETAPA 3 - MAPA
     ===================================================== */
 
     if (numero === 3) {
+        setTimeout(async () => {
+            if (!destino) {
+                await localizarEvento();
+            }
 
-        setTimeout(
-            async() => {
-
-                if (!destino) {
-
-                    await localizarEvento();
-
-                }
-
-                if (destino) {
-
-                    await iniciarMapa();
-
-                }
-
-            },
-            150
-        );
+            if (destino) {
+                await iniciarMapa();
+            }
+        }, 150);
     }
-
 
     /* =====================================================
        ETAPA 4 - HOSPEDAGEM
     ===================================================== */
 
     if (numero === 4 && hospedagemSelecionada) {
-
         atualizarHospedagem();
-
     }
-
 
     /* =====================================================
        ETAPA 5 - RESUMO FINAL
     ===================================================== */
 
     if (numero === 5) {
-
         atualizarResumo();
-
     }
-
 }
 /* =========================================================
    VOLTAR
 ========================================================= */
 
 function voltarEtapa(numero) {
-
-
-    const atual =
-        document.querySelector(
-            ".etapa.ativa"
-        );
-
+    const atual = document.querySelector('.etapa.ativa');
 
     if (!atual) {
-
         return;
-
     }
 
+    const numeroAtual = Number(atual.id.replace('etapa', ''));
 
-    const numeroAtual =
-        Number(
-            atual.id.replace(
-                "etapa",
-                ""
-            )
-        );
-
-
-    if (
-        numero !==
-        numeroAtual - 1
-    ) {
-
+    if (numero !== numeroAtual - 1) {
         return;
-
     }
 
+    document.querySelectorAll('.etapa').forEach((etapa) => etapa.classList.remove('ativa'));
 
-    document
-        .querySelectorAll(".etapa")
-        .forEach(
-            etapa =>
-            etapa.classList.remove(
-                "ativa"
-            )
-        );
+    document.getElementById(`etapa${numero}`).classList.add('ativa');
 
+    atualizarTimeline(numero);
 
-    document
-        .getElementById(
-            `etapa${numero}`
-        )
-        .classList.add(
-            "ativa"
-        );
-
-
-    atualizarTimeline(
-        numero
-    );
-
-
-    if (
-        numero === 3 &&
-        mapa
-    ) {
-
-        setTimeout(
-            () =>
-            mapa.invalidateSize(),
-            100
-        );
-
+    if (numero === 3 && mapa) {
+        setTimeout(() => mapa.invalidateSize(), 100);
     }
-
 }
-
 
 /* =========================================================
    TIMELINE
 ========================================================= */
 
-function atualizarTimeline(
-    etapaAtual
-) {
+function atualizarTimeline(etapaAtual) {
+    document.querySelectorAll('.passo').forEach((passo, index) => {
+        const numero = index + 1;
 
+        passo.classList.remove('ativo');
 
-    document
-        .querySelectorAll(".passo")
-        .forEach(
-            (passo, index) => {
+        passo.classList.remove('concluido');
 
+        if (numero < etapaAtual) {
+            passo.classList.add('concluido');
+        }
 
-                const numero =
-                    index + 1;
-
-
-                passo.classList.remove(
-                    "ativo"
-                );
-
-
-                passo.classList.remove(
-                    "concluido"
-                );
-
-
-                if (
-                    numero <
-                    etapaAtual
-                ) {
-
-                    passo.classList.add(
-                        "concluido"
-                    );
-
-                }
-
-
-                if (
-                    numero ===
-                    etapaAtual
-                ) {
-
-                    passo.classList.add(
-                        "ativo"
-                    );
-
-                }
-
-            }
-        );
-
+        if (numero === etapaAtual) {
+            passo.classList.add('ativo');
+        }
+    });
 }
-
 
 /* =========================================================
    TRANSPORTE
 ========================================================= */
 
-function selecionarTransporte(
-    tipo
-) {
+function selecionarTransporte(tipo) {
+    transporteSelecionado = tipo;
 
-
-    transporteSelecionado =
-        tipo;
-
-
-    document.getElementById(
-            "transporteSelecionado"
-        ).textContent =
-        `Transporte selecionado: ${tipo}`;
+    document.getElementById('transporteSelecionado').textContent = `Transporte selecionado: ${tipo}`;
 
     document.getElementById('meioTransportePlanejamento').value = tipo;
     document.querySelectorAll('[data-transporte]').forEach((opcao) => {
@@ -931,23 +690,17 @@ function selecionarTransporte(
         opcao.setAttribute('aria-pressed', String(selecionada));
     });
 
-
     ajustarTempoParaTransporte();
 
     calcularEstimativaTransporte();
-
 }
-
 
 /* =========================================================
    ESTIMATIVA DE TRANSPORTE
 ========================================================= */
 
 function calcularEstimativaTransporte() {
-    const box =
-        document.getElementById(
-            "estimativaTransporte"
-        );
+    const box = document.getElementById('estimativaTransporte');
     if (!transporteSelecionado) {
         box.hidden = true;
         return;
@@ -967,38 +720,31 @@ function calcularEstimativaTransporte() {
 */
 
 function atualizarInstrucoesDadosRota() {
-    const alvo =
-        document.getElementById(
-            "instrucoesDadosRota"
-        );
+    const alvo = document.getElementById('instrucoesDadosRota');
 
     if (!alvo) {
         return;
     }
 
-    if (transporteSelecionado === "Ônibus") {
-        alvo.textContent = "A distância é preenchida automaticamente. Para ônibus, informe o tempo estimado consultado no seu aplicativo de transporte.";
+    if (transporteSelecionado === 'Ônibus') {
+        alvo.textContent =
+            'A distância é preenchida automaticamente. Para ônibus, informe o tempo estimado consultado no seu aplicativo de transporte.';
         return;
     }
 
-    if (transporteSelecionado === "Avião") {
-        alvo.textContent = "A distância é preenchida automaticamente. Para avião, informe o tempo estimado total da viagem, incluindo o deslocamento até o aeroporto.";
+    if (transporteSelecionado === 'Avião') {
+        alvo.textContent =
+            'A distância é preenchida automaticamente. Para avião, informe o tempo estimado total da viagem, incluindo o deslocamento até o aeroporto.';
         return;
     }
 
-    alvo.textContent = "A distância e o tempo estimado são preenchidos automaticamente ao calcular a rota.";
+    alvo.textContent = 'A distância e o tempo estimado são preenchidos automaticamente ao calcular a rota.';
 }
 
 function ajustarTempoParaTransporte() {
     atualizarInstrucoesDadosRota();
 
-    const manual =
-
-        transporteSelecionado ===
-        "Ônibus" ||
-
-        transporteSelecionado ===
-        "Avião";
+    const manual = transporteSelecionado === 'Ônibus' || transporteSelecionado === 'Avião';
 
     if (manual && tempoAutomatico) {
         document.getElementById('tempoPlanejamento').value = '';
@@ -1008,49 +754,25 @@ function ajustarTempoParaTransporte() {
 }
 
 function atualizarResumoRota() {
-    const campoDistancia =
-        document.getElementById(
-            "distanciaPlanejamento"
-        );
+    const campoDistancia = document.getElementById('distanciaPlanejamento');
 
-    const campoTempo =
-        document.getElementById(
-            "tempoPlanejamento"
-        );
+    const campoTempo = document.getElementById('tempoPlanejamento');
 
     if (!campoDistancia || !campoTempo) {
         return;
     }
 
-    const distancia =
-        Number(
-            campoDistancia.value
-        );
+    const distancia = Number(campoDistancia.value);
 
-    const tempo =
-        Number(
-            campoTempo.value
-        );
+    const tempo = Number(campoTempo.value);
 
-    document.getElementById(
-            "resumoDistancia"
-        ).textContent =
+    document.getElementById('resumoDistancia').textContent =
+        Number.isFinite(distancia) && distancia > 0
+            ? `${distancia.toLocaleString('pt-BR', { maximumFractionDigits: 1 })} km`
+            : '—';
 
-        Number.isFinite(distancia) && distancia > 0 ?
-
-        `${distancia.toLocaleString("pt-BR", {maximumFractionDigits: 1})} km` :
-
-        "—";
-
-    document.getElementById(
-            "resumoTempo"
-        ).textContent =
-
-        Number.isFinite(tempo) && tempo > 0 ?
-
-        `${tempo.toLocaleString("pt-BR")} min` :
-
-        "—";
+    document.getElementById('resumoTempo').textContent =
+        Number.isFinite(tempo) && tempo > 0 ? `${tempo.toLocaleString('pt-BR')} min` : '—';
 }
 
 function mostrarResumoPlanejamentoSalvo() {
@@ -1058,11 +780,10 @@ function mostrarResumoPlanejamentoSalvo() {
         etapa.classList.remove('ativa');
     });
     document.getElementById('etapa5').classList.add('ativa');
-    etapaConcluida = {1: true, 2: true, 3: true, 4: true};
+    etapaConcluida = { 1: true, 2: true, 3: true, 4: true };
     atualizarResumo();
     atualizarTimeline(5);
 }
-
 
 /* =========================================================
    HOSPEDAGEM
@@ -1087,95 +808,46 @@ function atualizarEstadoHospedagem() {
 }
 
 function mostrarHospedagem() {
+    hospedagemDecidida = true;
 
+    hospedagemSelecionada = true;
 
-    hospedagemDecidida =
-        true;
-
-
-    hospedagemSelecionada =
-        true;
-
-
-    document.getElementById(
-            "opcoesHospedagem"
-        ).hidden = false;
-
+    document.getElementById('opcoesHospedagem').hidden = false;
 
     atualizarEstadoHospedagem();
-
 
     atualizarHospedagem();
-
 }
-
 
 function semHospedagem() {
+    hospedagemDecidida = true;
 
+    hospedagemSelecionada = false;
 
-    hospedagemDecidida =
-        true;
+    hospedagemNome = '';
 
+    document.getElementById('opcoesHospedagem').hidden = true;
 
-    hospedagemSelecionada =
-        false;
+    document.getElementById('custoHospedagem').value = 0;
 
-
-    hospedagemNome =
-        "";
-
-
-    document.getElementById(
-            "opcoesHospedagem"
-        ).hidden = true;
-
-
-    document.getElementById(
-            "custoHospedagem"
-        ).value =
-        0;
-
-
-    document.getElementById(
-            "hospedagemSelecionada"
-        ).textContent =
-        "Você escolheu continuar sem hospedagem.";
-
+    document.getElementById('hospedagemSelecionada').textContent = 'Você escolheu continuar sem hospedagem.';
 
     atualizarEstadoHospedagem();
 
-
     atualizarResumo();
-
 }
 
+function selecionarHospedagem(nome) {
+    hospedagemNome = nome;
 
-function selecionarHospedagem(
-    nome
-) {
+    hospedagemSelecionada = true;
 
-
-    hospedagemNome =
-        nome;
-
-
-    hospedagemSelecionada =
-        true;
-
-
-    document.getElementById(
-            "hospedagemSelecionada"
-        ).textContent =
-        `Hospedagem selecionada: ${nome}`;
-
+    document.getElementById('hospedagemSelecionada').textContent = `Hospedagem selecionada: ${nome}`;
 
     atualizarEstadoHospedagem();
 
-
     atualizarResumo();
-
 }
-
 
 /* =========================================================
    BUSCAR HOSPEDAGENS
@@ -1190,40 +862,21 @@ function selecionarHospedagem(
 ========================================================= */
 
 async function atualizarHospedagem() {
+    const resultado = document.getElementById('resultadoHospedagem');
 
-
-    const resultado =
-        document.getElementById(
-            "resultadoHospedagem"
-        );
-
-
-    resultado.innerHTML =
-        "<p>Buscando hospedagens próximas ao evento...</p>";
-
+    resultado.innerHTML = '<p>Buscando hospedagens próximas ao evento...</p>';
 
     if (!destino) {
-
-        const localizado =
-            await localizarEvento();
-
+        const localizado = await localizarEvento();
 
         if (!localizado) {
-
-            resultado.innerHTML =
-                "<p>Não foi possível localizar o evento para pesquisar hospedagens.</p>";
-
+            resultado.innerHTML = '<p>Não foi possível localizar o evento para pesquisar hospedagens.</p>';
 
             return;
-
         }
-
     }
 
-
     try {
-
-
         const query = `
 
 [out:json];
@@ -1260,39 +913,17 @@ out center tags;
 
         `;
 
+        const resposta = await fetch('https://overpass-api.de/api/interpreter', {
+            method: 'POST',
 
-        const resposta =
-            await fetch(
-                "https://overpass-api.de/api/interpreter", {
-                    method: "POST",
+            body: query,
+        });
 
-                    body: query
-                }
-            );
+        const dados = await resposta.json();
 
-
-        const dados =
-            await resposta.json();
-
-
-        const locais =
-            (
-                dados.elements || []
-            )
-            .filter(
-                item =>
-                item.tags &&
-                item.tags.name
-            )
-            .slice(
-                0,
-                6
-            );
-
+        const locais = (dados.elements || []).filter((item) => item.tags && item.tags.name).slice(0, 6);
 
         if (!locais.length) {
-
-
             resultado.innerHTML = `
 
     <p>
@@ -1305,27 +936,19 @@ out center tags;
 
 `;
 
-
             return;
-
         }
-
 
         const listaHospedagens = document.createElement('div');
         listaHospedagens.className = 'resultado-hospedagem-grid';
 
         locais.forEach((item) => {
             const nome = item.tags.name;
-            const tipo = item.tags.tourism === 'hostel'
-                ? 'Hostel'
-                : item.tags.tourism === 'guest_house'
-                    ? 'Pousada'
-                    : 'Hotel';
-            const endereco = [
-                item.tags['addr:street'],
-                item.tags['addr:housenumber'],
-                item.tags['addr:suburb']
-            ].filter(Boolean).join(', ');
+            const tipo =
+                item.tags.tourism === 'hostel' ? 'Hostel' : item.tags.tourism === 'guest_house' ? 'Pousada' : 'Hotel';
+            const endereco = [item.tags['addr:street'], item.tags['addr:housenumber'], item.tags['addr:suburb']]
+                .filter(Boolean)
+                .join(', ');
             const botao = document.createElement('button');
             botao.type = 'button';
             botao.className = 'resultado-hospedagem';
@@ -1349,15 +972,8 @@ out center tags;
 
         resultado.replaceChildren(listaHospedagens);
         atualizarEstadoHospedagem();
-
-
     } catch (erro) {
-
-
-        console.error(
-            erro
-        );
-
+        console.error(erro);
 
         resultado.innerHTML = `
 
@@ -1369,22 +985,17 @@ out center tags;
 </p>
 
         `;
-
     }
-
 }
-
 
 /* =========================================================
    ÍCONE DO EVENTO
 ========================================================= */
 
-const iconeEvento =
-    L.divIcon({
+const iconeEvento = L.divIcon({
+    className: 'pin-evento',
 
-        className: "pin-evento",
-
-        html: `
+    html: `
 
 <div class="pin-neon">
 
@@ -1396,521 +1007,255 @@ const iconeEvento =
 
         `,
 
-        iconSize: [40, 40],
+    iconSize: [40, 40],
 
-        iconAnchor: [20, 40],
+    iconAnchor: [20, 40],
 
-        popupAnchor: [0, -40]
-
-    });
-
+    popupAnchor: [0, -40],
+});
 
 /* =========================================================
    INICIAR MAPA
 ========================================================= */
 
 async function iniciarMapa() {
-
-
     if (!destino) {
-
-
-        const localizado =
-            await localizarEvento();
-
+        const localizado = await localizarEvento();
 
         if (!localizado) {
-
             return;
-
         }
-
     }
 
-
-    if (
-        mapa !== null
-    ) {
-
+    if (mapa !== null) {
         mapa.invalidateSize();
 
         return;
-
     }
 
-
-    mapa =
-        L.map(
-            "mapaRota"
-        )
-        .setView(
-            [
-                destino.lat,
-                destino.lng
-            ],
-            14
-        );
-
+    mapa = L.map('mapaRota').setView([destino.lat, destino.lng], 14);
 
     L.tileLayer(
-
-        "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",
+        'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
 
         {
+            attribution: '&copy; OpenStreetMap &copy; CARTO',
 
-            attribution: "&copy; OpenStreetMap &copy; CARTO",
+            subdomains: 'abcd',
 
-            subdomains: "abcd",
+            maxZoom: 20,
+        },
+    ).addTo(mapa);
 
-            maxZoom: 20
+    marcadorDestino = L.marker(
+        [destino.lat, destino.lng],
 
-        }
-
-    ).addTo(
-        mapa
-    );
-
-
-    marcadorDestino =
-        L.marker(
-
-            [
-                destino.lat,
-                destino.lng
-            ],
-
-            {
-                icon: iconeEvento
-            }
-
-        )
-        .addTo(
-            mapa
-        )
+        {
+            icon: iconeEvento,
+        },
+    )
+        .addTo(mapa)
         .bindPopup(
-
             `
 
     <strong>
-        ${escapeHtml(
-            evento.local ||
-            evento.nome
-        )}
+        ${escapeHtml(evento.local || evento.nome)}
     </strong>
 
     <br>
 
-    ${escapeHtml(
-        evento.cidade ||
-        ""
-    )}
+    ${escapeHtml(evento.cidade || '')}
     -
-    ${escapeHtml(
-        evento.uf ||
-        ""
-    )}
+    ${escapeHtml(evento.uf || '')}
 
-`
-
+`,
         )
         .openPopup();
-
 }
-
 
 /* =========================================================
    CENTRALIZAR EVENTO
 ========================================================= */
 
 async function centralizarEvento() {
-
-
     if (!destino) {
-
         await localizarEvento();
-
     }
-
 
     if (!destino) {
-
         return;
-
     }
-
 
     await iniciarMapa();
 
-
     mapa.setView(
+        [destino.lat, destino.lng],
 
-        [
-            destino.lat,
-            destino.lng
-        ],
-
-        16
-
+        16,
     );
 
-
-    if (
-        marcadorDestino
-    ) {
-
+    if (marcadorDestino) {
         marcadorDestino.openPopup();
-
     }
-
 }
-
 
 /* =========================================================
    LOCALIZAÇÃO DO USUÁRIO
 ========================================================= */
 
 function usarMinhaLocalizacao() {
-
-
     if (!navigator.geolocation) {
-
-
         mostrarMensagem(
+            'Seu navegador não oferece suporte à localização.',
 
-            "Seu navegador não oferece suporte à localização.",
-
-            true
-
+            true,
         );
 
-
         return;
-
     }
 
-
-    mostrarMensagem(
-        "Solicitando sua localização..."
-    );
-
+    mostrarMensagem('Solicitando sua localização...');
 
     navigator.geolocation.getCurrentPosition(
-
-        async function(position) {
-
-
+        async function (position) {
             origem = {
-
                 lat: position.coords.latitude,
 
-                lng: position.coords.longitude
-
+                lng: position.coords.longitude,
             };
 
+            document.getElementById('origemTexto').textContent = 'Sua localização atual';
 
-            document.getElementById(
-                    "origemTexto"
-                ).textContent =
-                "Sua localização atual";
-
-
-            document.getElementById(
-                    "resumoOrigem"
-                ).textContent =
-                "Sua localização atual";
-
+            document.getElementById('resumoOrigem').textContent = 'Sua localização atual';
 
             await iniciarMapa();
 
-
-            if (
-                marcadorOrigem
-            ) {
-
-
-                marcadorOrigem.setLatLng(
-
-                    [
-                        origem.lat,
-                        origem.lng
-                    ]
-
-                );
-
-
+            if (marcadorOrigem) {
+                marcadorOrigem.setLatLng([origem.lat, origem.lng]);
             } else {
-
-
-                marcadorOrigem =
-                    L.marker(
-
-                        [
-                            origem.lat,
-                            origem.lng
-                        ]
-
-                    )
-                    .addTo(
-                        mapa
-                    )
-                    .bindPopup(
-                        "<strong>Você está aqui</strong>"
-                    );
-
+                marcadorOrigem = L.marker([origem.lat, origem.lng])
+                    .addTo(mapa)
+                    .bindPopup('<strong>Você está aqui</strong>');
             }
-
 
             calcularRota();
-
-
         },
 
+        function (error) {
+            let texto = 'Não foi possível obter sua localização. Informe um ponto de partida manualmente.';
 
-        function(error) {
-
-
-            let texto =
-                "Não foi possível obter sua localização. Informe um ponto de partida manualmente.";
-
-
-            if (
-                error.code === 1
-            ) {
-
+            if (error.code === 1) {
                 texto =
-                    "Permissão de localização negada. Informe um ponto de partida manualmente ou permita o acesso à localização.";
-
+                    'Permissão de localização negada. Informe um ponto de partida manualmente ou permita o acesso à localização.';
             }
 
-
-            mostrarMensagem(
-                texto,
-                true
-            );
-
+            mostrarMensagem(texto, true);
         },
 
-
         {
-
             enableHighAccuracy: true,
 
             timeout: 10000,
 
-            maximumAge: 0
-
-        }
-
+            maximumAge: 0,
+        },
     );
-
 }
-
 
 /* =========================================================
    ORIGEM MANUAL
 ========================================================= */
 
 async function calcularRotaManual() {
+    const campo = document.getElementById('origemManual');
 
-
-    const campo =
-        document.getElementById(
-            "origemManual"
-        );
-
-
-    const endereco =
-        campo.value.trim();
-
+    const endereco = campo.value.trim();
 
     if (!endereco) {
-
-
         mostrarMensagem(
+            'Informe um ponto de partida.',
 
-            "Informe um ponto de partida.",
-
-            true
-
+            true,
         );
-
 
         campo.focus();
 
-
         return;
-
     }
 
-
-    mostrarMensagem(
-        "Localizando o ponto de partida..."
-    );
-
+    mostrarMensagem('Localizando o ponto de partida...');
 
     try {
-
-
         const url =
-            "https://nominatim.openstreetmap.org/search" +
-            "?format=json" +
-            "&limit=1" +
-            "&countrycodes=br" +
-            "&q=" +
-            encodeURIComponent(
-                endereco
-            );
+            'https://nominatim.openstreetmap.org/search' +
+            '?format=json' +
+            '&limit=1' +
+            '&countrycodes=br' +
+            '&q=' +
+            encodeURIComponent(endereco);
 
+        const resposta = await fetch(
+            url,
 
-        const resposta =
-            await fetch(
+            {
+                headers: {
+                    Accept: 'application/json',
+                },
+            },
+        );
 
-                url,
-
-                {
-
-                    headers: {
-
-                        Accept: "application/json"
-
-                    }
-
-                }
-
-            );
-
-
-        const locais =
-            await resposta.json();
-
+        const locais = await resposta.json();
 
         if (!locais.length) {
-
-            throw new Error(
-                "Local não encontrado"
-            );
-
+            throw new Error('Local não encontrado');
         }
 
-
         origem = {
+            lat: Number(locais[0].lat),
 
-            lat: Number(
-                locais[0].lat
-            ),
-
-            lng: Number(
-                locais[0].lon
-            )
-
+            lng: Number(locais[0].lon),
         };
 
+        document.getElementById('origemTexto').textContent = endereco;
 
-        document.getElementById(
-                "origemTexto"
-            ).textContent =
-            endereco;
-
-
-        document.getElementById(
-                "resumoOrigem"
-            ).textContent =
-            endereco;
-
+        document.getElementById('resumoOrigem').textContent = endereco;
 
         await iniciarMapa();
 
-
-        if (
-            marcadorOrigem
-        ) {
-
-
-            marcadorOrigem.setLatLng(
-
-                [
-                    origem.lat,
-                    origem.lng
-                ]
-
-            );
-
-
+        if (marcadorOrigem) {
+            marcadorOrigem.setLatLng([origem.lat, origem.lng]);
         } else {
-
-
-            marcadorOrigem =
-                L.marker(
-
-                    [
-                        origem.lat,
-                        origem.lng
-                    ]
-
-                )
-                .addTo(
-                    mapa
-                )
-                .bindPopup(
-                    "<strong>Origem</strong>"
-                );
-
+            marcadorOrigem = L.marker([origem.lat, origem.lng]).addTo(mapa).bindPopup('<strong>Origem</strong>');
         }
 
-
         calcularRota();
-
-
     } catch (erro) {
-
-
-        console.error(
-            erro
-        );
-
+        console.error(erro);
 
         mostrarMensagem(
+            'Não encontramos esse local. Tente informar uma cidade, endereço ou ponto de referência.',
 
-            "Não encontramos esse local. Tente informar uma cidade, endereço ou ponto de referência.",
-
-            true
-
+            true,
         );
-
     }
-
 }
-
 
 /* =========================================================
    CALCULAR ROTA
 ========================================================= */
 
 async function calcularRota() {
-
-
     if (!origem) {
-
         return;
-
     }
-
 
     if (!destino) {
-
-
-        const localizado =
-            await localizarEvento();
-
+        const localizado = await localizarEvento();
 
         if (!localizado) {
-
             return;
-
         }
-
     }
-
 
     /*
         A distância física é a mesma em qualquer meio de
@@ -1921,479 +1266,196 @@ async function calcularRota() {
     */
 
     const preencheTempoAutomatico =
+        transporteSelecionado === '' || transporteSelecionado === 'Carro' || transporteSelecionado === 'Uber';
 
-        transporteSelecionado ===
-        "" ||
-
-        transporteSelecionado ===
-        "Carro" ||
-
-        transporteSelecionado ===
-        "Uber";
-
-
-    mostrarMensagem(
-        "Calculando rota..."
-    );
-
+    mostrarMensagem('Calculando rota...');
 
     const url =
-
         `https://router.project-osrm.org/route/v1/driving/` +
-
         `${origem.lng},${origem.lat};` +
-
         `${destino.lng},${destino.lat}` +
-
         `?overview=full&geometries=geojson`;
 
-
     try {
+        const resposta = await fetch(url);
 
+        const dados = await resposta.json();
 
-        const resposta =
-            await fetch(
-                url
-            );
-
-
-        const dados =
-            await resposta.json();
-
-
-        if (!dados.routes ||
-            !dados.routes.length
-        ) {
-
-            throw new Error(
-                "Rota não encontrada"
-            );
-
+        if (!dados.routes || !dados.routes.length) {
+            throw new Error('Rota não encontrada');
         }
 
+        const rota = dados.routes[0];
 
-        const rota =
-            dados.routes[0];
-
-
-        if (
-            rotaLayer
-        ) {
-
-            mapa.removeLayer(
-                rotaLayer
-            );
-
+        if (rotaLayer) {
+            mapa.removeLayer(rotaLayer);
         }
 
+        rotaLayer = L.geoJSON(
+            rota.geometry,
 
-        rotaLayer =
-            L.geoJSON(
+            {
+                style: {
+                    color: '#00ff00',
 
-                rota.geometry,
+                    weight: 5,
 
-                {
-
-                    style: {
-
-                        color: "#00ff00",
-
-                        weight: 5,
-
-                        opacity: 0.9
-
-                    }
-
-                }
-
-            ).addTo(
-                mapa
-            );
-
+                    opacity: 0.9,
+                },
+            },
+        ).addTo(mapa);
 
         mapa.fitBounds(
-
             rotaLayer.getBounds(),
 
             {
-
-                padding: [30, 30]
-
-            }
-
+                padding: [30, 30],
+            },
         );
 
-
-        const distanciaKm =
-            rota.distance /
-            1000;
+        const distanciaKm = rota.distance / 1000;
 
         document.getElementById('distanciaPlanejamento').value = distanciaKm.toFixed(2);
 
-
-        document.getElementById(
-                "resumoDistancia"
-            ).textContent =
-            `${distanciaKm.toLocaleString("pt-BR", {maximumFractionDigits: 1})} km`;
-
+        document.getElementById('resumoDistancia').textContent =
+            `${distanciaKm.toLocaleString('pt-BR', { maximumFractionDigits: 1 })} km`;
 
         if (preencheTempoAutomatico) {
-
-            const minutos =
-                Math.round(
-                    rota.duration /
-                    60
-                );
+            const minutos = Math.round(rota.duration / 60);
 
             document.getElementById('tempoPlanejamento').value = String(minutos);
 
-
-            tempoAutomatico =
-                true;
-
+            tempoAutomatico = true;
 
             let tempoTexto;
 
+            if (minutos >= 60) {
+                const horas = Math.floor(minutos / 60);
 
-            if (
-                minutos >= 60
-            ) {
+                const minutosRestantes = minutos % 60;
 
-
-                const horas =
-                    Math.floor(
-                        minutos / 60
-                    );
-
-
-                const minutosRestantes =
-                    minutos % 60;
-
-
-                tempoTexto =
-                    `${horas}h ${minutosRestantes}min`;
-
-
+                tempoTexto = `${horas}h ${minutosRestantes}min`;
             } else {
-
-
-                tempoTexto =
-                    `${minutos} min`;
-
+                tempoTexto = `${minutos} min`;
             }
 
-
-            document.getElementById(
-                    "resumoTempo"
-                ).textContent =
-                tempoTexto;
-
+            document.getElementById('resumoTempo').textContent = tempoTexto;
         } else {
-
-            tempoAutomatico =
-                false;
-
+            tempoAutomatico = false;
         }
 
+        document.getElementById('navegacaoBox').hidden = false;
 
-        document.getElementById(
-                "navegacaoBox"
-            ).hidden = false;
+        rotaCalculada = true;
 
-
-        rotaCalculada =
-            true;
-
-
-        etapaConcluida[3] =
-            true;
-
+        etapaConcluida[3] = true;
 
         if (preencheTempoAutomatico) {
-
-            mostrarMensagem(
-                "Rota calculada com sucesso."
-            );
-
+            mostrarMensagem('Rota calculada com sucesso.');
         } else {
-
-            mostrarMensagem(
-
-                `Distância calculada. Informe o tempo estimado para ${transporteSelecionado}.`
-
-            );
-
+            mostrarMensagem(`Distância calculada. Informe o tempo estimado para ${transporteSelecionado}.`);
         }
-
-
     } catch (erro) {
-
-
-        console.error(
-            erro
-        );
-
+        console.error(erro);
 
         mostrarMensagem(
+            'Não foi possível calcular a rota no momento.',
 
-            "Não foi possível calcular a rota no momento.",
-
-            true
-
+            true,
         );
-
     }
-
 }
-
 
 /* =========================================================
    GOOGLE MAPS
 ========================================================= */
 
 function abrirGoogleMaps() {
-
-
-    if (!origem ||
-        !destino
-    ) {
-
-        notificarErroPlanejamento(
-            "Calcule uma rota primeiro."
-        );
-
+    if (!origem || !destino) {
+        notificarErroPlanejamento('Calcule uma rota primeiro.');
 
         return;
-
     }
 
+    let modo = 'driving';
 
-    let modo =
-        "driving";
-
-
-    if (
-        transporteSelecionado ===
-        "Ônibus"
-    ) {
-
-        modo =
-            "transit";
-
+    if (transporteSelecionado === 'Ônibus') {
+        modo = 'transit';
     }
 
-
-    if (
-        transporteSelecionado ===
-        "Avião"
-    ) {
-
-        modo =
-            "transit";
-
+    if (transporteSelecionado === 'Avião') {
+        modo = 'transit';
     }
-
 
     const url =
-
         `https://www.google.com/maps/dir/?api=1` +
-
-        `&origin=${encodeURIComponent(
-`${origem.lat},${origem.lng}`
-        )}` +
-
-        `&destination=${encodeURIComponent(
-`${destino.lat},${destino.lng}`
-        )}` +
-
+        `&origin=${encodeURIComponent(`${origem.lat},${origem.lng}`)}` +
+        `&destination=${encodeURIComponent(`${destino.lat},${destino.lng}`)}` +
         `&travelmode=${modo}`;
 
-
-    window.open(
-        url,
-        "_blank"
-    );
-
+    window.open(url, '_blank');
 }
-
 
 /* =========================================================
    WAZE
 ========================================================= */
 
 function abrirWaze() {
-
-
-    if (
-        !destino
-    ) {
-
-        notificarErroPlanejamento(
-"Calcule uma rota primeiro."
-        );
-
+    if (!destino) {
+        notificarErroPlanejamento('Calcule uma rota primeiro.');
 
         return;
-
     }
 
+    const url = `https://www.waze.com/ul` + `?ll=${destino.lat},${destino.lng}` + `&navigate=yes`;
 
-    const url =
-
-        `https://www.waze.com/ul` +
-
-        `?ll=${destino.lat},${destino.lng}` +
-
-        `&navigate=yes`;
-
-
-    window.open(
-        url,
-        "_blank"
-    );
-
+    window.open(url, '_blank');
 }
-
 
 /* =========================================================
    ATUALIZAR RESUMO
 ========================================================= */
 
 function atualizarResumo() {
+    const orcamento = Number(document.getElementById('orcamento').value) || 0;
 
+    const ingresso = lerCustoIngresso();
 
-    const orcamento =
-        Number(
-document.getElementById(
-    "orcamento"
-).value
-        ) || 0;
+    const transporte = lerCustoTransporte();
 
+    const hospedagem = lerCustoHospedagem();
 
-    const ingresso =
-        lerCustoIngresso();
+    const total = ingresso + transporte + hospedagem;
 
+    const saldo = orcamento - total;
 
-    const transporte =
-        lerCustoTransporte();
+    document.getElementById('valorOrcamento').textContent = moeda(orcamento);
 
+    document.getElementById('restante').textContent = moeda(saldo);
 
-    const hospedagem =
-        lerCustoHospedagem();
+    document.getElementById('totalGastosEtapa').textContent = moeda(total);
 
+    document.getElementById('saldoGastosEtapa').textContent = `Saldo do orçamento: ${moeda(saldo)}`;
 
-    const total =
-        ingresso +
-        transporte +
-        hospedagem;
-
-
-    const saldo =
-        orcamento -
-        total;
-
-
-    document.getElementById(
-        "valorOrcamento"
-    ).textContent =
-        moeda(
-orcamento
-        );
-
-
-    document.getElementById(
-        "restante"
-    ).textContent =
-        moeda(
-saldo
-        );
-
-
-    document.getElementById(
-        "totalGastosEtapa"
-    ).textContent =
-        moeda(
-total
-        );
-
-
-    document.getElementById(
-        "saldoGastosEtapa"
-    ).textContent =
-        `Saldo do orçamento: ${moeda(saldo)}`;
-
-
-    document.getElementById(
-        "composicaoGastosEtapa"
-    ).textContent =
+    document.getElementById('composicaoGastosEtapa').textContent =
         `Ingresso ${moeda(ingresso)} + Transporte ${moeda(transporte)} + Hospedagem ${moeda(hospedagem)}`;
 
+    document.getElementById('resumoIngresso').textContent = moeda(ingresso);
 
-    document.getElementById(
-        "resumoIngresso"
-    ).textContent =
-        moeda(
-ingresso
-        );
+    document.getElementById('resumoTransporte').textContent = moeda(transporte);
 
+    document.getElementById('resumoHospedagem').textContent = moeda(hospedagem);
 
-    document.getElementById(
-        "resumoTransporte"
-    ).textContent =
-        moeda(
-transporte
-        );
+    document.getElementById('totalFinal').textContent = moeda(total);
 
+    document.getElementById('orcamentoFinal').textContent = moeda(orcamento);
 
-    document.getElementById(
-        "resumoHospedagem"
-    ).textContent =
-        moeda(
-hospedagem
-        );
+    document.getElementById('gastosFinal').textContent = moeda(total);
 
+    document.getElementById('saldoFinal').textContent = moeda(saldo);
 
-    document.getElementById(
-        "totalFinal"
-    ).textContent =
-        moeda(
-total
-        );
-
-
-    document.getElementById(
-        "orcamentoFinal"
-    ).textContent =
-        moeda(
-orcamento
-        );
-
-
-    document.getElementById(
-        "gastosFinal"
-    ).textContent =
-        moeda(
-total
-        );
-
-
-    document.getElementById(
-        "saldoFinal"
-    ).textContent =
-        moeda(
-saldo
-        );
-
-
-    document.getElementById(
-        "resumoMeioTransporte"
-    ).textContent =
-
-        transporteSelecionado ||
-        "—";
-
+    document.getElementById('resumoMeioTransporte').textContent = transporteSelecionado || '—';
 }
-
 
 /* =========================================================
    FINALIZAR
@@ -2403,7 +1465,7 @@ let idRotaGoogleAgenda = null;
 let statusGoogleAgenda = null;
 
 function notificarErroPlanejamento(mensagem) {
-    window.ShowMeUI.toast(mensagem, {variante: 'erro'});
+    window.ShowMeUI.toast(mensagem, { variante: 'erro' });
 }
 
 function abrirEtapaPlanejamento(numero) {
@@ -2413,9 +1475,9 @@ function abrirEtapaPlanejamento(numero) {
 
     if (numero === 3) {
         window.setTimeout(async () => {
-if (!destino) await localizarEvento();
-if (destino) await iniciarMapa();
-mapa?.invalidateSize();
+            if (!destino) await localizarEvento();
+            if (destino) await iniciarMapa();
+            mapa?.invalidateSize();
         }, 150);
     }
 }
@@ -2428,7 +1490,7 @@ function eventoPlanejamentoEncerrado() {
     const dataHoje = [
         hoje.getFullYear(),
         String(hoje.getMonth() + 1).padStart(2, '0'),
-        String(hoje.getDate()).padStart(2, '0')
+        String(hoje.getDate()).padStart(2, '0'),
     ].join('-');
 
     return dataEvento < dataHoje;
@@ -2450,7 +1512,7 @@ function configurarBotaoPlanejamentoFinalizado() {
 async function habilitarEdicaoPlanejamento() {
     if (eventoPlanejamentoEncerrado()) {
         window.ShowMeUI.toast('O planejamento de um evento encerrado não pode ser alterado.', {
-variante: 'erro'
+            variante: 'erro',
         });
         return;
     }
@@ -2460,7 +1522,7 @@ variante: 'erro'
         texto: 'Deseja reabrir este planejamento? As alterações só serão gravadas quando você salvar novamente.',
         confirmarTexto: 'Editar',
         cancelarTexto: 'Cancelar',
-        variante: 'edicao'
+        variante: 'edicao',
     });
     if (!deveEditar) return;
 
@@ -2484,7 +1546,7 @@ async function lerRespostaJson(resposta) {
 }
 
 async function obterStatusGoogleAgenda() {
-    const resposta = await fetch('api/google-calendar', {headers: {Accept: 'application/json'}});
+    const resposta = await fetch('api/google-calendar', { headers: { Accept: 'application/json' } });
     const dados = await lerRespostaJson(resposta);
 
     if (resposta.status === 401) {
@@ -2521,8 +1583,8 @@ function definirEstadoGoogleAgenda(exportado, htmlLink = '') {
 async function consultarGoogleAgendaExportado(idRota) {
     const resposta = await fetch('api/google-calendar', {
         method: 'POST',
-        headers: {'Content-Type': 'application/json', Accept: 'application/json'},
-        body: JSON.stringify({acao: 'verificar_exportado', id_rota: Number(idRota)})
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+        body: JSON.stringify({ acao: 'verificar_exportado', id_rota: Number(idRota) }),
     });
     const dados = await lerRespostaJson(resposta);
 
@@ -2550,14 +1612,14 @@ async function exibirAcoesGoogleAgenda(idRota) {
         const conectado = Boolean(status?.conectado);
 
         if (!status?.configurado) {
-texto.textContent = 'Google Agenda ainda não foi configurado neste ambiente.';
-return;
+            texto.textContent = 'Google Agenda ainda não foi configurado neste ambiente.';
+            return;
         }
 
         if (!conectado) {
-texto.textContent = 'Conecte o Google Agenda para exportar este planejamento.';
-botaoConectar.hidden = false;
-return;
+            texto.textContent = 'Conecte o Google Agenda para exportar este planejamento.';
+            botaoConectar.hidden = false;
+            return;
         }
 
         texto.textContent = 'Planejamento pronto para ser adicionado à sua agenda.';
@@ -2565,8 +1627,8 @@ return;
 
         const exportacao = await consultarGoogleAgendaExportado(idRotaGoogleAgenda);
         if (exportacao.exportado) {
-texto.textContent = 'Este planejamento já está na sua agenda.';
-definirEstadoGoogleAgenda(true, exportacao.html_link);
+            texto.textContent = 'Este planejamento já está na sua agenda.';
+            definirEstadoGoogleAgenda(true, exportacao.html_link);
         }
     } catch (erro) {
         texto.textContent = erro.message;
@@ -2576,7 +1638,7 @@ definirEstadoGoogleAgenda(true, exportacao.html_link);
 }
 
 async function carregarPlanejamentoExistente() {
-    const resposta = await fetch('api/planejamento/', {headers: {Accept: 'application/json'}});
+    const resposta = await fetch('api/planejamento/', { headers: { Accept: 'application/json' } });
     const dados = await lerRespostaJson(resposta);
 
     if (!resposta.ok) {
@@ -2584,7 +1646,7 @@ async function carregarPlanejamentoExistente() {
     }
 
     const existente = (dados.planejamentos || []).find(
-        (planejamento) => Number(planejamento.id_evento) === Number(evento.id)
+        (planejamento) => Number(planejamento.id_evento) === Number(evento.id),
     );
 
     if (existente) {
@@ -2599,13 +1661,11 @@ async function carregarPlanejamentoExistente() {
         campoIngresso.value = ingressoExistente.toFixed(2);
         document.getElementById('custoTransporte').value = transporteExistente.toFixed(2);
         document.getElementById('custoHospedagem').value = (
-Boolean(existente.hospedagem_necessaria) ? hospedagemExistente : 0
+            Boolean(existente.hospedagem_necessaria) ? hospedagemExistente : 0
         ).toFixed(2);
         opcaoIngressoGratuito.checked = ingressoExistente <= 0;
         campoIngresso.disabled = opcaoIngressoGratuito.checked;
-        valorIngressoAntesGratuito = ingressoExistente > 0
-? ingressoExistente
-: evento.valorMinimo;
+        valorIngressoAntesGratuito = ingressoExistente > 0 ? ingressoExistente : evento.valorMinimo;
 
         document.getElementById('orcamento').value = existente.orcamento_total ?? 0;
         document.getElementById('meioTransportePlanejamento').value = existente.meio_transporte || '';
@@ -2620,21 +1680,19 @@ Boolean(existente.hospedagem_necessaria) ? hospedagemExistente : 0
         hospedagemDecidida = true;
         hospedagemNome = existente.nome_hospedagem || '';
         document.getElementById('opcoesHospedagem').hidden = !hospedagemSelecionada;
-        origem = existente.origem ? {lat: null, lng: null, descricao: existente.origem} : origem;
+        origem = existente.origem ? { lat: null, lng: null, descricao: existente.origem } : origem;
         rotaCalculada = Boolean(existente.distancia_km && existente.tempo_estimado);
         document.getElementById('transporteSelecionado').textContent = transporteSelecionado
-? `Transporte selecionado: ${transporteSelecionado}`
-: 'Nenhum transporte selecionado.';
+            ? `Transporte selecionado: ${transporteSelecionado}`
+            : 'Nenhum transporte selecionado.';
         document.getElementById('hospedagemSelecionada').textContent = hospedagemSelecionada
-? `Hospedagem selecionada: ${hospedagemNome || 'não informada'}`
-: 'Você escolheu continuar sem hospedagem.';
+            ? `Hospedagem selecionada: ${hospedagemNome || 'não informada'}`
+            : 'Você escolheu continuar sem hospedagem.';
         document.getElementById('resumoOrigem').textContent = existente.origem || '—';
-        document.getElementById('resumoDistancia').textContent = existente.distancia_km !== null
-? `${Number(existente.distancia_km).toLocaleString('pt-BR')} km`
-: '—';
-        document.getElementById('resumoTempo').textContent = existente.tempo_estimado !== null
-? `${Number(existente.tempo_estimado).toLocaleString('pt-BR')} min`
-: '—';
+        document.getElementById('resumoDistancia').textContent =
+            existente.distancia_km !== null ? `${Number(existente.distancia_km).toLocaleString('pt-BR')} km` : '—';
+        document.getElementById('resumoTempo').textContent =
+            existente.tempo_estimado !== null ? `${Number(existente.tempo_estimado).toLocaleString('pt-BR')} min` : '—';
         if (transporteSelecionado) selecionarTransporte(transporteSelecionado);
         atualizarEstadoHospedagem();
         atualizarResumo();
@@ -2649,45 +1707,48 @@ Boolean(existente.hospedagem_necessaria) ? hospedagemExistente : 0
 function confirmarFinalizacaoComConflito(conflitos) {
     const modal = document.getElementById('modalConflitoAgenda');
     const lista = document.getElementById('listaConflitosAgenda');
-    lista.replaceChildren(...conflitos.map((conflito) => {
-        const item = document.createElement('li');
-        item.textContent = conflito.titulo;
-        return item;
-    }));
+    lista.replaceChildren(
+        ...conflitos.map((conflito) => {
+            const item = document.createElement('li');
+            item.textContent = conflito.titulo;
+            return item;
+        }),
+    );
 
     if (typeof modal.showModal !== 'function') {
         return window.ShowMeUI.confirmar({
-titulo: 'Conflito no Google Agenda',
-texto: 'Há outro compromisso no período deste evento, considerando também o tempo de deslocamento.',
-confirmarTexto: 'Finalizar mesmo assim',
-cancelarTexto: 'Cancelar',
-variante: 'importante'
+            titulo: 'Conflito no Google Agenda',
+            texto: 'Há outro compromisso no período deste evento, considerando também o tempo de deslocamento.',
+            confirmarTexto: 'Finalizar mesmo assim',
+            cancelarTexto: 'Cancelar',
+            variante: 'importante',
         });
     }
 
     modal.showModal();
     return new Promise((resolver) => {
-        modal.addEventListener('close', () => resolver(modal.returnValue === 'finalizar'), {once: true});
+        modal.addEventListener('close', () => resolver(modal.returnValue === 'finalizar'), { once: true });
     });
 }
 
 async function verificarConflitoGoogleAgenda(tempo) {
-    const status = statusGoogleAgenda || await obterStatusGoogleAgenda();
+    const status = statusGoogleAgenda || (await obterStatusGoogleAgenda());
     if (!status?.conectado) {
         return true;
     }
 
     const resposta = await fetch('api/google-calendar', {
         method: 'POST',
-        headers: {'Content-Type': 'application/json', Accept: 'application/json'},
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
         body: JSON.stringify({
-acao: 'verificar_conflito',
-id_evento: evento.id,
-id_rota: Number.isInteger(idPlanejamentoExistente) && idPlanejamentoExistente > 0
-    ? idPlanejamentoExistente
-    : null,
-tempo_estimado: Number(tempo)
-        })
+            acao: 'verificar_conflito',
+            id_evento: evento.id,
+            id_rota:
+                Number.isInteger(idPlanejamentoExistente) && idPlanejamentoExistente > 0
+                    ? idPlanejamentoExistente
+                    : null,
+            tempo_estimado: Number(tempo),
+        }),
     });
     const dados = await lerRespostaJson(resposta);
 
@@ -2695,9 +1756,7 @@ tempo_estimado: Number(tempo)
         throw new Error(dados.erro || 'Não foi possível verificar conflitos na agenda.');
     }
 
-    return dados.conflito
-        ? confirmarFinalizacaoComConflito(dados.conflitos || [])
-        : true;
+    return dados.conflito ? confirmarFinalizacaoComConflito(dados.conflitos || []) : true;
 }
 
 async function adicionarAoGoogleAgenda() {
@@ -2708,19 +1767,19 @@ async function adicionarAoGoogleAgenda() {
 
     try {
         const resposta = await fetch('api/google-calendar', {
-method: 'POST',
-headers: {'Content-Type': 'application/json', Accept: 'application/json'},
-body: JSON.stringify({acao: 'exportar', id_rota: idRotaGoogleAgenda})
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+            body: JSON.stringify({ acao: 'exportar', id_rota: idRotaGoogleAgenda }),
         });
         const dados = await lerRespostaJson(resposta);
         if (!resposta.ok) {
-throw new Error(dados.erro || 'Não foi possível adicionar o evento à agenda.');
+            throw new Error(dados.erro || 'Não foi possível adicionar o evento à agenda.');
         }
 
         let htmlLink = dados.html_link || '';
         if (!htmlLink && dados.ja_existia) {
-const exportacao = await consultarGoogleAgendaExportado(idRotaGoogleAgenda);
-htmlLink = exportacao.html_link || '';
+            const exportacao = await consultarGoogleAgendaExportado(idRotaGoogleAgenda);
+            htmlLink = exportacao.html_link || '';
         }
 
         texto.textContent = 'Este planejamento já está na sua agenda.';
@@ -2737,7 +1796,7 @@ async function finalizarPlanejamento(eventoSubmit) {
     eventoSubmit.preventDefault();
 
     if (!etapaConcluida[1] || !etapaConcluida[2] || !etapaConcluida[3] || !etapaConcluida[4]) {
-        window.ShowMeUI.toast('Conclua todas as etapas antes de finalizar.', {variante: 'erro'});
+        window.ShowMeUI.toast('Conclua todas as etapas antes de finalizar.', { variante: 'erro' });
         return;
     }
 
@@ -2750,19 +1809,19 @@ async function finalizarPlanejamento(eventoSubmit) {
     const custoIngresso = lerCustoIngresso();
     const custoTransporte = lerCustoTransporte();
     const custoHospedagem = lerCustoHospedagem();
-    const origemInformada = document.getElementById('origemManual').value.trim()
-        || document.getElementById('origemTexto').textContent.trim();
+    const origemInformada =
+        document.getElementById('origemManual').value.trim() ||
+        document.getElementById('origemTexto').textContent.trim();
 
-    const atualizandoPlanejamento = Number.isInteger(idPlanejamentoExistente)
-        && idPlanejamentoExistente > 0;
+    const atualizandoPlanejamento = Number.isInteger(idPlanejamentoExistente) && idPlanejamentoExistente > 0;
     const deveSalvar = await window.ShowMeUI.confirmar({
         titulo: atualizandoPlanejamento ? 'Salvar alterações' : 'Finalizar planejamento',
         texto: atualizandoPlanejamento
-? 'Confirma a substituição dos dados salvos por estas novas informações?'
-: 'Confirma este planejamento? Ele passará a aparecer em Meus Eventos e no calendário.',
+            ? 'Confirma a substituição dos dados salvos por estas novas informações?'
+            : 'Confirma este planejamento? Ele passará a aparecer em Meus Eventos e no calendário.',
         confirmarTexto: atualizandoPlanejamento ? 'Salvar' : 'Finalizar',
         cancelarTexto: 'Cancelar',
-        variante: atualizandoPlanejamento ? 'edicao' : 'importante'
+        variante: atualizandoPlanejamento ? 'edicao' : 'importante',
     });
     if (!deveSalvar) return;
 
@@ -2773,64 +1832,62 @@ async function finalizarPlanejamento(eventoSubmit) {
     try {
         const deveFinalizar = await verificarConflitoGoogleAgenda(tempo);
         if (!deveFinalizar) {
-mensagem.textContent = 'Planejamento não finalizado.';
-botao.disabled = false;
-return;
+            mensagem.textContent = 'Planejamento não finalizado.';
+            botao.disabled = false;
+            return;
         }
 
         mensagem.textContent = 'Salvando planejamento...';
         const endpointPlanejamento = atualizandoPlanejamento
-? `api/planejamento/${idPlanejamentoExistente}`
-: 'api/planejamento/';
+            ? `api/planejamento/${idPlanejamentoExistente}`
+            : 'api/planejamento/';
         const resposta = await fetch(endpointPlanejamento, {
-method: atualizandoPlanejamento ? 'PUT' : 'POST',
-headers: {'Content-Type': 'application/json', Accept: 'application/json'},
-body: JSON.stringify({
-    id_evento: evento.id,
-    meio_transporte: meioTransporte,
-    distancia_km: distancia,
-    tempo_estimado: tempo,
-    origem: origemInformada,
-    orcamento_total: orcamento,
-    custo_ingresso: custoIngresso,
-    custo_transporte: custoTransporte,
-    hospedagem_necessaria: hospedagemSelecionada,
-    nome_hospedagem: hospedagemNome,
-    custo_hospedagem: custoHospedagem
-})
+            method: atualizandoPlanejamento ? 'PUT' : 'POST',
+            headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+            body: JSON.stringify({
+                id_evento: evento.id,
+                meio_transporte: meioTransporte,
+                distancia_km: distancia,
+                tempo_estimado: tempo,
+                origem: origemInformada,
+                orcamento_total: orcamento,
+                custo_ingresso: custoIngresso,
+                custo_transporte: custoTransporte,
+                hospedagem_necessaria: hospedagemSelecionada,
+                nome_hospedagem: hospedagemNome,
+                custo_hospedagem: custoHospedagem,
+            }),
         });
         const dados = await lerRespostaJson(resposta);
 
         if (!resposta.ok && !(resposta.status === 409 && dados.id_rota)) {
-throw new Error(dados.erro || 'Não foi possível finalizar o planejamento.');
+            throw new Error(dados.erro || 'Não foi possível finalizar o planejamento.');
         }
 
         const idRota = dados.planejamento?.id_rota || dados.id_rota;
         idPlanejamentoExistente = Number(idRota) || idPlanejamentoExistente;
         atualizarResumo();
         mensagem.textContent =
-resposta.status === 409
-    ? 'Este evento já possui um planejamento finalizado.'
-    : atualizandoPlanejamento
-        ? 'Planejamento atualizado com sucesso.'
-        : 'Planejamento finalizado com sucesso.';
+            resposta.status === 409
+                ? 'Este evento já possui um planejamento finalizado.'
+                : atualizandoPlanejamento
+                  ? 'Planejamento atualizado com sucesso.'
+                  : 'Planejamento finalizado com sucesso.';
         configurarBotaoPlanejamentoFinalizado();
 
         if (resposta.status !== 409) {
-const opcoesToast = {variante: 'sucesso'};
-if (!atualizandoPlanejamento) {
-    opcoesToast.duracao = 8000;
-    opcoesToast.acao = {
-        texto: 'Ver meus planejados',
-        href: 'meusEventos.php?aba=planejados'
-    };
-}
-window.ShowMeUI.toast(
-    atualizandoPlanejamento
-        ? 'Planejamento atualizado com sucesso!'
-        : 'Planejamento salvo com sucesso!',
-    opcoesToast
-);
+            const opcoesToast = { variante: 'sucesso' };
+            if (!atualizandoPlanejamento) {
+                opcoesToast.duracao = 8000;
+                opcoesToast.acao = {
+                    texto: 'Ver meus planejados',
+                    href: 'meusEventos.php?aba=planejados',
+                };
+            }
+            window.ShowMeUI.toast(
+                atualizandoPlanejamento ? 'Planejamento atualizado com sucesso!' : 'Planejamento salvo com sucesso!',
+                opcoesToast,
+            );
         }
 
         await exibirAcoesGoogleAgenda(idRota);
@@ -2841,133 +1898,49 @@ window.ShowMeUI.toast(
     }
 }
 
-document.getElementById('btnAdicionarGoogleAgenda')
-    .addEventListener('click', adicionarAoGoogleAgenda);
+document.getElementById('btnAdicionarGoogleAgenda').addEventListener('click', adicionarAoGoogleAgenda);
 
 /* =========================================================
    ESCAPAR HTML
 ========================================================= */
 
-function escapeHtml(
-    texto
-) {
+function escapeHtml(texto) {
+    return String(texto ?? '')
+        .replaceAll('&', '&amp;')
 
-    return String(
-        texto ?? ""
-    )
+        .replaceAll('<', '&lt;')
 
-        .replaceAll(
-"&",
-"&amp;"
-        )
+        .replaceAll('>', '&gt;')
 
-        .replaceAll(
-"<",
-"&lt;"
-        )
+        .replaceAll('"', '&quot;')
 
-        .replaceAll(
-">",
-"&gt;"
-        )
-
-        .replaceAll(
-'"',
-"&quot;"
-        )
-
-        .replaceAll(
-"'",
-"&#039;"
-        );
-
+        .replaceAll("'", '&#039;');
 }
-
 
 /* =========================================================
    EVENTOS DE INPUT
 ========================================================= */
 
-document
-    .getElementById(
-        "orcamento"
-    )
-    .addEventListener(
-        "input",
-        atualizarResumo
-    );
+document.getElementById('orcamento').addEventListener('input', atualizarResumo);
 
+document.getElementById('custoIngresso').addEventListener('input', atualizarResumo);
 
-document
-    .getElementById(
-        "custoIngresso"
-    )
-    .addEventListener(
-        "input",
-        atualizarResumo
-    );
+document.getElementById('custoTransporte').addEventListener('input', atualizarResumo);
 
+document.getElementById('custoHospedagem').addEventListener('input', atualizarResumo);
 
-document
-    .getElementById(
-        "custoTransporte"
-    )
-    .addEventListener(
-        "input",
-        atualizarResumo
-    );
+document.getElementById('ingressoGratuito').addEventListener('change', alternarIngressoGratuito);
 
+document.getElementById('distanciaPlanejamento').addEventListener('input', atualizarResumoRota);
 
-document
-    .getElementById(
-        "custoHospedagem"
-    )
-    .addEventListener(
-        "input",
-        atualizarResumo
-    );
+document.getElementById('tempoPlanejamento').addEventListener('input', () => {
+    /* Edição manual: o valor deixa de ser automático. */
+    tempoAutomatico = false;
 
+    atualizarResumoRota();
+});
 
-document
-    .getElementById(
-        "ingressoGratuito"
-    )
-    .addEventListener(
-        "change",
-        alternarIngressoGratuito
-    );
-
-
-document
-    .getElementById(
-        "distanciaPlanejamento"
-    )
-    .addEventListener(
-        "input",
-        atualizarResumoRota
-    );
-
-
-document
-    .getElementById(
-        "tempoPlanejamento"
-    )
-    .addEventListener(
-        "input",
-        () => {
-
-/* Edição manual: o valor deixa de ser automático. */
-tempoAutomatico =
-    false;
-
-atualizarResumoRota();
-
-        }
-    );
-
-document
-    .getElementById("formPlanejamento")
-    .addEventListener("submit", finalizarPlanejamento);
+document.getElementById('formPlanejamento').addEventListener('submit', finalizarPlanejamento);
 
 document.getElementById('botaoFinalizarPlanejamento').addEventListener('click', (eventoClique) => {
     if (eventoClique.currentTarget.dataset.estado !== 'finalizado') return;
@@ -2986,7 +1959,6 @@ document.getElementById('botaoImprimirPlanejamento').addEventListener('click', (
         proximaEtapa(2);
     });
 });
-
 
 /* =========================================================
    AVISO DE COMPROMISSOS NA MESMA DATA
@@ -3015,13 +1987,13 @@ function exibirAvisoConflitoData(compromissos) {
         const limpo = String(nome ?? '').trim();
 
         if (!limpo) {
-return;
+            return;
         }
 
         const chave = normalizarNomeCompromisso(limpo);
 
         if (!chave || vistos.has(chave)) {
-return;
+            return;
         }
 
         vistos.add(chave);
@@ -3041,7 +2013,7 @@ return;
         texto: 'Nota: Você já possui compromissos agendados nesta mesma data.',
         itens: nomes,
         icone: 'bi bi-calendar2-week',
-        fecharTexto: 'Entendi'
+        fecharTexto: 'Entendi',
     });
 }
 
@@ -3056,19 +2028,19 @@ async function verificarCompromissosDaData() {
 
     /* 1) Compromissos já planejados no próprio ShowMe. */
     try {
-        const resposta = await fetch('api/planejamento/', {headers: {Accept: 'application/json'}});
+        const resposta = await fetch('api/planejamento/', { headers: { Accept: 'application/json' } });
         const dados = await lerRespostaJson(resposta);
 
         if (resposta.ok) {
-(dados.planejamentos || []).forEach((planejamento) => {
-    if (Number(planejamento.id_evento) === Number(evento.id)) {
-        return;
-    }
+            (dados.planejamentos || []).forEach((planejamento) => {
+                if (Number(planejamento.id_evento) === Number(evento.id)) {
+                    return;
+                }
 
-    if (mesmaData(planejamento.data_evento, dataEvento)) {
-        compromissos.push(planejamento.nome_evento);
-    }
-});
+                if (mesmaData(planejamento.data_evento, dataEvento)) {
+                    compromissos.push(planejamento.nome_evento);
+                }
+            });
         }
     } catch (_) {
         /* Aviso complementar: falhas não impedem o planejamento. */
@@ -3076,37 +2048,38 @@ async function verificarCompromissosDaData() {
 
     /* 2) Compromissos vindos da Google Agenda, quando conectada. */
     try {
-        const status = statusGoogleAgenda || await obterStatusGoogleAgenda();
+        const status = statusGoogleAgenda || (await obterStatusGoogleAgenda());
 
         if (status?.conectado) {
-const resposta = await fetch('api/google-calendar', {
-    method: 'POST',
-    headers: {'Content-Type': 'application/json', Accept: 'application/json'},
-    body: JSON.stringify({
-        acao: 'verificar_data',
-        id_evento: evento.id,
-        id_rota: Number.isInteger(idPlanejamentoExistente) && idPlanejamentoExistente > 0
-            ? idPlanejamentoExistente
-            : null
-    })
-});
-const dados = await lerRespostaJson(resposta);
+            const resposta = await fetch('api/google-calendar', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+                body: JSON.stringify({
+                    acao: 'verificar_data',
+                    id_evento: evento.id,
+                    id_rota:
+                        Number.isInteger(idPlanejamentoExistente) && idPlanejamentoExistente > 0
+                            ? idPlanejamentoExistente
+                            : null,
+                }),
+            });
+            const dados = await lerRespostaJson(resposta);
 
-if (resposta.ok && dados.conflito) {
-    const nomeEventoAtual = normalizarNomeCompromisso(evento.nome);
+            if (resposta.ok && dados.conflito) {
+                const nomeEventoAtual = normalizarNomeCompromisso(evento.nome);
 
-    (dados.conflitos || []).forEach((conflito) => {
-        /*
+                (dados.conflitos || []).forEach((conflito) => {
+                    /*
             O próprio evento pode já estar na agenda com o mesmo
             nome; nesse caso não é um compromisso adicional.
         */
-        if (normalizarNomeCompromisso(conflito.titulo) === nomeEventoAtual) {
-            return;
-        }
+                    if (normalizarNomeCompromisso(conflito.titulo) === nomeEventoAtual) {
+                        return;
+                    }
 
-        compromissos.push(conflito.titulo);
-    });
-}
+                    compromissos.push(conflito.titulo);
+                });
+            }
         }
     } catch (_) {
         /* Integração opcional com o Google Agenda. */
@@ -3114,7 +2087,6 @@ if (resposta.ok && dados.conflito) {
 
     exibirAvisoConflitoData(compromissos);
 }
-
 
 /* =========================================================
    INICIALIZAÇÃO
@@ -3131,8 +2103,8 @@ async function inicializarPlanejamento() {
         /* Checagem complementar: um aviso nunca bloqueia o carregamento. */
         verificarCompromissosDaData().catch(() => {});
     } catch (erro) {
-        document.getElementById("tituloEvento").textContent = erro.message;
-        document.getElementById("botaoFinalizarPlanejamento").disabled = true;
+        document.getElementById('tituloEvento').textContent = erro.message;
+        document.getElementById('botaoFinalizarPlanejamento').disabled = true;
         mostrarMensagem(erro.message, true);
     }
 

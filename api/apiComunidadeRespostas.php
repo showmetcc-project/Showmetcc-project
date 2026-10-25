@@ -15,11 +15,7 @@ if ($metodo === 'POST') {
     }
 
     $dados = lerJson();
-    $idPost = filter_var(
-        $dados['id_post'] ?? null,
-        FILTER_VALIDATE_INT,
-        ['options' => ['min_range' => 1]]
-    );
+    $idPost = filter_var($dados['id_post'] ?? null, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
     $texto = trim((string) ($dados['texto'] ?? ''));
 
     if ($idPost === false || $texto === '') {
@@ -33,7 +29,7 @@ if ($metodo === 'POST') {
     $stmt = $conn->prepare(
         "SELECT 1 FROM comunidade_post
          WHERE id_post = ? AND status_post = 'ativo'
-         LIMIT 1"
+         LIMIT 1",
     );
     $stmt->bind_param('i', $idPost);
     executarStatementApi($stmt);
@@ -44,18 +40,19 @@ if ($metodo === 'POST') {
     }
     $stmt->close();
 
-    $stmt = $conn->prepare(
-        'INSERT INTO comunidade_resposta (id_post, id_usuario, texto) VALUES (?, ?, ?)'
-    );
+    $stmt = $conn->prepare('INSERT INTO comunidade_resposta (id_post, id_usuario, texto) VALUES (?, ?, ?)');
     $stmt->bind_param('iis', $idPost, $idUsuario, $texto);
     executarStatementApi($stmt);
     $idResposta = $conn->insert_id;
     $stmt->close();
 
-    responder([
-        'mensagem' => 'Resposta publicada com sucesso',
-        'id_resposta' => (int) $idResposta,
-    ], 201);
+    responder(
+        [
+            'mensagem' => 'Resposta publicada com sucesso',
+            'id_resposta' => (int) $idResposta,
+        ],
+        201,
+    );
 }
 
 if ($metodo === 'PUT') {
@@ -92,9 +89,7 @@ if ($metodo === 'PUT') {
         responder(['erro' => 'Você só pode editar sua própria resposta'], 403);
     }
 
-    $stmt = $conn->prepare(
-        'UPDATE comunidade_resposta SET texto = ? WHERE id_resposta = ? AND id_usuario = ?'
-    );
+    $stmt = $conn->prepare('UPDATE comunidade_resposta SET texto = ? WHERE id_resposta = ? AND id_usuario = ?');
     $stmt->bind_param('sii', $texto, $id, $idUsuario);
     executarStatementApi($stmt);
     $stmt->close();
@@ -125,9 +120,7 @@ if ($metodo === 'DELETE') {
         responder(['erro' => 'Você só pode excluir sua própria resposta'], 403);
     }
 
-    $stmt = $conn->prepare(
-        'DELETE FROM comunidade_resposta WHERE id_resposta = ? AND id_usuario = ?'
-    );
+    $stmt = $conn->prepare('DELETE FROM comunidade_resposta WHERE id_resposta = ? AND id_usuario = ?');
     $stmt->bind_param('ii', $id, $idUsuario);
     executarStatementApi($stmt);
     $stmt->close();

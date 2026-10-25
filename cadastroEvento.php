@@ -168,22 +168,23 @@ require_once __DIR__ . '/config/classificacoesIndicativas.php';
                             <?php
                             $iconesCategorias = iconesCategoriasEvento();
                             $categoriasEvento = array_map(
-                                static fn (string $categoria): array => [
+                                static fn(string $categoria): array => [
                                     'valor' => $categoria,
                                     'icone' => $iconesCategorias[$categoria] ?? 'bi-tag',
                                 ],
-                                categoriasEventoOficiais()
+                                categoriasEventoOficiais(),
                             );
                             foreach ($categoriasEvento as $indice => $categoria):
-                                $idCategoria = 'categoriaEvento' . $indice;
-                            ?>
+                                $idCategoria = 'categoriaEvento' . $indice; ?>
                                 <label class="opcao-categoria" for="<?= $idCategoria ?>">
                                     <input id="<?= $idCategoria ?>" name="categoria_evento[]" type="checkbox"
                                         value="<?= htmlspecialchars($categoria['valor'], ENT_QUOTES, 'UTF-8') ?>">
                                     <i class="bi <?= $categoria['icone'] ?>" aria-hidden="true"></i>
                                     <span><?= htmlspecialchars($categoria['valor'], ENT_QUOTES, 'UTF-8') ?></span>
                                 </label>
-                            <?php endforeach; ?>
+                            <?php
+                            endforeach;
+                            ?>
                         </div>
                     </div>
                     <div id="erroCategoriasEvento" class="form-text erro" aria-live="polite"></div>

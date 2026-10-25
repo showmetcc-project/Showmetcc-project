@@ -2,10 +2,8 @@
 
 /**
  * Fonte única das categorias oficiais de evento do ShowMe.
- *
  * A ordem definida aqui é a mesma usada nos carrosséis da Home, no
- * formulário de cadastro e no filtro de busca. Sempre inclua este arquivo
- * com require_once para evitar redeclaração das funções.
+ * formulário de cadastro e no filtro de busca.
  */
 
 /**
@@ -29,8 +27,7 @@ function categoriasEventoOficiais(): array
 }
 
 /**
- * Ícone (Bootstrap Icons) de cada categoria oficial, usado no formulário
- * de cadastro de eventos.
+ * Ícone (Bootstrap Icons) de cada categoria oficial, usado no formulário de cadastro de eventos.
  *
  * @return array<string, string>
  */

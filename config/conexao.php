@@ -4,18 +4,13 @@ require_once __DIR__ . '/erroInfraestrutura.php';
 
 mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
 
-$host = "localhost";
-$usuario = "root";
-$senha = "";
-$banco = "showme";
+$host = 'localhost';
+$usuario = 'root';
+$senha = '';
+$banco = 'showme';
 
 try {
-    $conn = new mysqli(
-        $host,
-        $usuario,
-        $senha,
-        $banco
-    );
+    $conn = new mysqli($host, $usuario, $senha, $banco);
 
     if ($conn->connect_errno !== 0) {
         throw new RuntimeException($conn->connect_error);

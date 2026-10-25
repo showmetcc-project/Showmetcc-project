@@ -17,14 +17,16 @@
     }
     function imagem(caminho) {
         if (!caminho) return fallback;
-        return /^(https?:|data:|\/)/i.test(caminho) || caminho.startsWith('assets/') ? caminho : `assets/uploads/eventos/${caminho}`;
+        return /^(https?:|data:|\/)/i.test(caminho) || caminho.startsWith('assets/')
+            ? caminho
+            : `assets/uploads/eventos/${caminho}`;
     }
     function dadosClassificacao(valor) {
         const texto = String(valor || '').trim();
         if (!texto) return null;
-        if (texto.toLowerCase() === 'livre') return {chave: 'livre', rotulo: 'L'};
+        if (texto.toLowerCase() === 'livre') return { chave: 'livre', rotulo: 'L' };
         const numero = texto.match(/\d+/);
-        return numero ? {chave: numero[0], rotulo: numero[0]} : {chave: 'livre', rotulo: texto};
+        return numero ? { chave: numero[0], rotulo: numero[0] } : { chave: 'livre', rotulo: texto };
     }
     function card(evento) {
         const coluna = document.createElement('div');
@@ -36,7 +38,10 @@
         foto.src = imagem(evento.imagem_evento);
         foto.alt = window.ShowMeA11y.textoAltImagemEvento(evento);
         foto.loading = 'lazy';
-        foto.onerror = () => { foto.onerror = null; foto.src = fallback; };
+        foto.onerror = () => {
+            foto.onerror = null;
+            foto.src = fallback;
+        };
         const corpo = document.createElement('div');
         corpo.className = 'comunidade-card-corpo';
         const topo = document.createElement('div');
@@ -64,7 +69,11 @@
     function renderizar(alvo, eventos, vazio) {
         alvo.replaceChildren();
         if (!eventos.length) {
-            const p = document.createElement('p'); p.className = 'comunidade-estado'; p.textContent = vazio; alvo.append(p); return;
+            const p = document.createElement('p');
+            p.className = 'comunidade-estado';
+            p.textContent = vazio;
+            alvo.append(p);
+            return;
         }
         alvo.append(...eventos.map(card));
     }
@@ -72,19 +81,18 @@
     function filtrarComunidades() {
         const termo = normalizar(campoBusca?.value);
         if (botaoLimparBusca) botaoLimparBusca.hidden = termo === '';
-        const filtrar = (eventos) => termo === ''
-            ? eventos
-            : eventos.filter((evento) => normalizar(evento.nome_evento).includes(termo));
+        const filtrar = (eventos) =>
+            termo === '' ? eventos : eventos.filter((evento) => normalizar(evento.nome_evento).includes(termo));
 
         renderizar(
             alvoSeusEventos,
             filtrar(seusEventos),
-            termo ? 'Nenhum dos seus eventos corresponde à busca.' : 'Favorite ou planeje um evento para vê-lo aqui.'
+            termo ? 'Nenhum dos seus eventos corresponde à busca.' : 'Favorite ou planeje um evento para vê-lo aqui.',
         );
         renderizar(
             alvoTodasComunidades,
             filtrar(todasComunidades),
-            termo ? 'Nenhuma comunidade corresponde à busca.' : 'Nenhuma outra comunidade disponível.'
+            termo ? 'Nenhuma comunidade corresponde à busca.' : 'Nenhuma outra comunidade disponível.',
         );
     }
 
@@ -96,12 +104,21 @@
         campoBusca.focus();
     });
 
-    fetch('api/comunidade-posts?resumo=1', {headers:{Accept:'application/json'}})
-        .then(async (resposta) => { const dados = await resposta.json(); if (!resposta.ok) throw new Error(dados.erro || 'Não foi possível carregar as comunidades.'); return dados; })
+    fetch('api/comunidade-posts?resumo=1', { headers: { Accept: 'application/json' } })
+        .then(async (resposta) => {
+            const dados = await resposta.json();
+            if (!resposta.ok) throw new Error(dados.erro || 'Não foi possível carregar as comunidades.');
+            return dados;
+        })
         .then((dados) => {
             seusEventos = Array.isArray(dados.seus_eventos) ? dados.seus_eventos : [];
             todasComunidades = Array.isArray(dados.todas_comunidades) ? dados.todas_comunidades : [];
             filtrarComunidades();
         })
-        .catch((erro) => document.querySelectorAll('.comunidade-grid').forEach((alvo) => { alvo.innerHTML = `<p class="comunidade-estado erro"></p>`; alvo.firstElementChild.textContent = erro.message; }));
-}());
+        .catch((erro) =>
+            document.querySelectorAll('.comunidade-grid').forEach((alvo) => {
+                alvo.innerHTML = `<p class="comunidade-estado erro"></p>`;
+                alvo.firstElementChild.textContent = erro.message;
+            }),
+        );
+})();

@@ -10,7 +10,7 @@ unset($_SESSION['google_calendar_retorno'], $_SESSION['google_calendar_estado'])
 
 if (isset($_GET['error'])) {
     header('Location: ' . adicionarParametroRetorno($retorno, 'calendar', 'cancelado'));
-    exit;
+    exit();
 }
 
 $estadoRecebido = (string) ($_GET['state'] ?? '');
@@ -18,7 +18,7 @@ $codigo = (string) ($_GET['code'] ?? '');
 
 if ($estadoEsperado === '' || !hash_equals($estadoEsperado, $estadoRecebido) || $codigo === '') {
     header('Location: ' . adicionarParametroRetorno($retorno, 'calendar', 'estado_invalido'));
-    exit;
+    exit();
 }
 
 try {
@@ -45,13 +45,13 @@ try {
         (int) $_SESSION['id_user'],
         (string) $token['access_token'],
         $refreshToken,
-        time() + (int) ($token['expires_in'] ?? 3600)
+        time() + (int) ($token['expires_in'] ?? 3600),
     );
 
     header('Location: ' . adicionarParametroRetorno($retorno, 'calendar', 'conectado'));
-    exit;
+    exit();
 } catch (Throwable $erro) {
     error_log('Falha no callback do Google Agenda: ' . $erro->getMessage());
     header('Location: ' . adicionarParametroRetorno($retorno, 'calendar', 'erro'));
-    exit;
+    exit();
 }

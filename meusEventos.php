@@ -57,16 +57,12 @@
             </button>
         </div>
 
-        <!-- ══════════════════════════
-             FAVORITOS
-        ═══════════════════════════ -->
+        <!-- FAVORITOS -->
         <section id="favoritos" class="conteudo ativa row g-3">
             <p>Carregando seus favoritos...</p>
         </section>
 
-        <!-- ══════════════════════════
-             PLANEJADOS
-        ═══════════════════════════ -->
+        <!-- PLANEJADOS -->
         <section id="planejados" class="conteudo row g-3">
             <p>Carregando seus planejados...</p>
 
@@ -127,8 +123,6 @@
         </section>
 
     </main>
-
-
 
     <!-- Scroll Top -->
     <a href="#" id="scroll-top" class="scroll-top d-flex align-items-center justify-content-center">

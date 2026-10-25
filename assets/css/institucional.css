@@ -1,267 +1,269 @@
 /* Ajustes exclusivos da apresentação da página Sobre. */
 
 .pagina-sobre .hero {
-  display: flex;
-  align-items: center;
+    display: flex;
+    align-items: center;
 }
 
 .pagina-sobre .hero::after {
-  content: "";
-  position: absolute;
-  right: 0;
-  bottom: 0;
-  left: 0;
-  z-index: 1;
-  height: clamp(110px, 18vw, 190px);
-  background: linear-gradient(to bottom, rgba(10, 10, 10, 0) 0%, #0a0a0a 100%);
-  pointer-events: none;
+    content: '';
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 1;
+    height: clamp(110px, 18vw, 190px);
+    background: linear-gradient(to bottom, rgba(10, 10, 10, 0) 0%, #0a0a0a 100%);
+    pointer-events: none;
 }
 
 .pagina-sobre .hero .row {
-  position: relative;
-  z-index: 2;
-  width: 100%;
-  max-width: 100%;
-  margin-right: 0;
-  margin-left: 0;
+    position: relative;
+    z-index: 2;
+    width: 100%;
+    max-width: 100%;
+    margin-right: 0;
+    margin-left: 0;
 }
 
 .pagina-sobre .hero .container {
-  text-align: center;
+    text-align: center;
 }
 
 .pagina-sobre .hero h1 {
-  padding-top: 0;
-  margin: 0 auto;
+    padding-top: 0;
+    margin: 0 auto;
 }
 
 .pagina-sobre .hero p {
-  margin: 15px auto 0;
-  max-width: 700px;
+    margin: 15px auto 0;
+    max-width: 700px;
 }
 
 .pagina-sobre .hero .hero-conteudo {
-  position: relative;
+    position: relative;
 }
 
 .pagina-sobre .hero .hero-seta {
-  position: absolute;
-  top: calc(100% + 30px);
-  left: 50%;
-  display: block;
-  transform: translateX(-50%);
+    position: absolute;
+    top: calc(100% + 30px);
+    left: 50%;
+    display: block;
+    transform: translateX(-50%);
 }
 
 .pagina-sobre .hero .hero-seta i {
-  margin: 0;
-  padding-top: 0;
+    margin: 0;
+    padding-top: 0;
 }
 
 /* Clube de Fidelidade: bloco preenchido após os cards contornados de Como Funciona. */
 .pagina-sobre .clube-fidelidade {
-  background: #0a0a0a;
-  padding-top: 44px;
-  padding-bottom: 44px;
-  scroll-margin-top: 100px;
+    background: #0a0a0a;
+    padding-top: 44px;
+    padding-bottom: 44px;
+    scroll-margin-top: 100px;
 }
 
 .pagina-sobre .clube-fidelidade .section-title {
-  max-width: 900px;
-  padding-bottom: 22px;
+    max-width: 900px;
+    padding-bottom: 22px;
 }
 
 .pagina-sobre .clube-fidelidade .section-title h2 {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 0 .3em;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0 0.3em;
 }
 
 .pagina-sobre .clube-fidelidade-introducao {
-  max-width: 820px;
-  margin: 12px auto 0;
-  color: #cccccc;
-  font-size: clamp(.95rem, 1.25vw, 1.04rem);
-  line-height: 1.6;
+    max-width: 820px;
+    margin: 12px auto 0;
+    color: #cccccc;
+    font-size: clamp(0.95rem, 1.25vw, 1.04rem);
+    line-height: 1.6;
 }
 
 .pagina-sobre .clube-fidelidade-planos {
-  max-width: 980px;
+    max-width: 980px;
 }
 
 .pagina-sobre .plano-fidelidade {
-  display: flex;
-  box-sizing: border-box;
-  width: 100%;
-  max-width: 100%;
-  min-height: 100%;
-  flex-direction: column;
-  padding: clamp(20px, 2.5vw, 26px);
-  border: 2px solid var(--plano-cor);
-  border-radius: 22px;
-  box-shadow: 0 16px 38px rgb(0 0 0 / 26%);
-  transition: box-shadow .25s ease, transform .25s ease;
+    display: flex;
+    box-sizing: border-box;
+    width: 100%;
+    max-width: 100%;
+    min-height: 100%;
+    flex-direction: column;
+    padding: clamp(20px, 2.5vw, 26px);
+    border: 2px solid var(--plano-cor);
+    border-radius: 22px;
+    box-shadow: 0 16px 38px rgb(0 0 0 / 26%);
+    transition:
+        box-shadow 0.25s ease,
+        transform 0.25s ease;
 }
 
 .pagina-sobre .plano-fidelidade:hover {
-  box-shadow: 0 18px 42px color-mix(in srgb, var(--plano-cor), transparent 78%);
-  transform: translateY(-4px);
+    box-shadow: 0 18px 42px color-mix(in srgb, var(--plano-cor), transparent 78%);
+    transform: translateY(-4px);
 }
 
 /* Plano mensal: card base neutro, sem o verde neon.
    Borda e fundo discretos, alinhados ao restante da seção. */
 .pagina-sobre .plano-mensal {
-  --plano-cor: #2a2a2a;
-  border: 1px solid #2a2a2a;
-  background: #141414;
+    --plano-cor: #2a2a2a;
+    border: 1px solid #2a2a2a;
+    background: #141414;
 }
 
 .pagina-sobre .plano-anual {
-  --plano-cor: #ff006e;
-  background: rgba(255, 0, 110, .08);
+    --plano-cor: #ff006e;
+    background: rgba(255, 0, 110, 0.08);
 }
 
 .pagina-sobre .plano-fidelidade-cabecalho {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 10px 14px;
-  margin-bottom: 6px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 10px 14px;
+    margin-bottom: 6px;
 }
 
 .pagina-sobre .plano-fidelidade h3 {
-  min-height: 1.25em;
-  margin: 0;
-  color: var(--plano-cor);
-  font-size: clamp(1.45rem, 2.4vw, 1.75rem);
-  line-height: 1.25;
+    min-height: 1.25em;
+    margin: 0;
+    color: var(--plano-cor);
+    font-size: clamp(1.45rem, 2.4vw, 1.75rem);
+    line-height: 1.25;
 }
 
 .pagina-sobre .plano-fidelidade-subtitulo,
 .pagina-sobre .plano-fidelidade-cobranca,
 .pagina-sobre .plano-fidelidade-beneficio {
-  color: #cccccc;
+    color: #cccccc;
 }
 
 .pagina-sobre .plano-fidelidade-subtitulo {
-  min-height: 2.6em;
-  margin: 0 0 16px;
-  font-size: .94rem;
-  line-height: 1.4;
+    min-height: 2.6em;
+    margin: 0 0 16px;
+    font-size: 0.94rem;
+    line-height: 1.4;
 }
 
 .pagina-sobre .plano-fidelidade-preco {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  min-height: 2.75rem;
-  gap: 6px;
-  margin: 0 0 5px;
-  color: #ffffff;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    min-height: 2.75rem;
+    gap: 6px;
+    margin: 0 0 5px;
+    color: #ffffff;
 }
 
 .pagina-sobre .plano-fidelidade-preco strong {
-  font-family: "Anton", "Oswald", sans-serif !important;
-  font-size: clamp(2rem, 4vw, 2.75rem);
-  font-weight: 900;
-  line-height: 1;
+    font-family: 'Anton', 'Oswald', sans-serif !important;
+    font-size: clamp(2rem, 4vw, 2.75rem);
+    font-weight: 900;
+    line-height: 1;
 }
 
 .pagina-sobre .plano-fidelidade-preco span {
-  color: #bdbdbd;
-  font-size: .9rem;
+    color: #bdbdbd;
+    font-size: 0.9rem;
 }
 
 .pagina-sobre .plano-fidelidade-cobranca {
-  min-height: 2.6em;
-  margin: 0;
-  font-size: .92rem;
-  line-height: 1.4;
+    min-height: 2.6em;
+    margin: 0;
+    font-size: 0.92rem;
+    line-height: 1.4;
 }
 
 .pagina-sobre .plano-fidelidade-divisor {
-  width: 100%;
-  height: 2px;
-  margin: 18px 0;
-  background: var(--plano-cor);
+    width: 100%;
+    height: 2px;
+    margin: 18px 0;
+    background: var(--plano-cor);
 }
 
 .pagina-sobre .plano-fidelidade-beneficio {
-  display: flex;
-  align-items: flex-start;
-  gap: 8px;
-  margin: auto 0 0;
-  font-weight: 700;
-  line-height: 1.5;
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    margin: auto 0 0;
+    font-weight: 700;
+    line-height: 1.5;
 }
 
 .pagina-sobre .plano-fidelidade-beneficio i {
-  flex: 0 0 auto;
-  color: var(--plano-cor);
-  font-size: 1.1rem;
-  line-height: 1.25;
+    flex: 0 0 auto;
+    color: var(--plano-cor);
+    font-size: 1.1rem;
+    line-height: 1.25;
 }
 
 .pagina-sobre .plano-fidelidade-badge {
-  flex: 0 0 auto;
-  max-width: 100%;
-  padding: 6px 11px;
-  border-radius: 999px;
-  background: #ff006e;
-  color: #ffffff;
-  font-size: .78rem;
-  font-weight: 700;
-  line-height: 1.2;
-  text-align: center;
+    flex: 0 0 auto;
+    max-width: 100%;
+    padding: 6px 11px;
+    border-radius: 999px;
+    background: #ff006e;
+    color: #ffffff;
+    font-size: 0.78rem;
+    font-weight: 700;
+    line-height: 1.2;
+    text-align: center;
 }
 
 /* Plano mensal neutro: título e ícone sem verde e separador interno discreto.
    Estas regras vêm depois das regras base para vencerem no cascade. */
 .pagina-sobre .plano-mensal h3 {
-  color: #ffffff;
+    color: #ffffff;
 }
 
 .pagina-sobre .plano-mensal .plano-fidelidade-divisor {
-  height: 1px;
-  background: #2a2a2a;
+    height: 1px;
+    background: #2a2a2a;
 }
 
 .pagina-sobre .plano-mensal .plano-fidelidade-beneficio i {
-  color: #bdbdbd;
+    color: #bdbdbd;
 }
 
 @media (max-width: 767.98px) {
-  .pagina-sobre .hero .container {
-    width: 100%;
-    max-width: 100%;
-    padding-right: 20px;
-    padding-left: 20px;
-  }
+    .pagina-sobre .hero .container {
+        width: 100%;
+        max-width: 100%;
+        padding-right: 20px;
+        padding-left: 20px;
+    }
 
-  .pagina-sobre .hero h1,
-  .pagina-sobre .hero p {
-    width: 100%;
-    max-width: 100%;
-    overflow-wrap: anywhere;
-    text-align: center;
-  }
+    .pagina-sobre .hero h1,
+    .pagina-sobre .hero p {
+        width: 100%;
+        max-width: 100%;
+        overflow-wrap: anywhere;
+        text-align: center;
+    }
 
-  .pagina-sobre .pabout {
-    padding-right: 16px;
-    padding-left: 16px;
-  }
+    .pagina-sobre .pabout {
+        padding-right: 16px;
+        padding-left: 16px;
+    }
 
-  .pagina-sobre .clube-fidelidade .section-title h2 {
-    gap: 0 .2em;
-  }
+    .pagina-sobre .clube-fidelidade .section-title h2 {
+        gap: 0 0.2em;
+    }
 
-  .pagina-sobre .plano-fidelidade-subtitulo,
-  .pagina-sobre .plano-fidelidade-cobranca {
-    min-height: 0;
-  }
+    .pagina-sobre .plano-fidelidade-subtitulo,
+    .pagina-sobre .plano-fidelidade-cobranca {
+        min-height: 0;
+    }
 
-  .pagina-sobre .plano-fidelidade-cabecalho {
-    gap: 8px 12px;
-  }
+    .pagina-sobre .plano-fidelidade-cabecalho {
+        gap: 8px 12px;
+    }
 }

@@ -21,8 +21,8 @@
             const resposta = await fetch(configuracao.endpoint, {
                 method: 'POST',
                 credentials: 'same-origin',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({google_token: respostaGoogle.credential})
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ google_token: respostaGoogle.credential }),
             });
             const dados = await resposta.json();
 
@@ -48,11 +48,12 @@
             endpoint: recipiente.dataset.googleEndpoint || 'api/sessoes/',
             errorTarget: recipiente.dataset.googleErrorTarget || '',
             successUrl: recipiente.dataset.googleSuccessUrl || 'index.php',
-            text: recipiente.dataset.googleText || 'continue_with'
+            text: recipiente.dataset.googleText || 'continue_with',
         };
 
         if (!configuracao.clientId) {
-            recipiente.innerHTML = '<button type="button" class="social-btn google-btn" disabled title="Configure config/google.php para habilitar"><i class="bi bi-google"></i> Continuar com Google</button>';
+            recipiente.innerHTML =
+                '<button type="button" class="social-btn google-btn" disabled title="Configure config/google.php para habilitar"><i class="bi bi-google"></i> Continuar com Google</button>';
             return;
         }
 
@@ -65,7 +66,7 @@
             client_id: configuracao.clientId,
             callback: function (respostaGoogle) {
                 concluirLogin(respostaGoogle, configuracao);
-            }
+            },
         });
 
         const desenharBotao = () => {
@@ -81,7 +82,7 @@
                 text: configuracao.text,
                 shape: 'rectangular',
                 logo_alignment: 'left',
-                width: String(largura)
+                width: String(largura),
             });
         };
 
@@ -94,4 +95,4 @@
     }
 
     window.addEventListener('load', renderizarBotao);
-}());
+})();

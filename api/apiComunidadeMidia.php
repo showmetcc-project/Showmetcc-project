@@ -24,7 +24,7 @@ if ($metodo === 'GET') {
          FROM comunidade_midia m
          INNER JOIN usuario u ON u.id_user = m.id_usuario
          WHERE m.id_evento = ? AND m.status_midia = \'ativo\'
-         ORDER BY m.data_criacao DESC, m.id_midia DESC'
+         ORDER BY m.data_criacao DESC, m.id_midia DESC',
     );
     $stmt->bind_param('i', $idEvento);
     executarStatementApi($stmt);
@@ -69,10 +69,17 @@ if ($metodo === 'POST') {
     try {
         $stmt = $conn->prepare(
             'INSERT INTO comunidade_midia (id_evento, id_usuario, caminho_arquivo, legenda, permitir_download)
-             VALUES (?, ?, ?, ?, ?)'
+             VALUES (?, ?, ?, ?, ?)',
         );
         $legendaBanco = $legenda === '' ? null : $legenda;
-        $stmt->bind_param('iissi', $idEvento, $idUsuario, $arquivo['caminho_arquivo'], $legendaBanco, $permitirDownload);
+        $stmt->bind_param(
+            'iissi',
+            $idEvento,
+            $idUsuario,
+            $arquivo['caminho_arquivo'],
+            $legendaBanco,
+            $permitirDownload,
+        );
         executarStatementApi($stmt);
         $idMidia = $conn->insert_id;
         $stmt->close();
@@ -80,19 +87,23 @@ if ($metodo === 'POST') {
         removerArquivoUpload($arquivo['caminho_arquivo']);
         throw $erro;
     }
-    responder([
-        'mensagem' => 'Foto publicada com sucesso',
-        'midia' => normalizarMidiaComunidadeApi([
-            'id_midia' => $idMidia,
-            'id_evento' => $idEvento,
-            'id_usuario' => $idUsuario,
-            'caminho_arquivo' => $arquivo['caminho_arquivo'],
-            'legenda' => $legendaBanco,
-            'permitir_download' => $permitirDownload,
-            'data_criacao' => (new DateTimeImmutable('now', new DateTimeZone(API_FUSO_HORARIO)))
-                ->format('Y-m-d H:i:s')
-        ])
-    ], 201);
+    responder(
+        [
+            'mensagem' => 'Foto publicada com sucesso',
+            'midia' => normalizarMidiaComunidadeApi([
+                'id_midia' => $idMidia,
+                'id_evento' => $idEvento,
+                'id_usuario' => $idUsuario,
+                'caminho_arquivo' => $arquivo['caminho_arquivo'],
+                'legenda' => $legendaBanco,
+                'permitir_download' => $permitirDownload,
+                'data_criacao' => (new DateTimeImmutable('now', new DateTimeZone(API_FUSO_HORARIO)))->format(
+                    'Y-m-d H:i:s',
+                ),
+            ]),
+        ],
+        201,
+    );
 }
 
 if ($metodo === 'DELETE') {
@@ -105,7 +116,7 @@ if ($metodo === 'DELETE') {
         "SELECT id_usuario, caminho_arquivo
          FROM comunidade_midia
          WHERE id_midia = ? AND status_midia = 'ativo'
-         LIMIT 1"
+         LIMIT 1",
     );
     $stmt->bind_param('i', $id);
     executarStatementApi($stmt);

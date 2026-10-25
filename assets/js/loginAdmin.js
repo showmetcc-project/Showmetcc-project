@@ -17,11 +17,11 @@
         try {
             const resposta = await fetch('api/apiSessoes.php', {
                 method: 'POST',
-                headers: {'Content-Type': 'application/json'},
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     email: dadosFormulario.get('email'),
-                    senha: dadosFormulario.get('senha')
-                })
+                    senha: dadosFormulario.get('senha'),
+                }),
             });
             const dados = await resposta.json();
 
@@ -30,7 +30,7 @@
             }
 
             if (dados.usuario.tipo_usuario !== 'admin') {
-                await fetch('api/sessoes/', {method: 'DELETE'});
+                await fetch('api/sessoes/', { method: 'DELETE' });
                 throw new Error('Esta conta não possui perfil de administrador.');
             }
 
@@ -40,4 +40,4 @@
             mensagemLoginAdmin.className = 'alert alert-danger';
         }
     });
-}());
+})();

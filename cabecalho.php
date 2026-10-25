@@ -2,35 +2,28 @@
 require_once __DIR__ . '/config/classificacoesIndicativas.php';
 
 $usuarioLogado = isset($_SESSION['id_user']);
-$usuarioAdmin = $usuarioLogado && (($_SESSION['tipo_usuario'] ?? '') === 'admin');
+$usuarioAdmin = $usuarioLogado && ($_SESSION['tipo_usuario'] ?? '') === 'admin';
 $urlAreaUsuario = $usuarioAdmin ? 'admin.php' : 'perfilUsuario.php';
 $rotuloAreaUsuario = $usuarioAdmin ? 'Painel admin' : 'Usuário';
-$termoBuscaCabecalho = isset($_GET['busca']) && is_string($_GET['busca'])
-    ? htmlspecialchars(trim($_GET['busca']), ENT_QUOTES, 'UTF-8')
-    : '';
+$termoBuscaCabecalho =
+    isset($_GET['busca']) && is_string($_GET['busca'])
+        ? htmlspecialchars(trim($_GET['busca']), ENT_QUOTES, 'UTF-8')
+        : '';
 
 $tipoCabecalho = strtoupper((string) ($tipoCabecalho ?? 'B'));
 if (!in_array($tipoCabecalho, ['A', 'B', 'C', 'D'], true)) {
     $tipoCabecalho = 'B';
 }
-$configuracaoCabecalho = isset($configuracaoCabecalho) && is_array($configuracaoCabecalho)
-    ? $configuracaoCabecalho
-    : [];
+$configuracaoCabecalho =
+    isset($configuracaoCabecalho) && is_array($configuracaoCabecalho) ? $configuracaoCabecalho : [];
 
-$escaparCabecalho = static fn ($valor): string => htmlspecialchars(
-    (string) $valor,
-    ENT_QUOTES,
-    'UTF-8'
-);
+$escaparCabecalho = static fn($valor): string => htmlspecialchars((string) $valor, ENT_QUOTES, 'UTF-8');
 
 $mostrarBusca = $tipoCabecalho === 'A';
 $mostrarLogout = false;
-$buscaComunidadesNavbar = $mostrarBusca
-    && (($configuracaoCabecalho['acao'] ?? '') === 'busca_comunidades');
+$buscaComunidadesNavbar = $mostrarBusca && ($configuracaoCabecalho['acao'] ?? '') === 'busca_comunidades';
 $menuComunidades = ($configuracaoCabecalho['contexto'] ?? '') === 'comunidades';
-$atributosRequerLogin = !$usuarioLogado
-    ? ' data-requer-login="true" aria-haspopup="dialog"'
-    : '';
+$atributosRequerLogin = !$usuarioLogado ? ' data-requer-login="true" aria-haspopup="dialog"' : '';
 ?>
 
 <?php if ($tipoCabecalho === 'C'): ?>
@@ -95,7 +88,9 @@ $atributosRequerLogin = !$usuarioLogado
 
 <?php elseif ($tipoCabecalho === 'D'): ?>
   <?php $fallbackVoltar = $escaparCabecalho($configuracaoCabecalho['fallback'] ?? 'index.php'); ?>
-  <nav id="header" data-usuario-logado="<?= $usuarioLogado ? '1' : '0' ?>" class="cabecalho-minimo" aria-label="Navegação de retorno">
+  <nav id="header" data-usuario-logado="<?= $usuarioLogado
+      ? '1'
+      : '0' ?>" class="cabecalho-minimo" aria-label="Navegação de retorno">
     <button
       type="button"
       class="voltar-home-auth"
@@ -110,9 +105,13 @@ $atributosRequerLogin = !$usuarioLogado
   <header
     id="header"
     data-usuario-logado="<?= $usuarioLogado ? '1' : '0' ?>"
-    class="header d-flex align-items-center fixed-top <?= $tipoCabecalho === 'A' ? 'cabecalho-home' : 'cabecalho-institucional' ?>">
+    class="header d-flex align-items-center fixed-top <?= $tipoCabecalho === 'A'
+        ? 'cabecalho-home'
+        : 'cabecalho-institucional' ?>">
     <div class="container-fluid container-xl position-relative cabecalho-navbar-conteudo">
-      <a href="<?= $usuarioLogado ? 'index.php' : 'institucional.php' ?>" class="logo d-flex align-items-center" aria-label="ShowMe - página inicial">
+      <a href="<?= $usuarioLogado
+          ? 'index.php'
+          : 'institucional.php' ?>" class="logo d-flex align-items-center" aria-label="ShowMe - página inicial">
         <img src="assets/img/showme.png" alt="ShowMe">
       </a>
 
@@ -142,9 +141,15 @@ $atributosRequerLogin = !$usuarioLogado
                     <?= $buscaComunidadesNavbar ? '' : 'name="busca"' ?>
                     type="search"
                     value="<?= $buscaComunidadesNavbar ? '' : $termoBuscaCabecalho ?>"
-                    placeholder="<?= $buscaComunidadesNavbar ? 'Buscar comunidades por evento...' : 'Buscar eventos...' ?>"
-                    aria-label="<?= $buscaComunidadesNavbar ? 'Buscar comunidades por nome do evento' : 'Buscar eventos por nome, cidade, categoria ou participante' ?>"
-                    <?= $buscaComunidadesNavbar ? '' : 'aria-controls="containerBuscaFlutuante" aria-autocomplete="list" aria-expanded="false"' ?>
+                    placeholder="<?= $buscaComunidadesNavbar
+                        ? 'Buscar comunidades por evento...'
+                        : 'Buscar eventos...' ?>"
+                    aria-label="<?= $buscaComunidadesNavbar
+                        ? 'Buscar comunidades por nome do evento'
+                        : 'Buscar eventos por nome, cidade, categoria ou participante' ?>"
+                    <?= $buscaComunidadesNavbar
+                        ? ''
+                        : 'aria-controls="containerBuscaFlutuante" aria-autocomplete="list" aria-expanded="false"' ?>
                     autocomplete="off"
                     spellcheck="false"
                   >
@@ -260,7 +265,9 @@ $atributosRequerLogin = !$usuarioLogado
               <li><a href="institucional.php">Institucional</a></li>
               <?php if ($usuarioLogado): ?>
                 <li>
-                  <a href="<?= $urlAreaUsuario ?>" class="nav-usuario-direto" aria-label="Abrir <?= $usuarioAdmin ? 'painel administrativo' : 'perfil do usuário' ?>">
+                  <a href="<?= $urlAreaUsuario ?>" class="nav-usuario-direto" aria-label="Abrir <?= $usuarioAdmin
+    ? 'painel administrativo'
+    : 'perfil do usuário' ?>">
                     <i class="bi bi-person-circle" aria-hidden="true"></i>
                     <span><?= $rotuloAreaUsuario ?></span>
                   </a>
@@ -310,7 +317,9 @@ $atributosRequerLogin = !$usuarioLogado
               </li>
               <?php if ($usuarioLogado): ?>
                 <li>
-                  <a href="<?= $urlAreaUsuario ?>" class="nav-usuario-direto" aria-label="Abrir <?= $usuarioAdmin ? 'painel administrativo' : 'perfil do usuário' ?>">
+                  <a href="<?= $urlAreaUsuario ?>" class="nav-usuario-direto" aria-label="Abrir <?= $usuarioAdmin
+    ? 'painel administrativo'
+    : 'perfil do usuário' ?>">
                     <i class="bi bi-person-circle" aria-hidden="true"></i>
                     <span><?= $rotuloAreaUsuario ?></span>
                   </a>
@@ -364,7 +373,9 @@ $atributosRequerLogin = !$usuarioLogado
                 <li><a href="institucional.php">Institucional</a></li>
                 <?php if ($usuarioLogado): ?>
                   <li>
-                    <a href="<?= $urlAreaUsuario ?>" class="nav-usuario-direto" aria-label="Abrir <?= $usuarioAdmin ? 'painel administrativo' : 'perfil do usuário' ?>">
+                    <a href="<?= $urlAreaUsuario ?>" class="nav-usuario-direto" aria-label="Abrir <?= $usuarioAdmin
+    ? 'painel administrativo'
+    : 'perfil do usuário' ?>">
                       <i class="bi bi-person-circle" aria-hidden="true"></i>
                       <span><?= $rotuloAreaUsuario ?></span>
                     </a>
@@ -428,7 +439,9 @@ $atributosRequerLogin = !$usuarioLogado
                 </li>
                 <?php if ($usuarioLogado): ?>
                   <li>
-                    <a href="<?= $urlAreaUsuario ?>" class="nav-usuario-direto" aria-label="Abrir <?= $usuarioAdmin ? 'painel administrativo' : 'perfil do usuário' ?>">
+                    <a href="<?= $urlAreaUsuario ?>" class="nav-usuario-direto" aria-label="Abrir <?= $usuarioAdmin
+    ? 'painel administrativo'
+    : 'perfil do usuário' ?>">
                       <i class="bi bi-person-circle" aria-hidden="true"></i>
                       <span><?= $rotuloAreaUsuario ?></span>
                     </a>

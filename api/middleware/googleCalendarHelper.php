@@ -38,9 +38,9 @@ function googleCalendarConfigurado(): bool
 {
     $configuracao = configuracaoGoogleCalendar();
 
-    return trim((string) $configuracao['client_id']) !== ''
-        && trim((string) $configuracao['client_secret']) !== ''
-        && filter_var($configuracao['redirect_uri'], FILTER_VALIDATE_URL) !== false;
+    return trim((string) $configuracao['client_id']) !== '' &&
+        trim((string) $configuracao['client_secret']) !== '' &&
+        filter_var($configuracao['redirect_uri'], FILTER_VALIDATE_URL) !== false;
 }
 
 function criarClienteGoogleCalendar(): GoogleClient
@@ -54,10 +54,7 @@ function criarClienteGoogleCalendar(): GoogleClient
     $cliente->setClientId($configuracao['client_id']);
     $cliente->setClientSecret($configuracao['client_secret']);
     $cliente->setRedirectUri($configuracao['redirect_uri']);
-    $cliente->setScopes([
-        GOOGLE_CALENDAR_ESCOPO_LEITURA,
-        GOOGLE_CALENDAR_ESCOPO_EVENTOS,
-    ]);
+    $cliente->setScopes([GOOGLE_CALENDAR_ESCOPO_LEITURA, GOOGLE_CALENDAR_ESCOPO_EVENTOS]);
     $cliente->setAccessType('offline');
     $cliente->setPrompt('consent');
     $cliente->setIncludeGrantedScopes(true);
@@ -71,7 +68,7 @@ function buscarTokenGoogleCalendar(mysqli $conn, int $idUsuario): ?array
         'SELECT access_token, refresh_token, expira_em, data_conexao
          FROM google_calendar_token
          WHERE id_usuario = ?
-         LIMIT 1'
+         LIMIT 1',
     );
     $stmt->bind_param('i', $idUsuario);
     $stmt->execute();
@@ -86,11 +83,9 @@ function salvarTokenGoogleCalendar(
     int $idUsuario,
     string $accessToken,
     string $refreshToken,
-    int $expiraEmUnix
+    int $expiraEmUnix,
 ): void {
-    $expiraEm = (new DateTimeImmutable('@' . $expiraEmUnix))
-        ->setTimezone(new DateTimeZone('UTC'))
-        ->format('Y-m-d H:i:s');
+    $expiraEm = (new DateTimeImmutable('@' . $expiraEmUnix))->setTimezone(new DateTimeZone('UTC'))->format('Y-m-d H:i:s');
 
     $stmt = $conn->prepare(
         'INSERT INTO google_calendar_token
@@ -100,7 +95,7 @@ function salvarTokenGoogleCalendar(
             access_token = VALUES(access_token),
             refresh_token = VALUES(refresh_token),
             expira_em = VALUES(expira_em),
-            data_conexao = CURRENT_TIMESTAMP'
+            data_conexao = CURRENT_TIMESTAMP',
     );
     $stmt->bind_param('isss', $idUsuario, $accessToken, $refreshToken, $expiraEm);
     $stmt->execute();
@@ -140,7 +135,7 @@ function clienteGoogleCalendarAutorizado(mysqli $conn, int $idUsuario): ?GoogleC
             $idUsuario,
             (string) $novoToken['access_token'],
             (string) $refreshToken,
-            $expiraEmUnix
+            $expiraEmUnix,
         );
 
         $novoToken['refresh_token'] = $refreshToken;
@@ -163,11 +158,11 @@ function retornoGoogleCalendarSeguro(?string $retorno): string
     $retorno = trim((string) $retorno);
 
     if (
-        $retorno === ''
-        || str_contains($retorno, '://')
-        || str_starts_with($retorno, '//')
-        || preg_match('/[\r\n]/', $retorno)
-        || !preg_match('/^[a-zA-Z][a-zA-Z0-9]*\.php(?:\?[a-zA-Z0-9_=&%.-]*)?$/', $retorno)
+        $retorno === '' ||
+        str_contains($retorno, '://') ||
+        str_starts_with($retorno, '//') ||
+        preg_match('/[\r\n]/', $retorno) ||
+        !preg_match('/^[a-zA-Z][a-zA-Z0-9]*\.php(?:\?[a-zA-Z0-9_=&%.-]*)?$/', $retorno)
     ) {
         return 'perfilUsuario.php';
     }
@@ -177,6 +172,5 @@ function retornoGoogleCalendarSeguro(?string $retorno): string
 
 function adicionarParametroRetorno(string $url, string $nome, string $valor): string
 {
-    return $url . (str_contains($url, '?') ? '&' : '?')
-        . rawurlencode($nome) . '=' . rawurlencode($valor);
+    return $url . (str_contains($url, '?') ? '&' : '?') . rawurlencode($nome) . '=' . rawurlencode($valor);
 }

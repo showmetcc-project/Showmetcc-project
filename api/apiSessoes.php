@@ -12,11 +12,14 @@ function responderLogin(array $usuario): void
     $tokenCsrf = renovarTokenCsrf();
 
     unset($usuario['senha_user'], $usuario['google_id']);
-    responder([
-        'mensagem' => 'Login realizado com sucesso',
-        'usuario' => normalizarUsuarioApi($usuario),
-        'csrf_token' => $tokenCsrf,
-    ], 201);
+    responder(
+        [
+            'mensagem' => 'Login realizado com sucesso',
+            'usuario' => normalizarUsuarioApi($usuario),
+            'csrf_token' => $tokenCsrf,
+        ],
+        201,
+    );
 }
 
 function falharLogin(string $mensagem): never
@@ -45,7 +48,7 @@ function carregarConfiguracaoGoogle(): array
 
 function decodificarParteJwt(string $parte): ?array
 {
-    $parte .= str_repeat('=', (4 - strlen($parte) % 4) % 4);
+    $parte .= str_repeat('=', (4 - (strlen($parte) % 4)) % 4);
     $conteudo = base64_decode(strtr($parte, '-_', '+/'), true);
 
     if ($conteudo === false) {
@@ -78,7 +81,9 @@ function responderFalhaTokenGoogle(string $token, string $clientId): void
 
     if (!in_array($clientId, $audiencias, true)) {
         error_log('Token Google rejeitado: audiência diferente do client_id configurado.');
-        falharLogin('O token foi emitido para outro Client ID do Google. Atualize a página e confira config/google.php');
+        falharLogin(
+            'O token foi emitido para outro Client ID do Google. Atualize a página e confira config/google.php',
+        );
     }
 
     $agora = time();
@@ -130,9 +135,7 @@ function autenticarComGoogle(mysqli $conn, string $token): void
         $clienteGoogle = new Google\Client(['client_id' => $configuracao['client_id']]);
         $payload = $clienteGoogle->verifyIdToken($token);
     } catch (Throwable $erro) {
-        error_log(
-            'Exceção ao validar token Google (' . get_class($erro) . '): ' . $erro->getMessage()
-        );
+        error_log('Exceção ao validar token Google (' . get_class($erro) . '): ' . $erro->getMessage());
         responderFalhaTokenGoogle($token, $configuracao['client_id']);
     }
 
@@ -144,8 +147,13 @@ function autenticarComGoogle(mysqli $conn, string $token): void
     $email = trim((string) ($payload['email'] ?? ''));
     $emailVerificado = filter_var($payload['email_verified'] ?? false, FILTER_VALIDATE_BOOLEAN);
 
-    if ($googleId === '' || strlen($googleId) > 255 || !$emailVerificado ||
-        !filter_var($email, FILTER_VALIDATE_EMAIL) || strlen($email) > 100) {
+    if (
+        $googleId === '' ||
+        strlen($googleId) > 255 ||
+        !$emailVerificado ||
+        !filter_var($email, FILTER_VALIDATE_EMAIL) ||
+        strlen($email) > 100
+    ) {
         falharLogin('O Google não retornou uma identidade válida com e-mail verificado');
     }
 
@@ -160,13 +168,16 @@ function autenticarComGoogle(mysqli $conn, string $token): void
         $nome = 'Usuário';
     }
 
-    $erroLimite = validarLimitesTextoApi([
-        'nome' => $nome,
-        'sobrenome' => $sobrenome,
-    ], [
-        'nome' => 100,
-        'sobrenome' => 100,
-    ]);
+    $erroLimite = validarLimitesTextoApi(
+        [
+            'nome' => $nome,
+            'sobrenome' => $sobrenome,
+        ],
+        [
+            'nome' => 100,
+            'sobrenome' => 100,
+        ],
+    );
 
     if ($erroLimite !== null) {
         responder(['erro' => 'Os dados de perfil retornados pelo Google excedem o limite permitido'], 400);
@@ -177,7 +188,7 @@ function autenticarComGoogle(mysqli $conn, string $token): void
 
         $stmt = $conn->prepare(
             'SELECT id_user, nome_user, sobrenome, email_user, tipo_usuario, google_id
-             FROM usuario WHERE google_id = ? LIMIT 1 FOR UPDATE'
+             FROM usuario WHERE google_id = ? LIMIT 1 FOR UPDATE',
         );
         $stmt->bind_param('s', $googleId);
         executarStatementApi($stmt);
@@ -187,7 +198,7 @@ function autenticarComGoogle(mysqli $conn, string $token): void
         if (!$usuario) {
             $stmt = $conn->prepare(
                 'SELECT id_user, nome_user, sobrenome, email_user, tipo_usuario, google_id
-                 FROM usuario WHERE email_user = ? LIMIT 1 FOR UPDATE'
+                 FROM usuario WHERE email_user = ? LIMIT 1 FOR UPDATE',
             );
             $stmt->bind_param('s', $email);
             executarStatementApi($stmt);
@@ -195,8 +206,11 @@ function autenticarComGoogle(mysqli $conn, string $token): void
             $stmt->close();
 
             if ($usuario) {
-                if ($usuario['google_id'] !== null && $usuario['google_id'] !== '' &&
-                    !hash_equals((string) $usuario['google_id'], $googleId)) {
+                if (
+                    $usuario['google_id'] !== null &&
+                    $usuario['google_id'] !== '' &&
+                    !hash_equals((string) $usuario['google_id'], $googleId)
+                ) {
                     $conn->rollback();
                     responder(['erro' => 'Este e-mail já está vinculado a outra conta Google'], 409);
                 }
@@ -211,7 +225,7 @@ function autenticarComGoogle(mysqli $conn, string $token): void
                 $stmt = $conn->prepare(
                     "INSERT INTO usuario
                         (nome_user, sobrenome, email_user, senha_user, google_id, tipo_usuario)
-                     VALUES (?, ?, ?, NULL, ?, 'comum')"
+                     VALUES (?, ?, ?, NULL, ?, 'comum')",
                 );
                 $stmt->bind_param('ssss', $nome, $sobrenome, $email, $googleId);
                 executarStatementApi($stmt);
@@ -262,7 +276,7 @@ switch ($metodo) {
         $idUsuario = (int) $_SESSION['id_user'];
         $stmt = $conn->prepare(
             'SELECT id_user, nome_user, sobrenome, email_user, tipo_usuario
-             FROM usuario WHERE id_user = ? LIMIT 1'
+             FROM usuario WHERE id_user = ? LIMIT 1',
         );
         $stmt->bind_param('i', $idUsuario);
         executarStatementApi($stmt);
@@ -285,7 +299,7 @@ switch ($metodo) {
             'login',
             SHOWME_LIMITE_LOGIN,
             SHOWME_JANELA_LOGIN,
-            'Muitas tentativas de login. Aguarde alguns minutos e tente novamente.'
+            'Muitas tentativas de login. Aguarde alguns minutos e tente novamente.',
         );
 
         $dados = lerJson();
@@ -308,7 +322,7 @@ switch ($metodo) {
 
         $stmt = $conn->prepare(
             'SELECT id_user, nome_user, sobrenome, email_user, senha_user, tipo_usuario
-             FROM usuario WHERE email_user = ? LIMIT 1'
+             FROM usuario WHERE email_user = ? LIMIT 1',
         );
         $stmt->bind_param('s', $email);
         executarStatementApi($stmt);

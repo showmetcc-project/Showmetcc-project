@@ -1,93 +1,95 @@
 .card-evento {
-  background: #141414;
-  border: 2px solid #00ff00;
-  border-radius: 18px;
-  overflow: hidden;
-  position: relative;
-  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.12);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+    background: #141414;
+    border: 2px solid #00ff00;
+    border-radius: 18px;
+    overflow: hidden;
+    position: relative;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.12);
+    transition:
+        transform 0.3s ease,
+        box-shadow 0.3s ease;
 }
 
 .card-evento:hover {
-  border-color: #ff006e;
-  transform: translateY(-4px);
-  box-shadow: 0 10px 30px rgba(255, 0, 110, 0.18);
+    border-color: #ff006e;
+    transform: translateY(-4px);
+    box-shadow: 0 10px 30px rgba(255, 0, 110, 0.18);
 }
 
 .card-evento a {
-  display: block;
-  color: inherit;
-  text-decoration: none;
+    display: block;
+    color: inherit;
+    text-decoration: none;
 }
 
 .card-evento img {
-  display: block;
-  width: 100%;
-  height: 180px;
-  background: #1e1e1e;
-  object-fit: cover;
+    display: block;
+    width: 100%;
+    height: 180px;
+    background: #1e1e1e;
+    object-fit: cover;
 }
 
 .card-conteudo {
-  padding: 18px;
+    padding: 18px;
 }
 
 .card-conteudo h4 {
-  overflow: hidden;
-  margin-bottom: 15px;
-  color: #ffffff;
-  font-size: 20px;
-  font-weight: 700;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+    overflow: hidden;
+    margin-bottom: 15px;
+    color: #ffffff;
+    font-size: 20px;
+    font-weight: 700;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .info-evento {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
 }
 
 .info-evento span {
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  color: #bdbdbd;
-  font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    color: #bdbdbd;
+    font-size: 14px;
 }
 
 .info-evento i {
-  font-size: 15px;
+    font-size: 15px;
 }
 
 .badge-evento {
-  position: absolute;
-  top: 12px;
-  right: 12px;
-  left: auto;
-  z-index: 5;
-  padding: 6px 12px;
-  border-radius: 20px;
-  color: #ffffff;
-  font-size: 12px;
-  font-weight: 700;
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    left: auto;
+    z-index: 5;
+    padding: 6px 12px;
+    border-radius: 20px;
+    color: #ffffff;
+    font-size: 12px;
+    font-weight: 700;
 }
 
 .badge-evento.gratuito {
-  background: #ff006e;
-  color: #ffffff;
+    background: #ff006e;
+    color: #ffffff;
 }
 
 .badge-evento.pago {
-  background: #ff006e;
+    background: #ff006e;
 }
 
 .info-evento .evento-localizacao,
 .info-evento .evento-localizacao i {
-  color: #00ff00;
+    color: #00ff00;
 }
 
 .info-evento .evento-data,
 .info-evento .evento-data i {
-  color: #cccccc;
+    color: #cccccc;
 }

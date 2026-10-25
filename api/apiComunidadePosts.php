@@ -30,7 +30,7 @@ if ($metodo === 'GET') {
                      OR EXISTS(SELECT 1 FROM rota r WHERE r.id_evento = e.id_evento AND r.id_user = ?)) AS evento_do_usuario
              FROM evento e
              WHERE e.status_evento = 'ativo'
-             ORDER BY evento_do_usuario DESC, e.data_evento DESC, e.nome_evento ASC"
+             ORDER BY evento_do_usuario DESC, e.data_evento DESC, e.nome_evento ASC",
         );
         $stmt->bind_param('ii', $idUsuario, $idUsuario);
         executarStatementApi($stmt);
@@ -97,7 +97,7 @@ if ($metodo === 'GET') {
              INNER JOIN comunidade_post p ON p.id_post = r.id_post
                          WHERE p.id_evento = ? AND p.status_post = \'ativo\'
                              AND r.status_resposta = \'ativo\'
-             ORDER BY r.data_criacao ASC, r.id_resposta ASC'
+             ORDER BY r.data_criacao ASC, r.id_resposta ASC',
         );
         $stmt->bind_param('i', $idEvento);
         executarStatementApi($stmt);
@@ -158,7 +158,7 @@ if ($metodo === 'PUT') {
         "SELECT id_usuario, categoria, texto
          FROM comunidade_post
          WHERE id_post = ? AND status_post = 'ativo'
-         LIMIT 1"
+         LIMIT 1",
     );
     $stmt->bind_param('i', $id);
     executarStatementApi($stmt);
@@ -187,7 +187,7 @@ if ($metodo === 'PUT') {
     $stmt = $conn->prepare(
         "UPDATE comunidade_post
          SET categoria = ?, texto = ?
-         WHERE id_post = ? AND id_usuario = ? AND status_post = 'ativo'"
+         WHERE id_post = ? AND id_usuario = ? AND status_post = 'ativo'",
     );
     $stmt->bind_param('ssii', $categoria, $texto, $id, $idUsuario);
     executarStatementApi($stmt);
@@ -213,7 +213,7 @@ if ($metodo === 'DELETE') {
     $stmt = $conn->prepare(
         "SELECT id_usuario FROM comunidade_post
          WHERE id_post = ? AND status_post = 'ativo'
-         LIMIT 1"
+         LIMIT 1",
     );
     $stmt->bind_param('i', $id);
     executarStatementApi($stmt);

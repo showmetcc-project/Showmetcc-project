@@ -1,8 +1,6 @@
 <?php
 
-class UploadInvalidoException extends RuntimeException
-{
-}
+class UploadInvalidoException extends RuntimeException {}
 
 function normalizarArquivosUpload(?array $campo): array
 {
@@ -25,11 +23,11 @@ function normalizarArquivosUpload(?array $campo): array
 
     for ($indice = 0; $indice < $quantidade; $indice++) {
         if (
-            is_array($campo['error'][$indice] ?? null)
-            || is_array($campo['name'][$indice] ?? null)
-            || is_array($campo['type'][$indice] ?? null)
-            || is_array($campo['tmp_name'][$indice] ?? null)
-            || is_array($campo['size'][$indice] ?? null)
+            is_array($campo['error'][$indice] ?? null) ||
+            is_array($campo['name'][$indice] ?? null) ||
+            is_array($campo['type'][$indice] ?? null) ||
+            is_array($campo['tmp_name'][$indice] ?? null) ||
+            is_array($campo['size'][$indice] ?? null)
         ) {
             throw new UploadInvalidoException('Estrutura do campo de arquivos inválida');
         }
@@ -45,7 +43,7 @@ function normalizarArquivosUpload(?array $campo): array
             'type' => $campo['type'][$indice] ?? '',
             'tmp_name' => $campo['tmp_name'][$indice] ?? '',
             'error' => $erro,
-            'size' => $campo['size'][$indice] ?? 0
+            'size' => $campo['size'][$indice] ?? 0,
         ];
     }
 
@@ -116,10 +114,7 @@ function validarEstruturaMp4(string $arquivo): bool
                 $tamanhoBox = $tamanhoArquivo - $offset;
             }
 
-            if (
-                $tamanhoBox < $tamanhoCabecalho
-                || $offset + $tamanhoBox > $tamanhoArquivo
-            ) {
+            if ($tamanhoBox < $tamanhoCabecalho || $offset + $tamanhoBox > $tamanhoArquivo) {
                 return false;
             }
 
@@ -130,9 +125,9 @@ function validarEstruturaMp4(string $arquivo): bool
 
                 $marcaPrincipal = fread($handle, 4);
                 if (
-                    $marcaPrincipal === false
-                    || strlen($marcaPrincipal) !== 4
-                    || !preg_match('/^[\x20-\x7E]{4}$/', $marcaPrincipal)
+                    $marcaPrincipal === false ||
+                    strlen($marcaPrincipal) !== 4 ||
+                    !preg_match('/^[\x20-\x7E]{4}$/', $marcaPrincipal)
                 ) {
                     return false;
                 }
@@ -150,10 +145,7 @@ function validarEstruturaMp4(string $arquivo): bool
         fclose($handle);
     }
 
-    return $offset === $tamanhoArquivo
-        && $encontrouFtyp
-        && $encontrouMoov
-        && $encontrouMdat;
+    return $offset === $tamanhoArquivo && $encontrouFtyp && $encontrouMoov && $encontrouMdat;
 }
 
 function lerElementoEbml($handle, int $offset, int $limite): ?array
@@ -208,7 +200,7 @@ function lerElementoEbml($handle, int $offset, int $limite): ?array
     }
 
     $valorTamanho = $byteTamanho & ($mascaraTamanho - 1);
-    $tamanhoDesconhecido = $valorTamanho === ($mascaraTamanho - 1);
+    $tamanhoDesconhecido = $valorTamanho === $mascaraTamanho - 1;
 
     if ($comprimentoTamanho > 1) {
         $restanteTamanho = fread($handle, $comprimentoTamanho - 1);
@@ -217,7 +209,7 @@ function lerElementoEbml($handle, int $offset, int $limite): ?array
         }
         foreach (unpack('C*', $restanteTamanho) as $byte) {
             $valorTamanho = ($valorTamanho << 8) | $byte;
-            $tamanhoDesconhecido = $tamanhoDesconhecido && $byte === 0xFF;
+            $tamanhoDesconhecido = $tamanhoDesconhecido && $byte === 0xff;
         }
     }
 
@@ -232,7 +224,7 @@ function lerElementoEbml($handle, int $offset, int $limite): ?array
         'id' => $id,
         'inicio_dados' => $inicioDados,
         'tamanho' => $tamanho,
-        'proximo' => $tamanho === null ? null : $inicioDados + $tamanho
+        'proximo' => $tamanho === null ? null : $inicioDados + $tamanho,
     ];
 }
 
@@ -251,10 +243,10 @@ function validarEstruturaWebm(string $arquivo): bool
     try {
         $cabecalho = lerElementoEbml($handle, 0, $tamanhoArquivo);
         if (
-            $cabecalho === null
-            || $cabecalho['id'] !== 0x1A45DFA3
-            || $cabecalho['tamanho'] === null
-            || $cabecalho['proximo'] === null
+            $cabecalho === null ||
+            $cabecalho['id'] !== 0x1a45dfa3 ||
+            $cabecalho['tamanho'] === null ||
+            $cabecalho['proximo'] === null
         ) {
             return false;
         }
@@ -285,18 +277,16 @@ function validarEstruturaWebm(string $arquivo): bool
                 return false;
             }
 
-            if ($elemento['id'] === 0x1549A966) {
+            if ($elemento['id'] === 0x1549a966) {
                 $encontrouInfo = true;
-            } elseif ($elemento['id'] === 0x1654AE6B) {
+            } elseif ($elemento['id'] === 0x1654ae6b) {
                 $encontrouTracks = true;
-            } elseif ($elemento['id'] === 0x1F43B675) {
+            } elseif ($elemento['id'] === 0x1f43b675) {
                 $encontrouCluster = true;
             }
 
             if ($elemento['proximo'] === null) {
-                return $elemento['id'] === 0x1F43B675
-                    && $encontrouInfo
-                    && $encontrouTracks;
+                return $elemento['id'] === 0x1f43b675 && $encontrouInfo && $encontrouTracks;
             }
 
             $offset = $elemento['proximo'];
@@ -314,7 +304,7 @@ function validarEstruturaVideo(string $arquivo, string $mime): bool
     return match ($mime) {
         'video/mp4' => validarEstruturaMp4($arquivo),
         'video/webm' => validarEstruturaWebm($arquivo),
-        default => false
+        default => false,
     };
 }
 
@@ -325,7 +315,7 @@ function salvarArquivoUpload(array $arquivo, array $tiposAceitos, string $subpas
         'image/png' => ['tipo' => 'foto', 'extensao' => 'png', 'limite' => 10 * 1024 * 1024],
         'image/webp' => ['tipo' => 'foto', 'extensao' => 'webp', 'limite' => 10 * 1024 * 1024],
         'video/mp4' => ['tipo' => 'video', 'extensao' => 'mp4', 'limite' => 30 * 1024 * 1024],
-        'video/webm' => ['tipo' => 'video', 'extensao' => 'webm', 'limite' => 30 * 1024 * 1024]
+        'video/webm' => ['tipo' => 'video', 'extensao' => 'webm', 'limite' => 30 * 1024 * 1024],
     ];
 
     if (!preg_match('/^[a-z0-9_-]+$/', $subpasta)) {
@@ -341,7 +331,7 @@ function salvarArquivoUpload(array $arquivo, array $tiposAceitos, string $subpas
             UPLOAD_ERR_NO_FILE => 'Nenhum arquivo foi enviado',
             UPLOAD_ERR_NO_TMP_DIR => 'A pasta temporária de upload não está disponível',
             UPLOAD_ERR_CANT_WRITE => 'Não foi possível gravar o arquivo temporário',
-            UPLOAD_ERR_EXTENSION => 'O upload foi bloqueado por uma extensão do servidor'
+            UPLOAD_ERR_EXTENSION => 'O upload foi bloqueado por uma extensão do servidor',
         ];
         throw new UploadInvalidoException($mensagens[$erro] ?? 'Falha desconhecida no upload');
     }
@@ -365,7 +355,7 @@ function salvarArquivoUpload(array $arquivo, array $tiposAceitos, string $subpas
         throw new UploadInvalidoException(
             $formato['tipo'] === 'video'
                 ? 'Vídeos não são permitidos neste upload'
-                : 'Fotos não são permitidas neste upload'
+                : 'Fotos não são permitidas neste upload',
         );
     }
 
@@ -398,7 +388,7 @@ function salvarArquivoUpload(array $arquivo, array $tiposAceitos, string $subpas
 
     return [
         'tipo_midia' => $formato['tipo'],
-        'caminho_arquivo' => "assets/uploads/{$subpasta}/{$nomeAleatorio}"
+        'caminho_arquivo' => "assets/uploads/{$subpasta}/{$nomeAleatorio}",
     ];
 }
 
@@ -407,7 +397,7 @@ function salvarImagemRedimensionadaUpload(
     string $subpasta,
     int $larguraDestino,
     int $alturaDestino,
-    int $qualidade = 86
+    int $qualidade = 86,
 ): array {
     if (!preg_match('/^[a-z0-9_-]+$/', $subpasta)) {
         throw new InvalidArgumentException('Subpasta de upload inválida');
@@ -458,11 +448,11 @@ function salvarImagemRedimensionadaUpload(
     $larguraOrigem = (int) ($dimensoes[0] ?? 0);
     $alturaOrigem = (int) ($dimensoes[1] ?? 0);
     if (
-        $larguraOrigem < 1
-        || $alturaOrigem < 1
-        || $larguraOrigem > 12000
-        || $alturaOrigem > 12000
-        || $larguraOrigem * $alturaOrigem > 40000000
+        $larguraOrigem < 1 ||
+        $alturaOrigem < 1 ||
+        $larguraOrigem > 12000 ||
+        $alturaOrigem > 12000 ||
+        $larguraOrigem * $alturaOrigem > 40000000
     ) {
         throw new UploadInvalidoException('As dimensões da imagem não são permitidas');
     }
@@ -478,7 +468,9 @@ function salvarImagemRedimensionadaUpload(
      */
     if (!extension_loaded('gd')) {
         if ($larguraOrigem !== $larguraDestino || $alturaOrigem !== $alturaDestino) {
-            throw new UploadInvalidoException('Não foi possível processar a imagem. Ajuste o recorte e tente novamente.');
+            throw new UploadInvalidoException(
+                'Não foi possível processar a imagem. Ajuste o recorte e tente novamente.',
+            );
         }
 
         if (!is_dir($diretorioDestino) && !mkdir($diretorioDestino, 0755, true) && !is_dir($diretorioDestino)) {
@@ -547,7 +539,7 @@ function salvarImagemRedimensionadaUpload(
         $larguraDestino,
         $alturaDestino,
         $recorteLargura,
-        $recorteAltura
+        $recorteAltura,
     );
     imagedestroy($origem);
 
@@ -596,16 +588,15 @@ function removerArquivoUpload(string $caminhoRelativo): bool
 {
     $caminhoNormalizado = str_replace('\\', '/', ltrim($caminhoRelativo, '/'));
 
-    if (
-        !str_starts_with($caminhoNormalizado, 'assets/uploads/')
-        || str_contains($caminhoNormalizado, '../')
-    ) {
+    if (!str_starts_with($caminhoNormalizado, 'assets/uploads/') || str_contains($caminhoNormalizado, '../')) {
         error_log('Upload não removido: caminho fora de assets/uploads: ' . $caminhoRelativo);
         return false;
     }
 
     $diretorioBase = realpath(dirname(__DIR__, 2) . DIRECTORY_SEPARATOR . 'assets' . DIRECTORY_SEPARATOR . 'uploads');
-    $arquivo = realpath(dirname(__DIR__, 2) . DIRECTORY_SEPARATOR . str_replace('/', DIRECTORY_SEPARATOR, $caminhoNormalizado));
+    $arquivo = realpath(
+        dirname(__DIR__, 2) . DIRECTORY_SEPARATOR . str_replace('/', DIRECTORY_SEPARATOR, $caminhoNormalizado),
+    );
 
     if ($diretorioBase === false || $arquivo === false) {
         error_log('Upload não removido: arquivo inexistente ou caminho inacessível: ' . $caminhoNormalizado);
@@ -659,11 +650,13 @@ function caminhoUploadAindaReferenciado(mysqli $conn, string $caminhoRelativo): 
 
 function removerArquivosUploadSemReferencia(mysqli $conn, array $caminhos): void
 {
-    $caminhosUnicos = array_unique(array_filter(
-        $caminhos,
-        static fn($caminho): bool => is_string($caminho)
-            && str_starts_with(str_replace('\\', '/', ltrim(trim($caminho), '/')), 'assets/uploads/')
-    ));
+    $caminhosUnicos = array_unique(
+        array_filter(
+            $caminhos,
+            static fn($caminho): bool => is_string($caminho) &&
+                str_starts_with(str_replace('\\', '/', ltrim(trim($caminho), '/')), 'assets/uploads/'),
+        ),
+    );
 
     foreach ($caminhosUnicos as $caminho) {
         try {

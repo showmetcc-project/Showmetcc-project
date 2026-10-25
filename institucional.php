@@ -71,15 +71,12 @@ iniciarSessaoSegura();
 
     </section><!-- /Hero Section -->
 
-
-
     <!-- About Section -->
     <section id="about" class="about section">
       <span id="sobre" class="ancora-secao" aria-hidden="true"></span>
 
       <!-- Section Title -->
       <div class="container section-title" data-aos="fade-up">
-
 
         <h2>Sobre o <span class="verde">Show</span><span class="rosa">Me</span></h2>
       </div><!-- End Section Title -->
@@ -97,7 +94,6 @@ iniciarSessaoSegura();
       </div>
 
     </section><!-- /About Section -->
-
 
     <!-- ODS Section -->
     <section id="services" class="services section light-background">
@@ -126,8 +122,6 @@ iniciarSessaoSegura();
 
     </section><!-- /Services Section -->
 
-    <!-- Os diálogos pertencem somente à página Institucional. Mantê-los aqui deixa
-         a estrutura e o conteúdo das ODS próximos dos cartões que os acionam. -->
     <div class="ods-modais" aria-live="polite">
       <dialog id="modalOds3" class="ods-modal ods-modal-3" aria-labelledby="tituloModalOds3">
         <div class="ods-modal-conteudo">
@@ -272,12 +266,6 @@ iniciarSessaoSegura();
 
     </section><!-- /Work Process Section -->
 
-
-
-
-
-
-
     <!-- Clube de Fidelidade Section -->
     <section id="fidelidade" class="clube-fidelidade section">
       <div class="container section-title" data-aos="fade-up">
@@ -346,7 +334,6 @@ iniciarSessaoSegura();
     <section id="faq-2" class="faq-2 section">
       <span id="perguntas" class="ancora-secao" aria-hidden="true"></span>
 
-
       <div class="container section-title" data-aos="fade-up">
         <h2>Perguntas <span class="verde">Frequentes</span></h2>
       </div>
@@ -358,7 +345,6 @@ iniciarSessaoSegura();
           <div class="col-lg-10">
 
             <div class="faq-container">
-
 
               <div class="faq-item faq-active" data-aos="fade-up" data-aos-delay="200">
 
@@ -412,7 +398,6 @@ iniciarSessaoSegura();
 
               </div>
 
-
               <div class="faq-item" data-aos="fade-up" data-aos-delay="500">
 
                 <i class="faq-icon bi bi-question-circle"></i>
@@ -439,7 +424,6 @@ iniciarSessaoSegura();
       </div>
 
     </section>
-
 
   </main>
 

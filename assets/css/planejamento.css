@@ -1,1338 +1,1346 @@
-          /* =========================================================
+/* =========================================================
                SHOWME - PLANEJAMENTO DE VIAGEM
                ========================================================= */
-          
-          @import url('https://fonts.googleapis.com/css2?family=Anton&family=Oswald:wght@400;500;600;700&family=Jost:wght@300;400;500;600;700&family=Poppins:wght@300;400;500;600;700&display=swap');
-          /* =========================================================
+
+@import url('https://fonts.googleapis.com/css2?family=Anton&family=Oswald:wght@400;500;600;700&family=Jost:wght@300;400;500;600;700&family=Poppins:wght@300;400;500;600;700&display=swap');
+/* =========================================================
                VARIÁVEIS
                ========================================================= */
-          
-           :root {
-              --verde: #00ff00;
-              --verde-hover: #00dd00;
-              --rosa: #ff006e;
-              --rosa-hover: #dd0060;
-              --roxo: #8b5cf6;
-              --fundo: #0a0a0a;
-              --fundo-card: #141414;
-              --fundo-card-2: #1e1e1e;
-              --texto: #ffffff;
-              --texto-secundario: #bdbdbd;
-              --borda: rgba(0, 255, 0, 0.25);
-          }
-          /* =========================================================
+
+:root {
+    --verde: #00ff00;
+    --verde-hover: #00dd00;
+    --rosa: #ff006e;
+    --rosa-hover: #dd0060;
+    --roxo: #8b5cf6;
+    --fundo: #0a0a0a;
+    --fundo-card: #141414;
+    --fundo-card-2: #1e1e1e;
+    --texto: #ffffff;
+    --texto-secundario: #bdbdbd;
+    --borda: rgba(0, 255, 0, 0.25);
+}
+/* =========================================================
                RESET
                ========================================================= */
-          
-          * {
-              margin: 0;
-              padding: 0;
-              box-sizing: border-box;
-          }
-          
-          html {
-              scroll-behavior: smooth;
-          }
-          
-          body {
-              min-height: 100vh;
-              background: radial-gradient( circle at 15% 10%, rgba(0, 255, 0, 0.06), transparent 30%), radial-gradient( circle at 85% 30%, rgba(255, 0, 110, 0.05), transparent 30%), var(--fundo);
-              color: var(--texto);
-              font-family: 'Open Sans', 'Poppins', 'Jost', 'Segoe UI', sans-serif;
-          }
-          /* =========================================================
-               HEADER
-               ========================================================= */
-          
-          .header-planejamento-section {
-              width: 100%;
-              padding: 30px 6%;
-              border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-              background: rgba(8, 8, 8, 0.95);
-          }
-          
-          .header-planejamento {
-              max-width: 1200px;
-              margin: auto;
-              display: flex;
-              align-items: center;
-              gap: 20px;
-          }
-          
-          .header-planejamento h1 {
-              font-size: 28px;
-              font-weight: 600;
-              margin-bottom: 3px;
-          }
-          
-          .header-planejamento h1 span {
-              color: var(--verde);
-          }
-          
-          .header-planejamento h1 strong {
-              color: var(--rosa);
-          }
-          
-          .header-planejamento p {
-              color: var(--texto-secundario);
-              font-size: 13px;
-          }
 
-          .planejamento-evento-atual {
-              width: min(1150px, 92%);
-              margin: 28px auto -28px;
-              color: var(--texto-secundario);
-              font-size: 14px;
-              text-align: right;
-          }
-          /* =========================================================
-               CONTAINER PRINCIPAL
-               ========================================================= */
-          
-          .planejamento-container {
-              width: min(1150px, 100%);
-              margin: 55px auto 80px;
-          }
-          /* =========================================================
-               PROGRESSO
-               ========================================================= */
-          
-          .progresso {
-              position: sticky;
-              top: 30px;
-          }
-          
-          .progresso h3 {
-              font-size: 15px;
-              color: var(--texto);
-              margin-bottom: 28px;
-              text-transform: uppercase;
-              letter-spacing: 1px;
-          }
-          /* Timeline */
-          
-          .timeline {
-              position: relative;
-              display: flex;
-              flex-direction: column;
-              gap: 0;
-          }
-          /* Linha vertical */
-          
-          .timeline::before {
-              content: "";
-              position: absolute;
-              left: 17px;
-              top: 18px;
-              bottom: 18px;
-              width: 2px;
-              background: rgba(255, 255, 255, .12);
-          }
-          /* Passos */
-          
-          .passo {
-              position: relative;
-              min-height: 75px;
-              display: flex;
-              align-items: flex-start;
-              gap: 15px;
-              color: #666;
-              z-index: 2;
-              transition: .3s;
-          }
-          
-          .passo .numero {
-              width: 36px;
-              height: 36px;
-              flex-shrink: 0;
-              border-radius: 50%;
-              border: 1px solid #444;
-              background: #101010;
-              display: flex;
-              justify-content: center;
-              align-items: center;
-              font-size: 14px;
-              font-weight: 600;
-              transition: .3s;
-          }
-          
-          .passo span {
-              padding-top: 8px;
-              font-size: 13px;
-              transition: .3s;
-          }
-          /* Passo ativo */
-          
-          .passo.ativo {
-              color: var(--verde);
-          }
-          
-          .passo.ativo .numero {
-              border-color: var(--verde);
-              background: var(--verde);
-              color: #000;
-              box-shadow: 0 0 15px rgba(0, 255, 0, .4);
-          }
-          /* Passo concluído */
-          
-          .passo.concluido {
-              color: var(--rosa);
-          }
-          
-          .passo.concluido .numero {
-              border-color: var(--rosa);
-              color: var(--rosa);
-          }
-          /* =========================================================
-               CARD PRINCIPAL
-               ========================================================= */
-          
-          .card-planejamento {
-              width: 100%;
-              min-height: 0;
-              padding: 45px;
-              border-radius: 18px;
-              background: var(--fundo-card);
-              border: 2px solid var(--verde);
-              box-shadow: 0 25px 70px rgba(0, 0, 0, .35);
-          }
-          /* =========================================================
-               ETAPAS
-               ========================================================= */
-          
-          .etapa {
-              display: none;
-              animation: aparecer .35s ease;
-          }
-          
-          .etapa.ativa {
-              display: block;
-          }
-          
-          @keyframes aparecer {
-              from {
-                  opacity: 0;
-                  transform: translateY(10px);
-              }
-              to {
-                  opacity: 1;
-                  transform: translateY(0);
-              }
-          }
-          /* =========================================================
-               TÍTULO DO CARD
-               ========================================================= */
-          
-          .titulo-card {
-              display: flex;
-              align-items: center;
-              gap: 14px;
-              margin-bottom: 20px;
-          }
-          
-          .titulo-card i {
-              width: 45px;
-              height: 45px;
-              border-radius: 10px;
-              display: flex;
-              justify-content: center;
-              align-items: center;
-              background: rgba(0, 255, 0, .08);
-              border: 1px solid rgba(0, 255, 0, .3);
-              color: var(--verde);
-              font-size: 21px;
-          }
-          
-          .titulo-card h2 {
-              font-size: 25px;
-              font-weight: 600;
-          }
-          /* =========================================================
-               TEXTOS
-               ========================================================= */
-          
-          .etapa>p {
-              color: var(--texto-secundario);
-              font-size: 14px;
-              line-height: 1.7;
-              margin-bottom: 30px;
-          }
-          
-          .etapa h3 {
-              font-size: 15px;
-              margin: 25px 0 15px;
-          }
-          /* =========================================================
-               LABEL
-               ========================================================= */
-          
-          label {
-              display: block;
-              color: #ddd;
-              font-size: 13px;
-              margin-bottom: 8px;
-          }
-          /* =========================================================
-               INPUTS
-               ========================================================= */
-          
-          input,
-          textarea {
-              width: 100%;
-              background: #0b0b0b;
-              border: 1px solid rgba(255, 255, 255, .13);
-              border-radius: 9px;
-              padding: 15px;
-              color: #fff;
-              outline: none;
-              font-family: inherit;
-              transition: .25s;
-          }
-          
-          input:focus,
-          textarea:focus {
-              border-color: var(--verde);
-              box-shadow: 0 0 0 3px rgba(0, 255, 0, .07);
-          }
-          
-          input::placeholder,
-          textarea::placeholder {
-              color: #666;
-          }
-          /* =========================================================
-               ALERTA
-               ========================================================= */
-          
-          .alerta {
-              margin: 18px 0 25px;
-              padding: 14px 16px;
-              border-left: 3px solid var(--rosa);
-              background: rgba(255, 0, 110, .06);
-              color: #ddd;
-              font-size: 13px;
-              border-radius: 5px;
-          }
-          /* =========================================================
-               ORÇAMENTO RESTANTE
-               ========================================================= */
-          
-          .orcamento-restante {
-              padding: 17px;
-              margin: 20px 0;
-              border-radius: 10px;
-              border: 1px solid rgba(0, 255, 0, .2);
-              background: rgba(0, 255, 0, .04);
-              display: flex;
-              flex-direction: column;
-              gap: 4px;
-              color: var(--texto-secundario);
-              font-size: 13px;
-          }
-          
-          .orcamento-restante strong {
-              color: var(--verde);
-              font-size: 20px;
-          }
-          
-          .orcamento-restante small {
-              color: #888;
-          }
-          /* =========================================================
-               BOTÕES DE OPÇÕES
-               ========================================================= */
-          
-          .opcoes {
-              display: grid;
-              grid-template-columns: repeat(2, 1fr);
-              gap: 12px;
-              margin-bottom: 25px;
-          }
-
-          .opcao-transporte-card {
-              display: flex;
-              min-width: 0;
-              flex-direction: column;
-              gap: 8px;
-          }
-
-          .opcao-hospedagem-card {
-              display: flex;
-              min-width: 0;
-              flex-direction: column;
-              gap: 8px;
-          }
-          
-          .opcao {
-              width: 100%;
-              min-height: 85px;
-              padding: 15px;
-              border: 1px solid rgba(255, 255, 255, .1);
-              border-radius: 10px;
-              background: rgba(255, 255, 255, .025);
-              color: #fff;
-              font-family: inherit;
-              text-align: left;
-              cursor: pointer;
-              transition: .25s;
-              display: flex;
-              flex-direction: column;
-              gap: 4px;
-          }
-          
-          .opcao:hover {
-              border-color: var(--verde-hover);
-              background: rgba(0, 255, 0, .05);
-              transform: translateY(-2px);
-              box-shadow: 0 5px 20px rgba(0, 255, 0, .08);
-          }
-          
-          .opcao strong {
-              font-size: 14px;
-          }
-          
-          .opcao small {
-              color: #888;
-              font-size: 11px;
-          }
-
-          .opcao.selecionada,
-          .opcao[aria-pressed="true"],
-          .resultado-hospedagem.selecionada,
-          .resultado-hospedagem[aria-pressed="true"] {
-              border-color: var(--verde);
-              background: rgba(0, 255, 0, .1);
-              box-shadow: 0 0 0 2px rgba(0, 255, 0, .08), 0 8px 24px rgba(0, 255, 0, .1);
-              transform: translateY(-2px);
-          }
-
-          .icone-opcao {
-              color: var(--rosa);
-              font-size: 24px;
-              line-height: 1;
-          }
-
-          .link-pesquisa-transporte,
-          .link-pesquisa-hospedagem {
-              display: flex;
-              min-height: 44px;
-              align-items: center;
-              justify-content: center;
-              gap: 7px;
-              border: 1px solid rgba(255, 0, 110, .5);
-              border-radius: 8px;
-              color: var(--rosa);
-              font-size: 12px;
-              font-weight: 700;
-              text-align: center;
-              text-decoration: none;
-              transition: .2s ease;
-          }
-
-          .link-pesquisa-transporte:hover,
-          .link-pesquisa-transporte:focus-visible,
-          .link-pesquisa-hospedagem:hover,
-          .link-pesquisa-hospedagem:focus-visible {
-              border-color: var(--rosa-hover);
-              background: rgba(255, 0, 110, .1);
-              color: var(--rosa-hover);
-              transform: translateY(-2px);
-              outline: none;
-          }
-          /* =========================================================
-               TEXTO DE SELEÇÃO
-               ========================================================= */
-          
-          #transporteSelecionado,
-          #hospedagemSelecionada {
-              color: var(--verde);
-              font-size: 13px;
-              margin: 8px 0 0;
-              line-height: 1.45;
-              overflow-wrap: anywhere;
-          }
-
-          .gastos-planejamento {
-              margin-top: 8px;
-          }
-
-          .gastos-planejamento h3 {
-              display: flex;
-              align-items: center;
-              gap: 8px;
-              margin: 0 0 14px;
-              color: #fff;
-          }
-
-          .gastos-planejamento h3 i {
-              color: var(--verde);
-          }
-
-          .campos-gastos-planejamento {
-              display: grid;
-              grid-template-columns: minmax(0, 1fr);
-              gap: 16px;
-              margin-top: 16px;
-          }
-
-          .campo-gasto {
-              display: grid;
-              align-content: start;
-              gap: 7px;
-              min-width: 0;
-          }
-
-          .campo-gasto-etapa {
-              width: 100%;
-              max-width: none;
-              margin: 16px 0 4px;
-          }
-
-          .alerta-custo-evento {
-              margin: 6px 0 2px;
-              padding: 10px 12px;
-              font-size: 12px;
-          }
-
-          .campo-gasto label {
-              margin: 0;
-          }
-
-          .ajuda-campo {
-              color: #888;
-              font-size: 12px;
-              line-height: 1.45;
-          }
-
-          .campo-gasto input[type="number"]:disabled {
-              opacity: .55;
-              cursor: not-allowed;
-          }
-
-          .opcao-ingresso-gratuito {
-              display: inline-flex;
-              align-items: center;
-              gap: 8px;
-              width: fit-content;
-              margin: 2px 0 0;
-              color: #ccc;
-              font-size: 12px;
-              line-height: 1.35;
-              cursor: pointer;
-          }
-
-          .opcao-ingresso-gratuito input[type="checkbox"] {
-              width: 18px;
-              height: 18px;
-              min-width: 18px;
-              margin: 0;
-              padding: 0;
-              border-radius: 4px;
-              accent-color: var(--verde);
-              cursor: pointer;
-          }
-
-          .resumo-gastos-etapa span {
-              color: #ddd;
-          }
-
-          .resumo-gastos-etapa small {
-              overflow-wrap: anywhere;
-          }
-
-          .etapa > .nota-gastos-planejamento {
-              display: flex;
-              align-items: flex-start;
-              gap: 8px;
-              margin: 14px 0 0;
-              padding: 12px 14px;
-              border-left: 3px solid var(--verde);
-              border-radius: 6px;
-              background: rgba(0, 255, 0, .04);
-              color: #bbb;
-              font-size: 12px;
-              line-height: 1.55;
-          }
-
-          .nota-gastos-planejamento i {
-              flex: 0 0 auto;
-              margin-top: 2px;
-              color: var(--verde);
-          }
-
-          .nota-gastos-planejamento strong {
-              color: #fff;
-          }
-          /* =========================================================
-               BOTÕES PRINCIPAIS
-               ========================================================= */
-          
-          button {
-              font-family: inherit;
-          }
-          
-          .etapa>button,
-          .botoes button:last-child,
-          #etapa1>button {
-              border: none;
-              padding: 13px 28px;
-              border-radius: 8px;
-              background: var(--verde);
-              color: #000;
-              font-weight: 600;
-              cursor: pointer;
-              transition: .25s;
-          }
-          
-          .etapa>button:hover,
-          .botoes button:last-child:hover,
-          #etapa1>button:hover {
-              transform: translateY(-2px);
-              box-shadow: 0 0 20px rgba(0, 255, 0, .3);
-          }
-          
-          .botoes {
-              display: flex;
-              justify-content: space-between;
-              align-items: center;
-              gap: 15px;
-              margin-top: 35px;
-          }
-          
-          .botoes button:first-child {
-              padding: 13px 25px;
-              border-radius: 8px;
-              border: 1px solid rgba(255, 255, 255, .2);
-              background: transparent;
-              color: #fff;
-              cursor: pointer;
-              transition: .25s;
-          }
-          
-          .botoes button:first-child:hover {
-              border-color: var(--rosa-hover);
-              color: var(--rosa-hover);
-          }
-          /* =========================================================
-               MAPA / ETAPA ROTA
-               ========================================================= */
-          
-          .pin-neon {
-              width: 40px;
-              height: 40px;
-              display: flex;
-              align-items: center;
-              justify-content: center;
-              color: var(--rosa-hover);
-              font-size: 30px;
-              filter: drop-shadow(0 0 5px var(--rosa-hover)) drop-shadow(0 0 12px var(--rosa-hover));
-          }
-          
-          .localizacao-box {
-              margin: 20px 0;
-              padding: 17px;
-              border-radius: 10px;
-              border: 1px solid rgba(255, 0, 110, .25);
-              background: rgba(255, 0, 110, .035);
-          }
-          
-          .localizacao-box strong {
-              display: block;
-              color: #fff;
-              font-size: 14px;
-              margin-bottom: 8px;
-          }
-          
-          .localizacao-box strong i {
-              color: var(--rosa);
-              margin-right: 7px;
-          }
-          
-          .localizacao-box p {
-              color: var(--texto-secundario);
-              font-size: 13px;
-              margin-bottom: 10px;
-          }
-          
-          .localizacao-box button {
-              border: 1px solid var(--rosa);
-              background: transparent;
-              color: var(--rosa);
-              border-radius: 7px;
-              padding: 9px 14px;
-              cursor: pointer;
-              font-family: inherit;
-              font-size: 12px;
-              transition: .25s;
-          }
-          
-          .localizacao-box button:hover {
-              background: var(--rosa-hover);
-              color: #000;
-          }
-          /* MAPA */
-          
-          #mapaRota {
-              width: 100%;
-              height: 350px;
-              margin: 20px 0;
-              border-radius: 12px;
-              overflow: hidden;
-              border: 1px solid rgba(0, 255, 0, .35);
-              box-shadow: 0 0 25px rgba(0, 255, 0, .06);
-          }
-          /* Leaflet */
-          
-          .leaflet-container {
-              background: #111;
-              font-family: 'Poppins', sans-serif;
-          }
-          
-          .leaflet-popup-content-wrapper,
-          .leaflet-popup-tip {
-              background: #111;
-              color: #fff;
-          }
-          
-          .leaflet-popup-content {
-              font-size: 12px;
-          }
-          
-          .leaflet-control-zoom a {
-              background: #111 !important;
-              color: var(--verde) !important;
-              border-color: #333 !important;
-          }
-          /* =========================================================
-               MENSAGEM ROTA
-               ========================================================= */
-          
-          .mensagem-rota {
-              font-size: 12px !important;
-              color: var(--verde) !important;
-              margin: 15px 0 !important;
-          }
-          
-          .mensagem-rota.erro-rota {
-              color: var(--rosa) !important;
-          }
-          /* =========================================================
-               RESUMO
-               ========================================================= */
-          
-          .resumo-box {
-              padding: 22px;
-              margin-bottom: 18px;
-              border-radius: 12px;
-              background: rgba(255, 255, 255, .025);
-              border: 1px solid rgba(255, 255, 255, .08);
-          }
-          
-          .resumo-box h3 {
-              margin: 0 0 18px;
-              font-size: 15px;
-              color: #fff;
-          }
-          
-          .resumo-box h3 i {
-              color: var(--verde);
-              margin-right: 7px;
-          }
-          
-          .linha-resumo {
-              display: flex;
-              justify-content: space-between;
-              align-items: center;
-              gap: 20px;
-              padding: 10px 0;
-              color: #aaa;
-              font-size: 13px;
-          }
-
-          .linha-resumo[hidden] {
-              display: none !important;
-          }
-          
-          .linha-resumo span:last-child {
-              color: #fff;
-              font-weight: 500;
-          }
-          
-          .linha-resumo.total {
-              padding-top: 17px;
-              font-size: 16px;
-              font-weight: 600;
-          }
-          
-          .linha-resumo.total span:last-child {
-              color: var(--verde);
-              font-size: 20px;
-          }
-          
-          .resumo-box hr {
-              border: none;
-              border-top: 1px solid rgba(255, 255, 255, .08);
-              margin: 8px 0;
-          }
-
-          .form-planejamento-api {
-              margin-top: 24px;
-          }
-
-          .mensagem-planejamento-api {
-              min-height: 22px;
-              margin: 16px 0 0 !important;
-              color: var(--verde) !important;
-          }
-
-          .mensagem-planejamento-api.erro {
-              color: var(--rosa) !important;
-          }
-
-          .mensagem-planejamento-api a {
-              color: inherit;
-              font-weight: 700;
-              text-decoration: underline;
-          }
-
-          #botaoFinalizarPlanejamento:disabled {
-              cursor: not-allowed;
-              opacity: .65;
-              transform: none;
-          }
-
-          #botaoFinalizarPlanejamento,
-          #botaoFinalizarPlanejamento span {
-              display: inline-flex;
-              align-items: center;
-              justify-content: center;
-              gap: 8px;
-          }
-
-          #botaoFinalizarPlanejamento.botao-editar-planejamento {
-              background: var(--rosa);
-              color: #fff;
-              box-shadow: 0 8px 22px rgba(255, 0, 110, .18);
-          }
-
-          #botaoFinalizarPlanejamento.botao-editar-planejamento:hover {
-              background: var(--rosa-hover);
-              box-shadow: 0 10px 26px rgba(255, 0, 110, .28);
-          }
-
-.botao-imprimir-planejamento {
-              display: inline-flex;
-              align-items: center;
-              justify-content: center;
-              gap: 8px;
-              min-height: 44px;
-              padding: 13px 25px;
-              border: 1px solid rgba(255, 255, 255, .2);
-              border-radius: 8px;
-              background: transparent;
-              color: #fff;
-              font-weight: 600;
-              cursor: pointer;
-              transition: .25s;
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
 }
 
-          .botao-imprimir-planejamento:hover {
-              border-color: var(--verde);
-              color: var(--verde);
-              transform: translateY(-2px);
-              box-shadow: 0 0 18px rgba(0, 255, 0, .18);
-          }
+html {
+    scroll-behavior: smooth;
+}
 
-          .botao-imprimir-planejamento[hidden] {
-              display: none;
-          }
+body {
+    min-height: 100vh;
+    background: radial-gradient(circle at 15% 10%, rgba(0, 255, 0, 0.06), transparent 30%),
+        radial-gradient(circle at 85% 30%, rgba(255, 0, 110, 0.05), transparent 30%), var(--fundo);
+    color: var(--texto);
+    font-family: 'Open Sans', 'Poppins', 'Jost', 'Segoe UI', sans-serif;
+}
+/* =========================================================
+               HEADER
+               ========================================================= */
 
-          .acoes-google-agenda {
-              display: flex;
-              flex-wrap: wrap;
-              align-items: center;
-              justify-content: space-between;
-              gap: 14px;
-              margin: 16px 0;
-              padding: 14px;
-              border: 1px solid rgba(255, 0, 110, .5);
-              border-radius: 12px;
-              background: rgba(255, 0, 110, .06);
-          }
+.header-planejamento-section {
+    width: 100%;
+    padding: 30px 6%;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(8, 8, 8, 0.95);
+}
 
-          .acoes-google-agenda[hidden] {
-              display: none;
-          }
+.header-planejamento {
+    max-width: 1200px;
+    margin: auto;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
 
-          .acoes-google-agenda p {
-              margin: 0;
-              color: #fff;
-              font-size: 13px;
-          }
+.header-planejamento h1 {
+    font-size: 28px;
+    font-weight: 600;
+    margin-bottom: 3px;
+}
 
-          .acoes-google-agenda button,
-          .acoes-google-agenda a {
-              display: inline-flex;
-              align-items: center;
-              justify-content: center;
-              gap: 8px;
-              min-height: 44px;
-              padding: 10px 15px;
-              border: 0;
-              border-radius: 10px;
-              background: var(--verde);
-              color: #000;
-              font-weight: 700;
-              text-decoration: none;
-          }
+.header-planejamento h1 span {
+    color: var(--verde);
+}
 
-          .acoes-google-agenda button[hidden],
-          .acoes-google-agenda a[hidden] {
-              display: none;
-          }
+.header-planejamento h1 strong {
+    color: var(--rosa);
+}
 
-          .acoes-google-agenda a.ver-google-agenda {
-              border: 1px solid rgba(0, 255, 0, .55);
-              background: transparent;
-              color: var(--verde);
-          }
+.header-planejamento p {
+    color: var(--texto-secundario);
+    font-size: 13px;
+}
 
-          .acoes-google-agenda a.ver-google-agenda:hover,
-          .acoes-google-agenda a.ver-google-agenda:focus-visible {
-              background: var(--verde);
-              color: #000;
-          }
+.planejamento-evento-atual {
+    width: min(1150px, 92%);
+    margin: 28px auto -28px;
+    color: var(--texto-secundario);
+    font-size: 14px;
+    text-align: right;
+}
+/* =========================================================
+               CONTAINER PRINCIPAL
+               ========================================================= */
 
-          .modal-conflito-agenda {
-              position: fixed;
-              inset: 0;
-              width: min(92vw, 520px);
-              max-height: min(90dvh, 640px);
-              margin: auto;
-              padding: 0;
-              overflow-y: auto;
-              border: 2px solid var(--rosa);
-              border-radius: 20px;
-              background: #141414;
-              color: #fff;
-          }
+.planejamento-container {
+    width: min(1150px, 100%);
+    margin: 55px auto 80px;
+}
+/* =========================================================
+               PROGRESSO
+               ========================================================= */
 
-          .modal-conflito-agenda::backdrop {
-              background: rgba(0, 0, 0, .78);
-          }
+.progresso {
+    position: sticky;
+    top: 30px;
+}
 
-          .modal-conflito-agenda form {
-              position: relative;
-              padding: 28px;
-          }
+.progresso h3 {
+    font-size: 15px;
+    color: var(--texto);
+    margin-bottom: 28px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+/* Timeline */
 
-          .modal-conflito-agenda h2 {
-              margin: 8px 0 10px;
-              color: var(--rosa);
-              font-size: 27px;
-          }
+.timeline {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+}
+/* Linha vertical */
 
-          .modal-conflito-agenda p,
-          .modal-conflito-agenda li {
-              color: #ccc;
-          }
+.timeline::before {
+    content: '';
+    position: absolute;
+    left: 17px;
+    top: 18px;
+    bottom: 18px;
+    width: 2px;
+    background: rgba(255, 255, 255, 0.12);
+}
+/* Passos */
 
-          .modal-conflito-agenda ul {
-              max-height: 150px;
-              margin: 16px 0;
-              overflow-y: auto;
-          }
+.passo {
+    position: relative;
+    min-height: 75px;
+    display: flex;
+    align-items: flex-start;
+    gap: 15px;
+    color: #666;
+    z-index: 2;
+    transition: 0.3s;
+}
 
-          .icone-conflito-agenda {
-              color: var(--rosa);
-              font-size: 30px;
-          }
+.passo .numero {
+    width: 36px;
+    height: 36px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    border: 1px solid #444;
+    background: #101010;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 14px;
+    font-weight: 600;
+    transition: 0.3s;
+}
 
-          .fechar-conflito-agenda {
-              position: absolute;
-              top: 14px;
-              right: 14px;
-              min-width: 44px;
-              min-height: 44px;
-              border: 0;
-              background: transparent;
-              color: #fff;
-          }
+.passo span {
+    padding-top: 8px;
+    font-size: 13px;
+    transition: 0.3s;
+}
+/* Passo ativo */
 
-          .acoes-conflito-agenda {
-              display: flex;
-              justify-content: flex-end;
-              gap: 10px;
-          }
+.passo.ativo {
+    color: var(--verde);
+}
 
-          .acoes-conflito-agenda button {
-              min-height: 44px;
-              padding: 10px 14px;
-              border: 1px solid #333;
-              border-radius: 10px;
-              background: #232323;
-              color: #fff;
-              font-weight: 700;
-          }
+.passo.ativo .numero {
+    border-color: var(--verde);
+    background: var(--verde);
+    color: #000;
+    box-shadow: 0 0 15px rgba(0, 255, 0, 0.4);
+}
+/* Passo concluído */
 
-          .acoes-conflito-agenda button[value="finalizar"] {
-              border-color: var(--rosa);
-              background: var(--rosa);
-          }
-          /* =========================================================
+.passo.concluido {
+    color: var(--rosa);
+}
+
+.passo.concluido .numero {
+    border-color: var(--rosa);
+    color: var(--rosa);
+}
+/* =========================================================
+               CARD PRINCIPAL
+               ========================================================= */
+
+.card-planejamento {
+    width: 100%;
+    min-height: 0;
+    padding: 45px;
+    border-radius: 18px;
+    background: var(--fundo-card);
+    border: 2px solid var(--verde);
+    box-shadow: 0 25px 70px rgba(0, 0, 0, 0.35);
+}
+/* =========================================================
+               ETAPAS
+               ========================================================= */
+
+.etapa {
+    display: none;
+    animation: aparecer 0.35s ease;
+}
+
+.etapa.ativa {
+    display: block;
+}
+
+@keyframes aparecer {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+/* =========================================================
+               TÍTULO DO CARD
+               ========================================================= */
+
+.titulo-card {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 20px;
+}
+
+.titulo-card i {
+    width: 45px;
+    height: 45px;
+    border-radius: 10px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: rgba(0, 255, 0, 0.08);
+    border: 1px solid rgba(0, 255, 0, 0.3);
+    color: var(--verde);
+    font-size: 21px;
+}
+
+.titulo-card h2 {
+    font-size: 25px;
+    font-weight: 600;
+}
+/* =========================================================
+               TEXTOS
+               ========================================================= */
+
+.etapa > p {
+    color: var(--texto-secundario);
+    font-size: 14px;
+    line-height: 1.7;
+    margin-bottom: 30px;
+}
+
+.etapa h3 {
+    font-size: 15px;
+    margin: 25px 0 15px;
+}
+/* =========================================================
+               LABEL
+               ========================================================= */
+
+label {
+    display: block;
+    color: #ddd;
+    font-size: 13px;
+    margin-bottom: 8px;
+}
+/* =========================================================
+               INPUTS
+               ========================================================= */
+
+input,
+textarea {
+    width: 100%;
+    background: #0b0b0b;
+    border: 1px solid rgba(255, 255, 255, 0.13);
+    border-radius: 9px;
+    padding: 15px;
+    color: #fff;
+    outline: none;
+    font-family: inherit;
+    transition: 0.25s;
+}
+
+input:focus,
+textarea:focus {
+    border-color: var(--verde);
+    box-shadow: 0 0 0 3px rgba(0, 255, 0, 0.07);
+}
+
+input::placeholder,
+textarea::placeholder {
+    color: #666;
+}
+/* =========================================================
+               ALERTA
+               ========================================================= */
+
+.alerta {
+    margin: 18px 0 25px;
+    padding: 14px 16px;
+    border-left: 3px solid var(--rosa);
+    background: rgba(255, 0, 110, 0.06);
+    color: #ddd;
+    font-size: 13px;
+    border-radius: 5px;
+}
+/* =========================================================
+               ORÇAMENTO RESTANTE
+               ========================================================= */
+
+.orcamento-restante {
+    padding: 17px;
+    margin: 20px 0;
+    border-radius: 10px;
+    border: 1px solid rgba(0, 255, 0, 0.2);
+    background: rgba(0, 255, 0, 0.04);
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    color: var(--texto-secundario);
+    font-size: 13px;
+}
+
+.orcamento-restante strong {
+    color: var(--verde);
+    font-size: 20px;
+}
+
+.orcamento-restante small {
+    color: #888;
+}
+/* =========================================================
+               BOTÕES DE OPÇÕES
+               ========================================================= */
+
+.opcoes {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    margin-bottom: 25px;
+}
+
+.opcao-transporte-card {
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.opcao-hospedagem-card {
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.opcao {
+    width: 100%;
+    min-height: 85px;
+    padding: 15px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.025);
+    color: #fff;
+    font-family: inherit;
+    text-align: left;
+    cursor: pointer;
+    transition: 0.25s;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.opcao:hover {
+    border-color: var(--verde-hover);
+    background: rgba(0, 255, 0, 0.05);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 20px rgba(0, 255, 0, 0.08);
+}
+
+.opcao strong {
+    font-size: 14px;
+}
+
+.opcao small {
+    color: #888;
+    font-size: 11px;
+}
+
+.opcao.selecionada,
+.opcao[aria-pressed='true'],
+.resultado-hospedagem.selecionada,
+.resultado-hospedagem[aria-pressed='true'] {
+    border-color: var(--verde);
+    background: rgba(0, 255, 0, 0.1);
+    box-shadow:
+        0 0 0 2px rgba(0, 255, 0, 0.08),
+        0 8px 24px rgba(0, 255, 0, 0.1);
+    transform: translateY(-2px);
+}
+
+.icone-opcao {
+    color: var(--rosa);
+    font-size: 24px;
+    line-height: 1;
+}
+
+.link-pesquisa-transporte,
+.link-pesquisa-hospedagem {
+    display: flex;
+    min-height: 44px;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    border: 1px solid rgba(255, 0, 110, 0.5);
+    border-radius: 8px;
+    color: var(--rosa);
+    font-size: 12px;
+    font-weight: 700;
+    text-align: center;
+    text-decoration: none;
+    transition: 0.2s ease;
+}
+
+.link-pesquisa-transporte:hover,
+.link-pesquisa-transporte:focus-visible,
+.link-pesquisa-hospedagem:hover,
+.link-pesquisa-hospedagem:focus-visible {
+    border-color: var(--rosa-hover);
+    background: rgba(255, 0, 110, 0.1);
+    color: var(--rosa-hover);
+    transform: translateY(-2px);
+    outline: none;
+}
+/* =========================================================
+               TEXTO DE SELEÇÃO
+               ========================================================= */
+
+#transporteSelecionado,
+#hospedagemSelecionada {
+    color: var(--verde);
+    font-size: 13px;
+    margin: 8px 0 0;
+    line-height: 1.45;
+    overflow-wrap: anywhere;
+}
+
+.gastos-planejamento {
+    margin-top: 8px;
+}
+
+.gastos-planejamento h3 {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0 0 14px;
+    color: #fff;
+}
+
+.gastos-planejamento h3 i {
+    color: var(--verde);
+}
+
+.campos-gastos-planejamento {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 16px;
+    margin-top: 16px;
+}
+
+.campo-gasto {
+    display: grid;
+    align-content: start;
+    gap: 7px;
+    min-width: 0;
+}
+
+.campo-gasto-etapa {
+    width: 100%;
+    max-width: none;
+    margin: 16px 0 4px;
+}
+
+.alerta-custo-evento {
+    margin: 6px 0 2px;
+    padding: 10px 12px;
+    font-size: 12px;
+}
+
+.campo-gasto label {
+    margin: 0;
+}
+
+.ajuda-campo {
+    color: #888;
+    font-size: 12px;
+    line-height: 1.45;
+}
+
+.campo-gasto input[type='number']:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+}
+
+.opcao-ingresso-gratuito {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    width: fit-content;
+    margin: 2px 0 0;
+    color: #ccc;
+    font-size: 12px;
+    line-height: 1.35;
+    cursor: pointer;
+}
+
+.opcao-ingresso-gratuito input[type='checkbox'] {
+    width: 18px;
+    height: 18px;
+    min-width: 18px;
+    margin: 0;
+    padding: 0;
+    border-radius: 4px;
+    accent-color: var(--verde);
+    cursor: pointer;
+}
+
+.resumo-gastos-etapa span {
+    color: #ddd;
+}
+
+.resumo-gastos-etapa small {
+    overflow-wrap: anywhere;
+}
+
+.etapa > .nota-gastos-planejamento {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    margin: 14px 0 0;
+    padding: 12px 14px;
+    border-left: 3px solid var(--verde);
+    border-radius: 6px;
+    background: rgba(0, 255, 0, 0.04);
+    color: #bbb;
+    font-size: 12px;
+    line-height: 1.55;
+}
+
+.nota-gastos-planejamento i {
+    flex: 0 0 auto;
+    margin-top: 2px;
+    color: var(--verde);
+}
+
+.nota-gastos-planejamento strong {
+    color: #fff;
+}
+/* =========================================================
+               BOTÕES PRINCIPAIS
+               ========================================================= */
+
+button {
+    font-family: inherit;
+}
+
+.etapa > button,
+.botoes button:last-child,
+#etapa1 > button {
+    border: none;
+    padding: 13px 28px;
+    border-radius: 8px;
+    background: var(--verde);
+    color: #000;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.25s;
+}
+
+.etapa > button:hover,
+.botoes button:last-child:hover,
+#etapa1 > button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 0 20px rgba(0, 255, 0, 0.3);
+}
+
+.botoes {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 15px;
+    margin-top: 35px;
+}
+
+.botoes button:first-child {
+    padding: 13px 25px;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: transparent;
+    color: #fff;
+    cursor: pointer;
+    transition: 0.25s;
+}
+
+.botoes button:first-child:hover {
+    border-color: var(--rosa-hover);
+    color: var(--rosa-hover);
+}
+/* =========================================================
+               MAPA / ETAPA ROTA
+               ========================================================= */
+
+.pin-neon {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--rosa-hover);
+    font-size: 30px;
+    filter: drop-shadow(0 0 5px var(--rosa-hover)) drop-shadow(0 0 12px var(--rosa-hover));
+}
+
+.localizacao-box {
+    margin: 20px 0;
+    padding: 17px;
+    border-radius: 10px;
+    border: 1px solid rgba(255, 0, 110, 0.25);
+    background: rgba(255, 0, 110, 0.035);
+}
+
+.localizacao-box strong {
+    display: block;
+    color: #fff;
+    font-size: 14px;
+    margin-bottom: 8px;
+}
+
+.localizacao-box strong i {
+    color: var(--rosa);
+    margin-right: 7px;
+}
+
+.localizacao-box p {
+    color: var(--texto-secundario);
+    font-size: 13px;
+    margin-bottom: 10px;
+}
+
+.localizacao-box button {
+    border: 1px solid var(--rosa);
+    background: transparent;
+    color: var(--rosa);
+    border-radius: 7px;
+    padding: 9px 14px;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 12px;
+    transition: 0.25s;
+}
+
+.localizacao-box button:hover {
+    background: var(--rosa-hover);
+    color: #000;
+}
+/* MAPA */
+
+#mapaRota {
+    width: 100%;
+    height: 350px;
+    margin: 20px 0;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid rgba(0, 255, 0, 0.35);
+    box-shadow: 0 0 25px rgba(0, 255, 0, 0.06);
+}
+/* Leaflet */
+
+.leaflet-container {
+    background: #111;
+    font-family: 'Poppins', sans-serif;
+}
+
+.leaflet-popup-content-wrapper,
+.leaflet-popup-tip {
+    background: #111;
+    color: #fff;
+}
+
+.leaflet-popup-content {
+    font-size: 12px;
+}
+
+.leaflet-control-zoom a {
+    background: #111 !important;
+    color: var(--verde) !important;
+    border-color: #333 !important;
+}
+/* =========================================================
+               MENSAGEM ROTA
+               ========================================================= */
+
+.mensagem-rota {
+    font-size: 12px !important;
+    color: var(--verde) !important;
+    margin: 15px 0 !important;
+}
+
+.mensagem-rota.erro-rota {
+    color: var(--rosa) !important;
+}
+/* =========================================================
+               RESUMO
+               ========================================================= */
+
+.resumo-box {
+    padding: 22px;
+    margin-bottom: 18px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.025);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.resumo-box h3 {
+    margin: 0 0 18px;
+    font-size: 15px;
+    color: #fff;
+}
+
+.resumo-box h3 i {
+    color: var(--verde);
+    margin-right: 7px;
+}
+
+.linha-resumo {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+    padding: 10px 0;
+    color: #aaa;
+    font-size: 13px;
+}
+
+.linha-resumo[hidden] {
+    display: none !important;
+}
+
+.linha-resumo span:last-child {
+    color: #fff;
+    font-weight: 500;
+}
+
+.linha-resumo.total {
+    padding-top: 17px;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.linha-resumo.total span:last-child {
+    color: var(--verde);
+    font-size: 20px;
+}
+
+.resumo-box hr {
+    border: none;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    margin: 8px 0;
+}
+
+.form-planejamento-api {
+    margin-top: 24px;
+}
+
+.mensagem-planejamento-api {
+    min-height: 22px;
+    margin: 16px 0 0 !important;
+    color: var(--verde) !important;
+}
+
+.mensagem-planejamento-api.erro {
+    color: var(--rosa) !important;
+}
+
+.mensagem-planejamento-api a {
+    color: inherit;
+    font-weight: 700;
+    text-decoration: underline;
+}
+
+#botaoFinalizarPlanejamento:disabled {
+    cursor: not-allowed;
+    opacity: 0.65;
+    transform: none;
+}
+
+#botaoFinalizarPlanejamento,
+#botaoFinalizarPlanejamento span {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+#botaoFinalizarPlanejamento.botao-editar-planejamento {
+    background: var(--rosa);
+    color: #fff;
+    box-shadow: 0 8px 22px rgba(255, 0, 110, 0.18);
+}
+
+#botaoFinalizarPlanejamento.botao-editar-planejamento:hover {
+    background: var(--rosa-hover);
+    box-shadow: 0 10px 26px rgba(255, 0, 110, 0.28);
+}
+
+.botao-imprimir-planejamento {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-height: 44px;
+    padding: 13px 25px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 8px;
+    background: transparent;
+    color: #fff;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.25s;
+}
+
+.botao-imprimir-planejamento:hover {
+    border-color: var(--verde);
+    color: var(--verde);
+    transform: translateY(-2px);
+    box-shadow: 0 0 18px rgba(0, 255, 0, 0.18);
+}
+
+.botao-imprimir-planejamento[hidden] {
+    display: none;
+}
+
+.acoes-google-agenda {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    margin: 16px 0;
+    padding: 14px;
+    border: 1px solid rgba(255, 0, 110, 0.5);
+    border-radius: 12px;
+    background: rgba(255, 0, 110, 0.06);
+}
+
+.acoes-google-agenda[hidden] {
+    display: none;
+}
+
+.acoes-google-agenda p {
+    margin: 0;
+    color: #fff;
+    font-size: 13px;
+}
+
+.acoes-google-agenda button,
+.acoes-google-agenda a {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-height: 44px;
+    padding: 10px 15px;
+    border: 0;
+    border-radius: 10px;
+    background: var(--verde);
+    color: #000;
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.acoes-google-agenda button[hidden],
+.acoes-google-agenda a[hidden] {
+    display: none;
+}
+
+.acoes-google-agenda a.ver-google-agenda {
+    border: 1px solid rgba(0, 255, 0, 0.55);
+    background: transparent;
+    color: var(--verde);
+}
+
+.acoes-google-agenda a.ver-google-agenda:hover,
+.acoes-google-agenda a.ver-google-agenda:focus-visible {
+    background: var(--verde);
+    color: #000;
+}
+
+.modal-conflito-agenda {
+    position: fixed;
+    inset: 0;
+    width: min(92vw, 520px);
+    max-height: min(90dvh, 640px);
+    margin: auto;
+    padding: 0;
+    overflow-y: auto;
+    border: 2px solid var(--rosa);
+    border-radius: 20px;
+    background: #141414;
+    color: #fff;
+}
+
+.modal-conflito-agenda::backdrop {
+    background: rgba(0, 0, 0, 0.78);
+}
+
+.modal-conflito-agenda form {
+    position: relative;
+    padding: 28px;
+}
+
+.modal-conflito-agenda h2 {
+    margin: 8px 0 10px;
+    color: var(--rosa);
+    font-size: 27px;
+}
+
+.modal-conflito-agenda p,
+.modal-conflito-agenda li {
+    color: #ccc;
+}
+
+.modal-conflito-agenda ul {
+    max-height: 150px;
+    margin: 16px 0;
+    overflow-y: auto;
+}
+
+.icone-conflito-agenda {
+    color: var(--rosa);
+    font-size: 30px;
+}
+
+.fechar-conflito-agenda {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    min-width: 44px;
+    min-height: 44px;
+    border: 0;
+    background: transparent;
+    color: #fff;
+}
+
+.acoes-conflito-agenda {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+.acoes-conflito-agenda button {
+    min-height: 44px;
+    padding: 10px 14px;
+    border: 1px solid #333;
+    border-radius: 10px;
+    background: #232323;
+    color: #fff;
+    font-weight: 700;
+}
+
+.acoes-conflito-agenda button[value='finalizar'] {
+    border-color: var(--rosa);
+    background: var(--rosa);
+}
+/* =========================================================
                DICAS
                ========================================================= */
-          
-          .dicas {
-              margin-top: 20px;
-              padding: 20px;
-              border-radius: 12px;
-              border: 1px solid rgba(0, 255, 0, .15);
-              background: rgba(0, 255, 0, .025);
-          }
-          
-          .dicas h3 {
-              margin: 0 0 15px;
-              font-size: 14px;
-          }
-          
-          .dicas h3 i {
-              color: var(--verde);
-              margin-right: 6px;
-          }
-          
-          .dicas p {
-              display: flex;
-              align-items: flex-start;
-              gap: 9px;
-              color: #aaa;
-              font-size: 12px;
-              margin: 8px 0;
-          }
 
-          .dicas p i {
-              flex: 0 0 auto;
-              color: var(--rosa);
-              font-size: 15px;
-          }
-          .origem-rota {
-              margin-top: 25px;
-              padding: 20px;
-              border-radius: 12px;
-              background: rgba(255, 255, 255, .025);
-              border: 1px solid rgba(255, 255, 255, .08);
-          }
-          
-          .origem-atual {
-              color: #999 !important;
-              font-size: 12px !important;
-              margin: -10px 0 18px !important;
-          }
-          
-          .origem-atual strong {
-              color: var(--verde);
-              font-weight: 500;
-          }
-          
-          .descricao-rota {
-              color: var(--texto-secundario);
-              font-size: 13px;
-              line-height: 1.6;
-              margin-bottom: 15px;
-          }
-          
-          .botao-localizacao,
-          .botao-origem,
-          .botoes-navegacao button {
-              border: none;
-              border-radius: 8px;
-              padding: 12px 16px;
-              font-family: inherit;
-              font-weight: 600;
-              cursor: pointer;
-              transition: .25s;
-          }
-          
-          .botao-localizacao,
-          .botao-origem {
-              background: var(--verde);
-              color: #000;
-          }
-          
-          .botao-localizacao:hover,
-          .botao-origem:hover {
-              transform: translateY(-2px);
-              box-shadow: 0 0 18px rgba(0, 255, 0, .25);
-          }
-          
-          .separador-rota {
-              display: flex;
-              align-items: center;
-              gap: 10px;
-              margin: 18px 0;
-              color: #666;
-              font-size: 12px;
-          }
-          
-          .separador-rota::before,
-          .separador-rota::after {
-              content: "";
-              height: 1px;
-              flex: 1;
-              background: rgba(255, 255, 255, .08);
-          }
-          
-          .botao-origem {
-              margin-top: 12px;
-          }
-          
-          .botoes-navegacao {
-              display: grid;
-              grid-template-columns: 1fr 1fr;
-              gap: 12px;
-              margin-top: 15px;
-          }
-          
-          .botoes-navegacao button:first-child {
-              background: var(--verde);
-              color: #000;
-          }
-          
-          .botoes-navegacao button:last-child {
-              background: transparent;
-              color: var(--rosa);
-              border: 1px solid var(--rosa);
-          }
-          
-          .botoes-navegacao button:hover {
-              transform: translateY(-2px);
-          }
+.dicas {
+    margin-top: 20px;
+    padding: 20px;
+    border-radius: 12px;
+    border: 1px solid rgba(0, 255, 0, 0.15);
+    background: rgba(0, 255, 0, 0.025);
+}
 
-          .botoes-navegacao button {
-              display: inline-flex;
-              align-items: center;
-              justify-content: center;
-              gap: 8px;
-          }
+.dicas h3 {
+    margin: 0 0 15px;
+    font-size: 14px;
+}
 
-          .icone-link-externo {
-              font-size: 12px;
-              opacity: .85;
-          }
-          
-          .navegacao-box {
-              margin-top: 20px;
-              padding: 18px;
-              border: 1px solid rgba(0, 255, 0, .18);
-              border-radius: 12px;
-              background: rgba(0, 255, 0, .025);
-          }
-          
-          .navegacao-box h3 {
-              margin-top: 0;
-          }
-          
-          .navegacao-box p {
-              color: var(--texto-secundario);
-              font-size: 12px;
-              line-height: 1.6;
-          }
+.dicas h3 i {
+    color: var(--verde);
+    margin-right: 6px;
+}
 
-          .dados-rota-planejamento {
-              margin-top: 20px;
-              padding: 18px;
-              border: 1px solid rgba(255, 0, 110, .3);
-              border-radius: 12px;
-              background: rgba(255, 0, 110, .035);
-          }
+.dicas p {
+    display: flex;
+    align-items: flex-start;
+    gap: 9px;
+    color: #aaa;
+    font-size: 12px;
+    margin: 8px 0;
+}
 
-          .dados-rota-planejamento h3 {
-              margin: 0 0 7px;
-              color: var(--rosa);
-          }
+.dicas p i {
+    flex: 0 0 auto;
+    color: var(--rosa);
+    font-size: 15px;
+}
+.origem-rota {
+    margin-top: 25px;
+    padding: 20px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.025);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
 
-          .dados-rota-planejamento > p,
-          .fonte-hospedagem {
-              color: #bdbdbd;
-              font-size: 12px;
-              line-height: 1.55;
-          }
+.origem-atual {
+    color: #999 !important;
+    font-size: 12px !important;
+    margin: -10px 0 18px !important;
+}
 
-          .fonte-hospedagem {
-              display: flex;
-              align-items: flex-start;
-              gap: 8px;
-              margin: -5px 0 16px;
-          }
+.origem-atual strong {
+    color: var(--verde);
+    font-weight: 500;
+}
 
-          .fonte-hospedagem i {
-              flex: 0 0 auto;
-              color: var(--verde);
-          }
+.descricao-rota {
+    color: var(--texto-secundario);
+    font-size: 13px;
+    line-height: 1.6;
+    margin-bottom: 15px;
+}
 
-          .campos-rota-planejamento {
-              display: grid;
-              grid-template-columns: repeat(2, minmax(0, 1fr));
-              gap: 14px;
-              margin-top: 15px;
-          }
+.botao-localizacao,
+.botao-origem,
+.botoes-navegacao button {
+    border: none;
+    border-radius: 8px;
+    padding: 12px 16px;
+    font-family: inherit;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.25s;
+}
 
-          .resultado-hospedagem-grid {
-              display: grid;
-              grid-template-columns: repeat(2, minmax(0, 1fr));
-              gap: 10px;
-              margin-bottom: 22px;
-          }
+.botao-localizacao,
+.botao-origem {
+    background: var(--verde);
+    color: #000;
+}
 
-          .resultado-hospedagem {
-              display: grid;
-              grid-template-columns: auto minmax(0, 1fr);
-              gap: 4px 10px;
-              align-items: center;
-              min-width: 0;
-              min-height: 94px;
-              padding: 14px;
-              border: 1px solid rgba(255, 255, 255, .12);
-              border-radius: 10px;
-              background: rgba(255, 255, 255, .025);
-              color: #fff;
-              text-align: left;
-              transition: .2s ease;
-          }
+.botao-localizacao:hover,
+.botao-origem:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 0 18px rgba(0, 255, 0, 0.25);
+}
 
-          .resultado-hospedagem:hover {
-              border-color: var(--verde);
-              background: rgba(0, 255, 0, .06);
-          }
+.separador-rota {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 18px 0;
+    color: #666;
+    font-size: 12px;
+}
 
-          .resultado-hospedagem i {
-              grid-row: 1 / span 3;
-              color: var(--rosa);
-              font-size: 22px;
-          }
+.separador-rota::before,
+.separador-rota::after {
+    content: '';
+    height: 1px;
+    flex: 1;
+    background: rgba(255, 255, 255, 0.08);
+}
 
-          .resultado-hospedagem strong,
-          .resultado-hospedagem small,
-          .resultado-hospedagem span {
-              min-width: 0;
-              overflow-wrap: anywhere;
-          }
+.botao-origem {
+    margin-top: 12px;
+}
 
-          .resultado-hospedagem small { color: #aaa; }
-          .resultado-hospedagem span { color: var(--verde); font-size: 11px; }
-          /* =========================================================
+.botoes-navegacao {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-top: 15px;
+}
+
+.botoes-navegacao button:first-child {
+    background: var(--verde);
+    color: #000;
+}
+
+.botoes-navegacao button:last-child {
+    background: transparent;
+    color: var(--rosa);
+    border: 1px solid var(--rosa);
+}
+
+.botoes-navegacao button:hover {
+    transform: translateY(-2px);
+}
+
+.botoes-navegacao button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.icone-link-externo {
+    font-size: 12px;
+    opacity: 0.85;
+}
+
+.navegacao-box {
+    margin-top: 20px;
+    padding: 18px;
+    border: 1px solid rgba(0, 255, 0, 0.18);
+    border-radius: 12px;
+    background: rgba(0, 255, 0, 0.025);
+}
+
+.navegacao-box h3 {
+    margin-top: 0;
+}
+
+.navegacao-box p {
+    color: var(--texto-secundario);
+    font-size: 12px;
+    line-height: 1.6;
+}
+
+.dados-rota-planejamento {
+    margin-top: 20px;
+    padding: 18px;
+    border: 1px solid rgba(255, 0, 110, 0.3);
+    border-radius: 12px;
+    background: rgba(255, 0, 110, 0.035);
+}
+
+.dados-rota-planejamento h3 {
+    margin: 0 0 7px;
+    color: var(--rosa);
+}
+
+.dados-rota-planejamento > p,
+.fonte-hospedagem {
+    color: #bdbdbd;
+    font-size: 12px;
+    line-height: 1.55;
+}
+
+.fonte-hospedagem {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    margin: -5px 0 16px;
+}
+
+.fonte-hospedagem i {
+    flex: 0 0 auto;
+    color: var(--verde);
+}
+
+.campos-rota-planejamento {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+    margin-top: 15px;
+}
+
+.resultado-hospedagem-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+    margin-bottom: 22px;
+}
+
+.resultado-hospedagem {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 4px 10px;
+    align-items: center;
+    min-width: 0;
+    min-height: 94px;
+    padding: 14px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.025);
+    color: #fff;
+    text-align: left;
+    transition: 0.2s ease;
+}
+
+.resultado-hospedagem:hover {
+    border-color: var(--verde);
+    background: rgba(0, 255, 0, 0.06);
+}
+
+.resultado-hospedagem i {
+    grid-row: 1 / span 3;
+    color: var(--rosa);
+    font-size: 22px;
+}
+
+.resultado-hospedagem strong,
+.resultado-hospedagem small,
+.resultado-hospedagem span {
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+
+.resultado-hospedagem small {
+    color: #aaa;
+}
+.resultado-hospedagem span {
+    color: var(--verde);
+    font-size: 11px;
+}
+/* =========================================================
                RESPONSIVIDADE
                ========================================================= */
-          
-          @media (max-width: 991.98px) {
-              .progresso {
-                  position: relative;
-                  top: 0;
-              }
-              .timeline {
-                  flex-direction: row;
-                  justify-content: space-between;
-              }
-              .timeline::before {
-                  left: 5%;
-                  right: 5%;
-                  top: 18px;
-                  bottom: auto;
-                  width: 90%;
-                  height: 2px;
-              }
-              .passo {
-                  min-height: auto;
-                  flex-direction: column;
-                  align-items: center;
-                  gap: 8px;
-              }
-              .passo span {
-                  padding: 0;
-                  font-size: 10px;
-                  text-align: center;
-              }
-              .card-planejamento {
-                  padding: 30px;
-              }
-          }
-          
-          @media (max-width: 767.98px) {
-              .acoes-google-agenda,
-              .acoes-conflito-agenda {
-                  align-items: stretch;
-                  flex-direction: column;
-              }
 
-              .acoes-google-agenda button,
-              .acoes-google-agenda a,
-              .acoes-conflito-agenda button {
-                  width: 100%;
-              }
-              .header-planejamento-section {
-                  padding: 20px;
-              }
-              .header-planejamento h1 {
-                  font-size: 22px;
-              }
-              .planejamento-container {
-                  width: 100%;
-                  margin-top: 30px;
-                  padding-right: 14px;
-                  padding-left: 14px;
-              }
-              .planejamento-evento-atual {
-                  width: 94%;
-                  margin: 20px auto 0;
-                  text-align: left;
-              }
-              .card-planejamento {
-                  padding: 22px;
-                  border-radius: 13px;
-              }
-              .timeline {
-                  display: grid;
-                  grid-template-columns: repeat(5, minmax(0, 1fr));
-                  width: 100%;
-              }
-              .timeline::before {
-                  left: 10%;
-                  right: 10%;
-                  width: 80%;
-              }
-              .passo {
-                  min-width: 0;
-              }
-              .passo span {
-                  max-width: 100%;
-                  font-size: clamp(8px, 2.4vw, 10px);
-                  line-height: 1.25;
-                  overflow-wrap: anywhere;
-              }
-              .titulo-card h2 {
-                  font-size: 20px;
-              }
-              .opcoes {
-                  grid-template-columns: 1fr;
-              }
-              .campos-gastos-planejamento,
-              .campos-rota-planejamento,
-              .resultado-hospedagem-grid {
-                  grid-template-columns: 1fr;
-              }
-              #mapaRota {
-                  height: 280px;
-              }
-              .botoes {
-                  flex-direction: column-reverse;
-                  align-items: stretch;
-              }
-              .botoes button {
-                  width: 100%;
-              }
-          }
+@media (max-width: 991.98px) {
+    .progresso {
+        position: relative;
+        top: 0;
+    }
+    .timeline {
+        flex-direction: row;
+        justify-content: space-between;
+    }
+    .timeline::before {
+        left: 5%;
+        right: 5%;
+        top: 18px;
+        bottom: auto;
+        width: 90%;
+        height: 2px;
+    }
+    .passo {
+        min-height: auto;
+        flex-direction: column;
+        align-items: center;
+        gap: 8px;
+    }
+    .passo span {
+        padding: 0;
+        font-size: 10px;
+        text-align: center;
+    }
+    .card-planejamento {
+        padding: 30px;
+    }
+}
 
-          /* Elementos exclusivos da versão impressa do resumo. */
-          .rodape-impressao,
-          .nome-evento-poster {
-              display: none;
-          }
+@media (max-width: 767.98px) {
+    .acoes-google-agenda,
+    .acoes-conflito-agenda {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .acoes-google-agenda button,
+    .acoes-google-agenda a,
+    .acoes-conflito-agenda button {
+        width: 100%;
+    }
+    .header-planejamento-section {
+        padding: 20px;
+    }
+    .header-planejamento h1 {
+        font-size: 22px;
+    }
+    .planejamento-container {
+        width: 100%;
+        margin-top: 30px;
+        padding-right: 14px;
+        padding-left: 14px;
+    }
+    .planejamento-evento-atual {
+        width: 94%;
+        margin: 20px auto 0;
+        text-align: left;
+    }
+    .card-planejamento {
+        padding: 22px;
+        border-radius: 13px;
+    }
+    .timeline {
+        display: grid;
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+        width: 100%;
+    }
+    .timeline::before {
+        left: 10%;
+        right: 10%;
+        width: 80%;
+    }
+    .passo {
+        min-width: 0;
+    }
+    .passo span {
+        max-width: 100%;
+        font-size: clamp(8px, 2.4vw, 10px);
+        line-height: 1.25;
+        overflow-wrap: anywhere;
+    }
+    .titulo-card h2 {
+        font-size: 20px;
+    }
+    .opcoes {
+        grid-template-columns: 1fr;
+    }
+    .campos-gastos-planejamento,
+    .campos-rota-planejamento,
+    .resultado-hospedagem-grid {
+        grid-template-columns: 1fr;
+    }
+    #mapaRota {
+        height: 280px;
+    }
+    .botoes {
+        flex-direction: column-reverse;
+        align-items: stretch;
+    }
+    .botoes button {
+        width: 100%;
+    }
+}
+
+/* Elementos exclusivos da versão impressa do resumo. */
+.rodape-impressao,
+.nome-evento-poster {
+    display: none;
+}

@@ -34,9 +34,9 @@
     margin: 0 0 10px;
     color: var(--showme-secondary);
     font-family: var(--showme-font-family);
-    font-size: .78rem;
+    font-size: 0.78rem;
     font-weight: 700;
-    letter-spacing: .12em;
+    letter-spacing: 0.12em;
     text-transform: uppercase;
 }
 
@@ -44,7 +44,7 @@
     margin: 12px 0 0;
     color: var(--showme-muted);
     font-family: var(--showme-font-family);
-    font-size: .86rem;
+    font-size: 0.86rem;
 }
 
 .conteudo-termos {
@@ -76,7 +76,7 @@
 .conteudo-termos li {
     color: var(--showme-muted);
     font-family: var(--showme-font-family);
-    font-size: .95rem;
+    font-size: 0.95rem;
     line-height: 1.72;
 }
 
@@ -129,7 +129,9 @@
     font: inherit;
     font-weight: 700;
     text-decoration: none;
-    transition: background-color .18s ease, color .18s ease;
+    transition:
+        background-color 0.18s ease,
+        color 0.18s ease;
 }
 
 .termos-voltar:hover,
@@ -158,6 +160,6 @@
 
     .conteudo-termos p,
     .conteudo-termos li {
-        font-size: .92rem;
+        font-size: 0.92rem;
     }
 }

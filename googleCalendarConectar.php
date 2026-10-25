@@ -5,7 +5,7 @@ require_once __DIR__ . '/api/middleware/googleCalendarHelper.php';
 
 if (!googleCalendarConfigurado()) {
     header('Location: perfilUsuario.php?calendar=configuracao');
-    exit;
+    exit();
 }
 
 $retorno = retornoGoogleCalendarSeguro($_GET['retorno'] ?? null);
@@ -16,4 +16,4 @@ $cliente = criarClienteGoogleCalendar();
 $cliente->setState($_SESSION['google_calendar_estado']);
 
 header('Location: ' . $cliente->createAuthUrl());
-exit;
+exit();

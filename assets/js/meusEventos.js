@@ -1,17 +1,17 @@
 // Alterna as abas Favoritos, Planejados e Calendário.
-document.querySelectorAll('.aba').forEach(btn => {
+document.querySelectorAll('.aba').forEach((btn) => {
     btn.addEventListener('click', () => {
         const tab = btn.dataset.tab;
 
         // Atualiza botões
-        document.querySelectorAll('.aba').forEach(b => {
+        document.querySelectorAll('.aba').forEach((b) => {
             const ativa = b === btn;
             b.classList.toggle('ativa', ativa);
             b.setAttribute('aria-selected', String(ativa));
         });
 
         // Atualiza seções
-        document.querySelectorAll('.conteudo').forEach(s => s.classList.remove('ativa'));
+        document.querySelectorAll('.conteudo').forEach((s) => s.classList.remove('ativa'));
         document.getElementById(tab).classList.add('ativa');
 
         if (tab === 'calendario') {
@@ -73,9 +73,13 @@ function criarCardFavorito(favorito) {
     imagem.src = caminhoImagem(favorito.imagem_evento);
     imagem.alt = window.ShowMeA11y.textoAltImagemEvento(favorito);
     imagem.loading = 'lazy';
-    imagem.addEventListener('error', function () {
-        this.src = imagemPadrao;
-    }, {once: true});
+    imagem.addEventListener(
+        'error',
+        function () {
+            this.src = imagemPadrao;
+        },
+        { once: true },
+    );
 
     const info = document.createElement('div');
     info.className = 'info';
@@ -87,7 +91,7 @@ function criarCardFavorito(favorito) {
         'bi bi-geo-alt-fill',
         [favorito.endereco_evento, favorito.numero_endereco, favorito.cidade_evento, favorito.uf]
             .filter(Boolean)
-            .join(', ') || 'Local não informado'
+            .join(', ') || 'Local não informado',
     );
     const data = criarInformacao('bi bi-calendar3', formatarDataEvento(favorito.data_evento));
 
@@ -122,7 +126,7 @@ function criarCardFavorito(favorito) {
             texto: 'Deseja remover este evento dos favoritos?',
             confirmarTexto: 'Remover',
             cancelarTexto: 'Cancelar',
-            variante: 'destrutiva'
+            variante: 'destrutiva',
         });
 
         if (!deveRemover) {
@@ -132,7 +136,7 @@ function criarCardFavorito(favorito) {
         excluir.disabled = true;
 
         try {
-            const resposta = await fetch(`api/favoritos/${favorito.id_favorito}`, {method: 'DELETE'});
+            const resposta = await fetch(`api/favoritos/${favorito.id_favorito}`, { method: 'DELETE' });
 
             if (resposta.status === 401) {
                 window.location.href = 'login.php';
@@ -153,9 +157,9 @@ function criarCardFavorito(favorito) {
             if (!listaFavoritos.querySelector('.card-evento')) {
                 mostrarFavoritosVazios();
             }
-            window.ShowMeUI.toast('Evento removido dos favoritos.', {variante: 'sucesso'});
+            window.ShowMeUI.toast('Evento removido dos favoritos.', { variante: 'sucesso' });
         } catch (erro) {
-            window.ShowMeUI.toast(erro.message, {variante: 'erro'});
+            window.ShowMeUI.toast(erro.message, { variante: 'erro' });
         } finally {
             excluir.disabled = false;
         }
@@ -236,7 +240,7 @@ function formatarMoeda(valor) {
     const numero = Number(valor);
     return (Number.isFinite(numero) ? numero : 0).toLocaleString('pt-BR', {
         style: 'currency',
-        currency: 'BRL'
+        currency: 'BRL',
     });
 }
 
@@ -271,13 +275,11 @@ function dadosClassificacaoIndicativa(valor) {
     }
 
     if (texto.toLowerCase() === 'livre') {
-        return {chave: 'livre', rotulo: 'L'};
+        return { chave: 'livre', rotulo: 'L' };
     }
 
     const numero = texto.match(/\d+/);
-    return numero
-        ? {chave: numero[0], rotulo: numero[0]}
-        : {chave: 'livre', rotulo: texto};
+    return numero ? { chave: numero[0], rotulo: numero[0] } : { chave: 'livre', rotulo: texto };
 }
 
 function criarInformacaoClassificacao(valor) {
@@ -309,7 +311,7 @@ async function excluirPlanejamento(planejamento) {
         texto: 'Tem certeza que deseja remover esse planejamento? Essa ação não pode ser desfeita.',
         confirmarTexto: 'Remover',
         cancelarTexto: 'Cancelar',
-        variante: 'destrutiva'
+        variante: 'destrutiva',
     });
 
     if (!deveRemover) {
@@ -317,7 +319,7 @@ async function excluirPlanejamento(planejamento) {
     }
 
     const resposta = await fetch(`api/planejamento/${planejamento.id_rota}`, {
-        method: 'DELETE'
+        method: 'DELETE',
     });
     const dados = await lerRespostaJson(resposta);
 
@@ -331,7 +333,7 @@ async function excluirPlanejamento(planejamento) {
     }
 
     await carregarPlanejados();
-    window.ShowMeUI.toast('Planejamento removido.', {variante: 'sucesso'});
+    window.ShowMeUI.toast('Planejamento removido.', { variante: 'sucesso' });
     return true;
 }
 
@@ -356,7 +358,7 @@ function criarCardPlanejado(planejamento) {
         'bi bi-geo-alt-fill',
         [planejamento.endereco_evento, planejamento.numero_endereco, planejamento.cidade_evento, planejamento.uf]
             .filter(Boolean)
-            .join(', ') || 'Local não informado'
+            .join(', ') || 'Local não informado',
     );
     const data = criarInformacao('bi bi-calendar3', formatarDataEvento(planejamento.data_evento));
     const deslocamento = criarInformacao('bi bi-map-fill', textoDeslocamento(planejamento));
@@ -400,7 +402,7 @@ function criarCardPlanejado(planejamento) {
         try {
             await excluirPlanejamento(planejamento);
         } catch (erro) {
-            window.ShowMeUI.toast(erro.message, {variante: 'erro'});
+            window.ShowMeUI.toast(erro.message, { variante: 'erro' });
         } finally {
             excluir.disabled = false;
         }
@@ -494,18 +496,22 @@ function capitalizar(texto) {
 }
 
 function formatarMesAno(data) {
-    return capitalizar(data.toLocaleDateString('pt-BR', {
-        month: 'long',
-        year: 'numeric'
-    }));
+    return capitalizar(
+        data.toLocaleDateString('pt-BR', {
+            month: 'long',
+            year: 'numeric',
+        }),
+    );
 }
 
 function formatarDataExtenso(chave) {
-    return capitalizar(dataDaChave(chave).toLocaleDateString('pt-BR', {
-        day: 'numeric',
-        month: 'long',
-        year: 'numeric'
-    }));
+    return capitalizar(
+        dataDaChave(chave).toLocaleDateString('pt-BR', {
+            day: 'numeric',
+            month: 'long',
+            year: 'numeric',
+        }),
+    );
 }
 
 function agruparPlanejamentosPorData() {
@@ -529,9 +535,11 @@ function agruparPlanejamentosPorData() {
 }
 
 function localPlanejamento(planejamento) {
-    return [planejamento.endereco_evento, planejamento.numero_endereco, planejamento.cidade_evento, planejamento.uf]
-        .filter(Boolean)
-        .join(', ') || 'Local não informado';
+    return (
+        [planejamento.endereco_evento, planejamento.numero_endereco, planejamento.cidade_evento, planejamento.uf]
+            .filter(Boolean)
+            .join(', ') || 'Local não informado'
+    );
 }
 
 function criarDetalhePlanejamento(planejamento) {
@@ -556,7 +564,7 @@ function criarDetalhePlanejamento(planejamento) {
         try {
             await excluirPlanejamento(planejamento);
         } catch (erro) {
-            window.ShowMeUI.toast(erro.message, {variante: 'erro'});
+            window.ShowMeUI.toast(erro.message, { variante: 'erro' });
         } finally {
             excluir.disabled = false;
         }
@@ -572,9 +580,9 @@ function criarDetalhePlanejamento(planejamento) {
     const investimento = document.createElement('p');
     investimento.className = 'calendario-evento-info';
     investimento.innerHTML = '<i class="bi bi-wallet2" aria-hidden="true"></i>';
-    investimento.append(document.createTextNode(
-        `Investimento total: ${formatarMoeda(planejamento.investimento_total)}`
-    ));
+    investimento.append(
+        document.createTextNode(`Investimento total: ${formatarMoeda(planejamento.investimento_total)}`),
+    );
 
     const link = document.createElement('a');
     link.className = 'calendario-link-planejamento';
@@ -672,10 +680,12 @@ function renderizarResumoMes() {
             return soma + totalSalvo;
         }
 
-        return soma
-            + Number(planejamento.custo_ingresso || 0)
-            + Number(planejamento.custo_transporte || 0)
-            + Number(planejamento.custo_hospedagem || 0);
+        return (
+            soma +
+            Number(planejamento.custo_ingresso || 0) +
+            Number(planejamento.custo_transporte || 0) +
+            Number(planejamento.custo_hospedagem || 0)
+        );
     }, 0);
     const valorInvestimento = document.createElement('strong');
     valorInvestimento.textContent = formatarMoeda(totalInvestimento);
@@ -702,11 +712,7 @@ function renderizarCalendario() {
     calendarioGrid.replaceChildren();
 
     for (let indice = 0; indice < totalCelulas; indice += 1) {
-        const data = new Date(
-            inicioGrade.getFullYear(),
-            inicioGrade.getMonth(),
-            inicioGrade.getDate() + indice
-        );
+        const data = new Date(inicioGrade.getFullYear(), inicioGrade.getMonth(), inicioGrade.getDate() + indice);
         const chave = chaveDaData(data);
         const eventos = grupos.get(chave) || [];
         const foraDoMes = data.getMonth() !== mes;
@@ -718,7 +724,7 @@ function renderizarCalendario() {
         dia.setAttribute('aria-selected', String(chave === dataSelecionada));
         dia.setAttribute(
             'aria-label',
-            `${formatarDataExtenso(chave)}${eventos.length ? `, ${eventos.length} evento(s) planejado(s)` : ''}`
+            `${formatarDataExtenso(chave)}${eventos.length ? `, ${eventos.length} evento(s) planejado(s)` : ''}`,
         );
         dia.classList.toggle('fora-mes', foraDoMes);
         dia.classList.toggle('dia-hoje', chave === chaveHoje);
@@ -726,7 +732,7 @@ function renderizarCalendario() {
         dia.classList.toggle('dia-com-evento', eventos.length > 0);
         dia.classList.toggle(
             'evento-encerrado',
-            eventos.length > 0 && eventos.every((planejamento) => !planejamentoEstaAtivo(planejamento))
+            eventos.length > 0 && eventos.every((planejamento) => !planejamentoEstaAtivo(planejamento)),
         );
 
         const numero = document.createElement('span');
@@ -762,11 +768,7 @@ function renderizarCalendario() {
 }
 
 function mudarMesCalendario(deslocamento) {
-    mesCalendario = new Date(
-        mesCalendario.getFullYear(),
-        mesCalendario.getMonth() + deslocamento,
-        1
-    );
+    mesCalendario = new Date(mesCalendario.getFullYear(), mesCalendario.getMonth() + deslocamento, 1);
     dataSelecionada = null;
     renderizarCalendario();
 }

@@ -17,7 +17,7 @@
         try {
             return texto ? JSON.parse(texto) : {};
         } catch (_) {
-            return {erro: texto || 'Resposta inválida'};
+            return { erro: texto || 'Resposta inválida' };
         }
     }
 
@@ -33,11 +33,11 @@
         const data = new Date(valor);
         return Number.isNaN(data.getTime())
             ? valor
-            : new Intl.DateTimeFormat('pt-BR', {dateStyle: 'medium', timeStyle: 'short'}).format(data);
+            : new Intl.DateTimeFormat('pt-BR', { dateStyle: 'medium', timeStyle: 'short' }).format(data);
     }
 
     function formatarValor(valor) {
-        return Number(valor).toLocaleString('pt-BR', {style: 'currency', currency: 'BRL'});
+        return Number(valor).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
     }
 
     function faixaPreco(evento) {
@@ -51,9 +51,9 @@
     function dadosClassificacao(valor) {
         const texto = String(valor || '').trim();
         if (!texto) return null;
-        if (texto.toLowerCase() === 'livre') return {chave: 'livre', rotulo: 'L'};
+        if (texto.toLowerCase() === 'livre') return { chave: 'livre', rotulo: 'L' };
         const numero = texto.match(/\d+/);
-        return numero ? {chave: numero[0], rotulo: numero[0]} : {chave: 'livre', rotulo: texto};
+        return numero ? { chave: numero[0], rotulo: numero[0] } : { chave: 'livre', rotulo: texto };
     }
 
     function aplicarClassificacao(valor) {
@@ -124,11 +124,11 @@
     async function carregarPosts() {
         const feed = document.getElementById('feedComunidade');
         feed.innerHTML = '<p class="comunidade-estado">Carregando publicações...</p>';
-        const busca = new URLSearchParams({evento_id: String(idEvento)});
+        const busca = new URLSearchParams({ evento_id: String(idEvento) });
         if (categoriaAtual) busca.set('categoria', categoriaAtual);
 
         try {
-            const resposta = await fetch(`api/comunidade-posts?${busca}`, {headers: {Accept: 'application/json'}});
+            const resposta = await fetch(`api/comunidade-posts?${busca}`, { headers: { Accept: 'application/json' } });
             const dados = await json(resposta);
             if (!resposta.ok) throw new Error(dados.erro || 'Não foi possível carregar as publicações.');
             posts = dados.posts || [];
@@ -205,15 +205,15 @@
             try {
                 const resposta = await fetch(`api/comunidade-posts/${post.id_post}`, {
                     method: 'PUT',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({categoria: categoria.value, texto: valor})
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ categoria: categoria.value, texto: valor }),
                 });
                 const dados = await json(resposta);
                 if (!resposta.ok) throw new Error(dados.erro || 'Não foi possível editar a publicação.');
                 await carregarPosts();
-                window.ShowMeUI.toast('Publicação atualizada.', {variante: 'sucesso'});
+                window.ShowMeUI.toast('Publicação atualizada.', { variante: 'sucesso' });
             } catch (erro) {
-                window.ShowMeUI.toast(erro.message, {variante: 'erro'});
+                window.ShowMeUI.toast(erro.message, { variante: 'erro' });
                 salvar.disabled = false;
             }
         });
@@ -225,17 +225,17 @@
             texto: 'Excluir esta publicação e suas respostas? Esta ação não pode ser desfeita.',
             confirmarTexto: 'Excluir',
             cancelarTexto: 'Cancelar',
-            variante: 'destrutiva'
+            variante: 'destrutiva',
         });
         if (!deveExcluir) return;
-        const resposta = await fetch(`api/comunidade-posts/${id}`, {method: 'DELETE'});
+        const resposta = await fetch(`api/comunidade-posts/${id}`, { method: 'DELETE' });
         const dados = await json(resposta);
         if (!resposta.ok) {
-            window.ShowMeUI.toast(dados.erro || 'Não foi possível excluir.', {variante: 'erro'});
+            window.ShowMeUI.toast(dados.erro || 'Não foi possível excluir.', { variante: 'erro' });
             return;
         }
         await carregarPosts();
-        window.ShowMeUI.toast('Publicação excluída.', {variante: 'sucesso'});
+        window.ShowMeUI.toast('Publicação excluída.', { variante: 'sucesso' });
     }
 
     function abrirEdicaoResposta(resposta, texto, acoes) {
@@ -272,15 +272,15 @@
             try {
                 const retorno = await fetch(`api/comunidade-respostas/${resposta.id_resposta}`, {
                     method: 'PUT',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({texto: valor})
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ texto: valor }),
                 });
                 const dados = await json(retorno);
                 if (!retorno.ok) throw new Error(dados.erro || 'Não foi possível editar a resposta.');
                 await carregarPosts();
-                window.ShowMeUI.toast('Resposta atualizada.', {variante: 'sucesso'});
+                window.ShowMeUI.toast('Resposta atualizada.', { variante: 'sucesso' });
             } catch (erro) {
-                window.ShowMeUI.toast(erro.message, {variante: 'erro'});
+                window.ShowMeUI.toast(erro.message, { variante: 'erro' });
                 salvar.disabled = false;
             }
         });
@@ -292,17 +292,17 @@
             texto: 'Tem certeza que deseja excluir esta resposta?',
             confirmarTexto: 'Excluir',
             cancelarTexto: 'Cancelar',
-            variante: 'destrutiva'
+            variante: 'destrutiva',
         });
         if (!deveExcluir) return;
-        const retorno = await fetch(`api/comunidade-respostas/${id}`, {method: 'DELETE'});
+        const retorno = await fetch(`api/comunidade-respostas/${id}`, { method: 'DELETE' });
         const dados = await json(retorno);
         if (!retorno.ok) {
-            window.ShowMeUI.toast(dados.erro || 'Não foi possível excluir a resposta.', {variante: 'erro'});
+            window.ShowMeUI.toast(dados.erro || 'Não foi possível excluir a resposta.', { variante: 'erro' });
             return;
         }
         await carregarPosts();
-        window.ShowMeUI.toast('Resposta excluída.', {variante: 'sucesso'});
+        window.ShowMeUI.toast('Resposta excluída.', { variante: 'sucesso' });
     }
 
     function criarResposta(item) {
@@ -329,7 +329,7 @@
         } else if (!usuarioAdmin) {
             const acoes = document.createElement('div');
             acoes.className = 'resposta-acoes';
-            acoes.append(botaoDenunciar('resposta', {id_resposta: item.id_resposta}));
+            acoes.append(botaoDenunciar('resposta', { id_resposta: item.id_resposta }));
             bloco.append(acoes);
         }
         return bloco;
@@ -363,7 +363,7 @@
         const curtir = botao(
             post.curtido_usuario ? 'bi-heart-fill' : 'bi-heart',
             String(post.total_curtidas || 0),
-            post.curtido_usuario ? 'ativo' : ''
+            post.curtido_usuario ? 'ativo' : '',
         );
         curtir.setAttribute('aria-label', post.curtido_usuario ? 'Descurtir publicação' : 'Curtir publicação');
         curtir.addEventListener('click', async () => {
@@ -371,8 +371,8 @@
             try {
                 const retorno = await fetch('api/comunidade-curtidas', {
                     method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({id_post: post.id_post})
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id_post: post.id_post }),
                 });
                 const dados = await json(retorno);
                 if (!retorno.ok) throw new Error(dados.erro);
@@ -380,7 +380,7 @@
                 post.total_curtidas = dados.total_curtidas;
                 renderizarPosts();
             } catch (erro) {
-                window.ShowMeUI.toast(erro.message || 'Falha ao curtir.', {variante: 'erro'});
+                window.ShowMeUI.toast(erro.message || 'Falha ao curtir.', { variante: 'erro' });
                 curtir.disabled = false;
             }
         });
@@ -398,7 +398,7 @@
             excluir.addEventListener('click', () => excluirPost(post.id_post));
             acoes.append(editar, excluir);
         } else {
-            acoes.append(botaoDenunciar('publicação', {id_post: post.id_post}));
+            acoes.append(botaoDenunciar('publicação', { id_post: post.id_post }));
         }
 
         const formularioResposta = document.createElement('form');
@@ -424,15 +424,15 @@
             try {
                 const retorno = await fetch('api/comunidade-respostas', {
                     method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({id_post: post.id_post, texto: valor})
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id_post: post.id_post, texto: valor }),
                 });
                 const dados = await json(retorno);
                 if (!retorno.ok) throw new Error(dados.erro);
                 await carregarPosts();
-                window.ShowMeUI.toast('Resposta publicada.', {variante: 'sucesso'});
+                window.ShowMeUI.toast('Resposta publicada.', { variante: 'sucesso' });
             } catch (erro) {
-                window.ShowMeUI.toast(erro.message || 'Falha ao responder.', {variante: 'erro'});
+                window.ShowMeUI.toast(erro.message || 'Falha ao responder.', { variante: 'erro' });
                 enviarResposta.disabled = false;
             }
         });
@@ -471,17 +471,17 @@
         try {
             const resposta = await fetch('api/comunidade-denuncias', {
                 method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({...alvoDenunciaAtual, motivo})
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ ...alvoDenunciaAtual, motivo }),
             });
             const dados = await json(resposta);
             if (!resposta.ok) throw new Error(dados.erro || 'Não foi possível denunciar.');
             document.getElementById('modalDenuncia').close('enviada');
-            window.ShowMeUI.toast('Denúncia registrada para revisão.', {variante: 'sucesso'});
+            window.ShowMeUI.toast('Denúncia registrada para revisão.', { variante: 'sucesso' });
         } catch (erro) {
             window.ShowMeUI.toast(erro.message || 'Não foi possível denunciar.', {
                 variante: 'erro',
-                container: document.getElementById('modalDenuncia')
+                container: document.getElementById('modalDenuncia'),
             });
             enviar.disabled = false;
         }
@@ -515,33 +515,35 @@
             galeria.append(vazio);
             return;
         }
-        galeria.append(...midias.map((midia) => {
-            const item = document.createElement('article');
-            item.className = 'galeria-item';
-            const abrir = document.createElement('button');
-            abrir.type = 'button';
-            abrir.setAttribute('aria-label', 'Ampliar foto');
-            const imagem = document.createElement('img');
-            imagem.src = caminho(midia.caminho_arquivo);
-            imagem.alt = midia.legenda || 'Foto da comunidade';
-            imagem.loading = 'lazy';
-            abrir.append(imagem);
-            abrir.addEventListener('click', () => abrirLightbox(midia));
-            const info = document.createElement('div');
-            info.className = 'galeria-item-info';
-            const legenda = document.createElement('p');
-            legenda.textContent = midia.legenda || `Por ${nome(midia)}`;
-            info.append(legenda);
-            item.append(abrir, info);
-            if (!usuarioAdmin && Number(midia.id_usuario) === idUsuario) {
-                const excluir = botao('bi-trash', '');
-                excluir.className = 'galeria-excluir';
-                excluir.setAttribute('aria-label', 'Excluir foto');
-                excluir.addEventListener('click', () => excluirMidia(midia.id_midia));
-                item.append(excluir);
-            }
-            return item;
-        }));
+        galeria.append(
+            ...midias.map((midia) => {
+                const item = document.createElement('article');
+                item.className = 'galeria-item';
+                const abrir = document.createElement('button');
+                abrir.type = 'button';
+                abrir.setAttribute('aria-label', 'Ampliar foto');
+                const imagem = document.createElement('img');
+                imagem.src = caminho(midia.caminho_arquivo);
+                imagem.alt = midia.legenda || 'Foto da comunidade';
+                imagem.loading = 'lazy';
+                abrir.append(imagem);
+                abrir.addEventListener('click', () => abrirLightbox(midia));
+                const info = document.createElement('div');
+                info.className = 'galeria-item-info';
+                const legenda = document.createElement('p');
+                legenda.textContent = midia.legenda || `Por ${nome(midia)}`;
+                info.append(legenda);
+                item.append(abrir, info);
+                if (!usuarioAdmin && Number(midia.id_usuario) === idUsuario) {
+                    const excluir = botao('bi-trash', '');
+                    excluir.className = 'galeria-excluir';
+                    excluir.setAttribute('aria-label', 'Excluir foto');
+                    excluir.addEventListener('click', () => excluirMidia(midia.id_midia));
+                    item.append(excluir);
+                }
+                return item;
+            }),
+        );
     }
 
     function abrirLightbox(midia) {
@@ -562,7 +564,7 @@
             acoes.append(baixar);
         }
         if (!usuarioAdmin && Number(midia.id_usuario) !== idUsuario) {
-            const denunciar = botaoDenunciar('foto', {id_midia: midia.id_midia});
+            const denunciar = botaoDenunciar('foto', { id_midia: midia.id_midia });
             denunciar.classList.add('botao-denunciar-midia');
             acoes.append(denunciar);
         }
@@ -575,17 +577,17 @@
             texto: 'Excluir esta foto permanentemente? Esta ação não pode ser desfeita.',
             confirmarTexto: 'Excluir',
             cancelarTexto: 'Cancelar',
-            variante: 'destrutiva'
+            variante: 'destrutiva',
         });
         if (!deveExcluir) return;
-        const resposta = await fetch(`api/comunidade-midias/${id}`, {method: 'DELETE'});
+        const resposta = await fetch(`api/comunidade-midias/${id}`, { method: 'DELETE' });
         const dados = await json(resposta);
         if (!resposta.ok) {
-            window.ShowMeUI.toast(dados.erro || 'Não foi possível excluir.', {variante: 'erro'});
+            window.ShowMeUI.toast(dados.erro || 'Não foi possível excluir.', { variante: 'erro' });
             return;
         }
         await carregarGaleria();
-        window.ShowMeUI.toast('Foto excluída.', {variante: 'sucesso'});
+        window.ShowMeUI.toast('Foto excluída.', { variante: 'sucesso' });
     }
 
     async function carregarEvento() {
@@ -602,7 +604,7 @@
             titulo.setAttribute('aria-label', `Ver detalhes de ${evento.nome_evento}`);
         }
         document.querySelector('#dataComunidadeEvento span').textContent = evento.data_evento
-            ? new Intl.DateTimeFormat('pt-BR', {dateStyle: 'long'}).format(new Date(`${evento.data_evento}T12:00:00`))
+            ? new Intl.DateTimeFormat('pt-BR', { dateStyle: 'long' }).format(new Date(`${evento.data_evento}T12:00:00`))
             : '';
         const local = document.getElementById('localComunidadeEvento');
         const textoLocal = [evento.cidade_evento, evento.uf].filter(Boolean).join(' - ');
@@ -676,12 +678,12 @@
             publicar.disabled = true;
             const resposta = await fetch('api/comunidade-posts', {
                 method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({id_evento: idEvento, categoria: categoria.value, texto: texto.value.trim()})
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id_evento: idEvento, categoria: categoria.value, texto: texto.value.trim() }),
             });
             const dados = await json(resposta);
             if (!resposta.ok) {
-                window.ShowMeUI.toast(dados.erro || 'Não foi possível publicar.', {variante: 'erro'});
+                window.ShowMeUI.toast(dados.erro || 'Não foi possível publicar.', { variante: 'erro' });
                 validarPublicacao();
                 return;
             }
@@ -689,7 +691,7 @@
             validarPublicacao();
             bootstrap.Modal.getOrCreateInstance(document.getElementById('modalPublicacao')).hide();
             await carregarPosts();
-            window.ShowMeUI.toast('Publicação criada.', {variante: 'sucesso'});
+            window.ShowMeUI.toast('Publicação criada.', { variante: 'sucesso' });
         });
 
         const arquivo = document.getElementById('arquivoMidia');
@@ -703,10 +705,10 @@
             dadosFormulario.set('id_evento', String(idEvento));
             const enviar = formulario.querySelector('button[type="submit"]');
             enviar.disabled = true;
-            const resposta = await fetch('api/comunidade-midias', {method: 'POST', body: dadosFormulario});
+            const resposta = await fetch('api/comunidade-midias', { method: 'POST', body: dadosFormulario });
             const dados = await json(resposta);
             if (!resposta.ok) {
-                window.ShowMeUI.toast(dados.erro || 'Não foi possível publicar a foto.', {variante: 'erro'});
+                window.ShowMeUI.toast(dados.erro || 'Não foi possível publicar a foto.', { variante: 'erro' });
                 enviar.disabled = false;
                 return;
             }
@@ -715,7 +717,7 @@
             bootstrap.Modal.getOrCreateInstance(document.getElementById('modalMidia')).hide();
             enviar.disabled = false;
             await carregarGaleria();
-            window.ShowMeUI.toast('Foto publicada na galeria.', {variante: 'sucesso'});
+            window.ShowMeUI.toast('Foto publicada na galeria.', { variante: 'sucesso' });
         });
 
         const formularioDenuncia = document.getElementById('formDenuncia');
@@ -762,4 +764,4 @@
             estado.className = 'comunidade-estado erro';
             estado.textContent = erro.message;
         });
-}());
+})();

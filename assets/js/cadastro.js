@@ -30,7 +30,7 @@
         campoSenha.focus();
 
         if (window.ShowMeUI && typeof window.ShowMeUI.toast === 'function') {
-            window.ShowMeUI.toast(MENSAGEM_SENHA_FRACA, {variante: 'erro'});
+            window.ShowMeUI.toast(MENSAGEM_SENHA_FRACA, { variante: 'erro' });
             return;
         }
 
@@ -57,13 +57,13 @@
         try {
             const resposta = await fetch('api/apiUsuarios.php', {
                 method: 'POST',
-                headers: {'Content-Type': 'application/json'},
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     nome: dadosFormulario.get('nome'),
                     sobrenome: dadosFormulario.get('sobrenome'),
                     email: dadosFormulario.get('email'),
-                    senha: senha
-                })
+                    senha: senha,
+                }),
             });
             const dados = await resposta.json();
 
@@ -77,4 +77,4 @@
             mensagemCadastro.className = 'alert alert-danger';
         }
     });
-}());
+})();

@@ -17,4 +17,4 @@
             icone.classList.toggle('bi-eye-slash', mostrar);
         });
     });
-}());
+})();

@@ -32,7 +32,6 @@ iniciarSessaoSegura();
 
 </head>
 
-
 <body class="index-page login-admin-page">
 
   <a href="institucional.php" class="voltar-home-auth" data-voltar-fallback="institucional.php" aria-label="Voltar para a página anterior" title="Voltar">

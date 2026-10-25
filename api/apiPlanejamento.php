@@ -22,11 +22,7 @@ function validarPlanejamento(array $dados): array
         responder(['erro' => 'distancia_km deve ser maior que zero'], 400);
     }
 
-    $tempo = filter_var(
-        $tempoInformado,
-        FILTER_VALIDATE_INT,
-        ['options' => ['min_range' => 1]]
-    );
+    $tempo = filter_var($tempoInformado, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
 
     if ($tempo === false) {
         responder(['erro' => 'tempo_estimado deve ser um inteiro positivo em minutos'], 400);
@@ -50,11 +46,7 @@ function validarPlanejamento(array $dados): array
         $valores[$campo] = $valor;
     }
 
-    $hospedagem = filter_var(
-        $dados['hospedagem_necessaria'] ?? false,
-        FILTER_VALIDATE_BOOLEAN,
-        FILTER_NULL_ON_FAILURE
-    );
+    $hospedagem = filter_var($dados['hospedagem_necessaria'] ?? false, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
     if ($hospedagem === null) {
         responder(['erro' => 'hospedagem_necessaria deve ser true ou false'], 400);
     }
@@ -110,7 +102,7 @@ switch ($metodo) {
              FROM rota r
              INNER JOIN evento e ON e.id_evento = r.id_evento
              WHERE r.id_user = ?
-             ORDER BY e.data_evento DESC, r.id_rota DESC'
+             ORDER BY e.data_evento DESC, r.id_rota DESC',
         );
         $stmt->bind_param('i', $idUsuario);
         executarStatementApi($stmt);
@@ -130,11 +122,7 @@ switch ($metodo) {
         }
 
         $dados = lerJson();
-        $idEvento = filter_var(
-            $dados['id_evento'] ?? null,
-            FILTER_VALIDATE_INT,
-            ['options' => ['min_range' => 1]]
-        );
+        $idEvento = filter_var($dados['id_evento'] ?? null, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
 
         if ($idEvento === false) {
             responder(['erro' => 'id_evento deve ser um inteiro positivo'], 400);
@@ -144,7 +132,7 @@ switch ($metodo) {
 
         $stmt = $conn->prepare(
             'SELECT id_evento, status_evento, (data_evento < CURDATE()) AS evento_encerrado
-             FROM evento WHERE id_evento = ? LIMIT 1'
+             FROM evento WHERE id_evento = ? LIMIT 1',
         );
         $stmt->bind_param('i', $idEvento);
         executarStatementApi($stmt);
@@ -159,19 +147,20 @@ switch ($metodo) {
             responder(['erro' => 'Não é possível planejar um evento encerrado ou indisponível'], 409);
         }
 
-        $stmt = $conn->prepare(
-            'SELECT id_rota FROM rota WHERE id_user = ? AND id_evento = ? LIMIT 1'
-        );
+        $stmt = $conn->prepare('SELECT id_rota FROM rota WHERE id_user = ? AND id_evento = ? LIMIT 1');
         $stmt->bind_param('ii', $idUsuario, $idEvento);
         executarStatementApi($stmt);
         $existente = $stmt->get_result()->fetch_assoc();
         $stmt->close();
 
         if ($existente) {
-            responder([
-                'erro' => 'Este evento já possui um planejamento finalizado',
-                'id_rota' => (int) $existente['id_rota'],
-            ], 409);
+            responder(
+                [
+                    'erro' => 'Este evento já possui um planejamento finalizado',
+                    'id_rota' => (int) $existente['id_rota'],
+                ],
+                409,
+            );
         }
 
         $stmt = $conn->prepare(
@@ -179,7 +168,7 @@ switch ($metodo) {
                 (id_user, id_evento, meio_transporte, distancia_km, tempo_estimado,
                  origem, orcamento_total, custo_ingresso, custo_transporte,
                  hospedagem_necessaria, nome_hospedagem, custo_hospedagem)
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
         );
         $stmt->bind_param(
             'iisdisdddisd',
@@ -194,7 +183,7 @@ switch ($metodo) {
             $planejamento['custo_transporte'],
             $planejamento['hospedagem_necessaria'],
             $planejamento['nome_hospedagem'],
-            $planejamento['custo_hospedagem']
+            $planejamento['custo_hospedagem'],
         );
 
         try {
@@ -212,15 +201,20 @@ switch ($metodo) {
         $idRota = $stmt->insert_id;
         $stmt->close();
 
-        $planejamentoCriado = normalizarPlanejamentoApi([
-            'id_rota' => $idRota,
-            'id_evento' => $idEvento,
-        ] + $planejamento);
+        $planejamentoCriado = normalizarPlanejamentoApi(
+            [
+                'id_rota' => $idRota,
+                'id_evento' => $idEvento,
+            ] + $planejamento,
+        );
 
-        responder([
-            'mensagem' => 'Planejamento finalizado com sucesso',
-            'planejamento' => $planejamentoCriado,
-        ], 201);
+        responder(
+            [
+                'mensagem' => 'Planejamento finalizado com sucesso',
+                'planejamento' => $planejamentoCriado,
+            ],
+            201,
+        );
 
     case 'PUT':
         if ($id === null) {
@@ -229,9 +223,16 @@ switch ($metodo) {
 
         $dados = lerJson();
         $camposEditaveis = [
-            'meio_transporte', 'distancia_km', 'tempo_estimado', 'origem',
-            'orcamento_total', 'custo_ingresso', 'custo_transporte',
-            'hospedagem_necessaria', 'nome_hospedagem', 'custo_hospedagem'
+            'meio_transporte',
+            'distancia_km',
+            'tempo_estimado',
+            'origem',
+            'orcamento_total',
+            'custo_ingresso',
+            'custo_transporte',
+            'hospedagem_necessaria',
+            'nome_hospedagem',
+            'custo_hospedagem',
         ];
         $possuiCampoEditavel = false;
 
@@ -253,7 +254,7 @@ switch ($metodo) {
                     e.status_evento, (e.data_evento < CURDATE()) AS evento_encerrado
              FROM rota r
              INNER JOIN evento e ON e.id_evento = r.id_evento
-             WHERE r.id_rota = ? AND r.id_user = ? LIMIT 1'
+             WHERE r.id_rota = ? AND r.id_user = ? LIMIT 1',
         );
         $stmt->bind_param('ii', $id, $idUsuario);
         executarStatementApi($stmt);
@@ -286,7 +287,7 @@ switch ($metodo) {
              SET meio_transporte = ?, distancia_km = ?, tempo_estimado = ?, origem = ?,
                  orcamento_total = ?, custo_ingresso = ?, custo_transporte = ?,
                  hospedagem_necessaria = ?, nome_hospedagem = ?, custo_hospedagem = ?
-             WHERE id_rota = ? AND id_user = ?'
+             WHERE id_rota = ? AND id_user = ?',
         );
         $stmt->bind_param(
             'sdisdddisdii',
@@ -301,7 +302,7 @@ switch ($metodo) {
             $planejamento['nome_hospedagem'],
             $planejamento['custo_hospedagem'],
             $id,
-            $idUsuario
+            $idUsuario,
         );
         executarStatementApi($stmt);
         $stmt->close();

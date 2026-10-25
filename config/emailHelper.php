@@ -22,21 +22,19 @@ function configuracaoEmailShowMe(): array
         throw new RuntimeException('Configuração de e-mail inválida');
     }
 
-    $porta = filter_var(
-        $configuracao['porta'] ?? null,
-        FILTER_VALIDATE_INT,
-        ['options' => ['min_range' => 1, 'max_range' => 65535]]
-    );
+    $porta = filter_var($configuracao['porta'] ?? null, FILTER_VALIDATE_INT, [
+        'options' => ['min_range' => 1, 'max_range' => 65535],
+    ]);
     $criptografia = strtolower(trim((string) ($configuracao['criptografia'] ?? '')));
     $remetente = trim((string) ($configuracao['remetente_email'] ?? ''));
 
     if (
-        trim((string) ($configuracao['host'] ?? '')) === ''
-        || $porta === false
-        || trim((string) ($configuracao['usuario'] ?? '')) === ''
-        || (string) ($configuracao['senha'] ?? '') === ''
-        || filter_var($remetente, FILTER_VALIDATE_EMAIL) === false
-        || !in_array($criptografia, ['', 'tls', 'ssl'], true)
+        trim((string) ($configuracao['host'] ?? '')) === '' ||
+        $porta === false ||
+        trim((string) ($configuracao['usuario'] ?? '')) === '' ||
+        (string) ($configuracao['senha'] ?? '') === '' ||
+        filter_var($remetente, FILTER_VALIDATE_EMAIL) === false ||
+        !in_array($criptografia, ['', 'tls', 'ssl'], true)
     ) {
         throw new RuntimeException('Configuração SMTP incompleta ou inválida');
     }
@@ -71,7 +69,7 @@ function criarMailerShowMe(): PHPMailer
     $nomeRemetente = trim((string) ($configuracao['remetente_nome'] ?? 'ShowMe'));
     $mailer->setFrom(
         trim((string) $configuracao['remetente_email']),
-        $nomeRemetente !== '' ? $nomeRemetente : 'ShowMe'
+        $nomeRemetente !== '' ? $nomeRemetente : 'ShowMe',
     );
 
     return $mailer;
@@ -94,7 +92,7 @@ function urlBaseEmailShowMe(): string
         throw new RuntimeException('Não foi possível determinar a URL da aplicação');
     }
 
-    $seguro = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off');
+    $seguro = !empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off';
     $script = str_replace('\\', '/', (string) ($_SERVER['SCRIPT_NAME'] ?? ''));
     $posicaoApi = strpos($script, '/api/');
     $caminhoBase = $posicaoApi === false ? rtrim(dirname($script), '/') : substr($script, 0, $posicaoApi);
@@ -102,11 +100,8 @@ function urlBaseEmailShowMe(): string
     return ($seguro ? 'https' : 'http') . '://' . $host . $caminhoBase;
 }
 
-function enviarEmailRecuperacaoSenhaShowMe(
-    string $destinatario,
-    string $nomeUsuario,
-    string $linkRedefinicao
-): void {
+function enviarEmailRecuperacaoSenhaShowMe(string $destinatario, string $nomeUsuario, string $linkRedefinicao): void
+{
     if (filter_var($destinatario, FILTER_VALIDATE_EMAIL) === false) {
         throw new InvalidArgumentException('E-mail do destinatário inválido');
     }
@@ -139,7 +134,7 @@ function enviarEmailModeracaoEventoShowMe(
     string $nomeEvento,
     string $dataEvento,
     string $status,
-    ?int $idEvento
+    ?int $idEvento,
 ): void {
     if (filter_var($destinatario, FILTER_VALIDATE_EMAIL) === false) {
         throw new InvalidArgumentException('E-mail do solicitante inválido');
@@ -188,7 +183,7 @@ function enviarEmailModeracaoDenunciaShowMe(
     string $nomeEvento,
     string $tipoConteudo,
     string $acao,
-    string $papel
+    string $papel,
 ): void {
     if (filter_var($destinatario, FILTER_VALIDATE_EMAIL) === false) {
         throw new InvalidArgumentException('E-mail de notificação da denúncia inválido');
@@ -221,9 +216,7 @@ function enviarEmailModeracaoDenunciaShowMe(
             <p>Esta é uma mensagem automática de moderação.</p>";
         $mailer->AltBody = "{$nomeUsuario},\n\nApós análise da equipe de moderação, sua {$rotuloConteudo} na comunidade do evento {$nomeEvento} foi removida.";
     } else {
-        $resultado = $acao === 'remover'
-            ? 'foi removido após a análise'
-            : 'foi analisado e permanecerá disponível';
+        $resultado = $acao === 'remover' ? 'foi removido após a análise' : 'foi analisado e permanecerá disponível';
         $mailer->Subject = 'Sua denúncia foi analisada no ShowMe';
         $mailer->Body = "<p>{$nomeSeguro},</p>
             <p>O conteúdo que você denunciou na comunidade do evento <strong>{$eventoSeguro}</strong> {$resultado}.</p>
@@ -239,7 +232,7 @@ function enviarEmailAlteracaoEventoShowMe(
     string $nomeUsuario,
     string $nomeEvento,
     string $acao,
-    ?int $idEvento
+    ?int $idEvento,
 ): void {
     if (filter_var($destinatario, FILTER_VALIDATE_EMAIL) === false) {
         throw new InvalidArgumentException('E-mail do responsável pelo evento inválido');

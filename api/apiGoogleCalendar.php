@@ -19,7 +19,7 @@ function buscarEventoParaAgenda(mysqli $conn, int $idEvento): ?array
                 data_evento, horario_evento, link_oficial
          FROM evento
          WHERE id_evento = ?
-         LIMIT 1'
+         LIMIT 1',
     );
     $stmt->bind_param('i', $idEvento);
     executarStatementApi($stmt);
@@ -62,17 +62,22 @@ function janelaEventoGoogleCalendar(array $evento, int $tempoDeslocamento = 0): 
 function enderecoEventoGoogleCalendar(array $evento): string
 {
     if (!empty($evento['endereco_evento'])) {
-        return implode(', ', array_filter([
-            $evento['endereco_evento'],
-            $evento['numero_endereco'] ?? null,
-        ], static fn ($valor) => trim((string) $valor) !== ''));
+        return implode(
+            ', ',
+            array_filter(
+                [$evento['endereco_evento'], $evento['numero_endereco'] ?? null],
+                static fn($valor) => trim((string) $valor) !== '',
+            ),
+        );
     }
 
-    return implode(', ', array_filter([
-        $evento['rua_evento'] ?? null,
-        $evento['cidade_evento'] ?? null,
-        $evento['uf'] ?? null,
-    ], static fn ($valor) => trim((string) $valor) !== ''));
+    return implode(
+        ', ',
+        array_filter(
+            [$evento['rua_evento'] ?? null, $evento['cidade_evento'] ?? null, $evento['uf'] ?? null],
+            static fn($valor) => trim((string) $valor) !== '',
+        ),
+    );
 }
 
 function idEventoGoogleCalendar(int $idUsuario, int $idRota): string
@@ -84,9 +89,7 @@ function idEventoGoogleCalendar(int $idUsuario, int $idRota): string
 
 function idGoogleEventoDoPlanejamento(mysqli $conn, int $idUsuario, int $idRota): ?string
 {
-    $stmt = $conn->prepare(
-        'SELECT id_rota FROM rota WHERE id_rota = ? AND id_user = ? LIMIT 1'
-    );
+    $stmt = $conn->prepare('SELECT id_rota FROM rota WHERE id_rota = ? AND id_user = ? LIMIT 1');
     $stmt->bind_param('ii', $idRota, $idUsuario);
     executarStatementApi($stmt);
     $planejamento = $stmt->get_result()->fetch_assoc();
@@ -101,11 +104,7 @@ function idRotaIgnorarGoogleAgenda(array $dados): ?int
         return null;
     }
 
-    $idRota = filter_var(
-        $dados['id_rota'],
-        FILTER_VALIDATE_INT,
-        ['options' => ['min_range' => 1]]
-    );
+    $idRota = filter_var($dados['id_rota'], FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
 
     if ($idRota === false) {
         responder(['erro' => 'id_rota deve ser um inteiro positivo'], 400);
@@ -163,10 +162,13 @@ switch ($metodo) {
 
         if ($token === null) {
             if ($acao === 'exportar') {
-                responder([
-                    'erro' => 'Conecte o Google Agenda antes de exportar o planejamento',
-                    'conectado' => false,
-                ], 409);
+                responder(
+                    [
+                        'erro' => 'Conecte o Google Agenda antes de exportar o planejamento',
+                        'conectado' => false,
+                    ],
+                    409,
+                );
             }
 
             responder([
@@ -221,16 +223,12 @@ switch ($metodo) {
             }
 
             if ($acao === 'verificar_conflito') {
-                $idEvento = filter_var(
-                    $dados['id_evento'] ?? null,
-                    FILTER_VALIDATE_INT,
-                    ['options' => ['min_range' => 1]]
-                );
-                $tempo = filter_var(
-                    $dados['tempo_estimado'] ?? 0,
-                    FILTER_VALIDATE_INT,
-                    ['options' => ['min_range' => 0]]
-                );
+                $idEvento = filter_var($dados['id_evento'] ?? null, FILTER_VALIDATE_INT, [
+                    'options' => ['min_range' => 1],
+                ]);
+                $tempo = filter_var($dados['tempo_estimado'] ?? 0, FILTER_VALIDATE_INT, [
+                    'options' => ['min_range' => 0],
+                ]);
 
                 if ($idEvento === false || $tempo === false) {
                     responder(['erro' => 'id_evento e tempo_estimado devem ser inteiros válidos'], 400);
@@ -243,9 +241,8 @@ switch ($metodo) {
                 }
 
                 $idRotaIgnorar = idRotaIgnorarGoogleAgenda($dados);
-                $idGoogleAtual = $idRotaIgnorar === null
-                    ? null
-                    : idGoogleEventoDoPlanejamento($conn, $idUsuario, $idRotaIgnorar);
+                $idGoogleAtual =
+                    $idRotaIgnorar === null ? null : idGoogleEventoDoPlanejamento($conn, $idUsuario, $idRotaIgnorar);
 
                 $janela = janelaEventoGoogleCalendar($evento, (int) $tempo);
                 $resultado = $servico->events->listEvents('primary', [
@@ -286,11 +283,9 @@ switch ($metodo) {
             }
 
             if ($acao === 'verificar_data') {
-                $idEvento = filter_var(
-                    $dados['id_evento'] ?? null,
-                    FILTER_VALIDATE_INT,
-                    ['options' => ['min_range' => 1]]
-                );
+                $idEvento = filter_var($dados['id_evento'] ?? null, FILTER_VALIDATE_INT, [
+                    'options' => ['min_range' => 1],
+                ]);
 
                 if ($idEvento === false) {
                     responder(['erro' => 'id_evento deve ser um inteiro válido'], 400);
@@ -319,9 +314,8 @@ switch ($metodo) {
                 $fim = $inicio->modify('+1 day');
 
                 $idRotaIgnorar = idRotaIgnorarGoogleAgenda($dados);
-                $idGoogleAtual = $idRotaIgnorar === null
-                    ? null
-                    : idGoogleEventoDoPlanejamento($conn, $idUsuario, $idRotaIgnorar);
+                $idGoogleAtual =
+                    $idRotaIgnorar === null ? null : idGoogleEventoDoPlanejamento($conn, $idUsuario, $idRotaIgnorar);
 
                 $resultado = $servico->events->listEvents('primary', [
                     'timeMin' => $inicio->format(DATE_RFC3339),
@@ -357,11 +351,7 @@ switch ($metodo) {
                 ]);
             }
 
-            $idRota = filter_var(
-                $dados['id_rota'] ?? null,
-                FILTER_VALIDATE_INT,
-                ['options' => ['min_range' => 1]]
-            );
+            $idRota = filter_var($dados['id_rota'] ?? null, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
 
             if ($idRota === false) {
                 responder(['erro' => 'id_rota deve ser um inteiro positivo'], 400);
@@ -375,7 +365,7 @@ switch ($metodo) {
                  FROM rota r
                  INNER JOIN evento e ON e.id_evento = r.id_evento
                  WHERE r.id_rota = ? AND r.id_user = ?
-                 LIMIT 1'
+                 LIMIT 1',
             );
             $stmt->bind_param('ii', $idRota, $idUsuario);
             executarStatementApi($stmt);
@@ -402,30 +392,41 @@ switch ($metodo) {
             ]);
 
             if ($janela['dia_inteiro']) {
-                $eventoGoogle->setStart(new EventDateTime([
-                    'date' => $janela['inicio']->format('Y-m-d'),
-                ]));
-                $eventoGoogle->setEnd(new EventDateTime([
-                    'date' => $janela['fim']->format('Y-m-d'),
-                ]));
+                $eventoGoogle->setStart(
+                    new EventDateTime([
+                        'date' => $janela['inicio']->format('Y-m-d'),
+                    ]),
+                );
+                $eventoGoogle->setEnd(
+                    new EventDateTime([
+                        'date' => $janela['fim']->format('Y-m-d'),
+                    ]),
+                );
             } else {
-                $eventoGoogle->setStart(new EventDateTime([
-                    'dateTime' => $janela['inicio_evento']->format(DATE_RFC3339),
-                    'timeZone' => configuracaoGoogleCalendar()['timezone'],
-                ]));
-                $eventoGoogle->setEnd(new EventDateTime([
-                    'dateTime' => $janela['fim']->format(DATE_RFC3339),
-                    'timeZone' => configuracaoGoogleCalendar()['timezone'],
-                ]));
+                $eventoGoogle->setStart(
+                    new EventDateTime([
+                        'dateTime' => $janela['inicio_evento']->format(DATE_RFC3339),
+                        'timeZone' => configuracaoGoogleCalendar()['timezone'],
+                    ]),
+                );
+                $eventoGoogle->setEnd(
+                    new EventDateTime([
+                        'dateTime' => $janela['fim']->format(DATE_RFC3339),
+                        'timeZone' => configuracaoGoogleCalendar()['timezone'],
+                    ]),
+                );
             }
 
             try {
                 $criado = $servico->events->insert('primary', $eventoGoogle);
-                responder([
-                    'mensagem' => 'Evento adicionado ao Google Agenda',
-                    'google_event_id' => $criado->getId(),
-                    'html_link' => $criado->getHtmlLink(),
-                ], 201);
+                responder(
+                    [
+                        'mensagem' => 'Evento adicionado ao Google Agenda',
+                        'google_event_id' => $criado->getId(),
+                        'html_link' => $criado->getHtmlLink(),
+                    ],
+                    201,
+                );
             } catch (GoogleServiceException $erro) {
                 if ((int) $erro->getCode() === 409) {
                     responder([

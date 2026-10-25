@@ -108,7 +108,11 @@ $secoesHome = [
                         class="btn-carrossel esquerda"
                         data-carrossel="<?= htmlspecialchars($secao['id'], ENT_QUOTES, 'UTF-8') ?>"
                         data-direcao="-1"
-                        aria-label="Eventos anteriores de <?= htmlspecialchars($secao['titulo'], ENT_QUOTES, 'UTF-8') ?>"
+                        aria-label="Eventos anteriores de <?= htmlspecialchars(
+                            $secao['titulo'],
+                            ENT_QUOTES,
+                            'UTF-8',
+                        ) ?>"
                         hidden>
                         <i class="bi bi-chevron-left" aria-hidden="true"></i>
                     </button>

@@ -11,17 +11,13 @@ const API_FUSO_HORARIO = 'America/Sao_Paulo';
 function executarStatementApi(mysqli_stmt $stmt): void
 {
     if (!$stmt->execute()) {
-        throw new RuntimeException(
-            $stmt->error !== '' ? $stmt->error : 'Falha ao executar operação no banco de dados'
-        );
+        throw new RuntimeException($stmt->error !== '' ? $stmt->error : 'Falha ao executar operação no banco de dados');
     }
 }
 
 function tamanhoTextoApi(string $texto): int
 {
-    return function_exists('mb_strlen')
-        ? mb_strlen($texto, 'UTF-8')
-        : strlen($texto);
+    return function_exists('mb_strlen') ? mb_strlen($texto, 'UTF-8') : strlen($texto);
 }
 
 function validarLimitesTextoApi(array $valores, array $limites): ?string
@@ -62,7 +58,7 @@ function normalizarRegistroApi(
     array $camposInteiros = [],
     array $camposBooleanos = [],
     array $camposDecimais = [],
-    array $camposDataHora = []
+    array $camposDataHora = [],
 ): array {
     foreach ($camposInteiros as $campo) {
         if (array_key_exists($campo, $registro) && $registro[$campo] !== null) {
@@ -102,7 +98,7 @@ function normalizarEventoApi(array $evento): array
         $evento,
         ['id_evento', 'id_solicitacao_origem'],
         ['gratuidade'],
-        ['valor_ingresso_minimo', 'valor_ingresso_maximo']
+        ['valor_ingresso_minimo', 'valor_ingresso_maximo'],
     );
 }
 
@@ -118,17 +114,13 @@ function normalizarSolicitacaoApi(array $solicitacao): array
         ['id_solicitacao', 'id_user', 'id_evento'],
         ['gratuidade'],
         ['valor_ingresso_minimo', 'valor_ingresso_maximo'],
-        ['data_solicitacao']
+        ['data_solicitacao'],
     );
 }
 
 function normalizarFavoritoApi(array $favorito): array
 {
-    return normalizarRegistroApi(
-        $favorito,
-        ['id_favorito', 'id_evento'],
-        ['gratuidade']
-    );
+    return normalizarRegistroApi($favorito, ['id_favorito', 'id_evento'], ['gratuidade']);
 }
 
 function normalizarPlanejamentoApi(array $planejamento): array
@@ -138,10 +130,15 @@ function normalizarPlanejamentoApi(array $planejamento): array
         ['id_rota', 'id_evento', 'tempo_estimado'],
         ['gratuidade', 'hospedagem_necessaria'],
         [
-            'distancia_km', 'orcamento_total', 'custo_ingresso',
-            'custo_transporte', 'custo_hospedagem',
-            'investimento_total', 'valor_ingresso_minimo', 'valor_ingresso_maximo'
-        ]
+            'distancia_km',
+            'orcamento_total',
+            'custo_ingresso',
+            'custo_transporte',
+            'custo_hospedagem',
+            'investimento_total',
+            'valor_ingresso_minimo',
+            'valor_ingresso_maximo',
+        ],
     );
 }
 
@@ -152,19 +149,13 @@ function normalizarPostComunidadeApi(array $post): array
         ['id_post', 'id_evento', 'id_usuario', 'total_curtidas'],
         ['curtido_usuario'],
         [],
-        ['data_criacao']
+        ['data_criacao'],
     );
 }
 
 function normalizarRespostaComunidadeApi(array $resposta): array
 {
-    return normalizarRegistroApi(
-        $resposta,
-        ['id_resposta', 'id_post', 'id_usuario'],
-        [],
-        [],
-        ['data_criacao']
-    );
+    return normalizarRegistroApi($resposta, ['id_resposta', 'id_post', 'id_usuario'], [], [], ['data_criacao']);
 }
 
 function normalizarMidiaComunidadeApi(array $midia): array
@@ -174,17 +165,13 @@ function normalizarMidiaComunidadeApi(array $midia): array
         ['id_midia', 'id_evento', 'id_usuario'],
         ['permitir_download'],
         [],
-        ['data_criacao']
+        ['data_criacao'],
     );
 }
 
 function normalizarResumoComunidadeApi(array $evento): array
 {
-    return normalizarRegistroApi(
-        $evento,
-        ['id_evento', 'total_posts'],
-        ['evento_do_usuario']
-    );
+    return normalizarRegistroApi($evento, ['id_evento', 'total_posts'], ['evento_do_usuario']);
 }
 
 function normalizarDenunciaComunidadeApi(array $denuncia): array
@@ -192,11 +179,17 @@ function normalizarDenunciaComunidadeApi(array $denuncia): array
     return normalizarRegistroApi(
         $denuncia,
         [
-            'id_denuncia', 'id_post', 'id_resposta', 'id_midia', 'id_denunciante', 'id_admin_moderacao',
-            'id_evento', 'id_autor'
+            'id_denuncia',
+            'id_post',
+            'id_resposta',
+            'id_midia',
+            'id_denunciante',
+            'id_admin_moderacao',
+            'id_evento',
+            'id_autor',
         ],
         [],
         [],
-        ['data_denuncia', 'data_moderacao', 'data_post', 'data_midia']
+        ['data_denuncia', 'data_moderacao', 'data_post', 'data_midia'],
     );
 }

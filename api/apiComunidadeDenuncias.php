@@ -38,8 +38,7 @@ if ($metodo === 'GET') {
     $dias = 0;
     if (array_key_exists('dias', $_GET)) {
         $diasInformados = $_GET['dias'];
-        if (!is_string($diasInformados) || !ctype_digit($diasInformados)
-            || (int) $diasInformados > 3650) {
+        if (!is_string($diasInformados) || !ctype_digit($diasInformados) || (int) $diasInformados > 3650) {
             responder(['erro' => 'dias deve ser um inteiro entre 0 e 3650'], 400);
         }
         $dias = (int) $diasInformados;
@@ -49,8 +48,12 @@ if ($metodo === 'GET') {
     $offset = 0;
     if (array_key_exists('limite', $_GET)) {
         $limiteInformado = $_GET['limite'];
-        if (!is_string($limiteInformado) || !ctype_digit($limiteInformado)
-            || (int) $limiteInformado < 1 || (int) $limiteInformado > 50) {
+        if (
+            !is_string($limiteInformado) ||
+            !ctype_digit($limiteInformado) ||
+            (int) $limiteInformado < 1 ||
+            (int) $limiteInformado > 50
+        ) {
             responder(['erro' => 'limite deve ser um inteiro entre 1 e 50'], 400);
         }
         $limite = (int) $limiteInformado;
@@ -144,8 +147,7 @@ if ($metodo === 'GET') {
                                 autor_email, denunciante_nome, denunciante_sobrenome,
                                 denunciante_email
                            ) LIKE CONCAT('%', ?, '%'))";
-    $sql = $baseDenuncias . $filtrosDenuncias
-        . ' ORDER BY data_denuncia DESC, id_denuncia DESC';
+    $sql = $baseDenuncias . $filtrosDenuncias . ' ORDER BY data_denuncia DESC, id_denuncia DESC';
 
     if ($limite !== null) {
         $sql .= ' LIMIT ? OFFSET ?';
@@ -156,17 +158,7 @@ if ($metodo === 'GET') {
     if ($limite === null) {
         $stmt->bind_param('ssiiss', $status, $status, $dias, $dias, $busca, $busca);
     } else {
-        $stmt->bind_param(
-            'ssiissii',
-            $status,
-            $status,
-            $dias,
-            $dias,
-            $busca,
-            $busca,
-            $limite,
-            $offset
-        );
+        $stmt->bind_param('ssiissii', $status, $status, $dias, $dias, $busca, $busca, $limite, $offset);
     }
 
     executarStatementApi($stmt);
@@ -179,8 +171,7 @@ if ($metodo === 'GET') {
 
     $stmt->close();
 
-    $sqlContadores =
-        "SELECT COUNT(*) AS todas,
+    $sqlContadores = "SELECT COUNT(*) AS todas,
                 SUM(status_denuncia = 'pendente') AS pendente,
                 SUM(status_denuncia = 'mantido') AS mantido,
                 SUM(status_denuncia = 'removido') AS removido
@@ -209,7 +200,7 @@ if ($metodo === 'GET') {
         'total' => $totalStatus,
         'limite' => $limite,
         'offset' => $offset,
-        'tem_mais' => $limite !== null && $offset + count($denuncias) < $totalStatus
+        'tem_mais' => $limite !== null && $offset + count($denuncias) < $totalStatus,
     ]);
 }
 
@@ -228,7 +219,7 @@ if ($metodo === 'POST') {
     $temResposta = $idResposta !== false && $idResposta !== null;
     $temMidia = $idMidia !== false && $idMidia !== null;
 
-    if (((int) $temPost + (int) $temResposta + (int) $temMidia) !== 1 || $motivo === '') {
+    if ((int) $temPost + (int) $temResposta + (int) $temMidia !== 1 || $motivo === '') {
         responder(['erro' => 'Informe motivo e exatamente um alvo: id_post, id_resposta ou id_midia'], 400);
     }
 
@@ -236,15 +227,10 @@ if ($metodo === 'POST') {
         responder(['erro' => 'motivo deve ter no máximo 100 caracteres'], 400);
     }
 
-    $motivosPermitidos = [
-        'Conteúdo inapropriado',
-        'Spam ou publicidade',
-        'Informação falsa',
-        'Discurso de ódio',
-    ];
+    $motivosPermitidos = ['Conteúdo inapropriado', 'Spam ou publicidade', 'Informação falsa', 'Discurso de ódio'];
     $prefixoOutroMotivo = 'Outro motivo: ';
-    $ehOutroMotivo = str_starts_with($motivo, $prefixoOutroMotivo)
-        && trim(substr($motivo, strlen($prefixoOutroMotivo))) !== '';
+    $ehOutroMotivo =
+        str_starts_with($motivo, $prefixoOutroMotivo) && trim(substr($motivo, strlen($prefixoOutroMotivo))) !== '';
 
     if (!in_array($motivo, $motivosPermitidos, true) && !$ehOutroMotivo) {
         responder(['erro' => 'Selecione um motivo de denúncia válido'], 400);
@@ -254,7 +240,7 @@ if ($metodo === 'POST') {
         'denuncias',
         SHOWME_LIMITE_DENUNCIAS,
         SHOWME_JANELA_DENUNCIAS,
-        'Limite de denúncias atingido. Aguarde alguns minutos antes de enviar outra.'
+        'Limite de denúncias atingido. Aguarde alguns minutos antes de enviar outra.',
     );
 
     if ($temPost) {
@@ -262,7 +248,7 @@ if ($metodo === 'POST') {
             "SELECT id_usuario
              FROM comunidade_post
              WHERE id_post = ? AND status_post = 'ativo'
-             LIMIT 1"
+             LIMIT 1",
         );
         $idAlvo = $idPost;
         $colunaAlvo = 'id_post';
@@ -273,7 +259,7 @@ if ($metodo === 'POST') {
              INNER JOIN comunidade_post p ON p.id_post = r.id_post
              WHERE r.id_resposta = ? AND r.status_resposta = 'ativo'
                AND p.status_post = 'ativo'
-             LIMIT 1"
+             LIMIT 1",
         );
         $idAlvo = $idResposta;
         $colunaAlvo = 'id_resposta';
@@ -282,7 +268,7 @@ if ($metodo === 'POST') {
             "SELECT id_usuario
              FROM comunidade_midia
              WHERE id_midia = ? AND status_midia = 'ativo'
-             LIMIT 1"
+             LIMIT 1",
         );
         $idAlvo = $idMidia;
         $colunaAlvo = 'id_midia';
@@ -305,7 +291,7 @@ if ($metodo === 'POST') {
         "SELECT id_denuncia
          FROM comunidade_denuncia
          WHERE $colunaAlvo = ? AND id_usuario = ?
-         LIMIT 1"
+         LIMIT 1",
     );
     $stmt->bind_param('ii', $idAlvo, $idUsuario);
     executarStatementApi($stmt);
@@ -318,7 +304,7 @@ if ($metodo === 'POST') {
 
     $stmt = $conn->prepare(
         'INSERT INTO comunidade_denuncia (id_post, id_resposta, id_midia, id_usuario, motivo)
-         VALUES (?, ?, ?, ?, ?)'
+         VALUES (?, ?, ?, ?, ?)',
     );
     $valorPost = $temPost ? $idPost : null;
     $valorResposta = $temResposta ? $idResposta : null;
@@ -364,7 +350,7 @@ if ($metodo === 'PUT') {
             'SELECT id_post, id_resposta, id_midia, status_denuncia
              FROM comunidade_denuncia
              WHERE id_denuncia = ?
-             LIMIT 1 FOR UPDATE'
+             LIMIT 1 FOR UPDATE',
         );
         $stmt->bind_param('i', $id);
         executarStatementApi($stmt);
@@ -381,10 +367,8 @@ if ($metodo === 'PUT') {
             responder(['erro' => 'Esta denúncia já foi analisada'], 409);
         }
 
-        $tipoAlvo = $denuncia['id_resposta'] !== null
-            ? 'resposta'
-            : ($denuncia['id_post'] !== null ? 'post' : 'midia');
-        $idAlvo = (int) ($denuncia['id_resposta'] ?? $denuncia['id_post'] ?? $denuncia['id_midia']);
+        $tipoAlvo = $denuncia['id_resposta'] !== null ? 'resposta' : ($denuncia['id_post'] !== null ? 'post' : 'midia');
+        $idAlvo = (int) ($denuncia['id_resposta'] ?? ($denuncia['id_post'] ?? $denuncia['id_midia']));
 
         if ($tipoAlvo === 'post') {
             $stmt = $conn->prepare(
@@ -394,7 +378,7 @@ if ($metodo === 'PUT') {
                  FROM comunidade_post p
                  INNER JOIN evento e ON e.id_evento = p.id_evento
                  INNER JOIN usuario u ON u.id_user = p.id_usuario
-                 WHERE p.id_post = ? LIMIT 1 FOR UPDATE'
+                 WHERE p.id_post = ? LIMIT 1 FOR UPDATE',
             );
         } elseif ($tipoAlvo === 'resposta') {
             $stmt = $conn->prepare(
@@ -405,7 +389,7 @@ if ($metodo === 'PUT') {
                  INNER JOIN comunidade_post p ON p.id_post = r.id_post
                  INNER JOIN evento e ON e.id_evento = p.id_evento
                  INNER JOIN usuario u ON u.id_user = r.id_usuario
-                 WHERE r.id_resposta = ? LIMIT 1 FOR UPDATE'
+                 WHERE r.id_resposta = ? LIMIT 1 FOR UPDATE',
             );
         } else {
             $stmt = $conn->prepare(
@@ -416,7 +400,7 @@ if ($metodo === 'PUT') {
                  FROM comunidade_midia m
                  INNER JOIN evento e ON e.id_evento = m.id_evento
                  INNER JOIN usuario u ON u.id_user = m.id_usuario
-                 WHERE m.id_midia = ? LIMIT 1 FOR UPDATE'
+                 WHERE m.id_midia = ? LIMIT 1 FOR UPDATE',
             );
         }
 
@@ -444,7 +428,7 @@ if ($metodo === 'PUT') {
             "SELECT u.nome_user, u.sobrenome, u.email_user
              FROM comunidade_denuncia d
              INNER JOIN usuario u ON u.id_user = d.id_usuario
-             WHERE d.$colunaAlvo = ? AND d.status_denuncia = 'pendente'"
+             WHERE d.$colunaAlvo = ? AND d.status_denuncia = 'pendente'",
         );
         $stmt->bind_param('i', $idAlvo);
         executarStatementApi($stmt);
@@ -458,7 +442,9 @@ if ($metodo === 'PUT') {
             if ($tipoAlvo === 'post') {
                 $stmt = $conn->prepare("UPDATE comunidade_post SET status_post = 'removido' WHERE id_post = ?");
             } elseif ($tipoAlvo === 'resposta') {
-                $stmt = $conn->prepare("UPDATE comunidade_resposta SET status_resposta = 'removido' WHERE id_resposta = ?");
+                $stmt = $conn->prepare(
+                    "UPDATE comunidade_resposta SET status_resposta = 'removido' WHERE id_resposta = ?",
+                );
             } else {
                 $stmt = $conn->prepare("UPDATE comunidade_midia SET status_midia = 'removido' WHERE id_midia = ?");
                 $caminhoMidiaRemovida = $conteudo['caminho_arquivo'];
@@ -472,7 +458,7 @@ if ($metodo === 'PUT') {
         $stmt = $conn->prepare(
             "UPDATE comunidade_denuncia
              SET status_denuncia = ?, data_moderacao = NOW(), id_admin_moderacao = ?
-             WHERE $colunaAlvo = ? AND status_denuncia = 'pendente'"
+             WHERE $colunaAlvo = ? AND status_denuncia = 'pendente'",
         );
         $stmt->bind_param('sii', $novoStatus, $idAdmin, $idAlvo);
         executarStatementApi($stmt);
@@ -500,7 +486,7 @@ if ($metodo === 'PUT') {
                     (string) $conteudo['nome_evento'],
                     $tipoAlvo,
                     $acao,
-                    'denunciante'
+                    'denunciante',
                 );
             } catch (Throwable $erroEmail) {
                 error_log('Falha ao notificar denunciante: ' . $erroEmail->getMessage());
@@ -515,7 +501,7 @@ if ($metodo === 'PUT') {
                     (string) $conteudo['nome_evento'],
                     $tipoAlvo,
                     $acao,
-                    'autor'
+                    'autor',
                 );
             } catch (Throwable $erroEmail) {
                 error_log('Falha ao notificar autor do conteúdo removido: ' . $erroEmail->getMessage());
@@ -523,9 +509,7 @@ if ($metodo === 'PUT') {
         }
 
         responder([
-            'mensagem' => $acao === 'remover'
-                ? 'Conteúdo removido com sucesso'
-                : 'Conteúdo mantido com sucesso',
+            'mensagem' => $acao === 'remover' ? 'Conteúdo removido com sucesso' : 'Conteúdo mantido com sucesso',
             'moderacao' => [
                 'id_denuncia' => $id,
                 'tipo_alvo' => $tipoAlvo,

@@ -1,7 +1,7 @@
 <?php
 require_once __DIR__ . '/config/verificaUsuarioComum.php';
 
-$idInformado = $_GET['id'] ?? $_GET['id_evento'] ?? null;
+$idInformado = $_GET['id'] ?? ($_GET['id_evento'] ?? null);
 
 if (!is_string($idInformado) || !ctype_digit($idInformado) || (int) $idInformado < 1) {
     http_response_code(400);
@@ -9,7 +9,6 @@ if (!is_string($idInformado) || !ctype_digit($idInformado) || (int) $idInformado
 }
 
 $idEvento = (int) $idInformado;
-
 ?>
     <!doctype html>
 

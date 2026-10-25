@@ -46,12 +46,14 @@ if ($metodo === 'POST' && $id !== null) {
         responder(['erro' => 'Envie no máximo uma foto de perfil e um banner'], 400);
     }
 
-    $perfilPronto = isset($_POST['foto_perfil_pronta']) && is_string($_POST['foto_perfil_pronta'])
-        ? trim($_POST['foto_perfil_pronta'])
-        : '';
-    $bannerPronto = isset($_POST['foto_banner_pronta']) && is_string($_POST['foto_banner_pronta'])
-        ? trim($_POST['foto_banner_pronta'])
-        : '';
+    $perfilPronto =
+        isset($_POST['foto_perfil_pronta']) && is_string($_POST['foto_perfil_pronta'])
+            ? trim($_POST['foto_perfil_pronta'])
+            : '';
+    $bannerPronto =
+        isset($_POST['foto_banner_pronta']) && is_string($_POST['foto_banner_pronta'])
+            ? trim($_POST['foto_banner_pronta'])
+            : '';
 
     if ($arquivosPerfil !== [] && $perfilPronto !== '') {
         responder(['erro' => 'Escolha entre upload ou imagem pronta para a foto de perfil'], 400);
@@ -77,7 +79,7 @@ if ($metodo === 'POST' && $id !== null) {
         'SELECT foto_perfil, foto_banner
          FROM usuario
          WHERE id_user = ?
-         LIMIT 1'
+         LIMIT 1',
     );
     $stmt->bind_param('i', $id);
     executarStatementApi($stmt);
@@ -116,7 +118,7 @@ if ($metodo === 'POST' && $id !== null) {
         $stmt = $conn->prepare(
             'UPDATE usuario
              SET foto_perfil = ?, foto_banner = ?
-             WHERE id_user = ?'
+             WHERE id_user = ?',
         );
         $stmt->bind_param('ssi', $novaFotoPerfil, $novoBanner, $id);
         executarStatementApi($stmt);
@@ -156,7 +158,7 @@ if ($metodo === 'POST' && $id !== null) {
                 foto_perfil, foto_banner, data_cadastro
          FROM usuario
          WHERE id_user = ?
-         LIMIT 1'
+         LIMIT 1',
     );
     $stmt->bind_param('i', $id);
     executarStatementApi($stmt);
@@ -177,7 +179,6 @@ if ($metodo === 'POST' && $id !== null) {
 */
 
 if ($metodo === 'POST') {
-
     if ($id !== null) {
         responder(['erro' => 'O cadastro não recebe ID na URL'], 400);
     }
@@ -190,37 +191,49 @@ if ($metodo === 'POST') {
     $senha = (string) ($dados['senha'] ?? '');
 
     if ($nome === '' || $sobrenome === '') {
-        responder([
-            'erro' => 'Nome e sobrenome são obrigatórios'
-        ], 400);
+        responder(
+            [
+                'erro' => 'Nome e sobrenome são obrigatórios',
+            ],
+            400,
+        );
     }
 
-    $erroLimite = validarLimitesTextoApi([
-        'nome' => $nome,
-        'sobrenome' => $sobrenome,
-        'email' => $email,
-    ], [
-        'nome' => 100,
-        'sobrenome' => 100,
-        'email' => 100,
-    ]);
+    $erroLimite = validarLimitesTextoApi(
+        [
+            'nome' => $nome,
+            'sobrenome' => $sobrenome,
+            'email' => $email,
+        ],
+        [
+            'nome' => 100,
+            'sobrenome' => 100,
+            'email' => 100,
+        ],
+    );
 
     if ($erroLimite !== null) {
         responder(['erro' => $erroLimite], 400);
     }
 
     if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-        responder([
-            'erro' => 'E-mail inválido'
-        ], 400);
+        responder(
+            [
+                'erro' => 'E-mail inválido',
+            ],
+            400,
+        );
     }
 
     $erroSenha = validarRequisitosSenha($senha);
 
     if ($erroSenha !== null) {
-        responder([
-            'erro' => $erroSenha
-        ], 400);
+        responder(
+            [
+                'erro' => $erroSenha,
+            ],
+            400,
+        );
     }
 
     /*
@@ -233,14 +246,11 @@ if ($metodo === 'POST') {
         'SELECT id_user
          FROM usuario
          WHERE email_user = ?
-         LIMIT 1'
+         LIMIT 1',
     );
 
     if (!$stmt) {
-        responderErroInfraestrutura(
-            'Falha ao preparar consulta de e-mail',
-            new RuntimeException($conn->error)
-        );
+        responderErroInfraestrutura('Falha ao preparar consulta de e-mail', new RuntimeException($conn->error));
     }
 
     $stmt->bind_param('s', $email);
@@ -250,9 +260,12 @@ if ($metodo === 'POST') {
     if ($stmt->num_rows > 0) {
         $stmt->close();
 
-        responder([
-            'erro' => 'Este e-mail já está cadastrado'
-        ], 409);
+        responder(
+            [
+                'erro' => 'Este e-mail já está cadastrado',
+            ],
+            409,
+        );
     }
 
     $stmt->close();
@@ -274,23 +287,14 @@ if ($metodo === 'POST') {
     $stmt = $conn->prepare(
         "INSERT INTO usuario
         (nome_user, sobrenome, email_user, senha_user, tipo_usuario)
-        VALUES (?, ?, ?, ?, 'comum')"
+        VALUES (?, ?, ?, ?, 'comum')",
     );
 
     if (!$stmt) {
-        responderErroInfraestrutura(
-            'Falha ao preparar cadastro de usuário',
-            new RuntimeException($conn->error)
-        );
+        responderErroInfraestrutura('Falha ao preparar cadastro de usuário', new RuntimeException($conn->error));
     }
 
-    $stmt->bind_param(
-        'ssss',
-        $nome,
-        $sobrenome,
-        $email,
-        $senhaHash
-    );
+    $stmt->bind_param('ssss', $nome, $sobrenome, $email, $senhaHash);
 
     executarStatementApi($stmt);
 
@@ -305,13 +309,16 @@ if ($metodo === 'POST') {
         'email_user' => $email,
         'tipo_usuario' => 'comum',
         'foto_perfil' => null,
-        'foto_banner' => null
+        'foto_banner' => null,
     ]);
 
-    responder([
-        'mensagem' => 'Usuário cadastrado com sucesso',
-        'usuario' => $usuarioCriado
-    ], 201);
+    responder(
+        [
+            'mensagem' => 'Usuário cadastrado com sucesso',
+            'usuario' => $usuarioCriado,
+        ],
+        201,
+    );
 }
 
 /*
@@ -329,11 +336,13 @@ require_once __DIR__ . '/middleware/verificaLogin.php';
 */
 
 if ($metodo === 'GET') {
-
     if ($id === null) {
-        responder([
-            'erro' => 'Informe o ID do usuário na URL'
-        ], 400);
+        responder(
+            [
+                'erro' => 'Informe o ID do usuário na URL',
+            ],
+            400,
+        );
     }
 
     $idLogado = exigirLogin();
@@ -341,9 +350,12 @@ if ($metodo === 'GET') {
     $ehAdmin = ($_SESSION['tipo_usuario'] ?? '') === 'admin';
 
     if ($idLogado !== $id && !$ehAdmin) {
-        responder([
-            'erro' => 'Você só pode consultar o próprio perfil'
-        ], 403);
+        responder(
+            [
+                'erro' => 'Você só pode consultar o próprio perfil',
+            ],
+            403,
+        );
     }
 
     $stmt = $conn->prepare(
@@ -364,7 +376,7 @@ if ($metodo === 'GET') {
                    WHERE cm.id_usuario = u.id_user AND cm.status_midia = \'ativo\')) AS publicacoes_comunidade
          FROM usuario u
          WHERE u.id_user = ?
-         LIMIT 1'
+         LIMIT 1',
     );
 
     $stmt->bind_param('i', $id);
@@ -375,9 +387,12 @@ if ($metodo === 'GET') {
     $stmt->close();
 
     if (!$usuario) {
-        responder([
-            'erro' => 'Usuário não encontrado'
-        ], 404);
+        responder(
+            [
+                'erro' => 'Usuário não encontrado',
+            ],
+            404,
+        );
     }
 
     $estatisticas = [
@@ -386,11 +401,7 @@ if ($metodo === 'GET') {
         'publicacoes_comunidade' => (int) $usuario['publicacoes_comunidade'],
     ];
 
-    unset(
-        $usuario['viagens_planejadas'],
-        $usuario['eventos_cadastrados'],
-        $usuario['publicacoes_comunidade']
-    );
+    unset($usuario['viagens_planejadas'], $usuario['eventos_cadastrados'], $usuario['publicacoes_comunidade']);
 
     responder([
         'usuario' => normalizarUsuarioApi($usuario),
@@ -405,47 +416,46 @@ if ($metodo === 'GET') {
 */
 
 if ($metodo === 'PUT') {
-
     if ($id === null) {
-        responder([
-            'erro' => 'Informe o ID do usuário na URL'
-        ], 400);
+        responder(
+            [
+                'erro' => 'Informe o ID do usuário na URL',
+            ],
+            400,
+        );
     }
 
     $idLogado = exigirLogin();
 
     if ($idLogado !== $id) {
-        responder([
-            'erro' => 'Você só pode editar o próprio perfil'
-        ], 403);
+        responder(
+            [
+                'erro' => 'Você só pode editar o próprio perfil',
+            ],
+            403,
+        );
     }
 
     $dados = lerJson(true);
 
-    $camposEditaveis = [
-        'nome',
-        'sobrenome',
-        'email',
-        'senha',
-        'nova_senha'
-    ];
+    $camposEditaveis = ['nome', 'sobrenome', 'email', 'senha', 'nova_senha'];
 
-    $camposRecebidos = array_intersect(
-        $camposEditaveis,
-        array_keys($dados)
-    );
+    $camposRecebidos = array_intersect($camposEditaveis, array_keys($dados));
 
     if ($camposRecebidos === []) {
-        responder([
-            'erro' => 'Informe ao menos um campo editável'
-        ], 400);
+        responder(
+            [
+                'erro' => 'Informe ao menos um campo editável',
+            ],
+            400,
+        );
     }
 
     $stmt = $conn->prepare(
         'SELECT nome_user, sobrenome, email_user, senha_user
          FROM usuario
          WHERE id_user = ?
-         LIMIT 1'
+         LIMIT 1',
     );
 
     $stmt->bind_param('i', $id);
@@ -456,49 +466,57 @@ if ($metodo === 'PUT') {
     $stmt->close();
 
     if (!$usuarioAtual) {
-        responder([
-            'erro' => 'Usuário não encontrado'
-        ], 404);
+        responder(
+            [
+                'erro' => 'Usuário não encontrado',
+            ],
+            404,
+        );
     }
 
-    $nome = array_key_exists('nome', $dados)
-        ? trim((string) $dados['nome'])
-        : $usuarioAtual['nome_user'];
+    $nome = array_key_exists('nome', $dados) ? trim((string) $dados['nome']) : $usuarioAtual['nome_user'];
 
     $sobrenome = array_key_exists('sobrenome', $dados)
         ? trim((string) $dados['sobrenome'])
         : $usuarioAtual['sobrenome'];
 
-    $email = array_key_exists('email', $dados)
-        ? trim((string) $dados['email'])
-        : $usuarioAtual['email_user'];
+    $email = array_key_exists('email', $dados) ? trim((string) $dados['email']) : $usuarioAtual['email_user'];
 
     $alterarSenha = array_key_exists('senha', $dados) || array_key_exists('nova_senha', $dados);
 
     if ($nome === '' || $sobrenome === '') {
-        responder([
-            'erro' => 'Nome e sobrenome são obrigatórios'
-        ], 400);
+        responder(
+            [
+                'erro' => 'Nome e sobrenome são obrigatórios',
+            ],
+            400,
+        );
     }
 
-    $erroLimite = validarLimitesTextoApi([
-        'nome' => $nome,
-        'sobrenome' => $sobrenome,
-        'email' => $email,
-    ], [
-        'nome' => 100,
-        'sobrenome' => 100,
-        'email' => 100,
-    ]);
+    $erroLimite = validarLimitesTextoApi(
+        [
+            'nome' => $nome,
+            'sobrenome' => $sobrenome,
+            'email' => $email,
+        ],
+        [
+            'nome' => 100,
+            'sobrenome' => 100,
+            'email' => 100,
+        ],
+    );
 
     if ($erroLimite !== null) {
         responder(['erro' => $erroLimite], 400);
     }
 
     if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-        responder([
-            'erro' => 'E-mail inválido'
-        ], 400);
+        responder(
+            [
+                'erro' => 'E-mail inválido',
+            ],
+            400,
+        );
     }
 
     $stmt = $conn->prepare(
@@ -506,7 +524,7 @@ if ($metodo === 'PUT') {
          FROM usuario
          WHERE email_user = ?
          AND id_user <> ?
-         LIMIT 1'
+         LIMIT 1',
     );
 
     $stmt->bind_param('si', $email, $id);
@@ -516,9 +534,12 @@ if ($metodo === 'PUT') {
     if ($stmt->num_rows > 0) {
         $stmt->close();
 
-        responder([
-            'erro' => 'Este e-mail já está cadastrado'
-        ], 409);
+        responder(
+            [
+                'erro' => 'Este e-mail já está cadastrado',
+            ],
+            409,
+        );
     }
 
     $stmt->close();
@@ -533,35 +554,44 @@ if ($metodo === 'PUT') {
             : (string) ($dados['senha'] ?? '');
 
         if ($senhaAtual === '') {
-            responder([
-                'erro' => 'Informe a senha atual para alterar a senha.'
-            ], 400);
+            responder(
+                [
+                    'erro' => 'Informe a senha atual para alterar a senha.',
+                ],
+                400,
+            );
         }
 
         if (empty($usuarioAtual['senha_user'])) {
-            responder([
-                'erro' => 'Esta conta usa login pelo Google e ainda não possui uma senha local para alterar.'
-            ], 400);
+            responder(
+                [
+                    'erro' => 'Esta conta usa login pelo Google e ainda não possui uma senha local para alterar.',
+                ],
+                400,
+            );
         }
 
         if (!password_verify($senhaAtual, (string) $usuarioAtual['senha_user'])) {
-            responder([
-                'erro' => 'A senha atual está incorreta.'
-            ], 400);
+            responder(
+                [
+                    'erro' => 'A senha atual está incorreta.',
+                ],
+                400,
+            );
         }
 
         $erroSenha = validarRequisitosSenha($novaSenha);
 
         if ($erroSenha !== null) {
-            responder([
-                'erro' => $erroSenha
-            ], 400);
+            responder(
+                [
+                    'erro' => $erroSenha,
+                ],
+                400,
+            );
         }
 
-        $senhaHash = password_hash(
-            $novaSenha,
-            PASSWORD_DEFAULT
-        );
+        $senhaHash = password_hash($novaSenha, PASSWORD_DEFAULT);
 
         $stmt = $conn->prepare(
             'UPDATE usuario
@@ -569,17 +599,10 @@ if ($metodo === 'PUT') {
                  sobrenome = ?,
                  email_user = ?,
                  senha_user = ?
-             WHERE id_user = ?'
+             WHERE id_user = ?',
         );
 
-        $stmt->bind_param(
-            'ssssi',
-            $nome,
-            $sobrenome,
-            $email,
-            $senhaHash,
-            $id
-        );
+        $stmt->bind_param('ssssi', $nome, $sobrenome, $email, $senhaHash, $id);
 
         executarStatementApi($stmt);
         $stmt->close();
@@ -589,7 +612,7 @@ if ($metodo === 'PUT') {
             'UPDATE recuperacao_senha
              SET usado_em = NOW()
              WHERE id_usuario = ?
-             AND usado_em IS NULL'
+             AND usado_em IS NULL',
         );
         $stmt->bind_param('i', $id);
         executarStatementApi($stmt);
@@ -600,22 +623,15 @@ if ($metodo === 'PUT') {
         $novoTokenCsrf = renovarTokenCsrf();
         $mensagem = 'Senha alterada com sucesso';
     } else {
-
         $stmt = $conn->prepare(
             'UPDATE usuario
              SET nome_user = ?,
                  sobrenome = ?,
                  email_user = ?
-             WHERE id_user = ?'
+             WHERE id_user = ?',
         );
 
-        $stmt->bind_param(
-            'sssi',
-            $nome,
-            $sobrenome,
-            $email,
-            $id
-        );
+        $stmt->bind_param('sssi', $nome, $sobrenome, $email, $id);
 
         executarStatementApi($stmt);
         $stmt->close();
@@ -628,7 +644,7 @@ if ($metodo === 'PUT') {
                 tipo_usuario, foto_perfil, foto_banner, data_cadastro
          FROM usuario
          WHERE id_user = ?
-         LIMIT 1'
+         LIMIT 1',
     );
     $stmt->bind_param('i', $id);
     executarStatementApi($stmt);
@@ -638,7 +654,7 @@ if ($metodo === 'PUT') {
     responder([
         'mensagem' => $mensagem,
         'usuario' => normalizarUsuarioApi($usuarioAtualizado),
-        'csrf_token' => $novoTokenCsrf
+        'csrf_token' => $novoTokenCsrf,
     ]);
 }
 
@@ -648,6 +664,9 @@ if ($metodo === 'PUT') {
 |--------------------------------------------------------------------------
 */
 
-responder([
-    'erro' => 'Método não permitido'
-], 405);
+responder(
+    [
+        'erro' => 'Método não permitido',
+    ],
+    405,
+);

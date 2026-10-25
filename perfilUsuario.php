@@ -9,16 +9,27 @@ function renderizarModalPersonalizacao(
     string $modalId,
     string $titulo,
     string $inputId,
-    array $categorias
+    array $categorias,
 ): void {
-    $ehAvatar = $tipo === 'foto_perfil';
-    ?>
-    <div class="modal fade personalizacao-modal" id="<?= htmlspecialchars($modalId, ENT_QUOTES, 'UTF-8') ?>" tabindex="-1" aria-labelledby="<?= htmlspecialchars($modalId, ENT_QUOTES, 'UTF-8') ?>Titulo" aria-hidden="true" data-modal-midia="<?= htmlspecialchars($tipo, ENT_QUOTES, 'UTF-8') ?>">
+    $ehAvatar = $tipo === 'foto_perfil'; ?>
+    <div class="modal fade personalizacao-modal" id="<?= htmlspecialchars(
+        $modalId,
+        ENT_QUOTES,
+        'UTF-8',
+    ) ?>" tabindex="-1" aria-labelledby="<?= htmlspecialchars(
+    $modalId,
+    ENT_QUOTES,
+    'UTF-8',
+) ?>Titulo" aria-hidden="true" data-modal-midia="<?= htmlspecialchars($tipo, ENT_QUOTES, 'UTF-8') ?>">
         <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
             <div class="modal-content">
                 <div class="modal-header">
                     <div>
-                        <h2 class="modal-title" id="<?= htmlspecialchars($modalId, ENT_QUOTES, 'UTF-8') ?>Titulo"><?= htmlspecialchars($titulo, ENT_QUOTES, 'UTF-8') ?></h2>
+                        <h2 class="modal-title" id="<?= htmlspecialchars(
+                            $modalId,
+                            ENT_QUOTES,
+                            'UTF-8',
+                        ) ?>Titulo"><?= htmlspecialchars($titulo, ENT_QUOTES, 'UTF-8') ?></h2>
                         <p>Envie uma imagem sua ou escolha uma das opções da ShowMe.</p>
                     </div>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fechar"></button>
@@ -32,7 +43,15 @@ function renderizarModalPersonalizacao(
                         </span>
                         <small>Até 10 MB</small>
                     </label>
-                    <input type="file" id="<?= htmlspecialchars($inputId, ENT_QUOTES, 'UTF-8') ?>" data-input-upload-midia="<?= htmlspecialchars($tipo, ENT_QUOTES, 'UTF-8') ?>" accept="image/jpeg,image/png,image/webp" hidden>
+                    <input type="file" id="<?= htmlspecialchars(
+                        $inputId,
+                        ENT_QUOTES,
+                        'UTF-8',
+                    ) ?>" data-input-upload-midia="<?= htmlspecialchars(
+    $tipo,
+    ENT_QUOTES,
+    'UTF-8',
+) ?>" accept="image/jpeg,image/png,image/webp" hidden>
 
                     <div class="divisor-galeria"><span>OU EXPLORE A GALERIA</span></div>
 
@@ -40,23 +59,49 @@ function renderizarModalPersonalizacao(
                         <?php foreach ($categorias as $categoria => $dadosCategoria): ?>
                             <section class="categoria-galeria">
                                 <h3>
-                                    <i class="bi <?= htmlspecialchars($dadosCategoria['icone'], ENT_QUOTES, 'UTF-8') ?>" aria-hidden="true"></i>
+                                    <i class="bi <?= htmlspecialchars(
+                                        $dadosCategoria['icone'],
+                                        ENT_QUOTES,
+                                        'UTF-8',
+                                    ) ?>" aria-hidden="true"></i>
                                     <?= htmlspecialchars($categoria, ENT_QUOTES, 'UTF-8') ?>
                                 </h3>
-                                <div class="grid-galeria <?= $ehAvatar ? 'grid-galeria-avatar' : 'grid-galeria-banner' ?>">
+                                <div class="grid-galeria <?= $ehAvatar
+                                    ? 'grid-galeria-avatar'
+                                    : 'grid-galeria-banner' ?>">
                                     <?php foreach ($dadosCategoria['imagens'] as $imagem): ?>
                                         <button
                                             type="button"
                                             class="opcao-galeria"
                                             data-galeria-midia="<?= htmlspecialchars($tipo, ENT_QUOTES, 'UTF-8') ?>"
-                                            data-caminho="<?= htmlspecialchars($imagem['caminho'], ENT_QUOTES, 'UTF-8') ?>"
-                                            aria-label="Usar <?= htmlspecialchars($imagem['legenda'], ENT_QUOTES, 'UTF-8') ?>"
+                                            data-caminho="<?= htmlspecialchars(
+                                                $imagem['caminho'],
+                                                ENT_QUOTES,
+                                                'UTF-8',
+                                            ) ?>"
+                                            aria-label="Usar <?= htmlspecialchars(
+                                                $imagem['legenda'],
+                                                ENT_QUOTES,
+                                                'UTF-8',
+                                            ) ?>"
                                         >
                                             <span class="moldura-galeria">
-                                                <img src="<?= htmlspecialchars($imagem['caminho'], ENT_QUOTES, 'UTF-8') ?>" alt="<?= htmlspecialchars($imagem['legenda'], ENT_QUOTES, 'UTF-8') ?>" loading="lazy">
+                                                <img src="<?= htmlspecialchars(
+                                                    $imagem['caminho'],
+                                                    ENT_QUOTES,
+                                                    'UTF-8',
+                                                ) ?>" alt="<?= htmlspecialchars(
+    $imagem['legenda'],
+    ENT_QUOTES,
+    'UTF-8',
+) ?>" loading="lazy">
                                                 <span class="estado-selecao"><i class="bi bi-check-lg" aria-hidden="true"></i></span>
                                             </span>
-                                            <span class="legenda-galeria"><?= htmlspecialchars($imagem['legenda'], ENT_QUOTES, 'UTF-8') ?></span>
+                                            <span class="legenda-galeria"><?= htmlspecialchars(
+                                                $imagem['legenda'],
+                                                ENT_QUOTES,
+                                                'UTF-8',
+                                            ) ?></span>
                                         </button>
                                     <?php endforeach; ?>
                                 </div>
@@ -321,14 +366,14 @@ function renderizarModalPersonalizacao(
         'modalPersonalizarPerfil',
         'Personalize sua foto de perfil',
         'inputFotoPerfil',
-        $catalogoMidiasPerfil['foto_perfil']
+        $catalogoMidiasPerfil['foto_perfil'],
     );
     renderizarModalPersonalizacao(
         'foto_banner',
         'modalPersonalizarBanner',
         'Personalize seu banner',
         'inputFotoBanner',
-        $catalogoMidiasPerfil['foto_banner']
+        $catalogoMidiasPerfil['foto_banner'],
     );
     ?>
 

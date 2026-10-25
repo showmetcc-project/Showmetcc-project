@@ -8,6 +8,6 @@
     new window.VLibras.Widget({
         rootPath: 'https://vlibras.gov.br/app',
         avatar: 'random',
-        position: 'R'
+        position: 'R',
     });
-}());
+})();

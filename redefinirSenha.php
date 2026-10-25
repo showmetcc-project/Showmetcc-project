@@ -4,9 +4,12 @@ require_once __DIR__ . '/config/validacaoSenha.php';
 
 iniciarSessaoSegura();
 
-$token = isset($_GET['token']) && is_string($_GET['token'])
-    ? trim($_GET['token'])
-    : (isset($_POST['token']) && is_string($_POST['token']) ? trim($_POST['token']) : '');
+$token =
+    isset($_GET['token']) && is_string($_GET['token'])
+        ? trim($_GET['token'])
+        : (isset($_POST['token']) && is_string($_POST['token'])
+            ? trim($_POST['token'])
+            : '');
 
 $tokenValido = false;
 $erro = '';
@@ -28,7 +31,7 @@ if (!preg_match('/^[a-f0-9]{64}$/i', $token)) {
              WHERE token_hash = ?
              AND usado_em IS NULL
              AND expira_em > NOW()
-             LIMIT 1'
+             LIMIT 1',
         );
         $stmt->bind_param('s', $tokenHash);
         $stmt->execute();
@@ -47,15 +50,10 @@ if (!preg_match('/^[a-f0-9]{64}$/i', $token)) {
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && $tokenValido) {
-    $tokenCsrf = isset($_POST['csrf_token']) && is_string($_POST['csrf_token'])
-        ? $_POST['csrf_token']
-        : null;
-    $novaSenha = isset($_POST['nova_senha']) && is_string($_POST['nova_senha'])
-        ? $_POST['nova_senha']
-        : '';
-    $confirmarSenha = isset($_POST['confirmar_senha']) && is_string($_POST['confirmar_senha'])
-        ? $_POST['confirmar_senha']
-        : '';
+    $tokenCsrf = isset($_POST['csrf_token']) && is_string($_POST['csrf_token']) ? $_POST['csrf_token'] : null;
+    $novaSenha = isset($_POST['nova_senha']) && is_string($_POST['nova_senha']) ? $_POST['nova_senha'] : '';
+    $confirmarSenha =
+        isset($_POST['confirmar_senha']) && is_string($_POST['confirmar_senha']) ? $_POST['confirmar_senha'] : '';
 
     if (!validarTokenCsrfPagina($tokenCsrf)) {
         $erro = 'A sessão do formulário expirou. Atualize a página e tente novamente.';
@@ -81,7 +79,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $tokenValido) {
                      AND usado_em IS NULL
                      AND expira_em > NOW()
                      LIMIT 1
-                     FOR UPDATE'
+                     FOR UPDATE',
                 );
                 $stmt->bind_param('s', $tokenHash);
                 $stmt->execute();
@@ -100,7 +98,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $tokenValido) {
                     $stmt = $conn->prepare(
                         'UPDATE usuario
                          SET senha_user = ?
-                         WHERE id_user = ?'
+                         WHERE id_user = ?',
                     );
                     $stmt->bind_param('si', $senhaHash, $idUsuario);
                     $stmt->execute();
@@ -110,7 +108,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $tokenValido) {
                         'UPDATE recuperacao_senha
                          SET usado_em = NOW()
                          WHERE id_usuario = ?
-                         AND usado_em IS NULL'
+                         AND usado_em IS NULL',
                     );
                     $stmt->bind_param('i', $idUsuario);
                     $stmt->execute();
@@ -120,7 +118,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $tokenValido) {
                     $transacaoIniciada = false;
 
                     header('Location: login.php?senha_redefinida=1', true, 303);
-                    exit;
+                    exit();
                 }
             } catch (Throwable $erroRedefinicao) {
                 if ($transacaoIniciada) {
@@ -187,7 +185,11 @@ $tokenCsrf = obterTokenCsrfPagina();
                     <?php endif; ?>
 
                     <form id="formRedefinirSenha" method="post" action="redefinirSenha.php" novalidate>
-                        <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($tokenCsrf, ENT_QUOTES, 'UTF-8') ?>">
+                        <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(
+                            $tokenCsrf,
+                            ENT_QUOTES,
+                            'UTF-8',
+                        ) ?>">
                         <input type="hidden" name="token" value="<?= htmlspecialchars($token, ENT_QUOTES, 'UTF-8') ?>">
 
                         <div class="mb-3">

@@ -60,7 +60,7 @@ function atualizarLinksHospedagem() {
 }
 
 async function carregarEvento() {
-    const resposta = await fetch(`api/eventos/${evento.id}`);
+    const resposta = await fetch(`api/apiEventos.php${evento.id}`);
     const dados = await resposta.json();
 
     if (!resposta.ok) {
@@ -1751,17 +1751,16 @@ async function calcularRotaManual() {
     try {
 
 
-        const url =
-            "https://nominatim.openstreetmap.org/search" +
-            "?format=json" +
-            "&limit=1" +
-            "&countrycodes=br" +
-            "&q=" +
-            encodeURIComponent(
-                endereco
-            );
+        const camadaStadia = L.tileLayer(
+    'https://tiles.stadiamaps.com/tiles/alidade_smooth_dark/{z}/{x}/{y}{r}.png?api_key=7a0fd48c-f87f-4e75-a3ff-1c77b48c7978',
+    {
+        maxZoom: 20,
+        attribution:
+            '&copy; Stadia Maps &copy; OpenMapTiles &copy; OpenStreetMap contributors'
+    }
+);
 
-
+camadaStadia.addTo(mapa);
         const resposta =
             await fetch(
 
@@ -2484,7 +2483,7 @@ async function lerRespostaJson(resposta) {
 }
 
 async function obterStatusGoogleAgenda() {
-    const resposta = await fetch('api/google-calendar', {headers: {Accept: 'application/json'}});
+    const resposta = await fetch('./api/apiGoogle-calendar.php', {headers: {Accept: 'application/json'}});
     const dados = await lerRespostaJson(resposta);
 
     if (resposta.status === 401) {
@@ -2519,7 +2518,7 @@ function definirEstadoGoogleAgenda(exportado, htmlLink = '') {
 }
 
 async function consultarGoogleAgendaExportado(idRota) {
-    const resposta = await fetch('api/google-calendar', {
+    const resposta = await fetch('./api/apiGoogle-calendar.php', {
         method: 'POST',
         headers: {'Content-Type': 'application/json', Accept: 'application/json'},
         body: JSON.stringify({acao: 'verificar_exportado', id_rota: Number(idRota)})
@@ -2576,7 +2575,7 @@ definirEstadoGoogleAgenda(true, exportacao.html_link);
 }
 
 async function carregarPlanejamentoExistente() {
-    const resposta = await fetch('api/planejamento/', {headers: {Accept: 'application/json'}});
+    const resposta = await fetch('./api/apiPlanejamento.php', {headers: {Accept: 'application/json'}});
     const dados = await lerRespostaJson(resposta);
 
     if (!resposta.ok) {
@@ -2677,7 +2676,7 @@ async function verificarConflitoGoogleAgenda(tempo) {
         return true;
     }
 
-    const resposta = await fetch('api/google-calendar', {
+    const resposta = await fetch('./api/apigGoogle-calendar.php', {
         method: 'POST',
         headers: {'Content-Type': 'application/json', Accept: 'application/json'},
         body: JSON.stringify({
@@ -2707,7 +2706,7 @@ async function adicionarAoGoogleAgenda() {
     texto.textContent = 'Adicionando ao Google Agenda...';
 
     try {
-        const resposta = await fetch('api/google-calendar', {
+        const resposta = await fetch('./api/apiGoogle-calendar.php', {
 method: 'POST',
 headers: {'Content-Type': 'application/json', Accept: 'application/json'},
 body: JSON.stringify({acao: 'exportar', id_rota: idRotaGoogleAgenda})
@@ -2780,8 +2779,8 @@ return;
 
         mensagem.textContent = 'Salvando planejamento...';
         const endpointPlanejamento = atualizandoPlanejamento
-? `api/planejamento/${idPlanejamentoExistente}`
-: 'api/planejamento/';
+? `./api/apiPlanejamento;php${idPlanejamentoExistente}`
+: './api/apiPlanejamento;php';
         const resposta = await fetch(endpointPlanejamento, {
 method: atualizandoPlanejamento ? 'PUT' : 'POST',
 headers: {'Content-Type': 'application/json', Accept: 'application/json'},
@@ -3056,7 +3055,7 @@ async function verificarCompromissosDaData() {
 
     /* 1) Compromissos já planejados no próprio ShowMe. */
     try {
-        const resposta = await fetch('api/planejamento/', {headers: {Accept: 'application/json'}});
+        const resposta = await fetch('./api/apiPlanejamento.php', {headers: {Accept: 'application/json'}});
         const dados = await lerRespostaJson(resposta);
 
         if (resposta.ok) {
@@ -3079,7 +3078,7 @@ async function verificarCompromissosDaData() {
         const status = statusGoogleAgenda || await obterStatusGoogleAgenda();
 
         if (status?.conectado) {
-const resposta = await fetch('api/google-calendar', {
+const resposta = await fetch('/../api/apiGoogle-calendar.php', {
     method: 'POST',
     headers: {'Content-Type': 'application/json', Accept: 'application/json'},
     body: JSON.stringify({
@@ -3143,5 +3142,10 @@ async function inicializarPlanejamento() {
         atualizarTimeline(1);
     }
 }
+
+
+// Disponibiliza as funções chamadas pelos onclick do planejamento.php
+window.proximaEtapa = proximaEtapa;
+window.abrirEtapaPlanejamento = abrirEtapaPlanejamento;
 
 inicializarPlanejamento();

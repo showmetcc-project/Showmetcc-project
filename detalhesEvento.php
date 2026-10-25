@@ -1,7 +1,7 @@
 <?php
-require_once __DIR__ . '/config/verificaUsuarioComum.php';
-
-$idUsuarioSessao = isset($_SESSION['id_user']) ? (int) $_SESSION['id_user'] : 0;
+require_once __DIR__ . '/config/sessao.php';
+// Inicia a sessão automaticamente ao incluir este arquivo.
+iniciarSessaoSegura();
 ?>
 <!DOCTYPE html>
 <html lang="pt-BR">

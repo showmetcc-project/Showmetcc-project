@@ -172,15 +172,20 @@ $googleClientId = is_array($googleConfig) ? trim((string) ($googleConfig['client
 
   </main>
 
-  <script src="assets/js/csrf.js"></script>
-  <script src="assets/js/cadastro.js" defer></script>
-  <script src="assets/js/loginPasswordToggle.js" defer></script>
-  <script src="https://accounts.google.com/gsi/client" async defer></script>
-  <script src="assets/js/googleLogin.js" defer></script>
-  <script src="assets/js/cabecalho.js" defer></script>
-  <script src="assets/js/main.js"></script>
 
-  <?php require_once __DIR__ . '/acessibilidade.php'; ?>
+<script src="assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+
+<script src="assets/js/csrf.js" defer></script>
+<script src="assets/js/cadastro.js" defer></script>
+
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<script src="assets/js/googleLogin.js" defer></script>
+<script src="assets/js/cabecalho.js" defer></script>
+<script src="assets/js/main.js"></script>
+
+<?php require_once __DIR__ . '/acessibilidade.php'; ?>
+</body>
+</html>
 
 
 </body>

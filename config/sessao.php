@@ -26,3 +26,5 @@ function iniciarSessaoSegura(): void
 
     session_start();
 }
+// Inicia a sessão automaticamente ao incluir este arquivo.
+

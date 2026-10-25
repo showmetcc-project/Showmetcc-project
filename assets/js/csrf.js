@@ -1,91 +1,150 @@
-/* Proteção CSRF compartilhada para as chamadas mutáveis da API ShowMe. */
-(function () {
-  'use strict';
 
-  const fetchNativo = window.fetch.bind(window);
-  const urlToken = new URL('api/csrf', window.location.href).toString();
-  let tokenCsrf = null;
-  let carregamentoToken = null;
+/* Proteção CSRF compartilhada — ShowMe */
+(() => {
+    'use strict';
 
-  function urlDaApi(entrada) {
-    const valor = entrada instanceof Request ? entrada.url : entrada;
+    const fetchNativo = window.fetch.bind(window);
 
-    try {
-      const url = new URL(valor, window.location.href);
-      return url.origin === window.location.origin && /\/api(?:\/|$)/.test(url.pathname);
-    } catch (_) {
-      return false;
-    }
-  }
+    const urlToken = new URL(
+        'api/apiCsrf.php',
+        document.baseURI
+    ).href;
 
-  async function carregarToken(forcar = false) {
-    if (tokenCsrf && !forcar) {
-      return tokenCsrf;
-    }
+    let tokenCsrf = null;
+    let carregamentoToken = null;
 
-    if (carregamentoToken && !forcar) {
-      return carregamentoToken;
-    }
+    function pertenceApi(entrada) {
+        try {
+            const url = entrada instanceof URL
+                ? entrada
+                : new URL(
+                    typeof entrada === 'string'
+                        ? entrada
+                        : entrada.url,
+                    document.baseURI
+                );
 
-    carregamentoToken = fetchNativo(urlToken, {
-      method: 'GET',
-      credentials: 'same-origin',
-      headers: {Accept: 'application/json'}
-    })
-      .then(async (resposta) => {
-        const dados = await resposta.json().catch(() => ({}));
-
-        if (!resposta.ok || typeof dados.csrf_token !== 'string' || !dados.csrf_token) {
-          throw new Error(dados.erro || 'Não foi possível preparar a proteção da sessão.');
+            return (
+                url.origin === window.location.origin &&
+                /\/api\/[^/]+\.php$/.test(url.pathname)
+            );
+        } catch {
+            return false;
         }
-
-        tokenCsrf = dados.csrf_token;
-        window.csrfToken = tokenCsrf;
-        return tokenCsrf;
-      })
-      .finally(() => {
-        carregamentoToken = null;
-      });
-
-    return carregamentoToken;
-  }
-
-  async function atualizarTokenDaResposta(resposta) {
-    if (!resposta || !resposta.headers.get('content-type')?.includes('application/json')) {
-      return;
     }
 
-    const dados = await resposta.clone().json().catch(() => null);
-    if (dados && typeof dados.csrf_token === 'string' && dados.csrf_token) {
-      tokenCsrf = dados.csrf_token;
-      window.csrfToken = tokenCsrf;
+    async function carregarToken(forcar = false) {
+        if (tokenCsrf && !forcar) return tokenCsrf;
+        if (carregamentoToken && !forcar) return carregamentoToken;
+
+        carregamentoToken = (async () => {
+            const resposta = await fetchNativo(urlToken, {
+                method: 'GET',
+                credentials: 'same-origin',
+                cache: 'no-store',
+                headers: {
+                    Accept: 'application/json'
+                }
+            });
+
+            const texto = await resposta.text();
+
+            let dados;
+
+            try {
+                dados = JSON.parse(texto);
+            } catch {
+                throw new Error(
+                    'A API CSRF não retornou JSON válido.'
+                );
+            }
+
+            if (!resposta.ok || !dados.csrf_token) {
+                throw new Error(
+                    dados.erro || 'Não foi possível obter o token CSRF.'
+                );
+            }
+
+            tokenCsrf = dados.csrf_token;
+            window.csrfToken = tokenCsrf;
+
+            return tokenCsrf;
+        })().finally(() => {
+            carregamentoToken = null;
+        });
+
+        return carregamentoToken;
     }
-  }
 
-  window.ShowMeCsrf = {
-    pronto: carregarToken(),
-    atualizar: () => carregarToken(true)
-  };
+    async function atualizarToken(resposta) {
+        const tipo = resposta.headers.get('content-type') || '';
 
-  window.fetch = async function (entrada, opcoes = {}) {
-    const metodo = String(opcoes.method || (entrada instanceof Request ? entrada.method : 'GET')).toUpperCase();
-    const mutavel = ['POST', 'PUT', 'DELETE'].includes(metodo);
+        if (!tipo.includes('application/json')) return;
 
-    if (!mutavel || !urlDaApi(entrada)) {
-      return fetchNativo(entrada, opcoes);
+        const dados = await resposta.clone()
+            .json()
+            .catch(() => null);
+
+        if (typeof dados?.csrf_token === 'string' &&
+            dados.csrf_token) {
+            tokenCsrf = dados.csrf_token;
+            window.csrfToken = tokenCsrf;
+        }
     }
 
-    const token = await carregarToken();
-    const cabecalhos = new Headers(opcoes.headers || (entrada instanceof Request ? entrada.headers : undefined));
-    cabecalhos.set('X-CSRF-Token', token);
+    window.ShowMeCsrf = {
+        pronto: carregarToken(),
+        atualizar: () => carregarToken(true)
+    };
 
-    const resposta = await fetchNativo(entrada, {
-      ...opcoes,
-      headers: cabecalhos,
-      credentials: opcoes.credentials || 'same-origin'
-    });
+    window.fetch = async function (entrada, opcoes = {}) {
+        const requisicaoOriginal =
+            typeof Request !== 'undefined' &&
+            entrada instanceof Request
+                ? entrada
+                : null;
 
-    await atualizarTokenDaResposta(resposta);
-    return resposta;
-  };
-}());
+        const metodo = String(
+            opcoes.method ||
+            requisicaoOriginal?.method ||
+            'GET'
+        ).toUpperCase();
+
+        const mutavel = [
+            'POST',
+            'PUT',
+            'PATCH',
+            'DELETE'
+        ].includes(metodo);
+
+        
+if (!mutavel || !pertenceApi(entrada)) {
+    try {
+        return await fetchNativo(entrada, opcoes);
+    } catch (erro) {
+        console.error('[CSRF] Erro na requisição:', erro);
+        throw erro;
+    }
+}
+
+        const token = await carregarToken();
+
+        const cabecalhos = new Headers(
+            opcoes.headers ||
+            requisicaoOriginal?.headers ||
+            undefined
+        );
+
+        cabecalhos.set('X-CSRF-Token', token);
+
+        const resposta = await fetchNativo(entrada, {
+            ...opcoes,
+            headers: cabecalhos,
+            credentials: opcoes.credentials || 'same-origin'
+        });
+
+        await atualizarToken(resposta);
+
+        return resposta;
+    };
+})();

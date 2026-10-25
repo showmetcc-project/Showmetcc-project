@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/config/sessao.php';
+// Inicia a sessão automaticamente ao incluir este arquivo.
 iniciarSessaoSegura();
 
 $secoesHome = [
@@ -14,7 +15,13 @@ $secoesHome = [
     ['id' => 'culturaPopular', 'titulo' => 'Tradições Regionais', 'cor' => 'rosa'],
     ['id' => 'geekCulturaPop', 'titulo' => 'Geek e Cultura Pop', 'cor' => 'verde'],
 ];
+
+$usuarioLogado = !empty($_SESSION['id_user']);
+
+// A = cabeçalho principal; B = cabeçalho institucional.
+$tipoCabecalho = $usuarioLogado ? 'A' : 'B';
 ?>
+
 <!doctype html>
 <html lang="pt-br">
 

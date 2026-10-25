@@ -146,9 +146,9 @@ function renderizarModalPersonalizacao(
      
         <form
             class="perfil-form row g-4"
-            id="perfilForm"
-            data-endpoint="api/usuarios/<?= (int) $_SESSION['id_user'] ?>"
-        >
+    id="perfilForm"
+    data-endpoint="../api/apiUsuarios.php?id=<?= (int) $_SESSION['id_user'] ?>">
+        
 
             <div class="grupo col-12 col-md-6">
                 <label>Nome</label>

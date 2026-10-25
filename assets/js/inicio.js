@@ -801,7 +801,7 @@
 
     async function carregarEventos() {
         try {
-            const resposta = await fetch('api/eventos', {
+            const resposta = await fetch('../api/apiEventos.php', {
                 headers: {Accept: 'application/json'}
             });
             const dados = await resposta.json();

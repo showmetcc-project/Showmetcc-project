@@ -1,7 +1,7 @@
-CREATE DATABASE IF NOT EXISTS showme
-    CHARACTER SET utf8mb4
-    COLLATE utf8mb4_unicode_ci;
-USE showme;
+-- CREATE DATABASE IF NOT EXISTS showme
+--     CHARACTER SET utf8mb4
+--     COLLATE utf8mb4_unicode_ci;
+-- USE showme;
 
 CREATE TABLE usuario (
     id_user       INT PRIMARY KEY AUTO_INCREMENT,
@@ -252,7 +252,8 @@ CREATE TABLE solicitacao (
     nome_artista_solicitado VARCHAR(150) NOT NULL,
     genero_artista        VARCHAR(100),
     data_solicitacao      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-
+    ticketmaster_id VARCHAR(100) NULL,
+ 
     FOREIGN KEY (id_user)
         REFERENCES usuario(id_user)
         ON DELETE CASCADE,

@@ -1,7 +1,6 @@
 <?php
 
 require_once __DIR__ . '/middleware/apiCommon.php';
-
 require_once dirname(__DIR__) . '/config/conexao.php';
 require_once dirname(__DIR__) . '/config/midiasPerfil.php';
 require_once __DIR__ . '/middleware/apiHelper.php';
@@ -304,6 +303,16 @@ if ($metodo === 'POST') {
         'foto_perfil' => null,
         'foto_banner' => null
     ]);
+    // Inicia a sessão automaticamente após o cadastro.
+session_regenerate_id(true);
+
+$_SESSION['id_user'] = (int) $novoId;
+$_SESSION['nome_user'] = $nome;
+$_SESSION['tipo_usuario'] = 'comum';
+$_SESSION['email_user'] = $email;
+$_SESSION['sobrenome'] = $sobrenome;
+$_SESSION['foto_perfil'] = '';
+$_SESSION['foto_banner'] = null;
 
     responder([
         'mensagem' => 'Usuário cadastrado com sucesso',

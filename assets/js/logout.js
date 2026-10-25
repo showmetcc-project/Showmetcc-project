@@ -28,7 +28,7 @@
         this.setAttribute('aria-busy', 'true');
 
         try {
-            const resposta = await fetch('api/sessoes/', {
+            const resposta = await fetch('../api/apiSessoes.php', {
                 method: 'DELETE',
                 credentials: 'same-origin',
                 headers: {Accept: 'application/json'}

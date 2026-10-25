@@ -144,7 +144,7 @@
         card?.querySelectorAll('button').forEach((botao) => { botao.disabled = true; });
 
         try {
-            const resposta = await fetch(`api/eventos/${solicitacao.id_solicitacao}`, {
+            const resposta = await fetch(`api/apiEventos.php/${solicitacao.id_solicitacao}`, {
                 method: 'PUT',
                 headers: {'Content-Type': 'application/json', Accept: 'application/json'},
                 body: JSON.stringify({
@@ -342,7 +342,7 @@
         botaoSalvar.disabled = true;
 
         try {
-            const resposta = await fetch(`api/eventos/${idAlvo}`, {
+            const resposta = await fetch(`api/apiEventos.php/${idAlvo}`, {
                 method: 'PUT',
                 headers: {'Content-Type': 'application/json', Accept: 'application/json'},
                 body: JSON.stringify(dadosEdicao)
@@ -398,7 +398,7 @@
         });
 
         try {
-            const resposta = await fetch(`api/eventos/${solicitacao.id_evento}`, {
+            const resposta = await fetch(`api/apiEventos.php/${solicitacao.id_evento}`, {
                 method: 'DELETE',
                 headers: {Accept: 'application/json'}
             });
@@ -644,7 +644,7 @@
         card?.querySelectorAll('button').forEach((botao) => { botao.disabled = true; });
 
         try {
-            const resposta = await fetch(`api/comunidade-denuncias/${denuncia.id_denuncia}`, {
+            const resposta = await fetch(`api/apiComunidade-denuncias.php${denuncia.id_denuncia}`, {
                 method: 'PUT',
                 headers: {'Content-Type': 'application/json', Accept: 'application/json'},
                 body: JSON.stringify({acao})
@@ -863,7 +863,7 @@
 
         try {
             const parametros = parametrosListagem(filtroDenunciaAtual, offset);
-            const resposta = await fetch(`api/comunidade-denuncias?${parametros}`, {
+            const resposta = await fetch(`api/apiComunidade-denuncias.php?${parametros}`, {
                 headers: {Accept: 'application/json'}
             });
             const dados = await lerJson(resposta);
@@ -910,7 +910,7 @@
             const parametros = parametrosListagem(filtroAtual, offset);
             parametros.delete('status');
             parametros.set('solicitacoes', filtroAtual);
-            const resposta = await fetch(`api/eventos?${parametros}`, {
+            const resposta = await fetch(`api/apiEventos.php?${parametros}`, {
                 headers: {Accept: 'application/json'}
             });
             const dados = await lerJson(resposta);

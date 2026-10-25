@@ -60,7 +60,7 @@ function obterIdApi(): ?int
     return (int) $idInformado;
 }
 
-require_once dirname(__DIR__, 2) . '/config/sessao.php';
+require_once dirname(__DIR__,2) . '/config/sessao.php';
 
 iniciarSessaoSegura();
 

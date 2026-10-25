@@ -151,28 +151,111 @@ function renderizarModalPersonalizacao(
         >
 
             <div class="grupo col-12 col-md-6">
-                <label>Nome</label>
+                <label for="perfilNome">Nome</label>
                 <div class="input-icon">
-                    <i class="bi bi-person"></i>
-                    <input id="perfilNome" type="text" value="" maxlength="100" required readonly>
+                    <i class="bi bi-person" aria-hidden="true"></i>
+                    <input id="perfilNome" type="text" value="" maxlength="100" autocomplete="given-name" required readonly>
                 </div>
             </div>
 
             <div class="grupo col-12 col-md-6">
-                <label>Sobrenome</label>
+                <label for="perfilSobrenome">Sobrenome</label>
                 <div class="input-icon">
-                    <i class="bi bi-person"></i>
-                    <input id="perfilSobrenome" type="text" value="" maxlength="100" required readonly>
+                    <i class="bi bi-person" aria-hidden="true"></i>
+                    <input id="perfilSobrenome" type="text" value="" maxlength="100" autocomplete="family-name" required readonly>
                 </div>
             </div>
 
             <div class="grupo full col-12">
-                <label>E-mail</label>
+                <label for="perfilEmail">E-mail</label>
                 <div class="input-icon">
-                    <i class="bi bi-envelope"></i>
-                    <input id="perfilEmail" type="email" value="" maxlength="100" required readonly>
+                    <i class="bi bi-envelope" aria-hidden="true"></i>
+                    <input id="perfilEmail" type="email" value="" maxlength="100" autocomplete="email" required readonly>
                 </div>
             </div>
+
+            <div class="grupo col-12 col-md-6">
+                <label for="senhaAtualPerfil">Senha atual</label>
+                <div class="input-icon">
+                    <i class="bi bi-lock" aria-hidden="true"></i>
+                    <input
+                        id="senhaAtualPerfil"
+                        name="senha_atual"
+                        type="password"
+                        autocomplete="current-password"
+                        aria-describedby="ajudaNovaSenhaPerfil"
+                        readonly
+                    >
+                    <button
+                        type="button"
+                        class="btn-mostrar-senha"
+                        data-mostrar-senha="senhaAtualPerfil"
+                        data-rotulo="senha atual"
+                        aria-label="Mostrar senha atual"
+                        aria-controls="senhaAtualPerfil"
+                        aria-pressed="false"
+                        title="Mostrar senha atual"
+                        disabled
+                    ><i class="bi bi-eye" aria-hidden="true"></i></button>
+                </div>
+            </div>
+
+            <div class="grupo col-12 col-md-6">
+                <label for="novaSenhaPerfil">Nova senha</label>
+                <div class="input-icon">
+                    <i class="bi bi-key" aria-hidden="true"></i>
+                    <input
+                        id="novaSenhaPerfil"
+                        name="nova_senha"
+                        type="password"
+                        autocomplete="new-password"
+                        aria-describedby="ajudaNovaSenhaPerfil"
+                        readonly
+                    >
+                    <button
+                        type="button"
+                        class="btn-mostrar-senha"
+                        data-mostrar-senha="novaSenhaPerfil"
+                        data-rotulo="nova senha"
+                        aria-label="Mostrar nova senha"
+                        aria-controls="novaSenhaPerfil"
+                        aria-pressed="false"
+                        title="Mostrar nova senha"
+                        disabled
+                    ><i class="bi bi-eye" aria-hidden="true"></i></button>
+                </div>
+            </div>
+
+            <div class="grupo full col-12">
+                <label for="confirmarNovaSenhaPerfil">Confirmar nova senha</label>
+                <div class="input-icon">
+                    <i class="bi bi-shield-check" aria-hidden="true"></i>
+                    <input
+                        id="confirmarNovaSenhaPerfil"
+                        name="confirmar_senha"
+                        type="password"
+                        autocomplete="new-password"
+                        aria-describedby="ajudaNovaSenhaPerfil"
+                        readonly
+                    >
+                    <button
+                        type="button"
+                        class="btn-mostrar-senha"
+                        data-mostrar-senha="confirmarNovaSenhaPerfil"
+                        data-rotulo="confirmação da nova senha"
+                        aria-label="Mostrar confirmação da nova senha"
+                        aria-controls="confirmarNovaSenhaPerfil"
+                        aria-pressed="false"
+                        title="Mostrar confirmação da nova senha"
+                        disabled
+                    ><i class="bi bi-eye" aria-hidden="true"></i></button>
+                </div>
+            </div>
+
+            <p id="ajudaNovaSenhaPerfil" class="perfil-ajuda-senha col-12">
+                Mínimo 6 caracteres, contendo letras e números. Preencha apenas se quiser alterar a senha;
+                por segurança, a senha salva não é exibida.
+            </p>
 
             <p id="perfilFeedback" class="perfil-feedback col-12" role="status" aria-live="polite" hidden></p>
 

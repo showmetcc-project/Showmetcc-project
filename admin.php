@@ -270,7 +270,7 @@ require_once __DIR__ . '/config/classificacoesIndicativas.php';
                                 </div>
                             </div>
                             <div class="col-12" id="campoGeneroArtistaEdicao" hidden>
-                                <label for="generoArtistaEdicao" class="form-label">Gênero Musical do Artista</label>
+                                <label for="generoArtistaEdicao" class="form-label">Gênero musical dos participantes</label>
                                 <input type="text" class="form-control" id="generoArtistaEdicao" maxlength="100"
                                     placeholder="Ex: MPB, Rock, Sertanejo" disabled
                                     aria-describedby="generoArtistaEdicaoAjuda">
@@ -279,11 +279,11 @@ require_once __DIR__ . '/config/classificacoesIndicativas.php';
                                 </div>
                             </div>
                             <div class="col-12 campo-apenas-solicitacao">
-                                <label for="descricaoArtistaEdicao" class="form-label">Artista / atração</label>
+                                <label for="descricaoArtistaEdicao" class="form-label">Sobre quem estará lá</label>
                                 <textarea class="form-control" id="descricaoArtistaEdicao" rows="3" maxlength="1000"></textarea>
                             </div>
                             <div class="col-12 campo-apenas-solicitacao">
-                                <label for="nomeArtistaSolicitadoEdicao" class="form-label">Nome do artista / atração</label>
+                                <label for="nomeArtistaSolicitadoEdicao" class="form-label">Quem Estará Lá</label>
                                 <input type="text" class="form-control" id="nomeArtistaSolicitadoEdicao" maxlength="150">
                             </div>
                         </div>

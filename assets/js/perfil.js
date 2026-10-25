@@ -15,6 +15,11 @@
     document.getElementById('perfilSobrenome'),
     document.getElementById('perfilEmail')
   ];
+  const campoSenhaAtual = document.getElementById('senhaAtualPerfil');
+  const campoNovaSenha = document.getElementById('novaSenhaPerfil');
+  const campoConfirmarNovaSenha = document.getElementById('confirmarNovaSenhaPerfil');
+  const camposSenha = [campoSenhaAtual, campoNovaSenha, campoConfirmarNovaSenha];
+  const botoesMostrarSenha = [...document.querySelectorAll('[data-mostrar-senha]')];
   const elementosModalMidia = {
     foto_perfil: document.getElementById('modalPersonalizarPerfil'),
     foto_banner: document.getElementById('modalPersonalizarBanner')
@@ -58,7 +63,8 @@
       return;
     }
     elemento.textContent = mensagem;
-    elemento.className = `perfil-feedback ${tipo}`;
+    elemento.classList.remove('sucesso', 'erro');
+    elemento.classList.add('perfil-feedback', tipo);
     elemento.hidden = false;
   }
 
@@ -144,9 +150,20 @@
     botaoEditarPerfil.classList.toggle('salvar-alteracoes', ativo);
     botaoEditarPerfil.setAttribute('aria-pressed', String(ativo));
 
-    camposPerfil.forEach((campo) => {
-      campo.readOnly = !ativo;
+    [...camposPerfil, ...camposSenha].forEach((campo) => {
+      if (campo) {
+        campo.readOnly = !ativo;
+      }
     });
+
+    botoesMostrarSenha.forEach((botao) => {
+      botao.disabled = !ativo;
+    });
+
+    if (!ativo) {
+      limparCamposSenha();
+      resetarVisibilidadeSenhas();
+    }
 
     const icone = botaoEditarPerfil.querySelector('i');
     const texto = botaoEditarPerfil.querySelector('span');
@@ -154,12 +171,123 @@
       icone.className = ativo ? 'bi bi-check-lg' : 'bi bi-pencil';
     }
     if (texto) {
-      texto.textContent = ativo ? 'Salvar alterações' : 'Editar Perfil';
+      texto.textContent = ativo ? 'Salvar Alterações' : 'Editar Perfil';
     }
 
     if (ativo) {
       camposPerfil[0]?.focus();
       camposPerfil[0]?.select();
+    }
+  }
+
+  function senhaAtendeRequisitos(senha) {
+    return senha.length >= 6 && /[A-Za-z]/.test(senha) && /\d/.test(senha);
+  }
+
+  function marcarCampoInvalido(campo, invalido) {
+    if (!campo) {
+      return;
+    }
+
+    campo.setAttribute('aria-invalid', invalido ? 'true' : 'false');
+    campo.closest('.input-icon')?.classList.toggle('input-invalido', invalido);
+  }
+
+  function limparInvalidosSenha() {
+    camposSenha.forEach((campo) => {
+      marcarCampoInvalido(campo, false);
+    });
+  }
+
+  function limparCamposSenha() {
+    camposSenha.forEach((campo) => {
+      if (campo) {
+        campo.value = '';
+      }
+    });
+    limparInvalidosSenha();
+  }
+
+  function atualizarRotuloBotaoSenha(botao, visivel) {
+    const rotulo = botao.dataset.rotulo || 'senha';
+    const acao = visivel ? 'Ocultar' : 'Mostrar';
+    const icone = botao.querySelector('i');
+
+    botao.setAttribute('aria-pressed', String(visivel));
+    botao.setAttribute('aria-label', `${acao} ${rotulo}`);
+    botao.title = `${acao} ${rotulo}`;
+
+    if (icone) {
+      icone.className = visivel ? 'bi bi-eye-slash' : 'bi bi-eye';
+    }
+  }
+
+  function alternarVisibilidadeSenha(botao) {
+    const campo = document.getElementById(botao.dataset.mostrarSenha);
+    if (!campo) {
+      return;
+    }
+
+    const tornarVisivel = campo.type === 'password';
+    campo.type = tornarVisivel ? 'text' : 'password';
+    atualizarRotuloBotaoSenha(botao, tornarVisivel);
+  }
+
+  function resetarVisibilidadeSenhas() {
+    botoesMostrarSenha.forEach((botao) => {
+      const campo = document.getElementById(botao.dataset.mostrarSenha);
+      if (campo) {
+        campo.type = 'password';
+      }
+      atualizarRotuloBotaoSenha(botao, false);
+    });
+  }
+
+  function validarSenhaOpcional() {
+    const senhaAtual = campoSenhaAtual?.value || '';
+    const novaSenha = campoNovaSenha?.value || '';
+    const confirmarSenha = campoConfirmarNovaSenha?.value || '';
+
+    limparInvalidosSenha();
+
+    if (senhaAtual === '' && novaSenha === '' && confirmarSenha === '') {
+      return {dados: null};
+    }
+
+    if (senhaAtual === '') {
+      return {erro: 'Informe a senha atual para alterar a senha.', campo: campoSenhaAtual};
+    }
+
+    if (novaSenha === '') {
+      return {erro: 'Informe a nova senha ou limpe os campos de senha.', campo: campoNovaSenha};
+    }
+
+    if (!senhaAtendeRequisitos(novaSenha)) {
+      return {
+        erro: 'A nova senha deve ter no mínimo 6 caracteres e combinar letras e números.',
+        campo: campoNovaSenha
+      };
+    }
+
+    if (confirmarSenha === '' || novaSenha !== confirmarSenha) {
+      return {erro: 'A confirmação da nova senha não confere.', campo: campoConfirmarNovaSenha};
+    }
+
+    return {
+      dados: {
+        senha_atual: senhaAtual,
+        nova_senha: novaSenha
+      }
+    };
+  }
+
+  function exibirErroPerfil(mensagem, campo = null) {
+    mostrarFeedback(feedbackPagina, mensagem, 'erro');
+    window.ShowMeUI.toast(mensagem, {variante: 'erro'});
+
+    if (campo) {
+      marcarCampoInvalido(campo, true);
+      campo.focus();
     }
   }
 
@@ -169,18 +297,31 @@
       return;
     }
 
+    const validacaoSenha = validarSenhaOpcional();
+
+    if (validacaoSenha.erro) {
+      exibirErroPerfil(validacaoSenha.erro, validacaoSenha.campo);
+      return;
+    }
+
     esconderFeedback(feedbackPagina);
     botaoEditarPerfil.disabled = true;
+
+    const dadosEnvio = {
+      nome: camposPerfil[0].value.trim(),
+      sobrenome: camposPerfil[1].value.trim(),
+      email: camposPerfil[2].value.trim()
+    };
+
+    if (validacaoSenha.dados) {
+      Object.assign(dadosEnvio, validacaoSenha.dados);
+    }
 
     try {
       const resposta = await fetch(endpoint, {
         method: 'PUT',
         headers: {'Content-Type': 'application/json', Accept: 'application/json'},
-        body: JSON.stringify({
-          nome: camposPerfil[0].value.trim(),
-          sobrenome: camposPerfil[1].value.trim(),
-          email: camposPerfil[2].value.trim()
-        })
+        body: JSON.stringify(dadosEnvio)
       });
       const dados = await lerJson(resposta);
 
@@ -194,11 +335,20 @@
       renderizarPerfil(dados.usuario);
       definirModoEdicao(false);
       esconderFeedback(feedbackPagina);
-      window.ShowMeUI.toast('Perfil atualizado com sucesso.', {variante: 'sucesso'});
+      window.ShowMeUI.toast(dados.mensagem || 'Perfil atualizado com sucesso.', {variante: 'sucesso'});
     } catch (erro) {
-      window.ShowMeUI.toast(erro.message || 'Não foi possível atualizar o perfil.', {
-        variante: 'erro'
-      });
+      const mensagem = erro.message || 'Não foi possível atualizar o perfil.';
+      let campoComErro = null;
+
+      if (/senha atual/i.test(mensagem)) {
+        campoComErro = campoSenhaAtual;
+      } else if (/senha|caractere|número|numero/i.test(mensagem)) {
+        campoComErro = campoNovaSenha;
+      } else if (/e-mail/i.test(mensagem)) {
+        campoComErro = camposPerfil[2];
+      }
+
+      exibirErroPerfil(mensagem, campoComErro);
     } finally {
       botaoEditarPerfil.disabled = false;
     }
@@ -504,6 +654,19 @@
     if (editandoPerfil) {
       salvarDadosPerfil();
     }
+  });
+
+  camposSenha.forEach((campo) => {
+    campo?.addEventListener('input', () => {
+      marcarCampoInvalido(campo, false);
+      if (feedbackPagina && !feedbackPagina.hidden) {
+        esconderFeedback(feedbackPagina);
+      }
+    });
+  });
+
+  botoesMostrarSenha.forEach((botao) => {
+    botao.addEventListener('click', () => alternarVisibilidadeSenha(botao));
   });
 
   document.querySelectorAll('[data-abrir-editor-midia]').forEach((controle) => {

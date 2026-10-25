@@ -186,7 +186,13 @@ a {
     gap: 20px;
     font-size: 0.9rem;
     color: #ccc;
-    margin-bottom: 10px;
+    margin-bottom: 0;
+}
+
+/* A row do Bootstrap adiciona margem própria; controlamos o intervalo aqui. */
+.detalhes-conteudo-grid {
+    --bs-gutter-y: 0;
+    margin-top: 10px;
 }
 
 .infos-rapidas span {
@@ -206,6 +212,7 @@ a {
 
 .secao {
     margin-bottom: 16px;
+    padding: 0;
 }
 
 .detalhes-coluna-esquerda {
@@ -218,12 +225,9 @@ a {
     margin-bottom: 0;
 }
 
-/* Mantém o mesmo ritmo vertical entre Sobre, Artistas e Local.
-   O padding superior de Artistas e Local é removido para que o intervalo
-   visual fique igual ao existente entre Local e a comunidade. */
-.detalhes-coluna-esquerda .secao-artistas,
-.detalhes-coluna-esquerda .secao-local {
-    padding-top: 0;
+/* Alinha o título da primeira seção ao título dentro do card de acesso. */
+.detalhes-coluna-esquerda > .secao:first-child {
+    padding-top: 26px;
 }
 
 /* Evita que a margem padrão do parágrafo aumente o intervalo após "Sobre". */
@@ -621,6 +625,8 @@ a {
     .conteudo-principal > .row > .col-lg-4 { order: 0; }
 
     .detalhes-lateral-sticky { position: static; }
+
+    .detalhes-conteudo-grid > .col-lg-4 { margin-top: 24px; }
 
     .acesso-evento-card { margin: 0 0 16px; }
 }

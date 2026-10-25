@@ -229,7 +229,10 @@ paths:
     put:
       tags: [Usuários]
       summary: Atualiza o próprio perfil
-      description: Permite alterar nome, sobrenome, e-mail e senha. tipo_usuario nunca é editável pela API.
+      description: >-
+        Permite alterar nome, sobrenome, e-mail e senha. Para definir uma nova senha,
+        informe também senha_atual; a senha atual é conferida com password_verify antes
+        da atualização. tipo_usuario nunca é editável pela API.
       security:
         - cookieAuth: []
       parameters:
@@ -252,6 +255,10 @@ paths:
                     type: string
                   usuario:
                     $ref: '#/components/schemas/Usuario'
+                  csrf_token:
+                    type: string
+                    nullable: true
+                    description: Novo token CSRF retornado após uma alteração de senha.
         '400':
           $ref: '#/components/responses/RequisicaoInvalida'
         '401':
@@ -292,7 +299,7 @@ paths:
     get:
       tags: [Eventos]
       summary: Lista eventos públicos, locais de eventos ou solicitações para moderação
-      description: Sem parâmetros, lista somente eventos ativos com data igual ou posterior a hoje. Aceita filtros opcionais combináveis (busca, categoria/id_categoria, classificacao/classificacao_indicativa, ingresso/preco, valor_maximo/preco_max, uf, cidade, periodo e limite) mantendo o mesmo recorte de data. Com listar_locais=1, retorna UFs, pares cidade/UF e categorias distintas de eventos ativos. Com solicitacoes, consulta a tabela de solicitações e exige uma sessão de administrador; nessa modalidade, busca, dias, limite e offset controlam a listagem administrativa paginada.
+      description: Sem parâmetros, lista somente eventos ativos com data igual ou posterior a hoje. Aceita filtros opcionais combináveis (busca, categoria/id_categoria, classificacao/classificacao_indicativa, ingresso/preco, valor_minimo/preco_min, valor_maximo/preco_max, uf, cidade, periodo e limite) mantendo o mesmo recorte de data. Com listar_locais=1, retorna UFs, pares cidade/UF e categorias distintas de eventos ativos. Com solicitacoes, consulta a tabela de solicitações e exige uma sessão de administrador; nessa modalidade, busca, dias, limite e offset controlam a listagem administrativa paginada.
       parameters:
         - name: listar_locais
           in: query
@@ -302,7 +309,7 @@ paths:
         - name: busca
           in: query
           required: false
-          description: Termo pesquisado no nome do evento, cidade, categoria ou artista.
+          description: Termo pesquisado no nome do evento, cidade, categoria ou participante.
           schema:
             type: string
           example: Festival
@@ -328,6 +335,14 @@ paths:
             type: string
             enum: [todos, gratuitos, pagos]
             default: todos
+        - name: valor_minimo
+          in: query
+          required: false
+          description: Exclui eventos gratuitos e mantém eventos pagos cujo ingresso máximo seja maior ou igual a este valor. O alias preco_min é aceito.
+          schema:
+            type: number
+            minimum: 0
+          example: 50
         - name: valor_maximo
           in: query
           required: false
@@ -533,7 +548,7 @@ paths:
         acao=aprovar ou acao=recusar para decidir diretamente, acao=moderar com
         status_solicitacao para manter compatibilidade, e acao=editar quando o ID
         representar um evento já publicado. Ao aprovar, todos os campos são
-        promovidos para evento, id_solicitacao_origem é preenchido e o artista é
+        promovidos para evento, id_solicitacao_origem é preenchido e o participante é
         criado ou reutilizado por nome normalizado. Aprovação e recusa tentam enviar
         um e-mail transacional ao solicitante; falhas de SMTP são registradas no
         servidor sem desfazer a moderação. A edição preserva a foto enviada e
@@ -1230,11 +1245,16 @@ components:
         senha:
           type: string
           format: password
+          description: Mínimo de 6 caracteres, com pelo menos uma letra e um número.
           minLength: 6
+          pattern: '^(?=.*[A-Za-z])(?=.*\d).{6,}$'
 
     UsuarioAtualizacao:
       type: object
-      description: Informe pelo menos um campo editável. Se tipo_usuario for enviado, será ignorado e nunca alterado.
+      description: >-
+        Informe pelo menos um campo editável. Se tipo_usuario for enviado, será ignorado
+        e nunca alterado. Ao enviar nova_senha (ou o campo legado senha), senha_atual
+        passa a ser obrigatória.
       properties:
         nome:
           type: string
@@ -1246,10 +1266,24 @@ components:
           type: string
           format: email
           maxLength: 100
+        senha_atual:
+          type: string
+          format: password
+          description: Senha atual do usuário, exigida para qualquer alteração de senha.
+        nova_senha:
+          type: string
+          format: password
+          description: Mínimo de 6 caracteres, com pelo menos uma letra e um número.
+          minLength: 6
+          pattern: '^(?=.*[A-Za-z])(?=.*\d).{6,}$'
         senha:
           type: string
           format: password
+          deprecated: true
+          description: >-
+            Campo legado equivalente a nova_senha. Também exige senha_atual.
           minLength: 6
+          pattern: '^(?=.*[A-Za-z])(?=.*\d).{6,}$'
 
     Usuario:
       type: object
@@ -1392,7 +1426,7 @@ components:
           properties:
             artistas:
               type: array
-              description: Artistas e atrações relacionados ao evento.
+              description: Participantes relacionados ao evento (bandas, palestrantes, facilitadores, expositores ou coletivos).
               items:
                 $ref: '#/components/schemas/ArtistaEvento'
 
@@ -1494,15 +1528,17 @@ components:
           type: string
           maxLength: 1000
           nullable: true
+          description: Descrição de quem estará lá (bandas, palestrantes, facilitadores, expositores ou coletivos).
         nome_artista_solicitado:
           type: string
           maxLength: 150
           nullable: true
+          description: Nomes de quem estará lá, independentemente da categoria do evento.
         genero_artista:
           type: string
           maxLength: 100
           nullable: true
-          description: Gênero musical opcional do artista, usado nas recomendações da Home.
+          description: Gênero musical opcional dos participantes, usado nas recomendações da Home quando há categoria musical.
         alt_imagem:
           type: string
           maxLength: 255
@@ -1588,7 +1624,7 @@ components:
           type: string
           maxLength: 100
           nullable: true
-          description: Atualiza o gênero musical do artista vinculado ao evento.
+          description: Atualiza o gênero musical dos participantes vinculados ao evento.
         status_evento:
           type: string
           enum: [ativo, cancelado]

@@ -324,7 +324,7 @@ Falhas de envio não revertem transações de negócio. Não foi feito envio rea
 ### Proteções presentes
 
 - prepared statements em toda a API principal;
-- senhas com `password_hash`/`password_verify`;
+- senhas com `password_hash`/`password_verify` e política mínima de 6 caracteres com letras e números;
 - regeneração de sessão no login;
 - criação pública sempre como usuário comum;
 - 401 para ausência de sessão e 403 para papel incorreto;

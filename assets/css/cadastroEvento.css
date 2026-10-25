@@ -263,6 +263,10 @@ body{
     width:auto;
 }
 
+.grupo-quem-estara-la-ajuda{
+    margin-bottom:16px;
+}
+
 .campo-categorias{
     align-items:center;
     background:var(--input);

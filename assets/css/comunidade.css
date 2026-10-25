@@ -1,11 +1,12 @@
 :root { --com-verde:#00ff00; --com-verde-hover:#00dd00; --com-rosa:#ff006e; --com-fundo:#0a0a0a; --com-card:#141414; --com-texto:#fff; --com-sec:#bdbdbd; }
 body.pagina-comunidades, body.pagina-comunidade-evento { background:var(--com-fundo); color:var(--com-texto); }
 .comunidade-listagem { padding-top:42px; padding-bottom:56px; }
-.comunidade-intro { max-width:760px; margin-bottom:46px; }
-.comunidade-eyebrow { color:var(--com-rosa); font-weight:700; text-transform:uppercase; letter-spacing:.08em; }
+.comunidade-intro { max-width:100%; margin-bottom:24px; }
+.comunidade-eyebrow { margin:0 0 8px; color:var(--com-rosa); font-weight:700; text-transform:uppercase; letter-spacing:.08em; }
 .comunidade-listagem h2, .comunidade-evento-main h2 { font-family:'Anton','Oswald',sans-serif; }
-.comunidade-intro > p:last-child { color:var(--com-sec); font-size:1.05rem; }
-.comunidade-listagem section + section { margin-top:48px; }
+.comunidade-intro > p:last-child { margin:0; color:var(--com-sec); font-size:1.05rem; }
+.comunidade-listagem section { padding:0; }
+.comunidade-listagem section + section { margin-top:40px; }
 .comunidade-listagem section > h2 { color:var(--com-rosa); margin-bottom:22px; }
 .comunidade-listagem section:first-of-type > h2 { color:var(--com-verde); }
 .comunidade-card { display:block; height:100%; background:var(--com-card); border:2px solid var(--com-verde); border-radius:20px; overflow:hidden; color:#fff; text-decoration:none; transition:.2s ease; }

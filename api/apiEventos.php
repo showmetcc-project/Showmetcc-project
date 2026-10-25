@@ -765,6 +765,29 @@ switch ($metodo) {
             break;
         }
 
+        $valorMinimo = null;
+
+        foreach (['valor_minimo', 'preco_min'] as $parametroValor) {
+            if (!array_key_exists($parametroValor, $_GET)) {
+                continue;
+            }
+
+            $valorInformado = $_GET[$parametroValor];
+
+            if (!is_string($valorInformado) || !is_numeric($valorInformado)) {
+                responder(['erro' => "$parametroValor deve ser um número válido"], 400);
+            }
+
+            $valorNumerico = (float) $valorInformado;
+
+            if ($valorNumerico < 0 || $valorNumerico > 99999999.99) {
+                responder(['erro' => "$parametroValor deve estar entre 0 e 99999999.99"], 400);
+            }
+
+            $valorMinimo = $valorNumerico;
+            break;
+        }
+
         $valorMaximo = null;
 
         foreach (['valor_maximo', 'preco_max'] as $parametroValor) {
@@ -786,6 +809,13 @@ switch ($metodo) {
 
             $valorMaximo = $valorNumerico;
             break;
+        }
+
+        if ($ingresso !== 'gratuitos'
+            && $valorMinimo !== null
+            && $valorMaximo !== null
+            && $valorMinimo > $valorMaximo) {
+            responder(['erro' => 'valor_minimo não pode ser maior que valor_maximo'], 400);
         }
 
         $uf = null;
@@ -875,6 +905,7 @@ switch ($metodo) {
             || $categoria !== null
             || $classificacoes !== []
             || $ingresso !== 'todos'
+            || $valorMinimo !== null
             || $valorMaximo !== null
             || $uf !== null
             || $cidade !== null
@@ -928,12 +959,23 @@ switch ($metodo) {
                 $condicoes[] = 'e.gratuidade = 0';
             }
 
-            if ($valorMaximo !== null) {
-                // Eventos gratuitos permanecem visíveis; eventos pagos entram
-                // quando o ingresso mínimo cabe no preço máximo informado.
-                $condicoes[] = '(e.gratuidade = 1 OR e.valor_ingresso_minimo <= ?)';
-                $tiposParametros .= 'd';
-                $valoresParametros[] = $valorMaximo;
+            if ($ingresso !== 'gratuitos') {
+                if ($valorMinimo !== null && $valorMinimo > 0) {
+                    // A faixa mínima exclui gratuitos e exige que o maior
+                    // ingresso do evento alcance o valor informado.
+                    $condicoes[] = 'e.gratuidade = 0
+                        AND COALESCE(e.valor_ingresso_maximo, e.valor_ingresso_minimo) >= ?';
+                    $tiposParametros .= 'd';
+                    $valoresParametros[] = $valorMinimo;
+                }
+
+                if ($valorMaximo !== null) {
+                    // Eventos gratuitos permanecem visíveis; eventos pagos entram
+                    // quando o ingresso mínimo cabe no preço máximo informado.
+                    $condicoes[] = '(e.gratuidade = 1 OR e.valor_ingresso_minimo <= ?)';
+                    $tiposParametros .= 'd';
+                    $valoresParametros[] = $valorMaximo;
+                }
             }
 
             if ($uf !== null) {
@@ -1120,7 +1162,7 @@ switch ($metodo) {
             || tamanhoTexto($nomeArtistaSolicitado) > 150
             || tamanhoTexto($generoArtista) > 100
         ) {
-            responder(['erro' => 'Um dos campos de endereço, categoria, link, imagem ou artista excede o limite'], 400);
+            responder(['erro' => 'Um dos campos de endereço, categoria, link, imagem ou participantes excede o limite'], 400);
         }
 
         if ($uf !== '' && !preg_match('/^[A-Z]{2}$/', $uf)) {
@@ -1141,7 +1183,7 @@ switch ($metodo) {
         }
 
         if ($nomeArtistaSolicitado === '' || tamanhoTexto($nomeArtistaSolicitado) > 150) {
-            responder(['erro' => 'Nome do artista ou atração é obrigatório e deve ter até 150 caracteres'], 400);
+            responder(['erro' => 'Quem estará lá é obrigatório e deve ter até 150 caracteres'], 400);
         }
 
         if ($gratuidadeRecebida === null) {
@@ -1408,7 +1450,7 @@ switch ($metodo) {
                 || ($nomeArtistaSolicitado !== null && tamanhoTexto($nomeArtistaSolicitado) > 150)
                 || ($generoArtista !== null && tamanhoTexto($generoArtista) > 100)
             ) {
-                responder(['erro' => 'Um dos campos de endereço, categoria, link, imagem ou artista excede o limite'], 400);
+                responder(['erro' => 'Um dos campos de endereço, categoria, link, imagem ou participantes excede o limite'], 400);
             }
 
             if ($uf !== null) {
@@ -1435,7 +1477,7 @@ switch ($metodo) {
             }
 
             if ($nomeArtistaSolicitado === null || tamanhoTexto($nomeArtistaSolicitado) > 150) {
-                responder(['erro' => 'Nome do artista ou atração é obrigatório e deve ter até 150 caracteres'], 400);
+                responder(['erro' => 'Quem estará lá é obrigatório e deve ter até 150 caracteres'], 400);
             }
 
             if ($data === null) {

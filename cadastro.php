@@ -135,19 +135,23 @@ $googleClientId = is_array($googleConfig) ? trim((string) ($googleConfig['client
                 placeholder="Mínimo 6 caracteres"
                 name="senha"
                 id="senha"
-                minlength="6"
                 autocomplete="new-password"
+                aria-describedby="ajudaSenha"
                 required>
               <button class="login-alternar-senha cadastro-alternar-senha" type="button" aria-label="Mostrar senha" aria-pressed="false" aria-controls="senha" title="Mostrar senha">
                 <i class="bi bi-eye" aria-hidden="true"></i>
               </button>
             </div>
 
+            <small id="ajudaSenha" class="cadastro-ajuda-senha">
+              A senha deve ter no mínimo 6 caracteres, contendo letras e números.
+            </small>
+
           </div>
 
           <div class="cadastro-termos-consentimento">
             <input id="aceiteTermos" name="aceiteTermos" type="checkbox" value="1" required>
-            <label for="aceiteTermos">Li e concordo com os <a href="termos.php" target="_blank">Termos de Uso</a></label>
+            <label for="aceiteTermos">Li e concordo com os <a href="termos.php" target="_blank" rel="noopener">Termos de Uso</a> e a <a href="politicaPrivacidade.php" target="_blank" rel="noopener">Política de Privacidade</a></label>
           </div>
 
           <button type="submit" class="cadastro-btn">

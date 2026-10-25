@@ -65,7 +65,10 @@
     function renderizarArtistas(artistas) {
         const lista = document.getElementById('listaArtistas'); lista.replaceChildren();
         if (!Array.isArray(artistas) || !artistas.length) {
-            lista.append(estadoVazio('Artista não informado', 'Este evento ainda não possui artista relacionado.'));
+            lista.append(estadoVazio(
+                'Quem estará lá ainda não foi informado',
+                'Este evento ainda não possui programação ou participantes cadastrados.'
+            ));
             return;
         }
         artistas.forEach((artista) => {
@@ -73,10 +76,10 @@
             const linha = document.createElement('div'); linha.className = 'd-flex align-items-center';
             if (artista.imagem_artista) {
                 const img = document.createElement('img'); img.className = 'imagem-artista';
-                configurarImagem(img, artista.imagem_artista, artista.nome_artista || 'Artista'); linha.append(img);
+                configurarImagem(img, artista.imagem_artista, artista.nome_artista || 'Participante'); linha.append(img);
             }
             const bloco = document.createElement('div'); const h = document.createElement('h4');
-            h.textContent = artista.nome_artista || 'Artista'; bloco.append(h);
+            h.textContent = artista.nome_artista || 'Participante'; bloco.append(h);
             if (artista.genero_artista) { const p = document.createElement('p'); p.textContent = artista.genero_artista; bloco.append(p); }
             linha.append(bloco); card.append(linha); lista.append(card);
         });

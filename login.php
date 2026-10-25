@@ -1,5 +1,6 @@
 <?php
 $cadastroConcluido = isset($_GET['sucesso']);
+$senhaRedefinida = isset($_GET['senha_redefinida']);
 $googleConfig = is_file(__DIR__ . '/config/google.php')
     ? require __DIR__ . '/config/google.php'
     : [];
@@ -71,6 +72,12 @@ $googleClientId = is_array($googleConfig) ? trim((string) ($googleConfig['client
                     </div>
                 <?php endif; ?>
 
+                <?php if ($senhaRedefinida): ?>
+                    <div class="alert alert-success" role="status">
+                        Senha redefinida com sucesso. Entre com sua nova senha.
+                    </div>
+                <?php endif; ?>
+
                 <div id="mensagemLogin" class="alert d-none" role="alert"></div>
 
                 <form id="formLogin">
@@ -91,6 +98,9 @@ $googleClientId = is_array($googleConfig) ? trim((string) ($googleConfig['client
                             <button class="login-alternar-senha" type="button" aria-label="Mostrar senha" aria-pressed="false" aria-controls="senhaLogin" title="Mostrar senha">
                                 <i class="bi bi-eye" aria-hidden="true"></i>
                             </button>
+                        </div>
+                        <div class="login-esqueceu-senha">
+                            <a href="recuperarSenha.php">Esqueceu a senha?</a>
                         </div>
                     </div>
 

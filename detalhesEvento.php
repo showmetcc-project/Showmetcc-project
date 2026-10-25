@@ -62,15 +62,15 @@ $idUsuarioSessao = isset($_SESSION['id_user']) ? (int) $_SESSION['id_user'] : 0;
                     <span id="infoPreco" hidden><i class="bi bi-currency-dollar" aria-hidden="true"></i><span></span></span>
                 </div>
 
-                <div class="row mt-4 g-4">
+                <div class="row detalhes-conteudo-grid g-4">
                     <div class="col-lg-8 detalhes-coluna-esquerda">
                         <section class="secao">
                             <h2>Sobre o evento</h2>
                             <p id="descricaoEvento"></p>
                         </section>
 
-                        <section class="secao secao-artistas">
-                            <h2>Artistas e atrações</h2>
+                        <section class="secao secao-artistas" aria-labelledby="tituloQuemEstaraLa">
+                            <h2 id="tituloQuemEstaraLa">Quem Estará Lá</h2>
                             <div id="listaArtistas"></div>
                         </section>
 

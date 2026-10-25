@@ -10,9 +10,20 @@
         </h4>
         <p>Democratizando o acesso à cultura desde 2026.</p>
         <div class="social-links">
-          <a href="https://www.instagram.com/showmetcc/" aria-label="Instagram"><i class="bi bi-instagram"></i></a>
-          <a href="#" aria-label="X"><i class="bi bi-twitter-x"></i></a>
-          <a href="#" aria-label="Facebook"><i class="bi bi-facebook"></i></a>
+          <a
+            href="https://www.instagram.com/showmetcc/"
+            aria-label="Instagram do ShowMe"
+            title="Instagram do ShowMe (abre em nova aba)"
+            target="_blank"
+            rel="noopener noreferrer"
+          ><i class="bi bi-instagram" aria-hidden="true"></i></a>
+          <a
+            href="https://github.com/showmetcc-project/"
+            aria-label="GitHub do ShowMe"
+            title="GitHub do ShowMe (abre em nova aba)"
+            target="_blank"
+            rel="noopener noreferrer"
+          ><i class="bi bi-github" aria-hidden="true"></i></a>
         </div>
       </div>
 
@@ -55,7 +66,7 @@
         <h4>Informações</h4>
         <ul>
           <li><a href="termos.php">Termos de Uso</a></li>
-          <li><a href="#">Política de Privacidade</a></li>
+          <li><a href="politicaPrivacidade.php">Política de Privacidade</a></li>
         </ul>
         <p class="copyright-text">© 2026 ShowMe. Todos os direitos reservados.</p>
       </div>

@@ -27,7 +27,7 @@
   window.addEventListener('load', sincronizarAlturaCabecalho, {once: true});
 
   const CHAVE_ULTIMA_PAGINA = 'showme:ultima-pagina';
-  const PAGINA_VOLTAR_SEM_REGISTRO = /\/termos\.php$/i;
+  const PAGINA_VOLTAR_SEM_REGISTRO = /\/(?:termos|politicaPrivacidade)\.php$/i;
 
   function urlDeOutraOrigem(url) {
     try {
@@ -37,8 +37,8 @@
     }
   }
 
-  // Guarda a última tela do ShowMe visitada nesta sessão. A própria tela de
-  // Termos não conta, para o "voltar" apontar para onde o usuário estava antes.
+  // Guarda a última tela do ShowMe visitada nesta sessão. As telas legais não
+  // contam, para o "voltar" apontar para onde o usuário estava antes.
   function registrarUltimaPagina() {
     if (PAGINA_VOLTAR_SEM_REGISTRO.test(window.location.pathname)) {
       return;

@@ -2,6 +2,7 @@
     'use strict';
 
     const imagemPadraoCard = 'assets/img/bannerEventoPadrao.png';
+    const PRECO_MAXIMO_FILTRO = 2000;
     const limiteBanner = 5;
     let bannerSwiper = null;
     let requisicaoBusca = null;
@@ -395,6 +396,12 @@
         const categoriaSelecionada = normalizarTexto(filtros.categoria || '');
         const classificacoesSelecionadas = normalizarClassificacoes(filtros.classificacoes || [])
             .map(normalizarTexto);
+        const precoMinimo = Number.isFinite(Number(filtros.precoMin))
+            ? Math.max(0, Number(filtros.precoMin))
+            : 0;
+        const precoMaximo = Number.isFinite(Number(filtros.precoMax))
+            ? Math.max(0, Math.min(PRECO_MAXIMO_FILTRO, Number(filtros.precoMax)))
+            : PRECO_MAXIMO_FILTRO;
 
         return eventos.filter((evento) => {
             if (filtros.preco === 'gratuitos' && !Boolean(evento.gratuidade)) return false;
@@ -407,8 +414,15 @@
 
             if (filtros.uf && String(evento.uf || '').trim().toUpperCase() !== filtros.uf) return false;
             if (cidadeSelecionada && normalizarTexto(evento.cidade_evento) !== cidadeSelecionada) return false;
-            if (!Boolean(evento.gratuidade) && filtros.precoMax < 2000
-                && Number(evento.valor_ingresso_minimo || 0) > filtros.precoMax) return false;
+            if (precoMinimo > 0) {
+                if (Boolean(evento.gratuidade)) return false;
+                const valorMaximoEvento = Number(
+                    evento.valor_ingresso_maximo ?? evento.valor_ingresso_minimo ?? 0
+                );
+                if (!Number.isFinite(valorMaximoEvento) || valorMaximoEvento < precoMinimo) return false;
+            }
+            if (!Boolean(evento.gratuidade) && precoMaximo < PRECO_MAXIMO_FILTRO
+                && Number(evento.valor_ingresso_minimo || 0) > precoMaximo) return false;
 
             if (categoriaSelecionada) {
                 const categoriasEvento = normalizarTexto(evento.categoria_evento)
@@ -436,27 +450,40 @@
 
     async function buscarEventosNaHome(termoInformado, filtrosInformados = {}) {
         const termo = String(termoInformado || '').trim();
+        const preco = ['todos', 'gratuitos', 'pagos'].includes(filtrosInformados.preco)
+            ? filtrosInformados.preco
+            : 'todos';
+        const precoMaxInformado = Number(filtrosInformados.precoMax);
+        const precoMax = preco === 'gratuitos'
+            ? PRECO_MAXIMO_FILTRO
+            : Number.isFinite(precoMaxInformado)
+                ? Math.max(0, Math.min(PRECO_MAXIMO_FILTRO, precoMaxInformado))
+                : PRECO_MAXIMO_FILTRO;
+        const precoMinInformado = Number(filtrosInformados.precoMin);
+        const precoMin = preco === 'gratuitos'
+            ? 0
+            : Number.isFinite(precoMinInformado)
+                ? Math.max(0, Math.min(precoMax, precoMinInformado))
+                : 0;
         const filtros = {
             categoria: String(filtrosInformados.categoria || ''),
             classificacoes: normalizarClassificacoes(
                 filtrosInformados.classificacoes || filtrosInformados.classificacao || []
             ),
-            preco: ['todos', 'gratuitos', 'pagos'].includes(filtrosInformados.preco)
-                ? filtrosInformados.preco
-                : 'todos',
+            preco,
             cidade: String(filtrosInformados.cidade || ''),
             uf: String(filtrosInformados.uf || '').toUpperCase(),
             data: ['qualquer', 'hoje', 'amanha', 'fim-de-semana', 'nesta-semana', 'proxima-semana', 'neste-mes', 'proximo-mes'].includes(filtrosInformados.data)
                 ? filtrosInformados.data
                 : 'qualquer',
-            precoMax: Number.isFinite(Number(filtrosInformados.precoMax))
-                ? Math.max(0, Math.min(2000, Number(filtrosInformados.precoMax)))
-                : 2000
+            precoMin,
+            precoMax
         };
 
         const possuiFiltros = filtros.categoria !== '' || filtros.classificacoes.length > 0
             || filtros.preco !== 'todos' || filtros.cidade !== '' || filtros.uf !== ''
-            || filtros.data !== 'qualquer' || filtros.precoMax < 2000;
+            || filtros.data !== 'qualquer' || filtros.precoMin > 0
+            || filtros.precoMax < PRECO_MAXIMO_FILTRO;
         if (!termo && !possuiFiltros) {
             mostrarVisaoNormal();
             return;
@@ -868,6 +895,7 @@
         cidade: parametrosBusca.get('cidade') || '',
         uf: parametrosBusca.get('uf') || '',
         data: parametrosBusca.get('data') || 'qualquer',
-        precoMax: parametrosBusca.get('preco_max') || 2000
+        precoMin: parametrosBusca.get('preco_min') || 0,
+        precoMax: parametrosBusca.get('preco_max') || PRECO_MAXIMO_FILTRO
     });
 }());

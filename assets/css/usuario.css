@@ -166,7 +166,11 @@ body {
 .perfil-form {
     display: flex;
     flex-wrap: wrap;
-    padding: 0 0 50px;
+    padding: 0 0 24px;
+}
+
+.perfil-form .grupo {
+    min-width: 0;
 }
 
 .grupo {
@@ -228,6 +232,7 @@ body {
 
 .input-icon input {
     width: 100%;
+    min-width: 0;
     border: none;
     outline: none;
     background: transparent;
@@ -237,6 +242,45 @@ body {
 
 .input-icon input[readonly] {
     cursor: default;
+}
+
+.perfil-form .btn-mostrar-senha {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 44px;
+    width: 44px;
+    height: 44px;
+    margin: -9px -9px -9px 0;
+    padding: 0;
+    border: 0;
+    border-radius: 8px;
+    background: transparent;
+    box-shadow: none;
+    cursor: pointer;
+    transition: background .2s ease;
+}
+
+.perfil-form .btn-mostrar-senha:hover {
+    background: rgba(255, 0, 110, .1);
+}
+
+.perfil-form .btn-mostrar-senha:focus-visible {
+    outline: 2px solid #ff006e;
+    outline-offset: 2px;
+}
+
+.perfil-form .btn-mostrar-senha:disabled {
+    cursor: default;
+}
+
+.perfil-form .btn-mostrar-senha i {
+    font-size: 20px;
+    line-height: 1;
+}
+
+.perfil-form:not(.modo-edicao) .btn-mostrar-senha {
+    visibility: hidden;
 }
 
 .perfil-form.modo-edicao .input-icon {
@@ -250,6 +294,31 @@ body {
 
 .perfil-form.modo-edicao .input-icon i {
     color: #ff006e;
+}
+
+/* Campos de senha opcionais dentro do formulário principal */
+.perfil-ajuda-senha {
+    margin: 0;
+    color: #9f9f9f;
+    font-size: .82rem;
+    line-height: 1.5;
+}
+
+.perfil-form > .perfil-ajuda-senha {
+    margin-top: 8px;
+}
+
+.perfil-form > .perfil-feedback {
+    margin-top: 12px;
+}
+
+.perfil-form .input-icon {
+    width: 100%;
+}
+
+.perfil-form .input-icon.input-invalido {
+    border-color: #ff006e;
+    box-shadow: 0 0 0 3px rgba(255, 0, 110, .16);
 }
 
 /* Integração pontual com o Google Agenda */

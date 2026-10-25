@@ -40,8 +40,20 @@
   max-width: 700px;
 }
 
-.pagina-sobre .hero i {
-  margin: 30px auto 0;
+.pagina-sobre .hero .hero-conteudo {
+  position: relative;
+}
+
+.pagina-sobre .hero .hero-seta {
+  position: absolute;
+  top: calc(100% + 30px);
+  left: 50%;
+  display: block;
+  transform: translateX(-50%);
+}
+
+.pagina-sobre .hero .hero-seta i {
+  margin: 0;
   padding-top: 0;
 }
 

@@ -4,6 +4,7 @@ require_once __DIR__ . '/middleware/apiCommon.php';
 
 require_once dirname(__DIR__) . '/config/conexao.php';
 require_once dirname(__DIR__) . '/config/midiasPerfil.php';
+require_once dirname(__DIR__) . '/config/validacaoSenha.php';
 require_once __DIR__ . '/middleware/apiHelper.php';
 require_once __DIR__ . '/middleware/uploadHelper.php';
 
@@ -214,9 +215,11 @@ if ($metodo === 'POST') {
         ], 400);
     }
 
-    if (strlen($senha) < 6) {
+    $erroSenha = validarRequisitosSenha($senha);
+
+    if ($erroSenha !== null) {
         responder([
-            'erro' => 'A senha deve ter pelo menos 6 caracteres'
+            'erro' => $erroSenha
         ], 400);
     }
 
@@ -423,7 +426,8 @@ if ($metodo === 'PUT') {
         'nome',
         'sobrenome',
         'email',
-        'senha'
+        'senha',
+        'nova_senha'
     ];
 
     $camposRecebidos = array_intersect(
@@ -438,7 +442,7 @@ if ($metodo === 'PUT') {
     }
 
     $stmt = $conn->prepare(
-        'SELECT nome_user, sobrenome, email_user
+        'SELECT nome_user, sobrenome, email_user, senha_user
          FROM usuario
          WHERE id_user = ?
          LIMIT 1'
@@ -469,7 +473,7 @@ if ($metodo === 'PUT') {
         ? trim((string) $dados['email'])
         : $usuarioAtual['email_user'];
 
-    $alterarSenha = array_key_exists('senha', $dados);
+    $alterarSenha = array_key_exists('senha', $dados) || array_key_exists('nova_senha', $dados);
 
     if ($nome === '' || $sobrenome === '') {
         responder([
@@ -519,18 +523,43 @@ if ($metodo === 'PUT') {
 
     $stmt->close();
 
+    $mensagem = 'Perfil atualizado com sucesso';
+    $novoTokenCsrf = null;
+
     if ($alterarSenha) {
+        $senhaAtual = (string) ($dados['senha_atual'] ?? '');
+        $novaSenha = array_key_exists('nova_senha', $dados)
+            ? (string) $dados['nova_senha']
+            : (string) ($dados['senha'] ?? '');
 
-        $senha = (string) $dados['senha'];
-
-        if (strlen($senha) < 6) {
+        if ($senhaAtual === '') {
             responder([
-                'erro' => 'A senha deve ter pelo menos 6 caracteres'
+                'erro' => 'Informe a senha atual para alterar a senha.'
+            ], 400);
+        }
+
+        if (empty($usuarioAtual['senha_user'])) {
+            responder([
+                'erro' => 'Esta conta usa login pelo Google e ainda não possui uma senha local para alterar.'
+            ], 400);
+        }
+
+        if (!password_verify($senhaAtual, (string) $usuarioAtual['senha_user'])) {
+            responder([
+                'erro' => 'A senha atual está incorreta.'
+            ], 400);
+        }
+
+        $erroSenha = validarRequisitosSenha($novaSenha);
+
+        if ($erroSenha !== null) {
+            responder([
+                'erro' => $erroSenha
             ], 400);
         }
 
         $senhaHash = password_hash(
-            $senha,
+            $novaSenha,
             PASSWORD_DEFAULT
         );
 
@@ -552,6 +581,24 @@ if ($metodo === 'PUT') {
             $id
         );
 
+        executarStatementApi($stmt);
+        $stmt->close();
+
+        // Um link de recuperação emitido antes da troca deixa de ser válido.
+        $stmt = $conn->prepare(
+            'UPDATE recuperacao_senha
+             SET usado_em = NOW()
+             WHERE id_usuario = ?
+             AND usado_em IS NULL'
+        );
+        $stmt->bind_param('i', $id);
+        executarStatementApi($stmt);
+        $stmt->close();
+
+        $_SESSION['nome_user'] = $nome;
+        session_regenerate_id(true);
+        $novoTokenCsrf = renovarTokenCsrf();
+        $mensagem = 'Senha alterada com sucesso';
     } else {
 
         $stmt = $conn->prepare(
@@ -569,13 +616,12 @@ if ($metodo === 'PUT') {
             $email,
             $id
         );
+
+        executarStatementApi($stmt);
+        $stmt->close();
+
+        $_SESSION['nome_user'] = $nome;
     }
-
-    executarStatementApi($stmt);
-
-    $stmt->close();
-
-    $_SESSION['nome_user'] = $nome;
 
     $stmt = $conn->prepare(
         'SELECT id_user, nome_user, sobrenome, email_user,
@@ -590,8 +636,9 @@ if ($metodo === 'PUT') {
     $stmt->close();
 
     responder([
-        'mensagem' => 'Perfil atualizado com sucesso',
-        'usuario' => normalizarUsuarioApi($usuarioAtualizado)
+        'mensagem' => $mensagem,
+        'usuario' => normalizarUsuarioApi($usuarioAtualizado),
+        'csrf_token' => $novoTokenCsrf
     ]);
 }
 

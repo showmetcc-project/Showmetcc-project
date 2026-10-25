@@ -272,38 +272,49 @@ require_once __DIR__ . '/config/classificacoesIndicativas.php';
                     </div>
                 </div>
 
-                <div class="mb-3">
-                    <label class="form-label" for="nomeArtistaSolicitado">Nome do artista / atração <span class="campo-obrigatorio" aria-hidden="true">*</span></label>
-                    <input id="nomeArtistaSolicitado" name="nome_artista_solicitado" type="text"
-                        class="form-control" maxlength="150" placeholder="Ex: Banda Exemplo" required>
-                </div>
-
-                <div class="mb-3" id="campoGeneroArtista" hidden>
-                    <label class="form-label" for="generoArtistaSolicitado">Gênero Musical do Artista</label>
-                    <input id="generoArtistaSolicitado" name="genero_artista" type="text"
-                        class="form-control" maxlength="100" placeholder="Ex: MPB, Rock, Sertanejo"
-                        aria-describedby="generoArtistaAjuda" disabled>
-                    <div id="generoArtistaAjuda" class="form-text">
-                        Opcional. Ajuda o ShowMe a recomendar eventos parecidos com os que você curte.
-                    </div>
-                </div>
-
                 <div class="mb-5">
                     <label class="form-label" for="descricaoEvento">
                         Descrição do evento <span class="campo-obrigatorio" aria-hidden="true">*</span>
                     </label>
 
                     <textarea id="descricaoEvento" name="descricao_evento" maxlength="1000" class="form-control descricao-grande"
-                        placeholder="Conte sobre o evento: programação, atrações, experiências..." required></textarea>
+                        placeholder="Conte sobre o evento: programação, experiências, destaques..." required></textarea>
                 </div>
 
-                <div class="mb-5">      
-                    <label class="form-label" for="descricaoArtista">
-                        Descrição do artista / atração <span class="campo-obrigatorio" aria-hidden="true">*</span>
-                    </label>
+                <div class="mb-5 grupo-quem-estara-la">
+                    <p id="ajudaQuemEstaraLa" class="form-text grupo-quem-estara-la-ajuda">
+                        Informe quem faz parte do evento, independentemente da categoria.
+                    </p>
 
-                    <textarea id="descricaoArtista" name="descricao_artista" maxlength="1000" class="form-control descricao-media"
-                        placeholder="Quem são os artistas ou atrações principais? Biografia, estilo, destaque..." required></textarea>
+                    <div class="mb-3">
+                        <label class="form-label" for="nomeArtistaSolicitado">
+                            Quem Estará Lá <span class="campo-obrigatorio" aria-hidden="true">*</span>
+                        </label>
+                        <input id="nomeArtistaSolicitado" name="nome_artista_solicitado" type="text"
+                            class="form-control" maxlength="150"
+                            placeholder="Ex: Nomes de bandas, palestrantes, facilitadores, expositores ou coletivos"
+                            aria-describedby="ajudaQuemEstaraLa" required>
+                    </div>
+
+                    <div class="mb-3" id="campoGeneroArtista" hidden>
+                        <label class="form-label" for="generoArtistaSolicitado">Gênero musical dos participantes</label>
+                        <input id="generoArtistaSolicitado" name="genero_artista" type="text"
+                            class="form-control" maxlength="100" placeholder="Ex: MPB, Rock, Sertanejo"
+                            aria-describedby="generoArtistaAjuda" disabled>
+                        <div id="generoArtistaAjuda" class="form-text">
+                            Opcional. Ajuda o ShowMe a recomendar eventos parecidos com os que você curte.
+                        </div>
+                    </div>
+
+                    <div class="mb-0">
+                        <label class="form-label" for="descricaoArtista">
+                            Sobre quem estará lá <span class="campo-obrigatorio" aria-hidden="true">*</span>
+                        </label>
+
+                        <textarea id="descricaoArtista" name="descricao_artista" maxlength="1000" class="form-control descricao-media"
+                            placeholder="Conte quem são as pessoas, grupos ou coletivos e o que elas apresentam."
+                            required></textarea>
+                    </div>
                 </div>
 
                 <button type="submit" class="btn-enviar" id="botaoEnviarEvento">

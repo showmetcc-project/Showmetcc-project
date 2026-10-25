@@ -213,13 +213,15 @@ $PERFIL.estatisticas | ConvertTo-Json
 
 ### PUT /usuarios/{id} — sucesso e erro 403
 
-O primeiro comando atualiza o próprio perfil. Mesmo enviando `tipo_usuario`, esse campo
-é ignorado e permanece inalterado. O segundo tenta editar outro usuário.
+O primeiro comando atualiza o próprio perfil e troca a senha. A troca exige
+`senha_atual` e `nova_senha`; o campo legado `senha` não é aceito para essa finalidade.
+Mesmo enviando `tipo_usuario`, esse campo é ignorado e permanece inalterado. O segundo
+tenta editar outro usuário.
 
 ```powershell
 curl.exe -i -b $COOKIE_COMUM -X PUT "$BASE/usuarios/ID_DO_PROPRIO_USUARIO" `
   -H "Content-Type: application/json" `
-  -d '{"nome":"Maria Atualizada","email":"maria.atualizada@exemplo.com","senha":"novaSenha123","tipo_usuario":"admin"}'
+  -d '{"nome":"Maria Atualizada","email":"maria.atualizada@exemplo.com","senha_atual":"senha123","nova_senha":"novaSenha123","tipo_usuario":"admin"}'
 
 curl.exe -i -b $COOKIE_COMUM -X PUT "$BASE/usuarios/ID_DE_OUTRO_USUARIO" `
   -H "Content-Type: application/json" `
@@ -321,6 +323,21 @@ classificação desconhecida.
 curl.exe -i -G "$BASE/eventos/" --data-urlencode "classificacao=Livre"
 curl.exe -i -G "$BASE/eventos/" --data-urlencode "classificacao=12 anos,14 anos"
 curl.exe -i -G "$BASE/eventos/" --data-urlencode "classificacao=Invalida"
+```
+
+### GET /eventos?valor_minimo=&valor_maximo= — faixa de preço
+
+`valor_minimo` exclui eventos gratuitos e mantém eventos pagos cujo ingresso máximo
+alcance o valor informado. `valor_maximo` mantém eventos gratuitos e eventos pagos
+cujo ingresso mínimo caiba no valor. Os aliases `preco_min` e `preco_max` são aceitos.
+Quando o ingresso é `gratuitos`, a faixa de preço é ignorada. O último comando deve
+retornar `400` porque o mínimo é maior que o máximo.
+
+```powershell
+curl.exe -i -G "$BASE/eventos/" --data-urlencode "valor_minimo=100" --data-urlencode "valor_maximo=200"
+curl.exe -i -G "$BASE/eventos/" --data-urlencode "ingresso=pagos" --data-urlencode "preco_min=100"
+curl.exe -i -G "$BASE/eventos/" --data-urlencode "ingresso=gratuitos" --data-urlencode "valor_minimo=100"
+curl.exe -i -G "$BASE/eventos/" --data-urlencode "valor_minimo=300" --data-urlencode "valor_maximo=200"
 ```
 
 ### GET /eventos?busca= — busca por nome, cidade e artista

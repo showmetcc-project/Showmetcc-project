@@ -102,6 +102,37 @@ function urlBaseEmailShowMe(): string
     return ($seguro ? 'https' : 'http') . '://' . $host . $caminhoBase;
 }
 
+function enviarEmailRecuperacaoSenhaShowMe(
+    string $destinatario,
+    string $nomeUsuario,
+    string $linkRedefinicao
+): void {
+    if (filter_var($destinatario, FILTER_VALIDATE_EMAIL) === false) {
+        throw new InvalidArgumentException('E-mail do destinatário inválido');
+    }
+
+    if (filter_var($linkRedefinicao, FILTER_VALIDATE_URL) === false) {
+        throw new InvalidArgumentException('Link de redefinição inválido');
+    }
+
+    $mailer = criarMailerShowMe();
+    $mailer->addAddress($destinatario, trim($nomeUsuario));
+    $mailer->isHTML(true);
+
+    $nomeSeguro = htmlspecialchars($nomeUsuario !== '' ? $nomeUsuario : 'Olá', ENT_QUOTES, 'UTF-8');
+    $linkSeguro = htmlspecialchars($linkRedefinicao, ENT_QUOTES, 'UTF-8');
+
+    $mailer->Subject = 'Redefinição de senha no ShowMe';
+    $mailer->Body = "<p>{$nomeSeguro},</p>
+        <p>Recebemos uma solicitação para redefinir a senha da sua conta no ShowMe.</p>
+        <p><a href=\"{$linkSeguro}\">Criar uma nova senha</a></p>
+        <p>Este link é temporário, só pode ser usado uma vez e expira em 1 hora.</p>
+        <p>Se você não fez esta solicitação, ignore este e-mail. Sua senha atual continuará válida.</p>";
+    $mailer->AltBody = "{$nomeUsuario},\n\nRecebemos uma solicitação para redefinir a senha da sua conta no ShowMe.\n\nCrie uma nova senha: {$linkRedefinicao}\n\nEste link é temporário, só pode ser usado uma vez e expira em 1 hora.\n\nSe você não fez esta solicitação, ignore este e-mail.";
+
+    $mailer->send();
+}
+
 function enviarEmailModeracaoEventoShowMe(
     string $destinatario,
     string $nomeUsuario,

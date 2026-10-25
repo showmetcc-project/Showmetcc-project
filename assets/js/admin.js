@@ -513,9 +513,9 @@
                 : [solicitacao.valor_ingresso_minimo, solicitacao.valor_ingresso_maximo]
                     .filter((valor) => valor !== null && valor !== '').join(' – ')),
             criarCampo('Descrição do evento', solicitacao.descricao_evento),
-            criarCampo('Nome do artista / atração', solicitacao.nome_artista_solicitado),
-            criarCampo('Gênero musical do artista', solicitacao.genero_artista),
-            criarCampo('Descrição do artista / atração', solicitacao.descricao_artista)
+            criarCampo('Quem Estará Lá', solicitacao.nome_artista_solicitado),
+            criarCampo('Gênero musical dos participantes', solicitacao.genero_artista),
+            criarCampo('Sobre quem estará lá', solicitacao.descricao_artista)
         );
         const colunaSolicitante = document.createElement('div');
         colunaSolicitante.className = 'col-md-6';

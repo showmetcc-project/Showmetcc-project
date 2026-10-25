@@ -143,7 +143,7 @@ $atributosRequerLogin = !$usuarioLogado
                     type="search"
                     value="<?= $buscaComunidadesNavbar ? '' : $termoBuscaCabecalho ?>"
                     placeholder="<?= $buscaComunidadesNavbar ? 'Buscar comunidades por evento...' : 'Buscar eventos...' ?>"
-                    aria-label="<?= $buscaComunidadesNavbar ? 'Buscar comunidades por nome do evento' : 'Buscar eventos por nome, cidade, categoria ou artista' ?>"
+                    aria-label="<?= $buscaComunidadesNavbar ? 'Buscar comunidades por nome do evento' : 'Buscar eventos por nome, cidade, categoria ou participante' ?>"
                     <?= $buscaComunidadesNavbar ? '' : 'aria-controls="containerBuscaFlutuante" aria-autocomplete="list" aria-expanded="false"' ?>
                     autocomplete="off"
                     spellcheck="false"
@@ -191,11 +191,17 @@ $atributosRequerLogin = !$usuarioLogado
                         <button type="button" class="chip-filtro" data-filtro-preco="gratuitos" aria-pressed="false">Gratuitos</button>
                         <button type="button" class="chip-filtro" data-filtro-preco="pagos" aria-pressed="false">Pagos</button>
                       </div>
-                      <label class="filtro-preco-slider" for="filtroPrecoMaximo">
-                        <span>Preço máximo</span>
-                        <output id="filtroPrecoValor" for="filtroPrecoMaximo">R$ 2.000+</output>
-                        <input id="filtroPrecoMaximo" type="range" min="0" max="2000" step="50" value="2000">
-                      </label>
+                      <div class="filtro-preco-slider" id="filtroPrecoSlider">
+                        <span class="filtro-preco-titulo">Faixa de preço</span>
+                        <output id="filtroPrecoValor" for="filtroPrecoMinimo filtroPrecoMaximo">R$ 0 – R$ 2.000+</output>
+                        <div class="filtro-preco-controles">
+                          <div class="filtro-preco-trilho" aria-hidden="true">
+                            <span id="filtroPrecoTrilhoAtivo" class="filtro-preco-trilho-ativo"></span>
+                          </div>
+                          <input id="filtroPrecoMinimo" type="range" min="0" max="2000" step="50" value="0" aria-label="Preço mínimo">
+                          <input id="filtroPrecoMaximo" type="range" min="0" max="2000" step="50" value="2000" aria-label="Preço máximo">
+                        </div>
+                      </div>
                     </fieldset>
                     <fieldset class="grupo-filtros-busca">
                       <legend>Período</legend>

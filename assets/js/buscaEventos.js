@@ -36,6 +36,9 @@
     const filtroUf = document.getElementById('filtroUfBusca');
     const filtroCidade = document.getElementById('filtroCidadeBusca');
     const sliderPreco = document.getElementById('filtroPrecoMaximo');
+    const sliderPrecoMinimo = document.getElementById('filtroPrecoMinimo');
+    const containerSliderPreco = document.getElementById('filtroPrecoSlider');
+    const trilhoPrecoAtivo = document.getElementById('filtroPrecoTrilhoAtivo');
     const saidaPreco = document.getElementById('filtroPrecoValor');
     const controlesBuscaHome = document.getElementById('controlesBuscaHome');
     const tagsBuscaHome = document.getElementById('tagsBuscaHome');
@@ -55,6 +58,13 @@
     const parametrosIniciais = new URL(window.location.href).searchParams;
     const cidadeInicial = parametrosIniciais.get('cidade') || '';
     const precoMaxInicial = Number(parametrosIniciais.get('preco_max') || PRECO_MAXIMO_SLIDER);
+    const precoMinInicial = Number(parametrosIniciais.get('preco_min') || 0);
+    const precoMaxNormalizado = Number.isFinite(precoMaxInicial)
+      ? Math.max(0, Math.min(PRECO_MAXIMO_SLIDER, precoMaxInicial))
+      : PRECO_MAXIMO_SLIDER;
+    const precoMinNormalizado = Number.isFinite(precoMinInicial)
+      ? Math.max(0, Math.min(precoMaxNormalizado, precoMinInicial))
+      : 0;
 
     let temporizador = null;
     let requisicaoAtual = null;
@@ -78,9 +88,8 @@
         : 'qualquer',
       uf: (parametrosIniciais.get('uf') || (cidadeInicial.includes('|') ? cidadeInicial.split('|')[1] : '')).toUpperCase(),
       cidade: cidadeInicial.includes('|') ? cidadeInicial.split('|')[0] : cidadeInicial,
-      precoMax: Number.isFinite(precoMaxInicial)
-        ? Math.max(0, Math.min(PRECO_MAXIMO_SLIDER, precoMaxInicial))
-        : PRECO_MAXIMO_SLIDER
+      precoMin: precoMinNormalizado,
+      precoMax: precoMaxNormalizado
     };
 
     if (!PRECOS_VALIDOS.includes(filtros.preco)) {
@@ -94,6 +103,7 @@
         || filtros.data !== 'qualquer'
         || filtros.uf !== ''
         || filtros.cidade !== ''
+        || filtros.precoMin > 0
         || filtros.precoMax < PRECO_MAXIMO_SLIDER;
     }
 
@@ -135,8 +145,11 @@
       if (filtros.cidade) {
         ativos.push({chave: 'cidade', rotulo: `Cidade: ${filtros.cidade}`});
       }
+      if (filtros.precoMin > 0) {
+        ativos.push({chave: 'precoMin', rotulo: `Preço mínimo: ${formatarPrecoFiltro(filtros.precoMin)}`});
+      }
       if (filtros.precoMax < PRECO_MAXIMO_SLIDER) {
-        ativos.push({chave: 'precoMax', rotulo: `Preço: até ${formatarPrecoFiltro(filtros.precoMax)}`});
+        ativos.push({chave: 'precoMax', rotulo: `Preço máximo: ${formatarPrecoFiltro(filtros.precoMax)}`});
       }
 
       return ativos;
@@ -184,6 +197,8 @@
         atualizarOpcoesCidade();
       } else if (chave === 'cidade') {
         filtros.cidade = '';
+      } else if (chave === 'precoMin') {
+        filtros.precoMin = 0;
       } else if (chave === 'precoMax') {
         filtros.precoMax = PRECO_MAXIMO_SLIDER;
       }
@@ -206,6 +221,7 @@
       filtros.cidade = '';
       filtros.uf = '';
       filtros.data = 'qualquer';
+      filtros.precoMin = 0;
       filtros.precoMax = PRECO_MAXIMO_SLIDER;
       atualizarOpcoesCidade();
       atualizarControlesFiltros();
@@ -263,6 +279,7 @@
       if (filtros.cidade) url.searchParams.set('cidade', filtros.cidade);
       if (filtros.uf) url.searchParams.set('uf', filtros.uf);
       if (filtros.data !== 'qualquer') url.searchParams.set('data', filtros.data);
+      if (filtros.precoMin > 0) url.searchParams.set('preco_min', String(filtros.precoMin));
       if (filtros.precoMax < PRECO_MAXIMO_SLIDER) url.searchParams.set('preco_max', String(filtros.precoMax));
 
       return url;
@@ -303,6 +320,22 @@
       emitirBusca(termo);
     }
 
+    function atualizarTrilhoPreco() {
+      const percentualMinimo = (filtros.precoMin / PRECO_MAXIMO_SLIDER) * 100;
+      const percentualMaximo = (filtros.precoMax / PRECO_MAXIMO_SLIDER) * 100;
+
+      if (trilhoPrecoAtivo) {
+        trilhoPrecoAtivo.style.left = `${percentualMinimo}%`;
+        trilhoPrecoAtivo.style.width = `${Math.max(0, percentualMaximo - percentualMinimo)}%`;
+      }
+
+      if (sliderPrecoMinimo && sliderPreco) {
+        const proximos = filtros.precoMin >= filtros.precoMax - Number(sliderPreco.step || 50);
+        sliderPrecoMinimo.style.zIndex = proximos ? '4' : '2';
+        sliderPreco.style.zIndex = proximos ? '2' : '3';
+      }
+    }
+
     function atualizarControlesFiltros() {
       formulario.querySelectorAll('[data-filtro-preco]').forEach((botao) => {
         const ativo = botao.dataset.filtroPreco === filtros.preco;
@@ -318,12 +351,36 @@
       if (filtroCategoria) filtroCategoria.value = filtros.categoria;
       if (filtroUf) filtroUf.value = filtros.uf;
       if (filtroCidade) filtroCidade.value = filtros.cidade;
+
+      if (filtros.preco === 'gratuitos') {
+        filtros.precoMin = 0;
+        filtros.precoMax = PRECO_MAXIMO_SLIDER;
+      } else {
+        filtros.precoMin = Math.max(0, Math.min(filtros.precoMax, filtros.precoMin));
+        filtros.precoMax = Math.max(filtros.precoMin, Math.min(PRECO_MAXIMO_SLIDER, filtros.precoMax));
+      }
+
+      if (containerSliderPreco) {
+        containerSliderPreco.hidden = filtros.preco === 'gratuitos';
+      }
+      if (sliderPrecoMinimo) sliderPrecoMinimo.value = String(filtros.precoMin);
       if (sliderPreco) sliderPreco.value = String(filtros.precoMax);
       if (saidaPreco) {
-        saidaPreco.value = filtros.precoMax >= PRECO_MAXIMO_SLIDER
+        const minimoFormatado = Number(filtros.precoMin).toLocaleString('pt-BR', {
+          style: 'currency',
+          currency: 'BRL',
+          maximumFractionDigits: 0
+        });
+        const maximoFormatado = filtros.precoMax >= PRECO_MAXIMO_SLIDER
           ? 'R$ 2.000+'
-          : Number(filtros.precoMax).toLocaleString('pt-BR', {style: 'currency', currency: 'BRL'});
+          : Number(filtros.precoMax).toLocaleString('pt-BR', {
+            style: 'currency',
+            currency: 'BRL',
+            maximumFractionDigits: 0
+          });
+        saidaPreco.value = `${minimoFormatado} – ${maximoFormatado}`;
       }
+      atualizarTrilhoPreco();
     }
 
     function atualizarOpcoesCidade() {
@@ -474,7 +531,10 @@
       if (periodo) parametros.set('periodo', periodo);
       if (filtros.uf) parametros.set('uf', filtros.uf);
       if (filtros.cidade) parametros.set('cidade', filtros.cidade);
-      if (filtros.precoMax < PRECO_MAXIMO_SLIDER) parametros.set('valor_maximo', String(filtros.precoMax));
+      if (filtros.preco !== 'gratuitos') {
+        if (filtros.precoMin > 0) parametros.set('valor_minimo', String(filtros.precoMin));
+        if (filtros.precoMax < PRECO_MAXIMO_SLIDER) parametros.set('valor_maximo', String(filtros.precoMax));
+      }
       parametros.set('limite', String(LIMITE_RESULTADOS));
 
       try {
@@ -549,6 +609,10 @@
     formulario.querySelectorAll('[data-filtro-preco]').forEach((botao) => {
       botao.addEventListener('click', () => {
         filtros.preco = botao.dataset.filtroPreco;
+        if (filtros.preco === 'gratuitos') {
+          filtros.precoMin = 0;
+          filtros.precoMax = PRECO_MAXIMO_SLIDER;
+        }
         aplicarFiltros();
       });
     });
@@ -582,14 +646,22 @@
       aplicarFiltros();
     });
 
-    sliderPreco?.addEventListener('input', () => {
-      filtros.precoMax = Number(sliderPreco.value);
+    function aplicarFaixaPreco(origem) {
+      if (origem === 'min' && sliderPrecoMinimo) {
+        filtros.precoMin = Math.min(Number(sliderPrecoMinimo.value), filtros.precoMax);
+      } else if (origem === 'max' && sliderPreco) {
+        filtros.precoMax = Math.max(Number(sliderPreco.value), filtros.precoMin);
+      }
+
       atualizarControlesFiltros();
       renderizarControlesBuscaHome();
       aplicarBuscaNaHome(campo.value.trim(), false);
       window.clearTimeout(temporizador);
       temporizador = window.setTimeout(executarBusca, 250);
-    });
+    }
+
+    sliderPrecoMinimo?.addEventListener('input', () => aplicarFaixaPreco('min'));
+    sliderPreco?.addEventListener('input', () => aplicarFaixaPreco('max'));
 
     formulario.querySelector('[data-limpar-filtros]')?.addEventListener('click', () => {
       filtros.categoria = '';
@@ -598,6 +670,7 @@
       filtros.cidade = '';
       filtros.uf = '';
       filtros.data = 'qualquer';
+      filtros.precoMin = 0;
       filtros.precoMax = PRECO_MAXIMO_SLIDER;
       atualizarOpcoesCidade();
       renderizarControlesBuscaHome();
@@ -682,7 +755,14 @@
       filtros.cidade = parametros.get('cidade') || '';
       filtros.uf = (parametros.get('uf') || '').toUpperCase();
       filtros.data = PERIODOS_VALIDOS.includes(parametros.get('data')) ? parametros.get('data') : 'qualquer';
-      filtros.precoMax = Number(parametros.get('preco_max') || PRECO_MAXIMO_SLIDER);
+      const precoMaxPopstate = Number(parametros.get('preco_max') || PRECO_MAXIMO_SLIDER);
+      const precoMinPopstate = Number(parametros.get('preco_min') || 0);
+      filtros.precoMax = Number.isFinite(precoMaxPopstate)
+        ? Math.max(0, Math.min(PRECO_MAXIMO_SLIDER, precoMaxPopstate))
+        : PRECO_MAXIMO_SLIDER;
+      filtros.precoMin = Number.isFinite(precoMinPopstate)
+        ? Math.max(0, Math.min(filtros.precoMax, precoMinPopstate))
+        : 0;
       campo.value = termo;
       atualizarControlesFiltros();
       atualizarBotaoLimpar();

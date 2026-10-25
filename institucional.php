@@ -51,9 +51,9 @@ iniciarSessaoSegura();
       <video autoplay muted loop width="100%">
         <source src="assets/video/bannerVideo.mp4" type="video/mp4">
       </video>
-      <div class="row gy-4">
+      <div class="row">
         <div class="container">
-          <div class="" data-aos="zoom-out">
+          <div class="hero-conteudo" data-aos="zoom-out">
 
             <h1 class="h1banner" aria-label="ShowMe — categorias de eventos culturais">
               <span class="hero-bloco hero-bloco-titulo" aria-hidden="true">
@@ -64,12 +64,9 @@ iniciarSessaoSegura();
               </span>
             </h1>
             <p class="pbanner"><span class="hero-bloco hero-bloco-slogan">Mostrando o que há de melhor da cultura!</span></p>
-            <a href="#sobre"><i class="bi bi-chevron-down"></i></a>
+            <a class="hero-seta" href="#sobre" aria-label="Ir para a seção Sobre"><i class="bi bi-chevron-down" aria-hidden="true"></i></a>
           </div>
         </div>
-        <div class="col-lg-6 order-1 order-lg-2 hero-img" data-aos="zoom-out" data-aos-delay="200">
-        </div>
-      </div>
       </div>
 
     </section><!-- /Hero Section -->
@@ -177,7 +174,7 @@ iniciarSessaoSegura();
 
         <div class="steps-item" data-aos="fade-up" data-aos-delay="200">
           <div class="steps-image">
-            <span class="icone-etapa icone-etapa-descubra" role="img" aria-label="Ícone musical"></span>
+            <span class="icone-etapa icone-etapa-descubra" role="img" aria-label="Ícone de busca"></span>
           </div>
           <div class="steps-content">
             <h3><span class="verde">Descubra Eventos</span></h3>

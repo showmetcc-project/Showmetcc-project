@@ -1,8 +1,8 @@
 # Auditoria atual do projeto ShowMe
 
-Data da revisão: 08/10/2026<br>
-Base analisada: branch `Joao`, a partir do commit `27bbab0`<br>
-Ambiente: Apache/XAMPP, PHP 8.2 e MySQL local em `http://localhost/Showmetcc-project`
+Data da revisão: 24/10/2026<br>
+Base analisada: branch `main`, a partir do commit `eb574d4`<br>
+Ambiente: Apache/XAMPP, PHP 8.2.12 e MySQL local em `http://localhost/Showmetcc-project`
 
 ## 1. Resumo executivo
 
@@ -14,14 +14,14 @@ O ShowMe é hoje uma aplicação web PHP + MySQL sem framework, dividida em trê
 
 A arquitetura está consideravelmente mais organizada do que na auditoria histórica. As páginas principais já não consultam o banco diretamente. A API está achatada, usa um `.htaccess` único, prepared statements, helpers compartilhados, respostas JSON e middlewares diferentes para usuário comum e administrador.
 
-A antiga funcionalidade de Avaliações foi removida por completo e substituída pelo conceito de Comunidades. O sistema atual contempla cadastro e moderação de eventos, favoritos, planejamento de viagens, calendário, comunidades, galeria, denúncias, autenticação tradicional/Google, Google Agenda, contato por e-mail e personalização do perfil.
+A antiga funcionalidade de Avaliações foi removida por completo e substituída pelo conceito de Comunidades. O sistema atual contempla cadastro e moderação de eventos, favoritos, planejamento de viagens, calendário, comunidades, galeria, denúncias, autenticação tradicional/Google, alteração e recuperação de senha, Google Agenda, contato por e-mail e personalização do perfil.
 
 Os principais pontos ainda incompletos são:
 
 - a tabela legada `spotify` foi removida; a recomendação personalizada usa favoritos e rotas do usuário;
 - `preferencias` e `evento.num_evento` permanecem no schema sem função atual;
 - o endpoint de excluir conta existe, mas não há controle correspondente no Perfil;
-- faltam proteção CSRF, limitação de tentativas de login e endurecimento explícito dos cookies de sessão;
+- login, cadastro, contato e denúncias ainda não possuem limitação de tentativas; a recuperação de senha tem limite próprio;
 - o planejamento depende de serviços externos consultados diretamente pelo navegador;
 - “Recomendados para Você” usa favoritos e rotas para priorizar categorias e gêneros musicais, com a data mais próxima como desempate;
 - o Clube de Fidelidade é apenas uma apresentação institucional, sem assinatura ou cobrança funcional.
@@ -39,6 +39,9 @@ As páginas ficam na raiz e usam PHP principalmente para sessão, includes e con
 | Login comum | `login.php` | lógica local + `googleLogin.js` | Pública |
 | Login administrativo | `loginAdmin.php` | lógica local | Pública |
 | Cadastro de usuário | `cadastro.php` | `googleLogin.js` | Pública |
+| Recuperação de senha | `recuperarSenha.php` | formulário PHP + `emailHelper.php` | Pública |
+| Redefinição de senha | `redefinirSenha.php` | formulário PHP + token | Pública |
+| Páginas legais | `termos.php`, `politicaPrivacidade.php` | `paginasLegais.css` | Públicas |
 | Perfil | `perfilUsuario.php` | `perfil.js` | Somente usuário comum |
 | Meus Eventos | `meusEventos.php` | `meusEventos.js` | Somente usuário comum |
 | Cadastro de evento | `cadastroEvento.php` | `cadastroEvento.js` | Somente usuário comum |
@@ -71,18 +74,19 @@ O `.htaccess` de `api/` publica URLs amigáveis e encaminha para arquivos camelC
 | Mídias | `apiComunidadeMidia.php` | Galeria, upload e exclusão |
 | Denúncias | `apiComunidadeDenuncias.php` | Registro, listagem e moderação de publicações, respostas e mídias |
 
-`api/middleware/apiCommon.php` centraliza CORS, `OPTIONS`, sessão, leitura JSON, respostas e ID positivo. `apiHelper.php` centraliza execução de statements, limites e normalização de tipos/datas. Os helpers de login/admin separam 401 de 403.
+`api/middleware/apiCommon.php` centraliza CORS, `OPTIONS`, sessão, leitura JSON, respostas, ID positivo e validação de `X-CSRF-Token` em `POST`, `PUT` e `DELETE`. `assets/js/csrf.js` obtém e renova o token, e o login devolve um token novo após regenerar a sessão. Formulários PHP tradicionais usam `config/csrfPagina.php`. `apiHelper.php` centraliza execução de statements, limites e normalização de tipos/datas. Os helpers de login/admin separam 401 de 403.
 
 ### 2.3 Banco de dados
 
-O schema base fica em `assets/banco/showme.sql` e já contém a estrutura final do banco; não há scripts de migração separados.
+O schema base fica em `assets/banco/showme.sql` e contém a estrutura final do banco. Para bases já existentes, a recuperação de senha possui a migração `assets/banco/migracaoRecuperacaoSenha.sql`.
 
 | Tabela | Uso atual |
 |---|---|
 | `usuario` | Conta, papel, Google, avatar e banner |
+| `recuperacao_senha` | Tokens de redefinição com hash, expiração, uso único e IP solicitante |
 | `solicitacao` | Evento enviado pelo usuário antes da moderação (inclui `alt_imagem`) |
 | `evento` | Evento aprovado/publicado (inclui `alt_imagem`) |
-| `artista` / `artista_evento` | Artistas associados ao evento, incluindo gênero musical opcional |
+| `artista` / `artista_evento` | Participantes associados ao evento (a tabela mantém o nome legado `artista`), incluindo gênero musical opcional |
 | `favoritos` | Toggle de evento salvo |
 | `rota` | Planejamento finalizado, custos e deslocamento |
 | `comunidade_post` | Publicações textuais por evento |
@@ -107,6 +111,8 @@ Sem sessão, o visitante pode:
 - abrir a Home e pesquisar eventos;
 - usar o formulário de contato;
 - abrir login comum, login administrativo ou cadastro;
+- solicitar recuperação de senha por e-mail e abrir a página de redefinição;
+- consultar os Termos de Uso e a Política de Privacidade;
 - visualizar o conteúdo público da vitrine.
 
 Entradas para Meus Eventos, Cadastrar Evento e detalhes protegidos são interceptadas visualmente por um modal de autenticação. O bloqueio real continua no servidor, portanto digitar a URL diretamente não contorna a sessão.
@@ -130,7 +136,7 @@ No desktop a navegação completa aparece a partir de `xl`; abaixo disso o menu 
 
 ### 3.4 Rodapé e acessibilidade
 
-O rodapé aparece atualmente em Home, Institucional e Comunidades. As páginas de tarefa não o usam.
+O rodapé aparece atualmente em Home, Institucional e Comunidades. As páginas de tarefa não o usam. Ele reúne Instagram e GitHub em ícones rosa com hover verde, alvo de toque de 44px, além dos links legais em cinza com hover verde.
 
 `acessibilidade.php` é carregado pelo cabeçalho compartilhado e diretamente nas três telas de autenticação. Ele reúne VLibras, o bundle local da biblioteca de acessibilidade e os ajustes próprios do ShowMe. O widget oferece tamanho de texto, espaçamento, altura de linha, guia de leitura, inversão, escala de cinza, cursor ampliado, redução de animação, sublinhado e fonte para dislexia.
 
@@ -199,13 +205,17 @@ Login comum aceita:
 - e-mail e senha com `password_verify`;
 - ID token do Google validado pela biblioteca oficial, com vínculo por `google_id` ou e-mail.
 
-Conta criada somente pelo Google recebe `senha_user=NULL` e o login tradicional devolve mensagem específica. O login regenera o ID da sessão. Logout usa `DELETE /api/sessoes` após confirmação visual.
+Conta criada somente pelo Google recebe `senha_user=NULL` e o login tradicional devolve mensagem específica. O login regenera o ID da sessão e devolve um token CSRF novo. Logout usa `DELETE /api/sessoes` após confirmação visual.
+
+A recuperação de senha valida o e-mail, gera um token aleatório de 32 bytes, armazena somente o hash SHA-256, expira em 1 hora e invalida tokens anteriores. O token é de uso único e o pedido é limitado a 3 solicitações por 15 minutos por usuário. A resposta é genérica para não revelar se o e-mail está cadastrado. Contas somente Google também podem redefinir a senha por esse fluxo. O formulário de recuperação e a redefinição usam CSRF de página; após o sucesso, o usuário volta ao login.
 
 O login administrativo usa a mesma sessão, mas só aceita usuário cujo papel vindo do banco seja `admin`. `admin.php` redireciona ausência/falha de papel para `loginAdmin.php`.
 
 ### 5.2 Perfil
 
-O Perfil carrega dados pela API e permite edição inline de nome, sobrenome e e-mail. O botão muda de “Editar Perfil” rosa para “Salvar alterações” verde.
+O Perfil carrega dados pela API e permite edição inline de nome, sobrenome e e-mail. Os campos começam como `readonly`; “Editar Perfil” libera a edição e o botão muda para “Salvar alterações” verde.
+
+Abaixo do e-mail ficam “Senha atual”, “Nova senha” e “Confirmar nova senha”, com textos de ajuda e botões de mostrar/ocultar. Os campos são opcionais: se todos ficarem vazios, somente os dados pessoais são salvos; se qualquer um for preenchido, os três passam a ser obrigatórios e a senha atual é conferida no backend. A política é de no mínimo 6 caracteres com pelo menos uma letra e um número. A senha salva nunca é exibida ou recuperada, pois somente o hash é armazenado. Após uma troca bem-sucedida, a sessão é regenerada e o token CSRF é renovado. Contas somente Google não alteram a senha pelo Perfil, mas podem usar a recuperação por e-mail.
 
 Avatar e banner podem ser:
 
@@ -225,13 +235,15 @@ O Perfil também conecta/desconecta o Google Agenda. O endpoint de excluir a con
 
 1. O usuário abre `cadastroEvento.php`.
 2. Informa CEP; BrasilAPI preenche o endereço e o usuário complementa o número quando existir.
-3. Seleciona uma ou mais categorias, a classificação indicativa (Livre, 6, 10, 12, 14, 16 ou 18 anos), gratuidade/preço, artista, descrições, data/horário, link e foto.
+3. Seleciona uma ou mais categorias, a classificação indicativa (Livre, 6, 10, 12, 14, 16 ou 18 anos), gratuidade/preço, quem estará lá, descrições, data/horário, link e foto.
 4. `POST /api/eventos` grava uma `solicitacao` pendente e salva a foto validada.
 5. O admin pesquisa, filtra por período/status e recebe os registros em lotes de 10.
 6. Antes da decisão, o admin pode corrigir a solicitação.
-7. Ao aprovar, a API cria `evento`, grava `id_solicitacao_origem`, procura/cria o artista sem duplicação por caixa/espaços e cria `artista_evento`.
+7. Ao aprovar, a API cria `evento`, grava `id_solicitacao_origem`, procura/cria o participante sem duplicação por caixa/espaços e cria `artista_evento`.
 8. Ao reprovar, a foto é removida fisicamente e a solicitação permanece como histórico recusado.
 9. Aprovação/reprovação envia e-mail; falha de SMTP é registrada sem desfazer a decisão.
+
+O campo de participantes é o mesmo para todas as categorias e aceita bandas, palestrantes, facilitadores, expositores ou coletivos. Na tela de detalhes, a seção é exibida como “Quem Estará Lá”; quando não há participante, aparece um estado vazio próprio. O rótulo “Gênero musical dos participantes” continua aparecendo apenas em categorias musicais.
 
 Depois de publicado, o admin pode editar ou excluir o evento com confirmação. O autor recebe e-mail. Evento excluído deixa “Aprovados” e aparece no filtro virtual “Removidos”: a solicitação continua aprovada, mas seu `LEFT JOIN` já não encontra `evento`.
 
@@ -239,7 +251,9 @@ Eventos ativos futuros aparecem na Home/busca. Eventos passados deixam a descobe
 
 ### 5.4 Busca e Home
 
-A busca considera nome, cidade, categoria e artista com prepared statement e escape dos curingas de `LIKE`. O autocomplete limita resultados; a confirmação troca os carrosséis por um grid dentro da própria Home e atualiza `?busca=` sem navegar para outra página. O grid também é atualizado em tempo real enquanto o usuário digita ou apaga o termo, com debounce e `replaceState` para não poluir o histórico. Abaixo do título “Resultados para...” ficam tags removíveis dos filtros ativos e o botão “Limpar filtros e pesquisa”; ao esvaziar a busca sem filtros, a Home volta à listagem padrão sem recarregar. O painel de filtros oferece, no mesmo formato do seletor de categorias, um seletor de classificação indicativa com a opção “Qualquer classificação” e os valores oficiais (Livre, 6, 10, 12, 14, 16 e 18 anos). A escolha atualiza tanto o autocomplete quanto o grid da Home e persiste na URL (`?classificacao=12%20anos`); a API também aceita mais de uma classificação separada por vírgula, combinada por OU.
+A busca considera nome, cidade, categoria e participante (tabela `artista`) com prepared statement e escape dos curingas de `LIKE`. O autocomplete limita resultados; a confirmação troca os carrosséis por um grid dentro da própria Home e atualiza `?busca=` sem navegar para outra página. O grid também é atualizado em tempo real enquanto o usuário digita ou apaga o termo, com debounce e `replaceState` para não poluir o histórico. Abaixo do título “Resultados para...” ficam tags removíveis dos filtros ativos e o botão “Limpar filtros e pesquisa”; ao esvaziar a busca sem filtros, a Home volta à listagem padrão sem recarregar. O painel de filtros oferece, no mesmo formato do seletor de categorias, um seletor de classificação indicativa com a opção “Qualquer classificação” e os valores oficiais (Livre, 6, 10, 12, 14, 16 e 18 anos). A escolha atualiza tanto o autocomplete quanto o grid da Home e persiste na URL (`?classificacao=12%20anos`); a API também aceita mais de uma classificação separada por vírgula, combinada por OU.
+
+A faixa de preço usa dois controles deslizantes independentes, de R$ 0 a R$ 2.000, com trilho ativo, valores acessíveis e parâmetros `preco_min` e `preco_max` na URL. O filtro gera tags removíveis e é ocultado quando “Gratuitos” está selecionado; nesse caso, os parâmetros de preço também são removidos para não filtrar eventos escondidos. A API aceita `valor_minimo`/`preco_min` e `valor_maximo`/`preco_max`: o mínimo exclui gratuitos e exige que o maior ingresso do evento alcance o valor; o máximo mantém gratuitos e exige que o menor ingresso caiba no limite. A faixa é ignorada quando `ingresso=gratuitos`, e `valor_minimo > valor_maximo` fora desse caso retorna 400.
 
 A Home organiza os mesmos eventos em 10 carrosséis: “Em Breve” (eventos a partir de hoje, ordenados pelas datas mais próximas) seguido das 9 categorias oficiais — Música e Shows, Cinema e Audiovisual, Teatro e Dança, Artes Visuais e Exposições, Literatura, Gastronomia, Oficinas e Workshops, Tradições Regionais e Geek e Cultura Pop. A lista canônica fica em `config/categoriasEvento.php` e é a mesma usada no cadastro de eventos, no filtro de busca e no retorno de `/api/eventos?listar_locais=1`.
 
@@ -305,7 +319,7 @@ O painel possui duas abas:
 - Eventos enviados: pendentes, todas, aprovados, reprovados e removidos;
 - Conteúdos denunciados: pendentes, todas, mantidos e removidos.
 
-A busca ocupa a largura disponível e o filtro de período vale para as duas abas. A paginação injeta lotes de 10 via “Ver mais”. Edição, exclusão e decisões de moderação usam confirmação sensível e toasts.
+A busca ocupa a largura disponível e o filtro de período vale para as duas abas. O campo de período alinha verticalmente com a busca, sem a margem extra do rótulo global. A paginação injeta lotes de 10 via “Ver mais”. Edição, exclusão e decisões de moderação usam confirmação sensível e toasts.
 
 ### 5.9 Contato e e-mails
 
@@ -315,7 +329,8 @@ O mesmo helper SMTP é reutilizado para:
 
 - aprovação/reprovação de evento;
 - edição/remoção de evento publicado;
-- decisão de denúncia e remoção de conteúdo.
+- decisão de denúncia e remoção de conteúdo;
+- recuperação de senha, com link temporário enviado ao usuário.
 
 Falhas de envio não revertem transações de negócio. Não foi feito envio real durante esta auditoria para evitar e-mails externos; foi verificada a configuração local presente e o tratamento por `try/catch`.
 
@@ -325,7 +340,10 @@ Falhas de envio não revertem transações de negócio. Não foi feito envio rea
 
 - prepared statements em toda a API principal;
 - senhas com `password_hash`/`password_verify` e política mínima de 6 caracteres com letras e números;
-- regeneração de sessão no login;
+- CSRF em `POST`, `PUT` e `DELETE` da API via `X-CSRF-Token`, com token novo após login e após troca de senha;
+- CSRF de página nos formulários de recuperação e redefinição de senha;
+- cookies de sessão com `HttpOnly`, `SameSite=Lax`, `Secure` sob HTTPS e `session.use_strict_mode`;
+- regeneração de sessão no login e na troca de senha;
 - criação pública sempre como usuário comum;
 - 401 para ausência de sessão e 403 para papel incorreto;
 - validação central de IDs inteiros positivos;
@@ -337,17 +355,17 @@ Falhas de envio não revertem transações de negócio. Não foi feito envio rea
 - redimensionamento de avatar/banner no servidor com GD;
 - remoção de arquivos físicos ao excluir conteúdo, evento ou usuário, sem falhar a operação caso `unlink` não seja possível;
 - checks e índices únicos no banco para valores de ingresso, favoritos, planejamento, curtidas e denúncias;
-- texto de usuário renderizado principalmente por `textContent`/`htmlspecialchars`.
+- textos de usuário renderizados principalmente por `textContent`/`htmlspecialchars`;
+- tokens de recuperação armazenados somente como hash SHA-256, com expiração, uso único e invalidação dos anteriores;
+- limite de 3 pedidos de recuperação por usuário a cada 15 minutos.
 
 ### Lacunas atuais
 
-1. **CSRF:** mutações autenticadas por cookie não usam token CSRF.
-2. **Cookies:** HttpOnly, SameSite, Secure e `session.use_strict_mode` não são configurados explicitamente pelo projeto.
-3. **Rate limiting:** login, cadastro, contato e denúncias não limitam frequência/tentativas.
-4. **Papel em sessão:** o middleware admin confia em `$_SESSION['tipo_usuario']`; rebaixar o usuário no banco não invalida uma sessão já aberta.
-5. **CORS:** `Access-Control-Allow-Origin: *` é adequado ao uso atual na mesma origem, mas não suporta cookies em front separado.
-6. **Serviços externos no cliente:** BrasilAPI, Nominatim, Overpass/OSRM e mapas podem sofrer indisponibilidade, CORS ou limites de uso sem controle do servidor ShowMe.
-7. **Segredos locais:** os arquivos reais de e-mail/Google estão ignorados corretamente e devem permanecer fora do versionamento.
+1. **Rate limiting:** login, cadastro, contato e denúncias ainda não limitam frequência/tentativas; a recuperação de senha possui limite próprio.
+2. **Papel em sessão:** o middleware admin confia em `$_SESSION['tipo_usuario']`; rebaixar o usuário no banco não invalida uma sessão já aberta.
+3. **CORS:** `Access-Control-Allow-Origin: *` é adequado ao uso atual na mesma origem, mas não suporta cookies em front separado.
+4. **Serviços externos no cliente:** BrasilAPI, Nominatim, Overpass/OSRM e mapas podem sofrer indisponibilidade, CORS ou limites de uso sem controle do servidor ShowMe.
+5. **Segredos locais:** os arquivos reais de e-mail/Google estão ignorados corretamente e devem permanecer fora do versionamento.
 
 ## 7. Código ou dados sem função completa
 
@@ -385,7 +403,7 @@ Falhas de envio não revertem transações de negócio. Não foi feito envio rea
 
 ## 8. Consistência da documentação
 
-`api/swagger.yaml` cobre todas as rotas publicadas pelo `.htaccess`, inclusive Comunidades, denúncias, Google Agenda, filtros administrativos e paginação. Não há referência restante a Avaliações no código ou Swagger atual.
+`api/swagger.yaml` cobre todas as rotas publicadas pelo `.htaccess`, inclusive Comunidades, denúncias, Google Agenda, filtros administrativos, paginação, troca de senha no perfil e faixa de preço (`valor_minimo`/`preco_min` e `valor_maximo`/`preco_max`). Não há referência restante a Avaliações no código ou Swagger atual.
 
 `api/TESTES.md` acompanha os casos novos, incluindo:
 
@@ -396,13 +414,17 @@ Falhas de envio não revertem transações de negócio. Não foi feito envio rea
 - planejamento e Google Agenda;
 - posts, respostas, mídia, denúncias e moderação;
 - filtros, busca e lotes administrativos;
-- categoria virtual de eventos removidos.
+- categoria virtual de eventos removidos;
+- troca de senha no perfil;
+- filtros de preço mínimo e máximo.
 
-A auditoria antiga permanece em `docs/historico/auditoriaBackend.md` justamente por descrever uma fase anterior com Avaliações e lacunas já corrigidas.
+Os exemplos de `api/TESTES.md` foram escritos antes da exigência global de CSRF. Ao executá-los, obtenha o token em `GET /api/csrf` e envie `-H "X-CSRF-Token: $CSRF"` em toda chamada `POST`, `PUT` ou `DELETE`; a atualização individual de todos os exemplos permanece pendente.
+
+A auditoria antiga permanece em `docs/historico/auditoriaBackend.md` justamente por descrever uma fase anterior com Avaliações e lacunas já corrigidas. Ela é um documento histórico e não é reescrita para refletir o estado atual; a referência vigente é este arquivo.
 
 ## 9. Evidências desta revisão
 
-- 52/52 arquivos PHP passaram em `php -l`.
+- Todos os arquivos PHP alterados passaram em `php -l`; todos os JavaScript alterados passaram em `node --check`.
 - `/`, `index.php`, `institucional.php`, `/api/eventos` e `/api/docs/` responderam HTTP 200.
 - `perfilUsuario.php` sem sessão respondeu 302 para `login.php`.
 - `admin.php` sem sessão respondeu 302 para `loginAdmin.php`.
@@ -414,18 +436,23 @@ A auditoria antiga permanece em `docs/historico/auditoriaBackend.md` justamente 
 - O filtro de classificação foi validado na Home como seletor único com “Qualquer classificação” e na API (`Livre` e `12 anos,14 anos`), com rejeição de valor inválido.
 - O botão de detalhes foi validado com e sem planejamento, e o estado dinâmico do Google Agenda foi exercitado com resposta simulada de evento já exportado, exibindo somente o link.
 - Os campos de transporte/hospedagem foram medidos em largura total alinhados à esquerda, e o modal de conflito foi confirmado no centro exato do viewport.
+- A troca de senha no Perfil foi exercitada com senha atual correta/incorreta, nova senha fora da política e confirmação divergente; após o sucesso, a sessão e o token CSRF foram renovados.
+- A recuperação de senha foi validada com token válido, expirado, reutilizado e inválido, além do limite de solicitações; as respostas não revelaram se o e-mail existia.
+- A faixa de preço foi exercitada por arrasto e por teclado, com atualização da URL, tags removíveis e ocultação ao selecionar “Gratuitos”; a API rejeitou mínimo maior que máximo quando aplicável.
+- Home, detalhes, Comunidades, Perfil, Admin, Termos e Política de Privacidade foram verificados em 1440, 1200, 1000, 900, 850, 800, 768, 520 e 320 px, sem overflow horizontal.
+- O rodapé foi conferido com links sociais e legais, alvos de 44px e contraste no hover; “Quem Estará Lá” foi validado com e sem participantes.
 - `git diff --check` não apontou erro de whitespace antes do commit funcional.
 
 A tabela legada `spotify` foi removida do schema (estava vazia no ambiente local). Nenhum evento, usuário, favorito ou rota real foi removido; os registros de teste foram apagados ao final.
 
 ## 10. Prioridades recomendadas
 
-1. Implementar CSRF e endurecer cookies de sessão.
+1. Criar rate limiting para login, cadastro, contato e denúncias; a recuperação de senha já possui limite próprio.
 2. Decidir o destino da tabela `preferencias`, que continua sem leitura ou escrita no código.
 3. Remover `num_evento` depois da confirmação final de compatibilidade.
 4. Adicionar exclusão de conta à interface ou retirar o caso de uso visível da documentação do produto.
 5. Modularizar `planejamento.php` sem alterar seu comportamento.
 6. Evoluir a recomendação com sinais adicionais, como localização e feedback explícito do usuário.
-7. Adicionar manutenção administrativa de artista e ação explícita de cancelar evento, se permanecerem no escopo.
-8. Criar rate limiting para login, contato e denúncias.
+7. Adicionar manutenção administrativa de participante e ação explícita de cancelar evento, se permanecerem no escopo.
+8. Agendar a limpeza periódica de tokens expirados em `recuperacao_senha`.
 9. Automatizar no CI pelo menos lint PHP e validação do OpenAPI.

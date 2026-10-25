@@ -214,9 +214,9 @@ $PERFIL.estatisticas | ConvertTo-Json
 ### PUT /usuarios/{id} — sucesso e erro 403
 
 O primeiro comando atualiza o próprio perfil e troca a senha. A troca exige
-`senha_atual` e `nova_senha`; o campo legado `senha` não é aceito para essa finalidade.
-Mesmo enviando `tipo_usuario`, esse campo é ignorado e permanece inalterado. O segundo
-tenta editar outro usuário.
+`senha_atual` e aceita `nova_senha` (preferencial) ou o campo legado `senha` como
+equivalente. Mesmo enviando `tipo_usuario`, esse campo é ignorado e permanece inalterado.
+O segundo comando tenta editar outro usuário.
 
 ```powershell
 curl.exe -i -b $COOKIE_COMUM -X PUT "$BASE/usuarios/ID_DO_PROPRIO_USUARIO" `

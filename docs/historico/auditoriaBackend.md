@@ -1,5 +1,7 @@
 # Auditoria completa da arquitetura de backend
 
+> **Documento histórico (24/10/2026):** este texto registra a auditoria de 10/09/2026 e não descreve o estado atual. A referência vigente é `docs/auditoriaAtual.md`.
+
 Data da auditoria: 10/09/2026  
 Ambiente testado: Apache/XAMPP em `http://localhost/Showmetcc-project`, PHP e MySQL locais.
 

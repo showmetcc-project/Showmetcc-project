@@ -1,7 +1,7 @@
 # Auditoria atual do projeto ShowMe
 
 Data da revisão: 24/10/2026<br>
-Base analisada: branch `main`, a partir do commit `eb574d4`<br>
+Base analisada: branch `main`, a partir do commit `442509e`, com a limpeza final aplicada<br>
 Ambiente: Apache/XAMPP, PHP 8.2.12 e MySQL local em `http://localhost/Showmetcc-project`
 
 ## 1. Resumo executivo
@@ -19,9 +19,8 @@ A antiga funcionalidade de Avaliações foi removida por completo e substituída
 Os principais pontos ainda incompletos são:
 
 - a tabela legada `spotify` foi removida; a recomendação personalizada usa favoritos e rotas do usuário;
-- `preferencias` e `evento.num_evento` permanecem no schema sem função atual;
-- o endpoint de excluir conta existe, mas não há controle correspondente no Perfil;
-- login, cadastro, contato e denúncias ainda não possuem limitação de tentativas; a recuperação de senha tem limite próprio;
+- login e denúncias agora têm limite por sessão; cadastro e contato ainda não possuem limitação, e a recuperação de senha tem limite próprio;
+- a exclusão de conta foi retirada do backend e do Perfil; o direito de eliminação permanece documentado na Política de Privacidade;
 - o planejamento depende de serviços externos consultados diretamente pelo navegador;
 - “Recomendados para Você” usa favoritos e rotas para priorizar categorias e gêneros musicais, com a data mais próxima como desempate;
 - o Clube de Fidelidade é apenas uma apresentação institucional, sem assinatura ou cobrança funcional.
@@ -78,7 +77,7 @@ O `.htaccess` de `api/` publica URLs amigáveis e encaminha para arquivos camelC
 
 ### 2.3 Banco de dados
 
-O schema base fica em `assets/banco/showme.sql` e contém a estrutura final do banco. Para bases já existentes, a recuperação de senha possui a migração `assets/banco/migracaoRecuperacaoSenha.sql`.
+O schema base fica em `assets/banco/showme.sql` e contém a estrutura final do banco. Para bases já existentes, a recuperação de senha possui a migração `assets/banco/migracaoRecuperacaoSenha.sql`, e a limpeza final possui `assets/banco/migracaoLimpezaFinal.sql`.
 
 | Tabela | Uso atual |
 |---|---|
@@ -95,9 +94,8 @@ O schema base fica em `assets/banco/showme.sql` e contém a estrutura final do b
 | `comunidade_midia` | Fotos da galeria |
 | `comunidade_denuncia` | Denúncia de publicação, resposta ou mídia e decisão administrativa |
 | `google_calendar_token` | Tokens da Agenda por usuário |
-| `preferencias` | Sem leitura ou escrita no código atual |
 
-As relações principais usam `ON DELETE CASCADE`. A origem do evento aprovado é preservada por `evento.id_solicitacao_origem`, com FK e `UNIQUE`. `num_evento` não é mais usado para esse vínculo.
+As relações principais usam `ON DELETE CASCADE`. A origem do evento aprovado é preservada por `evento.id_solicitacao_origem`, com FK e `UNIQUE`. As colunas `evento.num_evento` e `artista.imagem_artista` e a tabela `preferencias` foram removidas do schema e da migração de limpeza.
 
 ## 3. Navegação
 
@@ -353,15 +351,19 @@ Falhas de envio não revertem transações de negócio. Não foi feito envio rea
 - upload com `finfo`, nome aleatório, limite, `getimagesize` e bloqueio de PHP;
 - validação mínima estrutural de MP4/WebM preservada no helper, embora Comunidades atualmente aceite apenas imagem;
 - redimensionamento de avatar/banner no servidor com GD;
-- remoção de arquivos físicos ao excluir conteúdo, evento ou usuário, sem falhar a operação caso `unlink` não seja possível;
+- remoção de arquivos físicos ao excluir conteúdo ou evento, sem falhar a operação caso `unlink` não seja possível;
 - checks e índices únicos no banco para valores de ingresso, favoritos, planejamento, curtidas e denúncias;
 - textos de usuário renderizados principalmente por `textContent`/`htmlspecialchars`;
 - tokens de recuperação armazenados somente como hash SHA-256, com expiração, uso único e invalidação dos anteriores;
-- limite de 3 pedidos de recuperação por usuário a cada 15 minutos.
+- limite de 3 pedidos de recuperação por usuário a cada 15 minutos;
+- limite de 5 falhas de login por sessão a cada 15 minutos, com `429` e `Retry-After`;
+- limite de 3 denúncias persistidas por sessão a cada 10 minutos.
+
+Por serem baseados em sessão, esses limites não impedem que um atacante descarte o cookie e abra uma nova sessão; eles funcionam como mitigação simples de spam no mesmo navegador, não como controle distribuído por IP ou conta.
 
 ### Lacunas atuais
 
-1. **Rate limiting:** login, cadastro, contato e denúncias ainda não limitam frequência/tentativas; a recuperação de senha possui limite próprio.
+1. **Rate limiting:** cadastro e contato ainda não limitam frequência/tentativas; login, denúncias e recuperação de senha possuem limites próprios.
 2. **Papel em sessão:** o middleware admin confia em `$_SESSION['tipo_usuario']`; rebaixar o usuário no banco não invalida uma sessão já aberta.
 3. **CORS:** `Access-Control-Allow-Origin: *` é adequado ao uso atual na mesma origem, mas não suporta cookies em front separado.
 4. **Serviços externos no cliente:** BrasilAPI, Nominatim, Overpass/OSRM e mapas podem sofrer indisponibilidade, CORS ou limites de uso sem controle do servidor ShowMe.
@@ -373,12 +375,10 @@ Falhas de envio não revertem transações de negócio. Não foi feito envio rea
 
 | Item | Situação atual | Recomendação |
 |---|---|---|
-| `evento.num_evento` | Sempre pode voltar `null`; não participa mais do vínculo solicitação→evento | Remover do schema/API após confirmar que nenhuma base externa usa a coluna |
-| `preferencias` | Nenhum PHP/JS lê ou grava a tabela | Implementar preferências reais ou remover |
 | Clube de Fidelidade | Cards e preços são somente informativos | Deixar explícito “em breve” ou implementar assinatura/pagamento |
-| `DELETE /api/usuarios/{id}` | Backend completo, sem botão no Perfil | Adicionar ação sensível ou retirar do escopo público documentado |
 | Cancelar evento (`status_evento`) | API aceita edição para `cancelado`; painel não oferece campo específico | Adicionar ação “Cancelar” ou manter como recurso técnico |
-| `artista.imagem_artista` | Detalhes exibem se houver, mas não há fluxo de upload no cadastro | Criar manutenção administrativa ou aceitar preenchimento só via SQL |
+
+A exclusão de conta deixou de ter endpoint e botão próprios. O pedido continua previsto na Política de Privacidade, que orienta o contato pelo canal LGPD; a remoção operacional é feita fora da interface pública. O cadastro de eventos mantém apenas nome e descrição textual dos participantes, sem upload de imagem.
 
 ### Não é código morto
 
@@ -416,9 +416,12 @@ Falhas de envio não revertem transações de negócio. Não foi feito envio rea
 - filtros, busca e lotes administrativos;
 - categoria virtual de eventos removidos;
 - troca de senha no perfil;
-- filtros de preço mínimo e máximo.
+- filtros de preço mínimo e máximo;
+- limites de login e de denúncias;
+- endpoint de exclusão de conta removido (retorno 405);
+- limpeza de `preferencias`, `evento.num_evento` e `artista.imagem_artista`.
 
-Os exemplos de `api/TESTES.md` foram escritos antes da exigência global de CSRF. Ao executá-los, obtenha o token em `GET /api/csrf` e envie `-H "X-CSRF-Token: $CSRF"` em toda chamada `POST`, `PUT` ou `DELETE`; a atualização individual de todos os exemplos permanece pendente.
+O arquivo `api/TESTES.md` agora avisa no topo que chamadas mutáveis exigem `X-CSRF-Token`, obtido em `GET /api/csrf`; os exemplos individuais ainda não repetem o header em todos os comandos.
 
 A auditoria antiga permanece em `docs/historico/auditoriaBackend.md` justamente por descrever uma fase anterior com Avaliações e lacunas já corrigidas. Ela é um documento histórico e não é reescrita para refletir o estado atual; a referência vigente é este arquivo.
 
@@ -441,18 +444,21 @@ A auditoria antiga permanece em `docs/historico/auditoriaBackend.md` justamente 
 - A faixa de preço foi exercitada por arrasto e por teclado, com atualização da URL, tags removíveis e ocultação ao selecionar “Gratuitos”; a API rejeitou mínimo maior que máximo quando aplicável.
 - Home, detalhes, Comunidades, Perfil, Admin, Termos e Política de Privacidade foram verificados em 1440, 1200, 1000, 900, 850, 800, 768, 520 e 320 px, sem overflow horizontal.
 - O rodapé foi conferido com links sociais e legais, alvos de 44px e contraste no hover; “Quem Estará Lá” foi validado com e sem participantes.
+- O limite de login foi exercitado por HTTP: cinco senhas incorretas retornaram 401 e a sexta retornou 429 com `Retry-After` e `tentar_novamente_em`; após login válido, o contador foi reiniciado.
+- O limite de denúncias foi exercitado por HTTP: três denúncias persistidas na mesma sessão retornaram 201 e a quarta denúncia válida retornou 429.
+- `DELETE /api/usuarios/{id}` passou a responder 405, sem apagar o usuário.
+- A migração `migracaoLimpezaFinal.sql` foi aplicada no MySQL local; `preferencias`, `evento.num_evento` e `artista.imagem_artista` não existem mais, e a FK `fk_evento_solicitacao` permanece em `evento.id_solicitacao_origem`.
+- `GET /api/eventos/` e `GET /api/eventos/{id}` continuaram respondendo 200 após a remoção das colunas.
 - `git diff --check` não apontou erro de whitespace antes do commit funcional.
 
-A tabela legada `spotify` foi removida do schema (estava vazia no ambiente local). Nenhum evento, usuário, favorito ou rota real foi removido; os registros de teste foram apagados ao final.
+A tabela legada `spotify` foi removida do schema (estava vazia no ambiente local). As colunas `num_evento` e `imagem_artista` e a tabela `preferencias` também estavam vazias e foram removidas. Nenhum evento, usuário, favorito ou rota real foi removido; os registros de teste foram apagados ao final.
 
 ## 10. Prioridades recomendadas
 
-1. Criar rate limiting para login, cadastro, contato e denúncias; a recuperação de senha já possui limite próprio.
-2. Decidir o destino da tabela `preferencias`, que continua sem leitura ou escrita no código.
-3. Remover `num_evento` depois da confirmação final de compatibilidade.
-4. Adicionar exclusão de conta à interface ou retirar o caso de uso visível da documentação do produto.
-5. Modularizar `planejamento.php` sem alterar seu comportamento.
-6. Evoluir a recomendação com sinais adicionais, como localização e feedback explícito do usuário.
-7. Adicionar manutenção administrativa de participante e ação explícita de cancelar evento, se permanecerem no escopo.
-8. Agendar a limpeza periódica de tokens expirados em `recuperacao_senha`.
-9. Automatizar no CI pelo menos lint PHP e validação do OpenAPI.
+1. Criar rate limiting para cadastro e contato e evoluir login/denúncias para limites por conta ou IP; login, denúncias e recuperação de senha já possuem limites por sessão/usuário.
+2. Modularizar `planejamento.php` sem alterar seu comportamento.
+3. Evoluir a recomendação com sinais adicionais, como localização e feedback explícito do usuário.
+4. Adicionar manutenção administrativa de participante e ação explícita de cancelar evento, se permanecerem no escopo.
+5. Agendar a limpeza periódica de tokens expirados em `recuperacao_senha`.
+6. Documentar e testar o fluxo manual de atendimento a pedidos de exclusão de conta sob a LGPD.
+7. Automatizar no CI pelo menos lint PHP e validação do OpenAPI.

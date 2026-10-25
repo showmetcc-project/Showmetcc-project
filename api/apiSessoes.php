@@ -4,6 +4,7 @@ require_once __DIR__ . '/middleware/apiCommon.php';
 
 function responderLogin(array $usuario): void
 {
+    unset($_SESSION['limites_sessao']);
     session_regenerate_id(true);
     $_SESSION['id_user'] = (int) $usuario['id_user'];
     $_SESSION['nome_user'] = $usuario['nome_user'];
@@ -16,6 +17,12 @@ function responderLogin(array $usuario): void
         'usuario' => normalizarUsuarioApi($usuario),
         'csrf_token' => $tokenCsrf,
     ], 201);
+}
+
+function falharLogin(string $mensagem): never
+{
+    registrarTentativaSessao('login', SHOWME_JANELA_LOGIN);
+    responder(['erro' => $mensagem], 401);
 }
 
 function carregarConfiguracaoGoogle(): array
@@ -54,14 +61,14 @@ function responderFalhaTokenGoogle(string $token, string $clientId): void
     $partes = explode('.', $token);
 
     if (count($partes) !== 3) {
-        responder(['erro' => 'O Google retornou um token em formato inválido'], 401);
+        falharLogin('O Google retornou um token em formato inválido');
     }
 
     $cabecalho = decodificarParteJwt($partes[0]);
     $payloadNaoVerificado = decodificarParteJwt($partes[1]);
 
     if ($cabecalho === null || $payloadNaoVerificado === null) {
-        responder(['erro' => 'O Google retornou um token em formato inválido'], 401);
+        falharLogin('O Google retornou um token em formato inválido');
     }
 
     // Estes dados servem somente para explicar uma rejeição. O login só acontece
@@ -71,9 +78,7 @@ function responderFalhaTokenGoogle(string $token, string $clientId): void
 
     if (!in_array($clientId, $audiencias, true)) {
         error_log('Token Google rejeitado: audiência diferente do client_id configurado.');
-        responder([
-            'erro' => 'O token foi emitido para outro Client ID do Google. Atualize a página e confira config/google.php',
-        ], 401);
+        falharLogin('O token foi emitido para outro Client ID do Google. Atualize a página e confira config/google.php');
     }
 
     $agora = time();
@@ -82,7 +87,7 @@ function responderFalhaTokenGoogle(string $token, string $clientId): void
 
     if ($expiracao !== false && $expiracao <= $agora) {
         error_log('Token Google rejeitado: expirado.');
-        responder(['erro' => 'O token do Google expirou. Tente entrar novamente'], 401);
+        falharLogin('O token do Google expirou. Tente entrar novamente');
     }
 
     if ($emitidoEm !== false && $emitidoEm > $agora + 60) {
@@ -94,16 +99,16 @@ function responderFalhaTokenGoogle(string $token, string $clientId): void
 
     if (!in_array($emissor, ['accounts.google.com', 'https://accounts.google.com'], true)) {
         error_log('Token Google rejeitado: emissor inesperado.');
-        responder(['erro' => 'O token recebido não foi emitido pelo Google'], 401);
+        falharLogin('O token recebido não foi emitido pelo Google');
     }
 
     if (($cabecalho['alg'] ?? '') !== 'RS256') {
         error_log('Token Google rejeitado: algoritmo inesperado.');
-        responder(['erro' => 'O token do Google usa um algoritmo não aceito'], 401);
+        falharLogin('O token do Google usa um algoritmo não aceito');
     }
 
     error_log('Token Google rejeitado: assinatura ou chave pública não pôde ser validada.');
-    responder(['erro' => 'Não foi possível validar a assinatura do token do Google. Tente novamente'], 401);
+    falharLogin('Não foi possível validar a assinatura do token do Google. Tente novamente');
 }
 
 function autenticarComGoogle(mysqli $conn, string $token): void
@@ -141,7 +146,7 @@ function autenticarComGoogle(mysqli $conn, string $token): void
 
     if ($googleId === '' || strlen($googleId) > 255 || !$emailVerificado ||
         !filter_var($email, FILTER_VALIDATE_EMAIL) || strlen($email) > 100) {
-        responder(['erro' => 'O Google não retornou uma identidade válida com e-mail verificado'], 401);
+        falharLogin('O Google não retornou uma identidade válida com e-mail verificado');
     }
 
     $nome = trim((string) ($payload['given_name'] ?? ''));
@@ -276,6 +281,13 @@ switch ($metodo) {
         ]);
 
     case 'POST':
+        verificarLimiteSessao(
+            'login',
+            SHOWME_LIMITE_LOGIN,
+            SHOWME_JANELA_LOGIN,
+            'Muitas tentativas de login. Aguarde alguns minutos e tente novamente.'
+        );
+
         $dados = lerJson();
 
         if (array_key_exists('google_token', $dados)) {
@@ -304,15 +316,15 @@ switch ($metodo) {
         $stmt->close();
 
         if (!$usuario) {
-            responder(['erro' => 'E-mail ou senha incorretos'], 401);
+            falharLogin('E-mail ou senha incorretos');
         }
 
         if ($usuario['senha_user'] === null) {
-            responder(['erro' => 'Esta conta usa login via Google'], 401);
+            falharLogin('Esta conta usa login via Google');
         }
 
         if (!password_verify($senha, (string) $usuario['senha_user'])) {
-            responder(['erro' => 'E-mail ou senha incorretos'], 401);
+            falharLogin('E-mail ou senha incorretos');
         }
 
         responderLogin($usuario);

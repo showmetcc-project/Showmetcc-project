@@ -100,7 +100,7 @@ function normalizarEventoApi(array $evento): array
 {
     return normalizarRegistroApi(
         $evento,
-        ['id_evento', 'id_solicitacao_origem', 'num_evento'],
+        ['id_evento', 'id_solicitacao_origem'],
         ['gratuidade'],
         ['valor_ingresso_minimo', 'valor_ingresso_maximo']
     );

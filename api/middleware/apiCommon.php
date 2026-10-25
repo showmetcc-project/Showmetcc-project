@@ -91,6 +91,62 @@ function validarTokenCsrf(): void
     }
 }
 
+// Limites simples por sessão para mitigar spam e tentativas excessivas.
+const SHOWME_LIMITE_LOGIN = 5;
+const SHOWME_JANELA_LOGIN = 900;
+const SHOWME_LIMITE_DENUNCIAS = 3;
+const SHOWME_JANELA_DENUNCIAS = 600;
+
+function obterRegistrosLimiteSessao(string $chave, int $janelaSegundos): array
+{
+    $registros = $_SESSION['limites_sessao'][$chave] ?? [];
+
+    if (!is_array($registros)) {
+        $registros = [];
+    }
+
+    $limiteTemporal = time() - $janelaSegundos;
+    $registros = array_values(array_filter(
+        $registros,
+        static fn($registro) => is_int($registro) && $registro > $limiteTemporal
+    ));
+
+    if ($registros === []) {
+        unset($_SESSION['limites_sessao'][$chave]);
+    } else {
+        $_SESSION['limites_sessao'][$chave] = $registros;
+    }
+
+    return $registros;
+}
+
+function verificarLimiteSessao(
+    string $chave,
+    int $limite,
+    int $janelaSegundos,
+    string $mensagem
+): void {
+    $registros = obterRegistrosLimiteSessao($chave, $janelaSegundos);
+
+    if (count($registros) < $limite) {
+        return;
+    }
+
+    $segundos = max(1, min($registros) + $janelaSegundos - time());
+    header('Retry-After: ' . $segundos);
+    responder([
+        'erro' => $mensagem,
+        'tentar_novamente_em' => $segundos,
+    ], 429);
+}
+
+function registrarTentativaSessao(string $chave, int $janelaSegundos): void
+{
+    $registros = obterRegistrosLimiteSessao($chave, $janelaSegundos);
+    $registros[] = time();
+    $_SESSION['limites_sessao'][$chave] = $registros;
+}
+
 if (in_array($_SERVER['REQUEST_METHOD'], ['POST', 'PUT', 'DELETE'], true)) {
     validarTokenCsrf();
 }

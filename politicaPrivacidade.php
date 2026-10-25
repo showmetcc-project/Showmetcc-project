@@ -161,6 +161,7 @@ require __DIR__ . '/cabecalho.php';
                 <li>confirmação da existência de tratamento e acesso aos dados;</li>
                 <li>correção de dados incompletos, inexatos ou desatualizados;</li>
                 <li>anonimização, bloqueio ou eliminação de dados desnecessários ou excessivos;</li>
+                <li>eliminação da conta e dos dados associados, ressalvadas as hipóteses legais de retenção;</li>
                 <li>portabilidade dos dados, quando aplicável;</li>
                 <li>informações sobre compartilhamentos e sobre a possibilidade de não consentir;</li>
                 <li>revogação do consentimento e oposição a tratamentos realizados com base em legítimo interesse, quando cabível.</li>

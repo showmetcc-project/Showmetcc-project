@@ -58,14 +58,6 @@ body {
 .artista-item { margin-bottom: 18px; }
 .artista-item:last-child { margin-bottom: 0; }
 
-.imagem-artista {
-    width: 70px;
-    height: 70px;
-    margin-right: 15px;
-    border-radius: 50%;
-    object-fit: cover;
-}
-
 .estado-detalhes {
     min-height: 45vh;
     padding: 90px 20px;

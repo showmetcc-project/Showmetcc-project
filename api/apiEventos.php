@@ -361,14 +361,14 @@ require_once dirname(__DIR__) . '/config/emailHelper.php';
 $metodo = $_SERVER['REQUEST_METHOD'];
 $id = obterIdApi();
 
-$camposEvento = 'id_evento, id_solicitacao_origem, num_evento, nome_evento,
+$camposEvento = 'id_evento, id_solicitacao_origem, nome_evento,
                  cep_evento, endereco_evento, numero_endereco, rua_evento,
                  cidade_evento, uf, descricao_evento, data_evento, gratuidade,
                  valor_ingresso_minimo, valor_ingresso_maximo,
                  horario_evento, categoria_evento, classificacao_indicativa,
                  link_oficial, imagem_evento, alt_imagem, status_evento';
 
-$camposEventoComAlias = 'e.id_evento, e.id_solicitacao_origem, e.num_evento, e.nome_evento,
+$camposEventoComAlias = 'e.id_evento, e.id_solicitacao_origem, e.nome_evento,
                          e.cep_evento, e.endereco_evento, e.numero_endereco,
                          e.rua_evento, e.cidade_evento, e.uf, e.descricao_evento,
                          e.data_evento, e.gratuidade, e.valor_ingresso_minimo,
@@ -448,7 +448,7 @@ switch ($metodo) {
             }
 
             $stmt = $conn->prepare(
-                'SELECT a.id_artista, a.nome_artista, a.genero_artista, a.imagem_artista
+                'SELECT a.id_artista, a.nome_artista, a.genero_artista
                  FROM artista a
                  INNER JOIN artista_evento ae ON ae.id_artista = a.id_artista
                  WHERE ae.id_evento = ?

@@ -2,6 +2,8 @@
 
 Os exemplos abaixo usam `curl.exe` no PowerShell. Ajuste a URL para a pasta/porta em que o projeto estiver sendo servido.
 
+> **CSRF:** chamadas `POST`, `PUT` e `DELETE` exigem `X-CSRF-Token`. Obtenha o token em `GET /csrf` com o mesmo cookie jar e inclua `-H "X-CSRF-Token: $CSRF"` nos exemplos mutáveis.
+
 ```powershell
 $BASE = 'http://localhost/SEU-DIRETORIO/api'
 $SITE = 'http://localhost/SEU-DIRETORIO'
@@ -9,7 +11,6 @@ $RAIZ_PROJETO = 'C:\xampp\htdocs\SEU-DIRETORIO'
 $COOKIE_COMUM = "$env:TEMP\showme-comum.txt"
 $COOKIE_OUTRO_USUARIO = "$env:TEMP\showme-outro-usuario.txt"
 $COOKIE_ADMIN = "$env:TEMP\showme-admin.txt"
-$COOKIE_CONTA_DESCARTAVEL = "$env:TEMP\showme-conta-descartavel.txt"
 $COOKIE_GOOGLE = "$env:TEMP\showme-google.txt"
 $GOOGLE_TOKEN = 'COLE_UM_ID_TOKEN_VALIDO_RECEBIDO_PELO_GOOGLE_IDENTITY_SERVICES'
 $GOOGLE_JSON = '{\"google_token\":\"' + $GOOGLE_TOKEN + '\"}'
@@ -32,8 +33,10 @@ $bytesMp4Corrompido = [byte[]](@(
 [IO.File]::WriteAllBytes($VIDEO_MP4_CORROMPIDO, $bytesMp4Corrompido)
 ```
 
-Antes de testar mídias de avaliações, importe a versão atual do schema único
-`assets/banco/showme.sql` no banco de desenvolvimento.
+Antes de testar mídias de comunidades, importe a versão atual do schema único
+`assets/banco/showme.sql` no banco de desenvolvimento. Para bases já existentes, aplique
+uma vez as migrações ainda pendentes em `assets/banco/`, além das atualizações pontuais
+descritas adiante.
 Use arquivos pequenos: a aplicação limita fotos a 10 MB, vídeos a 30 MB e a requisição
 completa a 38 MB.
 
@@ -61,6 +64,11 @@ curl.exe -i -X POST "$BASE/sessoes/" `
   -H "Content-Type: application/json" `
   -d '{"email":"usuario@exemplo.com","senha":"incorreta"}'
 ```
+
+### POST /sessoes — limite de tentativas (429)
+
+Repita o login com senha incorreta na mesma sessão. Depois de 5 falhas, a próxima tentativa
+deve retornar `429`, com o cabeçalho `Retry-After` e o campo `tentar_novamente_em`.
 
 ### POST /sessoes — criação de conta nova via Google
 
@@ -260,37 +268,14 @@ curl.exe -i -b $COOKIE_COMUM -X POST "$BASE/usuarios/ID_DO_PROPRIO_USUARIO" `
   -F "foto_perfil_pronta=assets/img/arquivo-fora-do-catalogo.svg"
 ```
 
-### DELETE /usuarios/{id} — sucesso e erro 403
+### DELETE /usuarios/{id} — recurso removido
 
-Use uma conta descartável no teste de sucesso, pois a conta e seus relacionamentos em
-cascata serão removidos e a sessão será encerrada.
-
-```powershell
-curl.exe -i -b $COOKIE_COMUM -X DELETE "$BASE/usuarios/ID_DE_OUTRO_USUARIO"
-curl.exe -i -b $COOKIE_CONTA_DESCARTAVEL -X DELETE "$BASE/usuarios/ID_DA_CONTA_DESCARTAVEL"
-```
-
-### DELETE /usuarios/{id} — cascata também remove arquivos físicos
-
-Com a conta descartável, publique uma foto na comunidade e crie uma solicitação pendente com
-foto. Antes do `DELETE`, anote os caminhos retornados pela API (ou consulte-os no banco)
-e confirme que ambos existem:
+O endpoint de exclusão de conta foi retirado do backend. Uma chamada `DELETE` deve cair no
+retorno genérico de método não permitido (`405`) e não deve apagar o usuário.
 
 ```powershell
-$MIDIA_CONTA = Join-Path $RAIZ_PROJETO 'assets/uploads/comunidade/NOME_DO_ARQUIVO'
-$FOTO_SOLICITACAO_CONTA = Join-Path $RAIZ_PROJETO 'assets/uploads/eventos/NOME_DO_ARQUIVO'
-Test-Path -LiteralPath $MIDIA_CONTA
-Test-Path -LiteralPath $FOTO_SOLICITACAO_CONTA
-
-curl.exe -i -b $COOKIE_CONTA_DESCARTAVEL -X DELETE "$BASE/usuarios/ID_DA_CONTA_DESCARTAVEL"
-
-Test-Path -LiteralPath $MIDIA_CONTA
-Test-Path -LiteralPath $FOTO_SOLICITACAO_CONTA
+curl.exe -i -b $COOKIE_COMUM -X DELETE "$BASE/usuarios/ID_DO_PROPRIO_USUARIO"
 ```
-
-Os dois primeiros `Test-Path` devem retornar `True`; depois da exclusão, devem retornar
-`False`. Se uma foto também estiver vinculada a um evento aprovado, ela permanece no
-disco porque o evento ainda a referencia.
 
 ## Eventos
 
@@ -340,7 +325,7 @@ curl.exe -i -G "$BASE/eventos/" --data-urlencode "ingresso=gratuitos" --data-url
 curl.exe -i -G "$BASE/eventos/" --data-urlencode "valor_minimo=300" --data-urlencode "valor_maximo=200"
 ```
 
-### GET /eventos?busca= — busca por nome, cidade e artista
+### GET /eventos?busca= — busca por nome, cidade e participante
 
 Substitua os termos pelos dados existentes no banco. As três respostas devem conter o
 evento correspondente. O último comando também confirma o limite usado pelo autocomplete.
@@ -646,7 +631,7 @@ curl.exe -i -b $COOKIE_ADMIN -X PUT "$BASE/eventos/ID_SOLICITACAO_ARTISTA_EXISTE
 ```
 
 Consulte os dois eventos. O JSON deve conter todos os campos promovidos,
-`id_solicitacao_origem`, `horario_evento`, `num_evento: null` e o mesmo artista:
+`id_solicitacao_origem`, `horario_evento` e o mesmo artista:
 
 ```powershell
 curl.exe -i "$BASE/eventos/ID_EVENTO_ARTISTA_NOVO"
@@ -659,7 +644,6 @@ Confirmação adicional no MySQL/phpMyAdmin:
 SELECT
     e.id_evento,
     e.id_solicitacao_origem,
-    e.num_evento,
     e.endereco_evento,
     e.rua_evento,
     e.cidade_evento,
@@ -1041,6 +1025,12 @@ Espere `201`, `409`, `201`, `201`, `400` e `400`, respectivamente. Os `409`/`400
 que não se pode repetir a denúncia do mesmo conteúdo nem informar alvos múltiplos. Confirme
 no banco que cada denúncia preenche apenas uma coluna de alvo (`id_post`, `id_resposta` ou
 `id_midia`).
+
+### POST /comunidade-denuncias — limite de envio (429)
+
+Na mesma sessão, depois de 3 denúncias persistidas em 10 minutos, uma nova denúncia válida
+deve retornar `429`, com `Retry-After` e `tentar_novamente_em`. Denúncias duplicadas ou com
+payload inválido não incrementam o contador.
 
 ### Moderação administrativa de posts, respostas e fotos denunciados
 

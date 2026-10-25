@@ -62,6 +62,8 @@ paths:
       description: >-
         No login Google, procura primeiro pelo sub em google_id; se não encontrar,
         vincula uma conta do mesmo e-mail ou cria um usuário comum sem senha.
+        Após 5 falhas de autenticação na mesma sessão em 15 minutos, retorna 429
+        com Retry-After.
       requestBody:
         required: true
         content:
@@ -90,6 +92,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Erro'
+        '429':
+          $ref: '#/components/responses/MuitasRequisicoes'
         '503':
           description: Login Google ainda não configurado ou dependências ausentes
           content:
@@ -273,28 +277,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Erro'
-    delete:
-      tags: [Usuários]
-      summary: Apaga a própria conta
-      description: A exclusão em cascata do banco remove favoritos, avaliações, preferências, rotas e solicitações do usuário.
-      security:
-        - cookieAuth: []
-      parameters:
-        - $ref: '#/components/parameters/IdNaRota'
-      responses:
-        '200':
-          description: Conta removida e sessão encerrada
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Mensagem'
-        '401':
-          $ref: '#/components/responses/NaoAutenticado'
-        '403':
-          $ref: '#/components/responses/Proibido'
-        '404':
-          $ref: '#/components/responses/NaoEncontrado'
-
   /eventos:
     get:
       tags: [Eventos]
@@ -1076,7 +1058,10 @@ paths:
     post:
       tags: [Comunidades]
       summary: Denuncia uma publicação, resposta ou foto
-      description: Exatamente um entre id_post, id_resposta e id_midia deve ser informado.
+      description: >-
+        Exatamente um entre id_post, id_resposta e id_midia deve ser informado.
+        Após 3 denúncias persistidas na mesma sessão em 10 minutos, retorna 429
+        com Retry-After.
       security: [{cookieAuth: []}]
       requestBody:
         required: true
@@ -1088,6 +1073,7 @@ paths:
         '400': {$ref: '#/components/responses/RequisicaoInvalida'}
         '403': {$ref: '#/components/responses/Proibido'}
         '409': {description: O usuário já denunciou o mesmo conteúdo}
+        '429': {$ref: '#/components/responses/MuitasRequisicoes'}
   /comunidade-denuncias/{id}:
     put:
       tags: [Comunidades, Administração]
@@ -1184,6 +1170,17 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/Erro'
+    MuitasRequisicoes:
+      description: Limite de tentativas ou envios excedido
+      headers:
+        Retry-After:
+          description: Segundos até a próxima tentativa permitida
+          schema:
+            type: integer
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErroLimite'
 
   schemas:
     Erro:
@@ -1192,6 +1189,17 @@ components:
       properties:
         erro:
           type: string
+
+    ErroLimite:
+      type: object
+      required: [erro]
+      properties:
+        erro:
+          type: string
+        tentar_novamente_em:
+          type: integer
+          minimum: 1
+          description: Segundos até a próxima tentativa permitida.
 
     Mensagem:
       type: object
@@ -1342,11 +1350,6 @@ components:
           type: integer
           nullable: true
           readOnly: true
-        num_evento:
-          type: integer
-          nullable: true
-          readOnly: true
-          description: Campo legado, mantido no banco e sem uso definido pela API.
         nome_evento:
           type: string
         cep_evento:
@@ -1438,9 +1441,6 @@ components:
         nome_artista:
           type: string
         genero_artista:
-          type: string
-          nullable: true
-        imagem_artista:
           type: string
           nullable: true
 

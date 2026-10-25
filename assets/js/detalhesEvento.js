@@ -73,15 +73,10 @@
         }
         artistas.forEach((artista) => {
             const card = document.createElement('div'); card.className = 'card-showme artista-item';
-            const linha = document.createElement('div'); linha.className = 'd-flex align-items-center';
-            if (artista.imagem_artista) {
-                const img = document.createElement('img'); img.className = 'imagem-artista';
-                configurarImagem(img, artista.imagem_artista, artista.nome_artista || 'Participante'); linha.append(img);
-            }
             const bloco = document.createElement('div'); const h = document.createElement('h4');
             h.textContent = artista.nome_artista || 'Participante'; bloco.append(h);
             if (artista.genero_artista) { const p = document.createElement('p'); p.textContent = artista.genero_artista; bloco.append(p); }
-            linha.append(bloco); card.append(linha); lista.append(card);
+            card.append(bloco); lista.append(card);
         });
     }
     function endereco(evento) {

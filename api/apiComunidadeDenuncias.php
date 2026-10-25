@@ -250,6 +250,13 @@ if ($metodo === 'POST') {
         responder(['erro' => 'Selecione um motivo de denúncia válido'], 400);
     }
 
+    verificarLimiteSessao(
+        'denuncias',
+        SHOWME_LIMITE_DENUNCIAS,
+        SHOWME_JANELA_DENUNCIAS,
+        'Limite de denúncias atingido. Aguarde alguns minutos antes de enviar outra.'
+    );
+
     if ($temPost) {
         $stmt = $conn->prepare(
             "SELECT id_usuario
@@ -330,6 +337,7 @@ if ($metodo === 'POST') {
 
     $idDenuncia = $conn->insert_id;
     $stmt->close();
+    registrarTentativaSessao('denuncias', SHOWME_JANELA_DENUNCIAS);
     responder(['mensagem' => 'Denúncia registrada', 'id_denuncia' => (int) $idDenuncia], 201);
 }
 

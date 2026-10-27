@@ -57,9 +57,7 @@
             if (pagina && pagina !== window.location.href && !urlDeOutraOrigem(pagina)) {
                 return pagina;
             }
-        } catch (erro) {
-            // ignora
-        }
+        } catch {}
 
         return '';
     }

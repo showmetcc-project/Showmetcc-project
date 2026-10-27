@@ -1,7 +1,6 @@
 <?php require_once __DIR__ . '/config/verificaUsuarioComum.php'; ?>
 <!DOCTYPE html>
 <html lang="pt-BR">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -21,11 +20,9 @@
 
     <link href="assets/css/meusEventos.css" rel="stylesheet">
     <link href="assets/css/main.css" rel="stylesheet">
-
 </head>
 
 <body class="com-cabecalho-padrao cabecalho-tipo-c">
-
     <?php
     $tipoCabecalho = 'C';
     $configuracaoCabecalho = [
@@ -38,8 +35,6 @@
     ?>
 
     <main class="eventos-container">
-
-        <!-- ABAS -->
         <div class="abas" role="tablist" aria-label="Categorias dos meus eventos">
             <button class="aba ativa" data-tab="favoritos" role="tab" aria-selected="true" aria-controls="favoritos">
                 <i class="bi bi-heart" aria-hidden="true"></i>
@@ -57,18 +52,14 @@
             </button>
         </div>
 
-        <!-- FAVORITOS -->
         <section id="favoritos" class="conteudo ativa row g-3">
             <p>Carregando seus favoritos...</p>
         </section>
 
-        <!-- PLANEJADOS -->
         <section id="planejados" class="conteudo row g-3">
             <p>Carregando seus planejados...</p>
-
         </section>
 
-        <!-- CALENDÁRIO DOS PLANEJADOS -->
         <section id="calendario" class="conteudo calendario-conteudo" aria-label="Calendário de eventos planejados">
             <div class="calendario-layout">
                 <div class="calendario-coluna-principal">
@@ -97,7 +88,6 @@
 
                         <div id="calendarioGrid" class="calendario-grid" role="grid" aria-labelledby="calendarioTitulo"></div>
                     </div>
-
                 </div>
 
                 <div class="calendario-coluna-lateral">
@@ -121,20 +111,15 @@
                 </div>
             </div>
         </section>
-
     </main>
 
-    <!-- Scroll Top -->
     <a href="#" id="scroll-top" class="scroll-top d-flex align-items-center justify-content-center">
         <i class="bi bi-arrow-up-short"></i>
     </a>
 
-    <!-- Vendor JS -->
     <script src="assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
     <script src="assets/vendor/aos/aos.js"></script>
     <script src="assets/js/main.js"></script>
     <script src="assets/js/meusEventos.js"></script>
-
 </body>
-
 </html>

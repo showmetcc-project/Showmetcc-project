@@ -17,7 +17,6 @@ $secoesHome = [
 ?>
 <!doctype html>
 <html lang="pt-br">
-
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -152,5 +151,4 @@ $secoesHome = [
     <script src="assets/js/main.js"></script>
     <script src="assets/js/inicio.js"></script>
 </body>
-
 </html>

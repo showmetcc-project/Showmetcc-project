@@ -24,8 +24,6 @@ body {
     background: #0a0a0a;
 }
 
-/* TOPO */
-
 .top-bar {
     width: 100%;
     height: 50px;
@@ -60,7 +58,6 @@ body {
     z-index: 1000;
 }
 
-/* CONTAINER */
 /* No card/window here on purpose: the form should just be the page,
    with only the top bar + green line separating it from the rest of
    the site. On wide screens the fields are capped and centered so
@@ -113,8 +110,6 @@ body {
     margin-bottom: 34px;
 }
 
-/* LABELS */
-
 .form-label {
     display: block;
     color: #bdbdbd;
@@ -124,8 +119,6 @@ body {
 
     margin-bottom: 9px;
 }
-
-/* INPUTS */
 
 .form-control,
 .form-select {
@@ -161,8 +154,6 @@ body {
     border-color: var(--green) !important;
     box-shadow: none !important;
 }
-
-/* UPLOAD */
 
 .upload-area {
     height: 190px;
@@ -404,8 +395,6 @@ body {
     display: none;
 }
 
-/* DATA E HORA */
-
 .row {
     margin-left: 0;
     margin-right: 0;
@@ -420,8 +409,6 @@ body {
     padding-left: 6px;
     padding-right: 0;
 }
-
-/* RADIO */
 
 .tipo-ingresso {
     display: flex;
@@ -456,7 +443,6 @@ body {
     transition: 0.3s;
 }
 
-/* Gratuito -> green when checked */
 #gratuito:checked + .opcao {
     background: var(--green);
     border-color: var(--green);
@@ -464,15 +450,12 @@ body {
     font-weight: 700;
 }
 
-/* Pago -> pink when checked */
 #pago:checked + .opcao {
     background: var(--pink);
     border-color: var(--pink);
     color: #000;
     font-weight: 700;
 }
-
-/* TEXTAREAS */
 
 .descricao-grande {
     height: 180px; /* aumente este valor */
@@ -485,8 +468,6 @@ body {
     padding: 14px 16px;
     resize: none;
 }
-
-/* BOTÃO */
 
 button.btn-enviar {
     width: 100%;
@@ -517,15 +498,11 @@ button.btn-enviar {
     box-shadow: 0 8px 20px rgba(0, 255, 0, 0.24);
 }
 
-/* FOOTER (kept dark to match the rest of the page) */
-
 .footer {
     background: #000;
     color: #bdbdbd;
     font-family: 'Oswald', sans-serif;
 }
-
-/* RESPONSIVO */
 
 @media (max-width: 767.98px) {
     .evento-card {

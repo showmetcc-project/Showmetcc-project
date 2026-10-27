@@ -4,50 +4,39 @@ $googleClientId = is_array($googleConfig) ? trim((string) ($googleConfig['client
 ?>
 <!DOCTYPE html>
 <html lang="pt-br">
-
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <title>Cadastro - ShowMe</title>
 
-  <!-- Favicon -->
   <link href="assets/img/showme.png" rel="icon">
 
-  <!-- Bootstrap -->
   <link href="assets/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
 
-  <!-- Bootstrap Icons -->
   <link href="assets/vendor/bootstrap-icons/bootstrap-icons.css" rel="stylesheet">
 
-  <!-- Fonte -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 
   <link href="https://fonts.googleapis.com/css2?family=Anton&family=Oswald:wght@400;500;600;700&family=Poppins:wght@300;400;500;600;700&display=swap"
     rel="stylesheet">
 
-  <!-- CSS -->
   <link href="assets/css/main.css" rel="stylesheet">
-
 </head>
 
 <body>
-
   <a href="institucional.php" class="voltar-home-auth" data-voltar-fallback="institucional.php" aria-label="Voltar para a página anterior" title="Voltar">
     <i class="bi bi-arrow-left"></i>
   </a>
 
   <main class="main-cadastro">
-
     <div class="cadastro-container">
-
       <div class="cadastro-logo">
         <img src="assets/img/showme.png" alt="ShowMe">
       </div>
 
       <section class="cadastro-card">
-
         <h1>Criar Conta</h1>
 
         <div id="mensagemCadastro" class="alert d-none" role="alert"></div>
@@ -66,24 +55,18 @@ $googleClientId = is_array($googleConfig) ? trim((string) ($googleConfig['client
         </div>
 
         <form id="formCadastro">
-
           <div class="row">
-
             <div class="col-md-6 mb-3">
-
               <label for="nome">Nome</label>
 
               <div class="cadastro-input-box">
                 <i class="bi bi-person"></i>
 
                 <input type="text" class="form-control cadastro-input" placeholder="Digite seu nome" name="nome" id="nome" required>
-              
                 </div>
-
             </div>
 
             <div class="col-md-6 mb-3">
-
               <label for="sobrenome">Sobrenome</label>
 
               <div class="cadastro-input-box">
@@ -97,13 +80,10 @@ $googleClientId = is_array($googleConfig) ? trim((string) ($googleConfig['client
                   id="sobrenome"
                   required>
               </div>
-
             </div>
-
           </div>
 
           <div class="mb-3">
-
             <label for="email">E-mail</label>
 
             <div class="cadastro-input-box">
@@ -117,11 +97,9 @@ $googleClientId = is_array($googleConfig) ? trim((string) ($googleConfig['client
                 id="email"
                 required>
             </div>
-
           </div>
 
           <div class="mb-4">
-
             <label for="senha">Senha</label>
 
             <div class="cadastro-input-box">
@@ -144,7 +122,6 @@ $googleClientId = is_array($googleConfig) ? trim((string) ($googleConfig['client
             <small id="ajudaSenha" class="cadastro-ajuda-senha">
               A senha deve ter no mínimo 6 caracteres, contendo letras e números.
             </small>
-
           </div>
 
           <div class="cadastro-termos-consentimento">
@@ -155,23 +132,17 @@ $googleClientId = is_array($googleConfig) ? trim((string) ($googleConfig['client
           <button type="submit" class="cadastro-btn">
             Criar Conta
           </button>
-
         </form>
 
         <p class="cadastro-link">
-
           Já possui conta?
 
           <a href="login.php">
             Entrar
           </a>
-
         </p>
-
       </section>
-
     </div>
-
   </main>
 
   <script src="assets/js/csrf.js"></script>
@@ -183,8 +154,5 @@ $googleClientId = is_array($googleConfig) ? trim((string) ($googleConfig['client
   <script src="assets/js/main.js"></script>
 
   <?php require_once __DIR__ . '/acessibilidade.php'; ?>
-
-
 </body>
-
 </html>

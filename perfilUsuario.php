@@ -117,16 +117,13 @@ function renderizarModalPersonalizacao(
 ?>
 <!DOCTYPE html>
 <html lang="pt-BR">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Meu Perfil - ShowMe</title>
 
-    <!-- Favicons -->
     <link href="assets/img/showme.png" rel="icon">
 
-    <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 
@@ -134,7 +131,6 @@ function renderizarModalPersonalizacao(
         href="https://fonts.googleapis.com/css2?family=Anton&family=Oswald:wght@400;500;600;700&family=Open+Sans:wght@300;400;500;600;700;800&family=Poppins:wght@300;400;500;600;700;800&family=Jost:wght@300;400;500;600;700;800&display=swap"
         rel="stylesheet">
 
-    <!-- Vendor CSS -->
     <link href="assets/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
     <link href="assets/vendor/bootstrap-icons/bootstrap-icons.css" rel="stylesheet">
     <link href="assets/vendor/aos/aos.css" rel="stylesheet">
@@ -146,7 +142,6 @@ function renderizarModalPersonalizacao(
 </head>
 
 <body class="com-cabecalho-padrao cabecalho-tipo-c">
-
     <?php
     $tipoCabecalho = 'C';
     $configuracaoCabecalho = [
@@ -158,7 +153,6 @@ function renderizarModalPersonalizacao(
     require __DIR__ . '/cabecalho.php';
     ?>
 
-    
     <div class="banner-wrap">
         <button type="button" class="banner" id="perfilBanner" data-visualizar-midia="foto_banner" aria-label="Ampliar banner atual"></button>
 
@@ -178,8 +172,6 @@ function renderizarModalPersonalizacao(
     </div>
 
     <main class="perfil-container">
-
- 
         <div class="perfil-header">
             <div class="email-principal" id="perfilEmailPrincipal">Carregando...</div>
             <button type="button" class="btn-editar" id="btnEditarPerfil" aria-pressed="false">
@@ -188,7 +180,6 @@ function renderizarModalPersonalizacao(
             </button>
         </div>
 
-     
         <form
             class="perfil-form row g-4"
             id="perfilForm"
@@ -303,10 +294,8 @@ function renderizarModalPersonalizacao(
             </p>
 
             <p id="perfilFeedback" class="perfil-feedback col-12" role="status" aria-live="polite" hidden></p>
-
         </form>
 
-        <!-- ESTATÍSTICAS -->
         <section class="integracao-agenda" aria-labelledby="tituloGoogleAgenda">
             <div class="integracao-agenda-icone" aria-hidden="true">
                 <i class="bi bi-calendar2-check"></i>
@@ -325,11 +314,9 @@ function renderizarModalPersonalizacao(
         </section>
 
         <section class="estatisticas">
-
             <h2>Estatísticas</h2>
 
             <div class="stats-grid row g-4">
-
                 <div class="col-12 col-md-4">
                     <div class="stat-card h-100">
                         <i class="bi bi-plus-lg stat-icon"></i>
@@ -353,11 +340,8 @@ function renderizarModalPersonalizacao(
                         <p>Publicações na Comunidade</p>
                     </div>
                 </div>
-
             </div>
-
         </section>
-
     </main>
 
     <?php
@@ -402,18 +386,14 @@ function renderizarModalPersonalizacao(
         </div>
     </div>
 
-    <!-- Scroll Top -->
     <a href="#" id="scroll-top" class="scroll-top d-flex align-items-center justify-content-center">
         <i class="bi bi-arrow-up-short"></i>
     </a>
 
-    <!-- Vendor JS (mesmo padrão do index) -->
     <script src="assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
     <script src="assets/vendor/aos/aos.js"></script>
     <script src="assets/js/main.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.js"></script>
     <script src="assets/js/perfil.js"></script>
-
 </body>
-
 </html>

@@ -5,38 +5,31 @@ require_once __DIR__ . '/config/classificacoesIndicativas.php';
 ?>
 <!DOCTYPE html>
 <html lang="pt-BR">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <title>Cadastro de Evento - ShowMe</title>
 
-  <!-- Favicons -->
   <link href="assets/img/showme.png" rel="icon">
 
-  <!-- Fonts -->
   <link href="https://fonts.googleapis.com" rel="preconnect">
   <link href="https://fonts.gstatic.com" rel="preconnect" crossorigin>
   <link
     href="https://fonts.googleapis.com/css2?family=Anton&family=Oswald:wght@400;500;600;700&family=Open+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,300;1,400;1,500;1,600;1,700;1,800&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Jost:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap"
     rel="stylesheet">
 
-  <!-- Vendor CSS Files -->
   <link href="assets/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
   <link href="assets/vendor/bootstrap-icons/bootstrap-icons.css" rel="stylesheet">
   <link href="assets/vendor/aos/aos.css" rel="stylesheet">
 
-  <!-- CSS da página -->
   <link href="assets/css/cadastroEvento.css" rel="stylesheet">
 
   <!-- CSS compartilhado por último para preservar os cabeçalhos -->
   <link href="assets/css/main.css" rel="stylesheet">
-
 </head>
 
 <body class="com-cabecalho-padrao cabecalho-tipo-c pagina-cadastro-evento">
-
     <?php
     $tipoCabecalho = 'C';
     $configuracaoCabecalho = [
@@ -49,9 +42,7 @@ require_once __DIR__ . '/config/classificacoesIndicativas.php';
     ?>
 
     <div class="container-fluid evento-container">
-
         <div class="evento-card">
-
             <p class="subtitulo">
                 Preencha as informações abaixo. Nossa equipe analisará e aprovará seu evento.
             </p>
@@ -191,7 +182,6 @@ require_once __DIR__ . '/config/classificacoesIndicativas.php';
                 </fieldset>
 
                 <div class="row">
-
                     <div class="col-12 mb-3">
                         <label class="form-label" for="classificacaoIndicativaEvento">
                             Classificação indicativa <span class="campo-obrigatorio" aria-hidden="true">*</span>
@@ -207,11 +197,9 @@ require_once __DIR__ . '/config/classificacoesIndicativas.php';
                             <?php endforeach; ?>
                         </select>
                     </div>
-
                 </div>
 
                 <div class="row">
-
                     <div class="col-md-6 mb-3">
                         <label class="form-label" for="dataEvento">Data <span class="campo-obrigatorio" aria-hidden="true">*</span></label>
 
@@ -223,17 +211,14 @@ require_once __DIR__ . '/config/classificacoesIndicativas.php';
 
                         <input id="horarioEvento" name="horario_evento" type="time" class="form-control w-100" required>
                     </div>
-
                 </div>
 
                 <div class="mb-3">
-
                     <label class="form-label">
                         Tipo de evento <span class="campo-obrigatorio" aria-hidden="true">*</span>
                     </label>
 
                     <div class="tipo-ingresso">
-
                         <input type="radio" name="gratuidade" id="gratuito" value="true" checked>
 
                         <label for="gratuito" class="opcao">
@@ -245,9 +230,7 @@ require_once __DIR__ . '/config/classificacoesIndicativas.php';
                         <label for="pago" class="opcao">
                             Pago
                         </label>
-
                     </div>
-
                 </div>
 
                 <div class="mb-3">
@@ -321,20 +304,12 @@ require_once __DIR__ . '/config/classificacoesIndicativas.php';
                 <button type="submit" class="btn-enviar" id="botaoEnviarEvento">
                     Enviar para análise
                 </button>
-
             </form>
-
         </div>
-
     </div>
-
-
 
     <script src="assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
     <script src="assets/js/main.js"></script>
     <script src="assets/js/cadastroEvento.js"></script>
-
-
 </body>
-
 </html>

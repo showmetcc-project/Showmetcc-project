@@ -1,7 +1,4 @@
 /* Planejamento de viagem do evento: carregamento, custos, rota, resumo e Google Agenda. */
-/* =========================================================
-   EVENTO CARREGADO PELA API
-========================================================= */
 
 const evento = {
     id: Number(document.body.dataset.eventoId),
@@ -161,10 +158,6 @@ function formatarDataHorarioEvento(dataEvento, horarioEvento) {
     return horario ? `${dataFormatada}, às ${horario}` : dataFormatada;
 }
 
-/* =========================================================
-   CONFIGURAÇÕES
-========================================================= */
-
 let valorIngressoAntesGratuito = 0;
 
 function lerValorMonetario(id) {
@@ -184,10 +177,6 @@ function lerCustoTransporte() {
 function lerCustoHospedagem() {
     return hospedagemSelecionada ? lerValorMonetario('custoHospedagem') : 0;
 }
-
-/* =========================================================
-   ESTADO
-========================================================= */
 
 let origem = null;
 
@@ -237,10 +226,6 @@ let etapaConcluida = {
     4: false,
 };
 
-/* =========================================================
-   FORMATAÇÃO DE MOEDA
-========================================================= */
-
 function moeda(valor) {
     return Number(valor || 0).toLocaleString('pt-BR', {
         style: 'currency',
@@ -265,10 +250,6 @@ function alternarIngressoGratuito() {
     atualizarResumo();
 }
 
-/* =========================================================
-   MENSAGEM DA ROTA
-========================================================= */
-
 function mostrarMensagem(texto, erro = false) {
     const mensagem = document.getElementById('mensagemRota');
 
@@ -280,20 +261,6 @@ function mostrarMensagem(texto, erro = false) {
         mensagem.classList.remove('erro-rota');
     }
 }
-
-/* =========================================================
-   LOCALIZAR EVENTO PELO ENDEREÇO
-=========================================================
-
-   IMPORTANTE:
-
-   O banco não precisa possuir latitude
-   nem longitude.
-
-   O endereço é usado para descobrir
-   a posição somente quando necessário.
-
-========================================================= */
 
 function coordenadasValidas(latitude, longitude) {
     return (
@@ -371,15 +338,7 @@ async function localizarEvento() {
     }
 }
 
-/* =========================================================
-   TROCA DE ETAPAS
-========================================================= */
-
 function proximaEtapa(numero) {
-    /* =====================================================
-       DESCOBRIR ETAPA ATUAL
-    ===================================================== */
-
     const etapaAtualElemento = document.querySelector('.etapa.ativa');
 
     if (!etapaAtualElemento) {
@@ -388,10 +347,6 @@ function proximaEtapa(numero) {
 
     const etapaAtual = Number(etapaAtualElemento.id.replace('etapa', ''));
 
-    /* =====================================================
-       PROTEÇÃO CONTRA PULAR ETAPA
-    ===================================================== */
-
     if (numero !== etapaAtual + 1) {
         if (numero > etapaAtual + 1) {
             notificarErroPlanejamento('Conclua as etapas anteriores antes de continuar.');
@@ -399,10 +354,6 @@ function proximaEtapa(numero) {
 
         return;
     }
-
-    /* =====================================================
-       ETAPA 1 - ORÇAMENTO
-    ===================================================== */
 
     if (etapaAtual === 1) {
         const campoOrcamento = document.getElementById('orcamento');
@@ -447,13 +398,8 @@ function proximaEtapa(numero) {
             return;
         }
 
-        /* Marca etapa 1 como concluída */
         etapaConcluida[1] = true;
     }
-
-    /* =====================================================
-       ETAPA 2 - TRANSPORTE
-    ===================================================== */
 
     if (etapaAtual === 2) {
         if (!transporteSelecionado) {
@@ -473,13 +419,8 @@ function proximaEtapa(numero) {
             return;
         }
 
-        /* Marca etapa 2 como concluída */
         etapaConcluida[2] = true;
     }
-
-    /* =====================================================
-       ETAPA 3 - ROTA
-    ===================================================== */
 
     if (etapaAtual === 3) {
         const mensagem = document.getElementById('mensagemRota');
@@ -519,13 +460,8 @@ function proximaEtapa(numero) {
             return;
         }
 
-        /* Marca etapa 3 como concluída */
         etapaConcluida[3] = true;
     }
-
-    /* =====================================================
-       ETAPA 4 - HOSPEDAGEM
-    ===================================================== */
 
     if (etapaAtual === 4) {
         /*
@@ -554,27 +490,14 @@ function proximaEtapa(numero) {
             }
         }
 
-        /* Marca etapa 4 como concluída */
         etapaConcluida[4] = true;
     }
 
-    /* =====================================================
-       ATUALIZA RESUMO
-    ===================================================== */
-
     atualizarResumo();
-
-    /* =====================================================
-       ESCONDE TODAS AS ETAPAS
-    ===================================================== */
 
     document.querySelectorAll('.etapa').forEach((etapa) => {
         etapa.classList.remove('ativa');
     });
-
-    /* =====================================================
-       MOSTRA PRÓXIMA ETAPA
-    ===================================================== */
 
     const proxima = document.getElementById(`etapa${numero}`);
 
@@ -586,15 +509,7 @@ function proximaEtapa(numero) {
 
     proxima.classList.add('ativa');
 
-    /* =====================================================
-       ATUALIZA TIMELINE
-    ===================================================== */
-
     atualizarTimeline(numero);
-
-    /* =====================================================
-       ETAPA 3 - MAPA
-    ===================================================== */
 
     if (numero === 3) {
         setTimeout(async () => {
@@ -608,25 +523,14 @@ function proximaEtapa(numero) {
         }, 150);
     }
 
-    /* =====================================================
-       ETAPA 4 - HOSPEDAGEM
-    ===================================================== */
-
     if (numero === 4 && hospedagemSelecionada) {
         atualizarHospedagem();
     }
-
-    /* =====================================================
-       ETAPA 5 - RESUMO FINAL
-    ===================================================== */
 
     if (numero === 5) {
         atualizarResumo();
     }
 }
-/* =========================================================
-   VOLTAR
-========================================================= */
 
 function voltarEtapa(numero) {
     const atual = document.querySelector('.etapa.ativa');
@@ -652,10 +556,6 @@ function voltarEtapa(numero) {
     }
 }
 
-/* =========================================================
-   TIMELINE
-========================================================= */
-
 function atualizarTimeline(etapaAtual) {
     document.querySelectorAll('.passo').forEach((passo, index) => {
         const numero = index + 1;
@@ -674,10 +574,6 @@ function atualizarTimeline(etapaAtual) {
     });
 }
 
-/* =========================================================
-   TRANSPORTE
-========================================================= */
-
 function selecionarTransporte(tipo) {
     transporteSelecionado = tipo;
 
@@ -694,10 +590,6 @@ function selecionarTransporte(tipo) {
 
     calcularEstimativaTransporte();
 }
-
-/* =========================================================
-   ESTIMATIVA DE TRANSPORTE
-========================================================= */
 
 function calcularEstimativaTransporte() {
     const box = document.getElementById('estimativaTransporte');
@@ -785,10 +677,6 @@ function mostrarResumoPlanejamentoSalvo() {
     atualizarTimeline(5);
 }
 
-/* =========================================================
-   HOSPEDAGEM
-========================================================= */
-
 function atualizarEstadoHospedagem() {
     const opcaoSim = document.getElementById('opcaoHospedagemSim');
     const opcaoNao = document.getElementById('opcaoHospedagemNao');
@@ -849,18 +737,6 @@ function selecionarHospedagem(nome) {
     atualizarResumo();
 }
 
-/* =========================================================
-   BUSCAR HOSPEDAGENS
-=========================================================
-
-   Aqui usamos OpenStreetMap/Overpass para descobrir
-   hospedagens próximas.
-
-   O OpenStreetMap NÃO fornece preços ou disponibilidade;
-   esses dados precisam ser consultados nos sites de reserva.
-
-========================================================= */
-
 async function atualizarHospedagem() {
     const resultado = document.getElementById('resultadoHospedagem');
 
@@ -878,39 +754,13 @@ async function atualizarHospedagem() {
 
     try {
         const query = `
-
-[out:json];
-
-(
-
-    nwr[
-        "tourism"="hotel"
-    ](
-        around:5000,
-        ${destino.lat},
-        ${destino.lng}
-    );
-
-    nwr[
-        "tourism"="hostel"
-    ](
-        around:5000,
-        ${destino.lat},
-        ${destino.lng}
-    );
-
-    nwr[
-        "tourism"="guest_house"
-    ](
-        around:5000,
-        ${destino.lat},
-        ${destino.lng}
-    );
-
-);
-
-out center tags;
-
+            [out:json];
+            (
+                nwr["tourism"="hotel"](around:5000, ${destino.lat}, ${destino.lng});
+                nwr["tourism"="hostel"](around:5000, ${destino.lat}, ${destino.lng});
+                nwr["tourism"="guest_house"](around:5000, ${destino.lat}, ${destino.lng});
+            );
+            out center tags;
         `;
 
         const resposta = await fetch('https://overpass-api.de/api/interpreter', {
@@ -988,10 +838,6 @@ out center tags;
     }
 }
 
-/* =========================================================
-   ÍCONE DO EVENTO
-========================================================= */
-
 const iconeEvento = L.divIcon({
     className: 'pin-evento',
 
@@ -1013,10 +859,6 @@ const iconeEvento = L.divIcon({
 
     popupAnchor: [0, -40],
 });
-
-/* =========================================================
-   INICIAR MAPA
-========================================================= */
 
 async function iniciarMapa() {
     if (!destino) {
@@ -1073,10 +915,6 @@ async function iniciarMapa() {
         .openPopup();
 }
 
-/* =========================================================
-   CENTRALIZAR EVENTO
-========================================================= */
-
 async function centralizarEvento() {
     if (!destino) {
         await localizarEvento();
@@ -1098,10 +936,6 @@ async function centralizarEvento() {
         marcadorDestino.openPopup();
     }
 }
-
-/* =========================================================
-   LOCALIZAÇÃO DO USUÁRIO
-========================================================= */
 
 function usarMinhaLocalizacao() {
     if (!navigator.geolocation) {
@@ -1161,10 +995,6 @@ function usarMinhaLocalizacao() {
         },
     );
 }
-
-/* =========================================================
-   ORIGEM MANUAL
-========================================================= */
 
 async function calcularRotaManual() {
     const campo = document.getElementById('origemManual');
@@ -1239,10 +1069,6 @@ async function calcularRotaManual() {
         );
     }
 }
-
-/* =========================================================
-   CALCULAR ROTA
-========================================================= */
 
 async function calcularRota() {
     if (!origem) {
@@ -1366,10 +1192,6 @@ async function calcularRota() {
     }
 }
 
-/* =========================================================
-   GOOGLE MAPS
-========================================================= */
-
 function abrirGoogleMaps() {
     if (!origem || !destino) {
         notificarErroPlanejamento('Calcule uma rota primeiro.');
@@ -1396,10 +1218,6 @@ function abrirGoogleMaps() {
     window.open(url, '_blank');
 }
 
-/* =========================================================
-   WAZE
-========================================================= */
-
 function abrirWaze() {
     if (!destino) {
         notificarErroPlanejamento('Calcule uma rota primeiro.');
@@ -1411,10 +1229,6 @@ function abrirWaze() {
 
     window.open(url, '_blank');
 }
-
-/* =========================================================
-   ATUALIZAR RESUMO
-========================================================= */
 
 function atualizarResumo() {
     const orcamento = Number(document.getElementById('orcamento').value) || 0;
@@ -1456,10 +1270,6 @@ function atualizarResumo() {
 
     document.getElementById('resumoMeioTransporte').textContent = transporteSelecionado || '—';
 }
-
-/* =========================================================
-   FINALIZAR
-========================================================= */
 
 let idRotaGoogleAgenda = null;
 let statusGoogleAgenda = null;
@@ -1900,10 +1710,6 @@ async function finalizarPlanejamento(eventoSubmit) {
 
 document.getElementById('btnAdicionarGoogleAgenda').addEventListener('click', adicionarAoGoogleAgenda);
 
-/* =========================================================
-   ESCAPAR HTML
-========================================================= */
-
 function escapeHtml(texto) {
     return String(texto ?? '')
         .replaceAll('&', '&amp;')
@@ -1916,10 +1722,6 @@ function escapeHtml(texto) {
 
         .replaceAll("'", '&#039;');
 }
-
-/* =========================================================
-   EVENTOS DE INPUT
-========================================================= */
 
 document.getElementById('orcamento').addEventListener('input', atualizarResumo);
 
@@ -1959,10 +1761,6 @@ document.getElementById('botaoImprimirPlanejamento').addEventListener('click', (
         proximaEtapa(2);
     });
 });
-
-/* =========================================================
-   AVISO DE COMPROMISSOS NA MESMA DATA
-========================================================= */
 
 function mesmaData(valor, referencia) {
     const alvo = String(valor ?? '').slice(0, 10);
@@ -2026,7 +1824,6 @@ async function verificarCompromissosDaData() {
         return;
     }
 
-    /* 1) Compromissos já planejados no próprio ShowMe. */
     try {
         const resposta = await fetch('api/planejamento/', { headers: { Accept: 'application/json' } });
         const dados = await lerRespostaJson(resposta);
@@ -2046,7 +1843,6 @@ async function verificarCompromissosDaData() {
         /* Aviso complementar: falhas não impedem o planejamento. */
     }
 
-    /* 2) Compromissos vindos da Google Agenda, quando conectada. */
     try {
         const status = statusGoogleAgenda || (await obterStatusGoogleAgenda());
 
@@ -2087,10 +1883,6 @@ async function verificarCompromissosDaData() {
 
     exibirAvisoConflitoData(compromissos);
 }
-
-/* =========================================================
-   INICIALIZAÇÃO
-========================================================= */
 
 async function inicializarPlanejamento() {
     let planejamentoExistente = null;

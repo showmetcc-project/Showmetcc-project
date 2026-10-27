@@ -135,7 +135,6 @@ $tokenCsrf = obterTokenCsrfPagina();
 ?>
 <!DOCTYPE html>
 <html lang="pt-BR">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -150,7 +149,6 @@ $tokenCsrf = obterTokenCsrfPagina();
 </head>
 
 <body class="index-page login-comum-page">
-
     <a href="login.php" class="voltar-home-auth" data-voltar-fallback="login.php" aria-label="Voltar para o login" title="Voltar">
         <i class="bi bi-arrow-left" aria-hidden="true"></i>
     </a>
@@ -252,5 +250,4 @@ $tokenCsrf = obterTokenCsrfPagina();
     <script src="assets/js/main.js"></script>
     <?php require_once __DIR__ . '/acessibilidade.php'; ?>
 </body>
-
 </html>

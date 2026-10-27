@@ -1,11 +1,4 @@
-/* =========================================================
-               SHOWME - PLANEJAMENTO DE VIAGEM
-               ========================================================= */
-
 @import url('https://fonts.googleapis.com/css2?family=Anton&family=Oswald:wght@400;500;600;700&family=Jost:wght@300;400;500;600;700&family=Poppins:wght@300;400;500;600;700&display=swap');
-/* =========================================================
-               VARIÁVEIS
-               ========================================================= */
 
 :root {
     --verde: #00ff00;
@@ -20,9 +13,6 @@
     --texto-secundario: #bdbdbd;
     --borda: rgba(0, 255, 0, 0.25);
 }
-/* =========================================================
-               RESET
-               ========================================================= */
 
 * {
     margin: 0;
@@ -41,9 +31,6 @@ body {
     color: var(--texto);
     font-family: 'Open Sans', 'Poppins', 'Jost', 'Segoe UI', sans-serif;
 }
-/* =========================================================
-               HEADER
-               ========================================================= */
 
 .header-planejamento-section {
     width: 100%;
@@ -86,17 +73,11 @@ body {
     font-size: 14px;
     text-align: right;
 }
-/* =========================================================
-               CONTAINER PRINCIPAL
-               ========================================================= */
 
 .planejamento-container {
     width: min(1150px, 100%);
     margin: 55px auto 80px;
 }
-/* =========================================================
-               PROGRESSO
-               ========================================================= */
 
 .progresso {
     position: sticky;
@@ -110,7 +91,6 @@ body {
     text-transform: uppercase;
     letter-spacing: 1px;
 }
-/* Timeline */
 
 .timeline {
     position: relative;
@@ -118,7 +98,6 @@ body {
     flex-direction: column;
     gap: 0;
 }
-/* Linha vertical */
 
 .timeline::before {
     content: '';
@@ -129,7 +108,6 @@ body {
     width: 2px;
     background: rgba(255, 255, 255, 0.12);
 }
-/* Passos */
 
 .passo {
     position: relative;
@@ -162,7 +140,6 @@ body {
     font-size: 13px;
     transition: 0.3s;
 }
-/* Passo ativo */
 
 .passo.ativo {
     color: var(--verde);
@@ -174,7 +151,6 @@ body {
     color: #000;
     box-shadow: 0 0 15px rgba(0, 255, 0, 0.4);
 }
-/* Passo concluído */
 
 .passo.concluido {
     color: var(--rosa);
@@ -184,9 +160,6 @@ body {
     border-color: var(--rosa);
     color: var(--rosa);
 }
-/* =========================================================
-               CARD PRINCIPAL
-               ========================================================= */
 
 .card-planejamento {
     width: 100%;
@@ -197,9 +170,6 @@ body {
     border: 2px solid var(--verde);
     box-shadow: 0 25px 70px rgba(0, 0, 0, 0.35);
 }
-/* =========================================================
-               ETAPAS
-               ========================================================= */
 
 .etapa {
     display: none;
@@ -220,9 +190,6 @@ body {
         transform: translateY(0);
     }
 }
-/* =========================================================
-               TÍTULO DO CARD
-               ========================================================= */
 
 .titulo-card {
     display: flex;
@@ -248,9 +215,6 @@ body {
     font-size: 25px;
     font-weight: 600;
 }
-/* =========================================================
-               TEXTOS
-               ========================================================= */
 
 .etapa > p {
     color: var(--texto-secundario);
@@ -263,9 +227,6 @@ body {
     font-size: 15px;
     margin: 25px 0 15px;
 }
-/* =========================================================
-               LABEL
-               ========================================================= */
 
 label {
     display: block;
@@ -273,9 +234,6 @@ label {
     font-size: 13px;
     margin-bottom: 8px;
 }
-/* =========================================================
-               INPUTS
-               ========================================================= */
 
 input,
 textarea {
@@ -300,9 +258,6 @@ input::placeholder,
 textarea::placeholder {
     color: #666;
 }
-/* =========================================================
-               ALERTA
-               ========================================================= */
 
 .alerta {
     margin: 18px 0 25px;
@@ -313,9 +268,6 @@ textarea::placeholder {
     font-size: 13px;
     border-radius: 5px;
 }
-/* =========================================================
-               ORÇAMENTO RESTANTE
-               ========================================================= */
 
 .orcamento-restante {
     padding: 17px;
@@ -338,9 +290,6 @@ textarea::placeholder {
 .orcamento-restante small {
     color: #888;
 }
-/* =========================================================
-               BOTÕES DE OPÇÕES
-               ========================================================= */
 
 .opcoes {
     display: grid;
@@ -441,9 +390,6 @@ textarea::placeholder {
     transform: translateY(-2px);
     outline: none;
 }
-/* =========================================================
-               TEXTO DE SELEÇÃO
-               ========================================================= */
 
 #transporteSelecionado,
 #hospedagemSelecionada {
@@ -565,9 +511,6 @@ textarea::placeholder {
 .nota-gastos-planejamento strong {
     color: #fff;
 }
-/* =========================================================
-               BOTÕES PRINCIPAIS
-               ========================================================= */
 
 button {
     font-family: inherit;
@@ -615,9 +558,6 @@ button {
     border-color: var(--rosa-hover);
     color: var(--rosa-hover);
 }
-/* =========================================================
-               MAPA / ETAPA ROTA
-               ========================================================= */
 
 .pin-neon {
     width: 40px;
@@ -672,7 +612,6 @@ button {
     background: var(--rosa-hover);
     color: #000;
 }
-/* MAPA */
 
 #mapaRota {
     width: 100%;
@@ -683,7 +622,6 @@ button {
     border: 1px solid rgba(0, 255, 0, 0.35);
     box-shadow: 0 0 25px rgba(0, 255, 0, 0.06);
 }
-/* Leaflet */
 
 .leaflet-container {
     background: #111;
@@ -705,9 +643,6 @@ button {
     color: var(--verde) !important;
     border-color: #333 !important;
 }
-/* =========================================================
-               MENSAGEM ROTA
-               ========================================================= */
 
 .mensagem-rota {
     font-size: 12px !important;
@@ -718,9 +653,6 @@ button {
 .mensagem-rota.erro-rota {
     color: var(--rosa) !important;
 }
-/* =========================================================
-               RESUMO
-               ========================================================= */
 
 .resumo-box {
     padding: 22px;
@@ -981,9 +913,6 @@ button {
     border-color: var(--rosa);
     background: var(--rosa);
 }
-/* =========================================================
-               DICAS
-               ========================================================= */
 
 .dicas {
     margin-top: 20px;
@@ -1227,9 +1156,6 @@ button {
     color: var(--verde);
     font-size: 11px;
 }
-/* =========================================================
-               RESPONSIVIDADE
-               ========================================================= */
 
 @media (max-width: 991.98px) {
     .progresso {

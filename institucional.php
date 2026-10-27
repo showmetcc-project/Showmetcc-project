@@ -4,7 +4,6 @@ iniciarSessaoSegura();
 ?>
 <!DOCTYPE html>
 <html lang="pt-br">
-
 <head>
   <meta charset="utf-8">
   <meta content="width=device-width, initial-scale=1.0" name="viewport">
@@ -12,41 +11,31 @@ iniciarSessaoSegura();
   <meta name="description" content="">
   <meta name="keywords" content="">
 
-  <!-- Favicons -->
   <link href="assets/img/showme.png" rel="icon">
 
-  <!-- Fonts -->
   <link href="https://fonts.googleapis.com" rel="preconnect">
   <link href="https://fonts.gstatic.com" rel="preconnect" crossorigin>
   <link
     href="https://fonts.googleapis.com/css2?family=Anton&family=Oswald:wght@400;500;600;700&family=Open+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,300;1,400;1,500;1,600;1,700;1,800&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Jost:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap"
     rel="stylesheet">
 
-  <!-- Vendor CSS Files -->
   <link href="assets/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
   <link href="assets/vendor/bootstrap-icons/bootstrap-icons.css" rel="stylesheet">
   <link href="assets/vendor/aos/aos.css" rel="stylesheet">
 
-  <!-- CSS específico da página -->
   <link href="assets/css/institucional.css" rel="stylesheet">
- 
-
 
   <!-- CSS compartilhado por último para preservar os cabeçalhos -->
   <link href="assets/css/main.css" rel="stylesheet">
 </head>
 
 <body class="index-page pagina-sobre">
-
   <?php
   $tipoCabecalho = 'B';
   require __DIR__ . '/cabecalho.php';
   ?>
 
-
   <main class="main">
-
-    <!-- Banner Inicio linha 858-->
     <section id="hero" class="hero section dark-background">
       <video autoplay muted loop width="100%">
         <source src="assets/video/bannerVideo.mp4" type="video/mp4">
@@ -54,7 +43,6 @@ iniciarSessaoSegura();
       <div class="row">
         <div class="container">
           <div class="hero-conteudo" data-aos="zoom-out">
-
             <h1 class="h1banner" aria-label="ShowMe — categorias de eventos culturais">
               <span class="hero-bloco hero-bloco-titulo" aria-hidden="true">
                 <span class="hero-titulo-medidor" data-hero-typewriter-medidor></span>
@@ -68,18 +56,14 @@ iniciarSessaoSegura();
           </div>
         </div>
       </div>
+    </section>
 
-    </section><!-- /Hero Section -->
-
-    <!-- About Section -->
     <section id="about" class="about section">
       <span id="sobre" class="ancora-secao" aria-hidden="true"></span>
 
-      <!-- Section Title -->
       <div class="container section-title" data-aos="fade-up">
-
         <h2>Sobre o <span class="verde">Show</span><span class="rosa">Me</span></h2>
-      </div><!-- End Section Title -->
+      </div>
 
       <div class="container">
         <div class="row gy-4">
@@ -92,16 +76,11 @@ iniciarSessaoSegura();
           </div>
         </div>
       </div>
+    </section>
 
-    </section><!-- /About Section -->
-
-    <!-- ODS Section -->
     <section id="services" class="services section light-background">
-
       <div class="container">
-
         <div class="ods-grid">
-
           <button type="button" id="ods3" class="service-item ods-card" data-ods-modal="modalOds3" aria-controls="modalOds3" aria-haspopup="dialog" data-aos="fade-up" data-aos-delay="100">
             <h4>ODS 3</h4>
             <p>Saúde e Bem-Estar</p>
@@ -116,11 +95,9 @@ iniciarSessaoSegura();
             <h4>ODS 10</h4>
             <p>Redução das Desigualdades</p>
           </button>
-
         </div>
       </div>
-
-    </section><!-- /Services Section -->
+    </section>
 
     <div class="ods-modais" aria-live="polite">
       <dialog id="modalOds3" class="ods-modal ods-modal-3" aria-labelledby="tituloModalOds3">
@@ -154,18 +131,14 @@ iniciarSessaoSegura();
       </dialog>
     </div>
 
-    <!-- Work Process Section -->
     <section id="work-process" class="work-process section">
       <span id="como-funciona" class="ancora-secao" aria-hidden="true"></span>
 
-
-      <!-- Como Funciona -->
       <div class="container section-title" data-aos="fade-up">
         <h2><span class="verde">Como</span> Funciona</h2>
       </div>
 
       <div class="work-process-grid">
-
         <div class="steps-item" data-aos="fade-up" data-aos-delay="200">
           <div class="steps-image">
             <span class="icone-etapa icone-etapa-descubra" role="img" aria-label="Ícone de busca"></span>
@@ -188,7 +161,7 @@ iniciarSessaoSegura();
               </div>
             </div>
           </div>
-        </div><!-- End Steps Item -->
+        </div>
 
         <div class="steps-item" data-aos="fade-up" data-aos-delay="300">
           <div class="steps-image">
@@ -212,7 +185,7 @@ iniciarSessaoSegura();
               </div>
             </div>
           </div>
-        </div><!-- End Steps Item -->
+        </div>
 
         <div class="steps-item" data-aos="fade-up" data-aos-delay="400">
           <div class="steps-image">
@@ -236,7 +209,7 @@ iniciarSessaoSegura();
               </div>
             </div>
           </div>
-        </div><!-- End Steps Item -->
+        </div>
 
         <div class="steps-item" data-aos="fade-up" data-aos-delay="400">
           <div class="steps-image">
@@ -260,13 +233,10 @@ iniciarSessaoSegura();
               </div>
             </div>
           </div>
-        </div><!-- End Steps Item -->
-
+        </div>
       </div>
+    </section>
 
-    </section><!-- /Work Process Section -->
-
-    <!-- Clube de Fidelidade Section -->
     <section id="fidelidade" class="clube-fidelidade section">
       <div class="container section-title" data-aos="fade-up">
         <h2>
@@ -328,9 +298,8 @@ iniciarSessaoSegura();
           </div>
         </div>
       </div>
-    </section><!-- /Clube de Fidelidade Section -->
+    </section>
 
-    <!-- Faq 2 Section -->
     <section id="faq-2" class="faq-2 section">
       <span id="perguntas" class="ancora-secao" aria-hidden="true"></span>
 
@@ -339,15 +308,10 @@ iniciarSessaoSegura();
       </div>
 
       <div class="container">
-
         <div class="row justify-content-center">
-
           <div class="col-lg-10">
-
             <div class="faq-container">
-
               <div class="faq-item faq-active" data-aos="fade-up" data-aos-delay="200">
-
                 <i class="faq-icon bi bi-question-circle"></i>
 
                 <h3>Como funciona o ShowMe?</h3>
@@ -360,12 +324,9 @@ iniciarSessaoSegura();
                     até hospedagem.
                   </p>
                 </div>
-
               </div>
 
-              <!-- Pergunta2 -->
               <div class="faq-item" data-aos="fade-up" data-aos-delay="300">
-
                 <i class="faq-icon bi bi-question-circle"></i>
 
                 <h3>É gratuito?</h3>
@@ -378,12 +339,9 @@ iniciarSessaoSegura();
                     escolher.
                   </p>
                 </div>
-
               </div>
 
-              <!-- 3 -->
               <div class="faq-item" data-aos="fade-up" data-aos-delay="400">
-
                 <i class="faq-icon bi bi-question-circle"></i>
 
                 <h3>Posso comprar ingressos pelo site?</h3>
@@ -395,11 +353,9 @@ iniciarSessaoSegura();
                     O ShowMe não vende ingressos diretamente, mas direciona você para os canais oficiais de compra.
                   </p>
                 </div>
-
               </div>
 
               <div class="faq-item" data-aos="fade-up" data-aos-delay="500">
-
                 <i class="faq-icon bi bi-question-circle"></i>
 
                 <h3>Como faço para salvar eventos?</h3>
@@ -412,38 +368,25 @@ iniciarSessaoSegura();
                     passeios.
                   </p>
                 </div>
-
               </div>
-
             </div>
-
           </div>
-
         </div>
-
       </div>
-
     </section>
-
   </main>
 
   <?php require __DIR__ . '/rodape.php'; ?>
 
-  <!-- Scroll Top -->
   <a href="#" id="scroll-top" class="scroll-top d-flex align-items-center justify-content-center"><i
       class="bi bi-arrow-up-short"></i></a>
 
-  <!-- Preloader -->
   <div id="preloader"></div>
 
-  <!-- Vendor JS Files -->
   <script src="assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
   <script src="assets/vendor/aos/aos.js"></script>
 
-  <!-- Main JS File -->
   <script src="assets/js/odsModais.js"></script>
   <script src="assets/js/main.js"></script>
-
 </body>
-
 </html>

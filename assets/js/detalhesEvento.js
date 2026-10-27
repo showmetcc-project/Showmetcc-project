@@ -291,8 +291,8 @@
             link.href = url.href;
             link.hidden = false;
             aviso.hidden = gratuito;
-        } catch (_) {
-            /* link inválido fica oculto */
+        } catch {
+            // URL inválida: mantém o link oculto.
         }
     }
     function renderizarEvento(evento) {

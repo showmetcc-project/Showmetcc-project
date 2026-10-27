@@ -469,7 +469,6 @@ $atributosRequerLogin = !$usuarioLogado ? ' data-requer-login="true" aria-haspop
             </ul>
           </nav>
         </div>
-
     </div>
   </header>
 <?php endif; ?>

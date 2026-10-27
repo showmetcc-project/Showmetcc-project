@@ -13,9 +13,7 @@ $idEvento = (int) $idInformado;
     <!doctype html>
 
     <html lang="pt-BR">
-
     <head>
-
         <meta charset="UTF-8">
 
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -28,15 +26,9 @@ $idEvento = (int) $idInformado;
 
         <link rel="stylesheet" href="assets/vendor/bootstrap/css/bootstrap.min.css">
 
-        <!-- BOOTSTRAP ICONS -->
-
         <link rel="stylesheet" href="assets/vendor/bootstrap-icons/bootstrap-icons.css">
 
-        <!-- LEAFLET -->
-
         <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-
-        <!-- CSS DO PROJETO -->
 
         <link rel="stylesheet" href="assets/css/planejamento.css">
 
@@ -47,12 +39,9 @@ $idEvento = (int) $idInformado;
         <!-- FOLHA DE IMPRESSÃO DO RESUMO (CARTAZ URBANO) -->
 
         <link rel="stylesheet" href="assets/css/impressao.css" media="print">
-
     </head>
 
-
     <body class="com-cabecalho-padrao cabecalho-tipo-c pagina-planejamento" data-evento-id="<?= $idEvento ?>">
-
         <?php
         $tipoCabecalho = 'C';
         $configuracaoCabecalho = [
@@ -68,34 +57,15 @@ $idEvento = (int) $idInformado;
             Carregando evento...
         </p>
 
-
-
-        <!-- =====================================================
-     CONTEÚDO PRINCIPAL
-===================================================== -->
-
         <main class="planejamento-container container">
             <div class="row g-4 g-xl-5 align-items-start">
-
-
-            <!-- =================================================
-         PROGRESSO
-    ================================================== -->
-
             <aside class="progresso col-12 col-lg-3">
-
                 <h3>
                     Progresso
                 </h3>
 
-
                 <div class="timeline">
-
-
-                    <!-- ETAPA 1 -->
-
                     <div class="passo ativo" id="passo1">
-
                         <div class="numero">
                             1
                         </div>
@@ -103,14 +73,9 @@ $idEvento = (int) $idInformado;
                         <span>
                     Orçamento
                 </span>
-
                     </div>
 
-
-                    <!-- ETAPA 2 -->
-
                     <div class="passo" id="passo2">
-
                         <div class="numero">
                             2
                         </div>
@@ -118,14 +83,9 @@ $idEvento = (int) $idInformado;
                         <span>
                     Transporte
                 </span>
-
                     </div>
 
-
-                    <!-- ETAPA 3 -->
-
                     <div class="passo" id="passo3">
-
                         <div class="numero">
                             3
                         </div>
@@ -133,14 +93,9 @@ $idEvento = (int) $idInformado;
                         <span>
                     Rota
                 </span>
-
                     </div>
 
-
-                    <!-- ETAPA 4 -->
-
                     <div class="passo" id="passo4">
-
                         <div class="numero">
                             4
                         </div>
@@ -148,14 +103,9 @@ $idEvento = (int) $idInformado;
                         <span>
                     Hospedagem
                 </span>
-
                     </div>
 
-
-                    <!-- ETAPA 5 -->
-
                     <div class="passo" id="passo5">
-
                         <div class="numero">
                             5
                         </div>
@@ -163,49 +113,27 @@ $idEvento = (int) $idInformado;
                         <span>
                     Resumo
                 </span>
-
                     </div>
-
-
                 </div>
-
             </aside>
-
-
-
-            <!-- =================================================
-         CARD
-    ================================================== -->
 
             <div class="col-12 col-lg-9">
             <section class="card-planejamento">
-
-
-                <!-- =================================================
-             ETAPA 1 - ORÇAMENTO
-        ================================================== -->
-
                 <div class="etapa ativa" id="etapa1">
-
                     <div class="titulo-card">
-
                         <i class="bi bi-currency-dollar"></i>
 
                         <h2>
                             Orçamento e Custos
                         </h2>
-
                     </div>
-
 
                     <p>
                         Defina o orçamento total da viagem e os gastos com ingresso e extras.
                         Transporte e hospedagem serão informados nas etapas seguintes.
                     </p>
 
-
                     <div class="gastos-planejamento">
-
                         <h3>
                             <i class="bi bi-wallet2" aria-hidden="true"></i> Gastos do Evento
                         </h3>
@@ -217,7 +145,6 @@ $idEvento = (int) $idInformado;
                         <input type="number" id="orcamento" placeholder="500" min="0" step="0.01" inputmode="decimal" required>
 
                         <div class="campos-gastos-planejamento">
-
                             <div class="campo-gasto">
                                 <label for="custoIngresso">Valor do Ingresso / Entrada (R$)</label>
                                 <input type="number" id="custoIngresso" value="0" min="0" step="0.01" inputmode="decimal" aria-describedby="custoMinimoEvento">
@@ -229,7 +156,6 @@ $idEvento = (int) $idInformado;
                                     <span>Ingresso gratuito / Cortesia</span>
                                 </label>
                             </div>
-
                         </div>
 
                         <div class="orcamento-restante resumo-gastos-etapa">
@@ -238,61 +164,39 @@ $idEvento = (int) $idInformado;
                             <small id="composicaoGastosEtapa">Ingresso + Transporte + Hospedagem</small>
                             <small id="saldoGastosEtapa">Saldo do orçamento: R$ 0,00</small>
                         </div>
-
                     </div>
 
-
                     <button onclick="proximaEtapa(2)">
-
                 Continuar
-
             </button>
-
                 </div>
 
-
-
-                <!-- =================================================
-             ETAPA 2 - TRANSPORTE
-        ================================================== -->
-
                 <div class="etapa" id="etapa2">
-
                     <div class="titulo-card">
-
                         <i class="bi bi-bus-front"></i>
 
                         <h2>
                             Transporte
                         </h2>
-
                     </div>
-
 
                     <p id="textoDestinoTransporte">
                         Carregando o destino do evento...
                     </p>
 
-
                     <div class="orcamento-restante">
-
                         Seu orçamento
 
                         <strong id="valorOrcamento">
                     R$ 0,00
                 </strong>
-
                     </div>
-
 
                     <h3>
                         Pesquise opções de transporte:
                     </h3>
 
-
                     <div class="opcoes">
-
-
                         <div class="opcao-transporte-card">
                             <button type="button" class="opcao" data-transporte="Ônibus" aria-pressed="false" onclick="selecionarTransporte('Ônibus')">
                                 <i class="bi bi-bus-front icone-opcao" aria-hidden="true"></i>
@@ -304,8 +208,6 @@ $idEvento = (int) $idInformado;
                                 Pesquisar passagens
                             </a>
                         </div>
-
-
 
                         <div class="opcao-transporte-card">
                             <button type="button" class="opcao" data-transporte="Carro" aria-pressed="false" onclick="selecionarTransporte('Carro')">
@@ -319,8 +221,6 @@ $idEvento = (int) $idInformado;
                             </a>
                         </div>
 
-
-
                         <div class="opcao-transporte-card">
                             <button type="button" class="opcao" data-transporte="Avião" aria-pressed="false" onclick="selecionarTransporte('Avião')">
                                 <i class="bi bi-airplane icone-opcao" aria-hidden="true"></i>
@@ -333,8 +233,6 @@ $idEvento = (int) $idInformado;
                             </a>
                         </div>
 
-
-
                         <div class="opcao-transporte-card">
                             <button type="button" class="opcao" data-transporte="Uber" aria-pressed="false" onclick="selecionarTransporte('Uber')">
                                 <i class="bi bi-taxi-front icone-opcao" aria-hidden="true"></i>
@@ -346,16 +244,10 @@ $idEvento = (int) $idInformado;
                                 Abrir Uber
                             </a>
                         </div>
-
-
                     </div>
-
-
-                    <!-- ESTIMATIVA -->
 
                     <div id="estimativaTransporte" hidden>
                     </div>
-
 
                     <p id="transporteSelecionado">Nenhum transporte selecionado.</p>
 
@@ -367,156 +259,93 @@ $idEvento = (int) $idInformado;
                         </small>
                     </div>
 
-
                     <div class="botoes">
-
                         <button onclick="voltarEtapa(1)">
                     Voltar
                 </button>
 
-
                         <button onclick="proximaEtapa(3)">
                     Continuar
                 </button>
-
                     </div>
-
-
                 </div>
 
-
-
-                <!-- =================================================
-             ETAPA 3 - ROTA
-        ================================================== -->
-
                 <div class="etapa" id="etapa3">
-
                     <div class="titulo-card">
-
                         <i class="bi bi-map-fill"></i>
 
                         <h2>
                             Planeje sua rota
                         </h2>
-
                     </div>
 
-
                     <p>
-
                         Veja a localização do evento e calcule a melhor rota a partir do seu ponto de partida.
-
                     </p>
 
-
-                    <!-- LOCAL -->
-
                     <div class="localizacao-box">
-
                         <strong>
 
                     <i class="bi bi-geo-alt-fill"></i>
 
                     Local do evento
-
                 </strong>
 
-
                         <p id="enderecoEvento">
-
                             Carregando endereço...
-
                         </p>
 
-
                         <button type="button" onclick="centralizarEvento()">
-
                     <i class="bi bi-map-fill"></i>
 
                     Ver localização
-
                 </button>
-
                     </div>
-
-
-                    <!-- MAPA -->
 
                     <div id="mapaRota"></div>
 
-
-                    <!-- ORIGEM -->
-
                     <div class="origem-rota">
-
                         <h3>
-
                             <i class="bi bi-map-fill"></i> De onde você vai sair?
-
                         </h3>
 
-
                         <p class="origem-atual">
-
                             Origem:
 
                             <strong id="origemTexto">
                         Não definida
                     </strong>
-
                         </p>
-
 
                         <p class="descricao-rota">
-
                             Para calcular a rota até o evento, precisamos saber sua localização.
-
                         </p>
 
-
                         <button type="button" class="botao-localizacao" onclick="usarMinhaLocalizacao()">
-
                     <i class="bi bi-crosshair"></i>
 
                     Usar minha localização
-
                 </button>
 
-
                         <div class="separador-rota">
-
                             <span>
                         ou
                     </span>
-
                         </div>
 
-
                         <label for="origemManual">
-
                     Informe um ponto de partida
-
                 </label>
-
 
                         <input type="text" id="origemManual" placeholder="Ex: São Paulo - SP">
 
-
                         <button type="button" class="botao-origem" onclick="calcularRotaManual()">
-
                     Calcular rota
-
                 </button>
-
                     </div>
-
-
-                    <!-- STATUS -->
 
                     <p id="mensagemRota" class="mensagem-rota" role="status" aria-live="polite" aria-atomic="true">
                     </p>
-
 
                     <div class="dados-rota-planejamento">
                         <h3><i class="bi bi-map-fill" aria-hidden="true"></i> Dados da rota</h3>
@@ -533,105 +362,60 @@ $idEvento = (int) $idInformado;
                         </div>
                     </div>
 
-
-                    <!-- NAVEGAÇÃO -->
-
                     <div class="navegacao-box" id="navegacaoBox" hidden>
-
                         <h3>
-
                             <i class="bi bi-compass"></i> Continuar navegação
-
                         </h3>
 
-
                         <p>
-
                             Você pode continuar sua rota utilizando um aplicativo de navegação.
-
                         </p>
 
-
                         <div class="botoes-navegacao">
-
-
                             <button type="button" onclick="abrirGoogleMaps()">
-
                         <i class="bi bi-map-fill"></i>
 
                         Google Maps
 
                         <i class="bi bi-box-arrow-up-right icone-link-externo" aria-hidden="true"></i>
-
                     </button>
 
-
                             <button type="button" onclick="abrirWaze()">
-
                         <i class="bi bi-car-front"></i>
 
                         Waze
 
                         <i class="bi bi-box-arrow-up-right icone-link-externo" aria-hidden="true"></i>
-
                     </button>
-
-
                         </div>
-
                     </div>
-
-
-                    <!-- BOTÕES -->
 
                     <div class="botoes">
-
                         <button onclick="voltarEtapa(2)">
-
                     Voltar
-
                 </button>
-
 
                         <button onclick="proximaEtapa(4)">
-
                     Continuar
-
                 </button>
-
                     </div>
-
                 </div>
 
-
-
-                <!-- =================================================
-             ETAPA 4 - HOSPEDAGEM
-        ================================================== -->
-
                 <div class="etapa" id="etapa4">
-
                     <div class="titulo-card">
-
                         <i class="bi bi-house"></i>
 
                         <h2>
                             Hospedagem
                         </h2>
-
                     </div>
-
 
                     <p>
                         Você precisa de hospedagem para este evento?
                     </p>
 
-
                     <div class="opcoes hospedagem-escolha">
-
-
                         <button type="button" id="opcaoHospedagemSim" class="opcao" aria-pressed="false" onclick="mostrarHospedagem()">
-
                     <i class="bi bi-building icone-opcao" aria-hidden="true"></i>
 
                     <strong>
@@ -641,12 +425,9 @@ $idEvento = (int) $idInformado;
                     <small>
                         Ver opções próximas ao evento
                     </small>
-
                 </button>
 
-
                         <button type="button" id="opcaoHospedagemNao" class="opcao" aria-pressed="false" onclick="semHospedagem()">
-
                     <i class="bi bi-house-check icone-opcao" aria-hidden="true"></i>
 
                     <strong>
@@ -656,28 +437,17 @@ $idEvento = (int) $idInformado;
                     <small>
                         Continuar sem hospedagem
                     </small>
-
                 </button>
-
-
                     </div>
 
-
-                    <!-- OPÇÕES -->
-
                     <div id="opcoesHospedagem" hidden>
-
-
                         <div class="orcamento-restante">
-
                             Orçamento restante
 
                             <strong id="restante">
                         R$ 0,00
                     </strong>
-
                         </div>
-
 
                         <h3>
                             Hospedagens próximas ao evento:
@@ -688,15 +458,11 @@ $idEvento = (int) $idInformado;
                             Sugestões de estabelecimentos cadastrados no OpenStreetMap, consultadas pela API Overpass em um raio de 5 km. A lista não informa preços nem disponibilidade.
                         </p>
 
-
                         <div id="resultadoHospedagem">
-
                             <p>
                                 Pesquisando opções...
                             </p>
-
                         </div>
-
 
                         <h3>Pesquise preços e disponibilidade:</h3>
 
@@ -747,44 +513,26 @@ $idEvento = (int) $idInformado;
                                 Informe o valor total das diárias e taxas da hospedagem.
                             </small>
                         </div>
-
-
                     </div>
 
-
                     <div class="botoes">
-
-
                         <button onclick="voltarEtapa(3)">
                     Voltar
                 </button>
 
-
                         <button onclick="proximaEtapa(5)">
                     Continuar
                 </button>
-
-
                     </div>
-
                 </div>
 
-
-
-                <!-- =================================================
-             ETAPA 5 - RESUMO
-        ================================================== -->
-
                 <div class="etapa" id="etapa5">
-
                     <div class="titulo-card">
-
                         <i class="bi bi-check-circle"></i>
 
                         <h2>
                             Resumo do Planejamento
                         </h2>
-
                     </div>
 
                     <div class="nome-evento-poster">
@@ -792,11 +540,7 @@ $idEvento = (int) $idInformado;
                         <strong id="nomeEventoPoster">Carregando...</strong>
                     </div>
 
-
-                    <!-- EVENTO -->
-
                     <div class="resumo-box resumo-evento-planejado">
-
                         <h3>
                             <i class="bi bi-calendar-event" aria-hidden="true"></i> Evento
                         </h3>
@@ -815,21 +559,14 @@ $idEvento = (int) $idInformado;
                             <span>Local</span>
                             <span id="resumoLocalEvento">Carregando...</span>
                         </div>
-
                     </div>
 
-
-                    <!-- CUSTOS -->
-
                     <div class="resumo-box resumo-custos">
-
                         <h3>
                             Custos
                         </h3>
 
-
                         <div class="linha-resumo">
-
                             <span>
                         Ingresso
                     </span>
@@ -837,12 +574,9 @@ $idEvento = (int) $idInformado;
                             <span id="resumoIngresso">
                         Carregando...
                     </span>
-
                         </div>
 
-
                         <div class="linha-resumo">
-
                             <span>
                         Transporte
                     </span>
@@ -850,12 +584,9 @@ $idEvento = (int) $idInformado;
                             <span id="resumoTransporte">
                         R$ 0,00
                     </span>
-
                         </div>
 
-
                         <div class="linha-resumo">
-
                             <span>
                         Hospedagem
                     </span>
@@ -863,37 +594,25 @@ $idEvento = (int) $idInformado;
                             <span id="resumoHospedagem">
                         R$ 0,00
                     </span>
-
                         </div>
-
 
                         <hr>
 
-
                         <div class="linha-resumo total">
-
                             <span>Total</span>
 
                             <span id="totalFinal">
                         R$ 0,00
                     </span>
-
                         </div>
-
                     </div>
 
-
-                    <!-- ORÇAMENTO -->
-
                     <div class="resumo-box resumo-orcamento">
-
                         <h3>
                             Orçamento
                         </h3>
 
-
                         <div class="linha-resumo">
-
                             <span>
                         Planejado
                     </span>
@@ -901,12 +620,9 @@ $idEvento = (int) $idInformado;
                             <span id="orcamentoFinal">
                         R$ 0,00
                     </span>
-
                         </div>
 
-
                         <div class="linha-resumo">
-
                             <span>
                         Total de gastos
                     </span>
@@ -914,36 +630,23 @@ $idEvento = (int) $idInformado;
                             <span id="gastosFinal">
                         R$ 0,00
                     </span>
-
                         </div>
 
-
                         <div class="linha-resumo total">
-
                             <span>Saldo</span>
 
                             <span id="saldoFinal">
                         R$ 0,00
                     </span>
-
                         </div>
-
                     </div>
 
-
-                    <!-- ROTA -->
-
                     <div class="resumo-box rota-resumo">
-
                         <h3>
-
                             <i class="bi bi-map-fill icone-rota-impressao"></i> Rota da viagem
-
                         </h3>
 
-
                         <div class="linha-resumo">
-
                             <span>
                         Origem
                     </span>
@@ -951,27 +654,19 @@ $idEvento = (int) $idInformado;
                             <span id="resumoOrigem">
                         —
                     </span>
-
                         </div>
 
-
                         <div class="linha-resumo">
-
                             <span>
                         Destino
                     </span>
 
                             <span id="resumoDestino">
-
                         Carregando...
-
                     </span>
-
                         </div>
 
-
                         <div class="linha-resumo">
-
                             <span>
                         Transporte
                     </span>
@@ -979,12 +674,9 @@ $idEvento = (int) $idInformado;
                             <span id="resumoMeioTransporte">
                         —
                     </span>
-
                         </div>
 
-
                         <div class="linha-resumo">
-
                             <span>
                         Distância
                     </span>
@@ -992,12 +684,9 @@ $idEvento = (int) $idInformado;
                             <span id="resumoDistancia">
                         —
                     </span>
-
                         </div>
 
-
                         <div class="linha-resumo">
-
                             <span>
                         Tempo estimado
                     </span>
@@ -1005,22 +694,13 @@ $idEvento = (int) $idInformado;
                             <span id="resumoTempo">
                         —
                     </span>
-
                         </div>
-
                     </div>
 
-
-                    <!-- DICAS -->
-
                     <div class="dicas">
-
                         <h3>
-
                             <i class="bi bi-info-circle"></i> Dicas de Viagem
-
                         </h3>
-
 
                         <p><i class="bi bi-capsule" aria-hidden="true"></i><span>Leve medicamentos básicos e seu plano de saúde.</span></p>
 
@@ -1029,7 +709,6 @@ $idEvento = (int) $idInformado;
                         <p><i class="bi bi-ticket-perforated" aria-hidden="true"></i><span>Não esqueça de adquirir seus ingressos com antecedência.</span></p>
 
                         <p><i class="bi bi-phone" aria-hidden="true"></i><span>Consulte o canal oficial do evento para acompanhar atualizações.</span></p>
-
                     </div>
 
                     <div class="rodape-impressao">
@@ -1066,13 +745,9 @@ $idEvento = (int) $idInformado;
                             <button id="botaoFinalizarPlanejamento" type="submit">Finalizar planejamento</button>
                         </div>
                     </form>
-
-
                 </div>
-
             </section>
             </div>
-
             </div>
         </main>
 
@@ -1092,27 +767,11 @@ $idEvento = (int) $idInformado;
             </form>
         </dialog>
 
-
-
-        <!-- =====================================================
-     FOOTER
-===================================================== -->
-
-
-
-        <!-- =====================================================
-     LEAFLET
-===================================================== -->
-
         <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js">
         </script>
-
-
 
         <script src="assets/js/planejamento.js"></script>
 
         <script src="assets/js/main.js"></script>
-
     </body>
-
     </html>

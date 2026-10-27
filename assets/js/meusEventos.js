@@ -1,16 +1,13 @@
-// Alterna as abas Favoritos, Planejados e Calendário.
 document.querySelectorAll('.aba').forEach((btn) => {
     btn.addEventListener('click', () => {
         const tab = btn.dataset.tab;
 
-        // Atualiza botões
         document.querySelectorAll('.aba').forEach((b) => {
             const ativa = b === btn;
             b.classList.toggle('ativa', ativa);
             b.setAttribute('aria-selected', String(ativa));
         });
 
-        // Atualiza seções
         document.querySelectorAll('.conteudo').forEach((s) => s.classList.remove('ativa'));
         document.getElementById(tab).classList.add('ativa');
 

@@ -630,11 +630,9 @@
             agendarBusca();
         }
 
-        // Abre o painel ao focar/clicar na busca principal.
         campo.addEventListener('focus', abrirContainerBusca);
         campo.addEventListener('click', abrirContainerBusca);
 
-        // Atualiza em tempo real enquanto o usuário digita.
         campo.addEventListener('input', function () {
             agendarBusca(true, true);
         });
@@ -735,7 +733,6 @@
             }
         });
 
-        // Botão X do painel flutuante.
         formulario.querySelector('[data-fechar-busca]')?.addEventListener('click', fecharContainerBusca);
 
         formulario.addEventListener('submit', function (evento) {

@@ -1,9 +1,3 @@
-/* ==========================
-   MEUS EVENTOS - SHOWME
-   Bootstrap Icons (bi bi-...)
-   Footer reutilizado do index
-========================== */
-
 a {
     text-decoration: none;
     color: #bdbdbd;
@@ -23,20 +17,12 @@ body {
     color: #fff !important;
 }
 
-/* ==========================
-   CORES DO PROJETO
-========================== */
-
 .verde {
     color: #00ff00;
 }
 .rosa {
     color: #ff006e;
 }
-
-/* ==========================
-   NAV FIXO (topo + linha verde)
-========================== */
 
 .nav-fixo {
     position: fixed;
@@ -89,19 +75,11 @@ body {
     background: #00ff00;
 }
 
-/* ==========================
-   CONTAINER PRINCIPAL
-========================== */
-
 .eventos-container {
     max-width: 1100px;
     margin: 0 auto;
     padding: 45px 20px 60px;
 }
-
-/* ==========================
-   ABAS
-========================== */
 
 .abas {
     display: flex;
@@ -151,10 +129,6 @@ body {
     white-space: nowrap;
 }
 
-/* ==========================
-   CONTEÚDO / VISIBILIDADE
-========================== */
-
 .conteudo {
     display: none;
     flex-wrap: wrap;
@@ -166,10 +140,6 @@ body {
 .calendario-conteudo.ativa {
     display: block;
 }
-
-/* ==========================
-   CALENDÁRIO DOS PLANEJADOS
-========================== */
 
 .calendario-layout {
     display: grid;
@@ -574,10 +544,6 @@ body {
     line-height: 1.5;
 }
 
-/* ==========================
-   CARD DE EVENTO
-========================== */
-
 .card-evento {
     position: relative;
     display: grid;
@@ -704,7 +670,6 @@ body {
     box-shadow: 0 8px 20px rgba(255, 255, 255, 0.08);
 }
 
-/* Coluna de ações (tag + lixeira) */
 .acoes {
     display: flex;
     flex-direction: column;
@@ -716,7 +681,6 @@ body {
     min-width: 70px;
 }
 
-/* Tags Pago / Grátis */
 .tag {
     display: inline-block;
     padding: 4px 12px;
@@ -738,7 +702,6 @@ body {
     border: 1px solid #00ff00;
 }
 
-/* Botão lixeira */
 .btn-excluir {
     width: 44px;
     height: 44px;
@@ -759,10 +722,6 @@ body {
     color: #dd0060;
     background: rgba(255, 0, 110, 0.08);
 }
-
-/* ==========================
-   FOOTER — mesmo padrão das outras páginas
-========================== */
 
 .footer {
     margin-top: 60px;
@@ -886,7 +845,6 @@ body {
     color: #00dd00;
 }
 
-/* Scroll top */
 .scroll-top {
     position: fixed;
     bottom: 20px;
@@ -906,10 +864,6 @@ body {
     transform: translateY(-3px);
     color: #000;
 }
-
-/* ==========================
-   RESPONSIVO
-========================== */
 
 @media (max-width: 991.98px) {
     .calendario-layout {

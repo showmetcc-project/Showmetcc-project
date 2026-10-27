@@ -1,12 +1,5 @@
 @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@500;600&family=Oswald:wght@600;700&display=swap');
 
-/* =========================================================================
-   SHOWME — IMPRESSÃO DO RESUMO DO PLANEJAMENTO
-   Estilo: poster urbano / lambe-lambe brutalista, estritamente preto e branco.
-   Carregada apenas em @media print por planejamento.php.
-   Objetivo: pôster completo em uma única página A4.
-   ========================================================================= */
-
 @page {
     size: A4 portrait;
     margin: 12mm;
@@ -30,9 +23,6 @@
         -webkit-print-color-adjust: exact;
     }
 
-    /* ---------------------------------------------------------------------
-       ESTRUTURA: imprime somente a etapa final
-       --------------------------------------------------------------------- */
     body.pagina-planejamento > * {
         display: none !important;
     }
@@ -83,9 +73,6 @@
         page-break-inside: avoid;
     }
 
-    /* ---------------------------------------------------------------------
-       BASE MONOCROMÁTICA E TEXTO INFORMATIVO LEGÍVEL
-       --------------------------------------------------------------------- */
     body.pagina-planejamento #etapa5,
     body.pagina-planejamento #etapa5 * {
         background: transparent !important;
@@ -122,9 +109,6 @@
         display: none !important;
     }
 
-    /* ---------------------------------------------------------------------
-       CABEÇALHO GIGANTE: faixa preta com título branco centralizado
-       --------------------------------------------------------------------- */
     body.pagina-planejamento #etapa5 > .titulo-card {
         box-sizing: border-box !important;
         display: block !important;
@@ -164,9 +148,6 @@
         -webkit-print-color-adjust: exact;
     }
 
-    /* ---------------------------------------------------------------------
-       NOME DO EVENTO: atração principal em escala de pôster
-       --------------------------------------------------------------------- */
     body.pagina-planejamento #etapa5 > .nome-evento-poster {
         box-sizing: border-box !important;
         display: block !important;
@@ -212,9 +193,6 @@
         text-transform: uppercase !important;
     }
 
-    /* ---------------------------------------------------------------------
-       CARDS SÓLIDOS: EVENTO, CUSTOS, ORÇAMENTO E ROTA
-       --------------------------------------------------------------------- */
     body.pagina-planejamento #etapa5 > .resumo-box {
         box-sizing: border-box !important;
         display: flex !important;
@@ -360,9 +338,6 @@
         display: none !important;
     }
 
-    /* ---------------------------------------------------------------------
-       DICAS DE VIAGEM: bloco espesso com checklist em 2 colunas
-       --------------------------------------------------------------------- */
     body.pagina-planejamento #etapa5 > .dicas {
         box-sizing: border-box !important;
         display: grid !important;
@@ -417,9 +392,6 @@
         flex: 1 1 auto;
     }
 
-    /* ---------------------------------------------------------------------
-       RODAPÉ DE ENCERRAMENTO
-       --------------------------------------------------------------------- */
     body.pagina-planejamento #etapa5 > .rodape-impressao {
         box-sizing: border-box !important;
         display: block !important;

@@ -899,13 +899,13 @@ paths:
         - {name: categoria, in: query, schema: {type: string, enum: [Duvida, Dica, Transporte, Hospedagem, Companhia, Relato]}}
         - {name: resumo, in: query, schema: {type: integer, enum: [1]}}
       responses:
-        '200': {description: Publicações ou comunidades retornadas}
+        '200': {description: Publicações e estado de ciclo de vida da comunidade retornados}
         '400': {$ref: '#/components/responses/RequisicaoInvalida'}
         '401': {$ref: '#/components/responses/NaoAutenticado'}
     post:
       tags: [Comunidades]
       summary: Cria uma publicação
-      description: Restrito a usuários comuns; administradores possuem acesso somente para leitura.
+      description: Restrito a usuários comuns; administradores possuem acesso somente para leitura. Bloqueado quando o evento terminou há mais de 48 horas.
       security: [{cookieAuth: []}]
       requestBody:
         required: true
@@ -916,7 +916,8 @@ paths:
         '201': {description: Publicação criada}
         '400': {$ref: '#/components/responses/RequisicaoInvalida'}
         '401': {$ref: '#/components/responses/NaoAutenticado'}
-        '403': {$ref: '#/components/responses/Proibido'}
+        '403': {description: Acesso negado ou comunidade em modo arquivo após 48 horas do encerramento}
+        '404': {$ref: '#/components/responses/NaoEncontrado'}
   /comunidade-posts/{id}:
     put:
       tags: [Comunidades]
@@ -1421,6 +1422,11 @@ components:
         status_evento:
           type: string
           enum: [ativo, cancelado]
+        sessoes:
+          type: array
+          description: Datas e horários disponíveis para o evento, em ordem cronológica.
+          items:
+            $ref: '#/components/schemas/SessaoEvento'
 
     EventoDetalhe:
       allOf:
@@ -1432,6 +1438,60 @@ components:
               description: Participantes relacionados ao evento (bandas, palestrantes, facilitadores, expositores ou coletivos).
               items:
                 $ref: '#/components/schemas/ArtistaEvento'
+            comunidade:
+              $ref: '#/components/schemas/CicloComunidade'
+
+    CicloComunidade:
+      type: object
+      properties:
+        somente_leitura:
+          type: boolean
+          description: Indica que o evento terminou há mais de 48 horas e novas publicações textuais estão desativadas.
+        evento_encerrado_em:
+          type: string
+          format: date-time
+          nullable: true
+          description: Data e hora do encerramento da última sessão do evento.
+        comunidade_somente_leitura_em:
+          type: string
+          format: date-time
+          nullable: true
+          description: Momento a partir do qual a comunidade passa a funcionar como arquivo.
+
+    SessaoEvento:
+      type: object
+      properties:
+        id:
+          type: integer
+        evento_id:
+          type: integer
+        data_evento:
+          type: string
+          format: date
+        hora_inicio:
+          type: string
+          format: time
+          example: '14:00:00'
+        hora_fim:
+          type: string
+          format: time
+          example: '22:00:00'
+
+    SessaoCadastro:
+      type: object
+      required: [data_evento, hora_inicio, hora_fim]
+      properties:
+        data_evento:
+          type: string
+          format: date
+        hora_inicio:
+          type: string
+          format: time
+          example: '14:00'
+        hora_fim:
+          type: string
+          format: time
+          example: '22:00'
 
     ArtistaEvento:
       type: object
@@ -1634,8 +1694,6 @@ components:
       required:
         - nome_evento
         - foto
-        - horario_evento
-        - data_evento
         - cep_evento
         - endereco_evento
         - cidade_evento
@@ -1646,6 +1704,9 @@ components:
         - descricao_evento
         - descricao_artista
         - nome_artista_solicitado
+      anyOf:
+        - required: [sessoes]
+        - required: [data_evento, horario_evento]
       properties:
         nome_evento:
           type: string
@@ -1658,13 +1719,23 @@ components:
           maxLength: 255
           nullable: true
           description: Texto alternativo acessível da foto do evento.
+        sessoes:
+          type: array
+          minItems: 1
+          maxItems: 30
+          description: Datas e horários do evento. A primeira sessão, em ordem cronológica, também preenche data_evento e horario_evento.
+          items:
+            $ref: '#/components/schemas/SessaoCadastro'
         horario_evento:
           type: string
           example: '20:00'
+          nullable: true
+          description: Compatibilidade com clientes antigos; usado apenas quando sessoes não é enviado.
         data_evento:
           type: string
           format: date
           nullable: true
+          description: Compatibilidade com clientes antigos; usado apenas quando sessoes não é enviado.
         cep_evento:
           type: string
           pattern: '^\d{8}$'
@@ -1863,11 +1934,15 @@ components:
 
     PlanejamentoCadastro:
       type: object
-      required: [id_evento, meio_transporte, distancia_km, tempo_estimado]
+      required: [id_evento, sessao_id, meio_transporte, distancia_km, tempo_estimado]
       properties:
         id_evento:
           type: integer
           minimum: 1
+        sessao_id:
+          type: integer
+          minimum: 1
+          description: Sessão do evento escolhida para a viagem.
         meio_transporte:
           type: string
           maxLength: 30
@@ -1915,6 +1990,11 @@ components:
         id_evento:
           type: integer
           minimum: 1
+        sessao_id:
+          type: integer
+          minimum: 1
+          nullable: true
+          description: Sessão escolhida; quando omitida, usa a primeira sessão do evento.
         tempo_estimado:
           type: integer
           minimum: 0
@@ -1935,6 +2015,11 @@ components:
         id_evento:
           type: integer
           minimum: 1
+        sessao_id:
+          type: integer
+          minimum: 1
+          nullable: true
+          description: Sessão escolhida; quando omitida, usa a primeira sessão do evento.
         id_rota:
           type: integer
           minimum: 1
@@ -1967,6 +2052,10 @@ components:
       type: object
       minProperties: 1
       properties:
+        sessao_id:
+          type: integer
+          minimum: 1
+          description: Permite alterar a sessão vinculada ao planejamento.
         meio_transporte:
           type: string
           maxLength: 30
@@ -2011,6 +2100,10 @@ components:
           type: integer
         id_evento:
           type: integer
+        sessao_id:
+          type: integer
+          nullable: true
+          description: Sessão do evento vinculada ao planejamento.
         meio_transporte:
           type: string
         distancia_km:
@@ -2058,6 +2151,12 @@ components:
               type: string
               format: time
               nullable: true
+              description: Horário de início da sessão escolhida.
+            hora_fim:
+              type: string
+              format: time
+              nullable: true
+              description: Horário de término da sessão escolhida.
             imagem_evento:
               type: string
               nullable: true
@@ -2092,6 +2191,7 @@ components:
               type: string
               format: date
               nullable: true
+              description: Próxima sessão do evento; usa a data principal quando não houver sessão futura.
             gratuidade:
               type: boolean
             imagem_evento:

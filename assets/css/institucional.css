@@ -38,6 +38,9 @@
 .pagina-sobre .hero p {
     margin: 15px auto 0;
     max-width: 700px;
+    font-size: 24px;
+    font-weight: 700;
+    line-height: 1.35;
 }
 
 .pagina-sobre .hero .hero-conteudo {
@@ -247,6 +250,11 @@
         max-width: 100%;
         overflow-wrap: anywhere;
         text-align: center;
+    }
+
+    .pagina-sobre .hero p {
+        font-size: 20px;
+        line-height: 1.4;
     }
 
     .pagina-sobre .pabout {

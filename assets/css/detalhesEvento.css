@@ -190,6 +190,20 @@ a {
     font-size: 1rem;
 }
 
+#infoData {
+    align-items: flex-start;
+    max-width: 100%;
+}
+
+#infoData > i {
+    margin-top: 0.15em;
+}
+
+#infoData > span {
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+
 .secao {
     margin-bottom: 16px;
     padding: 0;
@@ -449,19 +463,6 @@ a {
     color: #000;
 }
 
-/* Selo de estado concluído: mapa/rota + check verde. */
-.btn-planejar .selo-planejamento-concluido {
-    flex: 0 0 auto;
-    color: #00ff00;
-    font-size: 1.1rem;
-    line-height: 1;
-}
-
-.btn-planejar.btn-planejamento-concluido:hover .selo-planejamento-concluido,
-.btn-planejar.btn-planejamento-concluido:focus-visible .selo-planejamento-concluido {
-    color: #000;
-}
-
 .footer {
     background: #000;
     color: #fff;
@@ -649,6 +650,179 @@ a {
         padding: 18px;
     }
     .btn-acessar-comunidade {
+        width: 100%;
+    }
+}
+
+.modal-selecao-sessao {
+    width: min(560px, calc(100vw - 32px));
+    max-height: calc(100vh - 32px);
+    margin: auto;
+    padding: 0;
+    border: 1px solid rgba(0, 255, 0, 0.35);
+    border-radius: 18px;
+    background: #141414;
+    color: #fff;
+    box-shadow: 0 24px 80px rgba(0, 0, 0, 0.75);
+}
+
+.modal-selecao-sessao::backdrop {
+    background: rgba(0, 0, 0, 0.78);
+    backdrop-filter: blur(3px);
+}
+
+.conteudo-modal-selecao {
+    position: relative;
+    padding: 28px;
+}
+
+.conteudo-modal-selecao h2 {
+    margin: 0 0 8px;
+    font-size: 1.5rem;
+}
+
+.conteudo-modal-selecao > p {
+    margin: 0 0 20px;
+    color: #bdbdbd;
+    line-height: 1.6;
+}
+
+.fechar-modal-selecao {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    width: 38px;
+    height: 38px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #333;
+    border-radius: 50%;
+    background: #0b0b0b;
+    color: #fff;
+    transition: 0.2s;
+}
+
+.fechar-modal-selecao:hover,
+.fechar-modal-selecao:focus-visible {
+    border-color: #00ff00;
+    color: #00ff00;
+    outline: none;
+}
+
+.opcoes-sessoes-evento {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin: 0 0 16px;
+    padding: 0;
+    border: 0;
+}
+
+.opcoes-sessoes-evento legend {
+    margin-bottom: 10px;
+    color: #fff;
+    font-size: 0.9rem;
+    font-weight: 700;
+}
+
+.opcao-sessao-evento {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 16px;
+    border: 1px solid #333;
+    border-radius: 10px;
+    background: #0d0d0d;
+    cursor: pointer;
+    transition:
+        border-color 0.2s,
+        background-color 0.2s;
+}
+
+.opcao-sessao-evento:hover,
+.opcao-sessao-evento:focus-within {
+    border-color: #00ff00;
+    background: rgba(0, 255, 0, 0.06);
+}
+
+.opcao-sessao-evento input {
+    width: 18px;
+    height: 18px;
+    margin: 0;
+    accent-color: #00ff00;
+}
+
+.opcao-sessao-evento span {
+    color: #f1f1f1;
+    font-weight: 600;
+}
+
+.sem-sessoes-disponiveis {
+    color: #ff8fb8 !important;
+    margin: 0;
+}
+
+.erro-selecao-sessao {
+    min-height: 1.4em;
+    margin: 0 0 14px !important;
+    color: #ff5c9a !important;
+    font-size: 0.9rem;
+}
+
+.acoes-modal-selecao {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.botao-cancelar-sessao,
+.botao-confirmar-sessao {
+    min-height: 44px;
+    padding: 10px 18px;
+    border-radius: 9px;
+    font-weight: 700;
+    transition: 0.2s;
+}
+
+.botao-cancelar-sessao {
+    border: 1px solid #444;
+    background: transparent;
+    color: #ddd;
+}
+
+.botao-cancelar-sessao:hover,
+.botao-cancelar-sessao:focus-visible {
+    border-color: #fff;
+    color: #fff;
+    outline: none;
+}
+
+.botao-confirmar-sessao {
+    border: 1px solid #00ff00;
+    background: #00ff00;
+    color: #0a0a0a;
+}
+
+.botao-confirmar-sessao:hover,
+.botao-confirmar-sessao:focus-visible {
+    background: #00dd00;
+    border-color: #00dd00;
+    outline: none;
+}
+
+.botao-confirmar-sessao:disabled {
+    cursor: not-allowed;
+    opacity: 0.45;
+}
+
+@media (max-width: 575.98px) {
+    .conteudo-modal-selecao {
+        padding: 24px 18px 20px;
+    }
+
+    .acoes-modal-selecao button {
         width: 100%;
     }
 }

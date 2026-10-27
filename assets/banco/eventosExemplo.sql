@@ -129,4 +129,22 @@ UPDATE evento SET classificacao_indicativa = '14 anos' WHERE nome_evento = 'Work
 UPDATE evento SET classificacao_indicativa = '14 anos' WHERE nome_evento = 'Cinema e Gastronomia ao Ar Livre';
 UPDATE evento SET classificacao_indicativa = '16 anos' WHERE nome_evento = 'Vozes do Mundo';
 
+INSERT IGNORE INTO evento_sessoes (evento_id, data_evento, hora_inicio, hora_fim)
+SELECT
+    id_evento,
+    data_evento,
+    horario_evento,
+    SEC_TO_TIME(LEAST(TIME_TO_SEC(horario_evento) + 7200, 86399))
+FROM evento;
+
+-- Exemplos com múltiplas datas para exercitar a seleção de sessão no planejamento.
+INSERT IGNORE INTO evento_sessoes (evento_id, data_evento, hora_inicio, hora_fim)
+SELECT
+    id_evento,
+    DATE_ADD(data_evento, INTERVAL 1 DAY),
+    horario_evento,
+    SEC_TO_TIME(LEAST(TIME_TO_SEC(horario_evento) + 7200, 86399))
+FROM evento
+WHERE nome_evento IN ('Festival Sons da Cidade', 'Mostra de Cinema Brasileiro');
+
 COMMIT;

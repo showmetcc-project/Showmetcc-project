@@ -11,6 +11,7 @@
     let midias = [];
     let categoriaAtual = '';
     let alvoDenunciaAtual = null;
+    let comunidadeSomenteLeitura = false;
 
     async function json(resposta) {
         const texto = await resposta.text();
@@ -121,6 +122,24 @@
         return topo;
     }
 
+    function aplicarCicloComunidade(ciclo) {
+        if (!ciclo || typeof ciclo.somente_leitura !== 'boolean') return;
+
+        comunidadeSomenteLeitura = ciclo.somente_leitura;
+
+        const botaoCriar = document.getElementById('btnCriarPublicacao');
+        if (botaoCriar) botaoCriar.hidden = comunidadeSomenteLeitura;
+
+        const aviso = document.getElementById('avisoArquivoComunidade');
+        if (aviso) aviso.hidden = !comunidadeSomenteLeitura;
+
+        if (comunidadeSomenteLeitura) {
+            const modalPublicacao = document.getElementById('modalPublicacao');
+            const modal = modalPublicacao ? bootstrap.Modal.getInstance(modalPublicacao) : null;
+            if (modal) modal.hide();
+        }
+    }
+
     async function carregarPosts() {
         const feed = document.getElementById('feedComunidade');
         feed.innerHTML = '<p class="comunidade-estado">Carregando publicações...</p>';
@@ -132,6 +151,7 @@
             const dados = await json(resposta);
             if (!resposta.ok) throw new Error(dados.erro || 'Não foi possível carregar as publicações.');
             posts = dados.posts || [];
+            aplicarCicloComunidade(dados.comunidade);
             renderizarPosts();
         } catch (erro) {
             feed.replaceChildren();
@@ -596,6 +616,7 @@
         const dados = await json(resposta);
         if (!resposta.ok || !dados.evento) throw new Error(dados.erro || 'Evento não encontrado.');
         const evento = dados.evento;
+        aplicarCicloComunidade(evento.comunidade);
         document.title = `Comunidade — ${evento.nome_evento} - ShowMe`;
         const titulo = document.getElementById('nomeComunidadeEvento');
         titulo.textContent = evento.nome_evento;
@@ -675,6 +696,14 @@
         texto.addEventListener('input', validarPublicacao);
         formularioPublicacao.addEventListener('submit', async (evento) => {
             evento.preventDefault();
+
+            if (comunidadeSomenteLeitura) {
+                window.ShowMeUI.toast('A comunidade está em modo arquivo e não aceita novas publicações.', {
+                    variante: 'erro',
+                });
+                return;
+            }
+
             publicar.disabled = true;
             const resposta = await fetch('api/comunidade-posts', {
                 method: 'POST',

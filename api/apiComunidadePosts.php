@@ -3,6 +3,7 @@
 require_once __DIR__ . '/middleware/apiCommon.php';
 require_once dirname(__DIR__) . '/config/conexao.php';
 require_once __DIR__ . '/middleware/apiHelper.php';
+require_once __DIR__ . '/middleware/cicloComunidadeHelper.php';
 require_once __DIR__ . '/middleware/verificaLogin.php';
 
 $metodo = $_SERVER['REQUEST_METHOD'];
@@ -110,7 +111,10 @@ if ($metodo === 'GET') {
         }
         $stmt->close();
     }
-    responder(['posts' => $posts]);
+    responder([
+        'posts' => $posts,
+        'comunidade' => obterCicloComunidadeEvento($conn, $idEvento),
+    ]);
 }
 
 if ($metodo === 'POST') {
@@ -138,6 +142,17 @@ if ($metodo === 'POST') {
         responder(['erro' => 'Evento não encontrado'], 404);
     }
     $stmt->close();
+
+    if (obterCicloComunidadeEvento($conn, $idEvento)['somente_leitura']) {
+        responder(
+            [
+                'erro' =>
+                    'O evento terminou há mais de 48 horas. A comunidade está em modo arquivo e novas publicações estão desativadas.',
+            ],
+            403,
+        );
+    }
+
     $stmt = $conn->prepare('INSERT INTO comunidade_post (id_evento, id_usuario, categoria, texto) VALUES (?, ?, ?, ?)');
     $stmt->bind_param('iiss', $idEvento, $idUsuario, $categoria, $texto);
     executarStatementApi($stmt);

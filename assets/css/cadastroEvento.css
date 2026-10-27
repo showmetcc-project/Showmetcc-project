@@ -679,6 +679,112 @@ button.btn-enviar {
     color: #ccc;
 }
 
+.sessoes-evento {
+    border: 1px solid rgba(0, 255, 0, 0.22);
+    border-radius: 12px;
+    padding: 18px;
+    margin-bottom: 24px;
+}
+
+.sessoes-evento legend {
+    float: none;
+    width: auto;
+    padding: 0 8px;
+    margin-bottom: 6px;
+}
+
+.sessoes-evento .form-text {
+    margin-bottom: 14px;
+}
+
+.lista-sessoes-cadastro {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.sessao-cadastro {
+    display: grid;
+    grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr) minmax(0, 1fr) auto;
+    align-items: end;
+    gap: 12px;
+    padding: 14px;
+    background: var(--input);
+    border: 1px solid #303030;
+    border-radius: 10px;
+}
+
+.campo-sessao {
+    min-width: 0;
+}
+
+.campo-sessao .form-label {
+    margin-bottom: 6px;
+}
+
+.campo-sessao .form-control {
+    width: 100%;
+}
+
+.botao-remover-sessao,
+.botao-adicionar-sessao {
+    border: 1px solid var(--green);
+    border-radius: 8px;
+    background: transparent;
+    color: var(--green);
+    transition:
+        background-color 0.2s ease,
+        color 0.2s ease,
+        border-color 0.2s ease;
+}
+
+.botao-remover-sessao {
+    width: 44px;
+    height: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.botao-remover-sessao[hidden] {
+    display: none;
+}
+
+.botao-remover-sessao:hover,
+.botao-remover-sessao:focus-visible {
+    background: var(--pink);
+    border-color: var(--pink);
+    color: #fff;
+    outline: none;
+}
+
+.botao-adicionar-sessao {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 14px;
+    padding: 10px 16px;
+    font-weight: 600;
+}
+
+.botao-adicionar-sessao:hover,
+.botao-adicionar-sessao:focus-visible {
+    background: var(--green);
+    color: #0a0a0a;
+    outline: none;
+}
+
+@media (max-width: 767.98px) {
+    .sessao-cadastro {
+        grid-template-columns: 1fr;
+    }
+
+    .botao-remover-sessao {
+        width: 100%;
+        height: 40px;
+    }
+}
+
 .footer .copyright {
     display: none;
 }

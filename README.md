@@ -13,7 +13,7 @@ O ShowMe ainda não possui uma publicação compatível com PHP e MySQL. O antig
 
 Para executar localmente:
 
-1. Importe `assets/banco/showme.sql` no MySQL. Para atualizar uma base já existente, aplique uma vez as migrações em `assets/banco/` que ainda não foram executadas.
+1. Importe `assets/banco/showme.sql` no MySQL. O arquivo contém o schema completo do banco; não há migrações separadas.
 2. Confira a conexão em `config/conexao.php` e crie os arquivos locais `config/email.php`, `config/google.php` e `config/googleCalendar.php` a partir dos respectivos arquivos `.example.php`.
 3. Habilite a extensão GD no `php.ini` (`extension=gd`) e reinicie o Apache; ela é usada para redimensionar e comprimir fotos de perfil e banners.
 4. Execute `composer install`.

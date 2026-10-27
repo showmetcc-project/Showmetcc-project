@@ -344,8 +344,88 @@ function validarFaixaIngresso(int $gratuidade, $minimo, $maximo): array
     return [$minimoNormalizado, $maximoNormalizado];
 }
 
+function normalizarSessoesRecebidas(array $dados, string $dataLegada, string $horarioLegado): array
+{
+    $sessoesRecebidas = $dados['sessoes'] ?? null;
+
+    if ($sessoesRecebidas !== null && !is_array($sessoesRecebidas)) {
+        responder(['erro' => 'sessoes deve ser uma lista de datas e horários'], 400);
+    }
+
+    if (!is_array($sessoesRecebidas) || $sessoesRecebidas === []) {
+        $data = normalizarDataSessao($dataLegada);
+        $horaInicio = normalizarHoraSessao($horarioLegado);
+
+        if ($data === null || $horaInicio === null) {
+            responder(['erro' => 'Informe ao menos uma data e um horário válidos para o evento'], 400);
+        }
+
+        return [
+            [
+                'data_evento' => $data,
+                'hora_inicio' => $horaInicio,
+                'hora_fim' => calcularHoraFimSessao($horaInicio),
+            ],
+        ];
+    }
+
+    if (count($sessoesRecebidas) > 30) {
+        responder(['erro' => 'Informe no máximo 30 datas/sessões por evento'], 400);
+    }
+
+    $sessoes = [];
+    $horarios = [];
+
+    foreach (array_values($sessoesRecebidas) as $indice => $sessao) {
+        if (!is_array($sessao)) {
+            responder(['erro' => "sessoes[$indice] deve conter data e horários"], 400);
+        }
+
+        $data = normalizarDataSessao($sessao['data_evento'] ?? '');
+        $horaInicio = normalizarHoraSessao($sessao['hora_inicio'] ?? '');
+        $horaFim = normalizarHoraSessao($sessao['hora_fim'] ?? '');
+
+        if ($data === null) {
+            responder(['erro' => "sessoes[$indice].data_evento deve ser uma data válida"], 400);
+        }
+
+        if ($horaInicio === null || $horaFim === null) {
+            responder(['erro' => "sessoes[$indice] deve ter horários de início e fim válidos"], 400);
+        }
+
+        if ($horaFim <= $horaInicio) {
+            responder(['erro' => "sessoes[$indice].hora_fim deve ser posterior ao início"], 400);
+        }
+
+        $chave = $data . ' ' . $horaInicio;
+
+        if (isset($horarios[$chave])) {
+            responder(['erro' => 'Não repita a mesma data e o mesmo horário de início'], 400);
+        }
+
+        $horarios[$chave] = true;
+        $sessoes[] = [
+            'data_evento' => $data,
+            'hora_inicio' => $horaInicio,
+            'hora_fim' => $horaFim,
+        ];
+    }
+
+    usort(
+        $sessoes,
+        static fn(array $a, array $b): int => strcmp(
+            $a['data_evento'] . ' ' . $a['hora_inicio'],
+            $b['data_evento'] . ' ' . $b['hora_inicio'],
+        ),
+    );
+
+    return $sessoes;
+}
+
 require_once dirname(__DIR__) . '/config/conexao.php';
 require_once __DIR__ . '/middleware/apiHelper.php';
+require_once __DIR__ . '/middleware/sessoesEventoHelper.php';
+require_once __DIR__ . '/middleware/cicloComunidadeHelper.php';
 require_once __DIR__ . '/middleware/verificaLogin.php';
 require_once __DIR__ . '/middleware/verificaAdmin.php';
 require_once __DIR__ . '/middleware/uploadHelper.php';
@@ -452,8 +532,11 @@ switch ($metodo) {
             }
 
             $stmt->close();
+            $sessoes = obterSessoesEvento($conn, $id, $evento);
             $evento = normalizarEvento($evento);
             $evento['artistas'] = $artistas;
+            $evento['sessoes'] = $sessoes;
+            $evento['comunidade'] = calcularCicloComunidadeEvento($sessoes);
 
             responder(['evento' => $evento]);
         }
@@ -907,7 +990,8 @@ switch ($metodo) {
 
             if (!$incluirCancelados) {
                 $condicoes[] = "e.status_evento = 'ativo'";
-                $condicoes[] = 'e.data_evento >= CURDATE()';
+                $condicoes[] = 'EXISTS (SELECT 1 FROM evento_sessoes es
+                             WHERE es.evento_id = e.id_evento AND es.data_evento >= CURDATE())';
             }
 
             if ($busca !== null) {
@@ -978,9 +1062,12 @@ switch ($metodo) {
             }
 
             if ($periodo === 'hoje') {
-                $condicoes[] = 'e.data_evento = CURDATE()';
+                $condicoes[] = 'EXISTS (SELECT 1 FROM evento_sessoes es
+                             WHERE es.evento_id = e.id_evento AND es.data_evento = CURDATE())';
             } elseif ($periodo === 'amanha') {
-                $condicoes[] = 'e.data_evento = DATE_ADD(CURDATE(), INTERVAL 1 DAY)';
+                $condicoes[] = 'EXISTS (SELECT 1 FROM evento_sessoes es
+                             WHERE es.evento_id = e.id_evento
+                               AND es.data_evento = DATE_ADD(CURDATE(), INTERVAL 1 DAY))';
             } elseif ($periodo === 'fim_de_semana') {
                 // Sábado e domingo do fim de semana corrente. No sábado/domingo
                 // a janela inclui o próprio dia (WEEKDAY: seg=0 ... dom=6).
@@ -989,23 +1076,33 @@ switch ($metodo) {
                         THEN DATE_SUB(CURDATE(), INTERVAL WEEKDAY(CURDATE()) - 5 DAY)
                     ELSE DATE_ADD(CURDATE(), INTERVAL 5 - WEEKDAY(CURDATE()) DAY)
                 END';
-                $condicoes[] = "e.data_evento BETWEEN $inicioFimDeSemana
-                    AND DATE_ADD($inicioFimDeSemana, INTERVAL 1 DAY)";
+                $condicoes[] = "EXISTS (SELECT 1 FROM evento_sessoes es
+                    WHERE es.evento_id = e.id_evento
+                      AND es.data_evento BETWEEN $inicioFimDeSemana
+                      AND DATE_ADD($inicioFimDeSemana, INTERVAL 1 DAY))";
             } elseif ($periodo === 'nesta_semana') {
                 // De hoje até o próximo domingo.
-                $condicoes[] = 'e.data_evento BETWEEN CURDATE()
-                    AND DATE_ADD(CURDATE(), INTERVAL 6 - WEEKDAY(CURDATE()) DAY)';
+                $condicoes[] = 'EXISTS (SELECT 1 FROM evento_sessoes es
+                    WHERE es.evento_id = e.id_evento
+                      AND es.data_evento BETWEEN CURDATE()
+                      AND DATE_ADD(CURDATE(), INTERVAL 6 - WEEKDAY(CURDATE()) DAY))';
             } elseif ($periodo === 'proxima_semana') {
                 // Próxima segunda até o domingo seguinte.
-                $condicoes[] = 'e.data_evento BETWEEN
-                    DATE_ADD(CURDATE(), INTERVAL 7 - WEEKDAY(CURDATE()) DAY)
-                    AND DATE_ADD(CURDATE(), INTERVAL 13 - WEEKDAY(CURDATE()) DAY)';
+                $condicoes[] = 'EXISTS (SELECT 1 FROM evento_sessoes es
+                    WHERE es.evento_id = e.id_evento
+                      AND es.data_evento BETWEEN
+                      DATE_ADD(CURDATE(), INTERVAL 7 - WEEKDAY(CURDATE()) DAY)
+                      AND DATE_ADD(CURDATE(), INTERVAL 13 - WEEKDAY(CURDATE()) DAY))';
             } elseif ($periodo === 'neste_mes') {
-                $condicoes[] = 'e.data_evento BETWEEN CURDATE() AND LAST_DAY(CURDATE())';
+                $condicoes[] = 'EXISTS (SELECT 1 FROM evento_sessoes es
+                    WHERE es.evento_id = e.id_evento
+                      AND es.data_evento BETWEEN CURDATE() AND LAST_DAY(CURDATE()))';
             } elseif ($periodo === 'proximo_mes') {
-                $condicoes[] = 'e.data_evento BETWEEN
-                    DATE_ADD(LAST_DAY(CURDATE()), INTERVAL 1 DAY)
-                    AND LAST_DAY(DATE_ADD(CURDATE(), INTERVAL 1 MONTH))';
+                $condicoes[] = 'EXISTS (SELECT 1 FROM evento_sessoes es
+                    WHERE es.evento_id = e.id_evento
+                      AND es.data_evento BETWEEN
+                      DATE_ADD(LAST_DAY(CURDATE()), INTERVAL 1 DAY)
+                      AND LAST_DAY(DATE_ADD(CURDATE(), INTERVAL 1 MONTH)))';
             }
 
             $sqlFiltros =
@@ -1039,13 +1136,20 @@ switch ($metodo) {
 
             $stmt->close();
         } else {
-            $filtroStatus = $incluirCancelados ? '' : " WHERE status_evento = 'ativo' AND data_evento >= CURDATE()";
+            $filtroStatus = $incluirCancelados
+                ? ''
+                : " WHERE status_evento = 'ativo'
+                    AND EXISTS (SELECT 1 FROM evento_sessoes es
+                                WHERE es.evento_id = evento.id_evento
+                                  AND es.data_evento >= CURDATE())";
             $resultado = $conn->query("SELECT $camposEvento FROM evento$filtroStatus ORDER BY data_evento ASC");
 
             while ($evento = $resultado->fetch_assoc()) {
                 $eventos[] = normalizarEvento($evento);
             }
         }
+
+        anexarSessoesEventos($conn, $eventos);
 
         $preferenciasRecomendacao = null;
 
@@ -1172,6 +1276,10 @@ switch ($metodo) {
             $dados['valor_ingresso_maximo'] ?? null,
         );
 
+        $sessoes = normalizarSessoesRecebidas($dados, $data, $horario);
+        $data = $sessoes[0]['data_evento'];
+        $horario = $sessoes[0]['hora_inicio'];
+
         if ($data === '') {
             responder(['erro' => 'data_evento é obrigatória'], 400);
         } else {
@@ -1222,10 +1330,14 @@ switch ($metodo) {
         }
 
         $fotoSalva = null;
+        $transacaoIniciada = false;
 
         try {
             $fotoSalva = salvarArquivoUpload($arquivos[0], ['foto'], 'eventos');
             $foto = $fotoSalva['caminho_arquivo'];
+
+            $conn->begin_transaction();
+            $transacaoIniciada = true;
 
             $stmt = $conn->prepare(
                 'INSERT INTO solicitacao
@@ -1264,9 +1376,35 @@ switch ($metodo) {
             executarStatementApi($stmt);
             $idSolicitacao = $conn->insert_id;
             $stmt->close();
+
+            $stmtSessao = $conn->prepare(
+                'INSERT INTO solicitacao_sessoes (solicitacao_id, data_evento, hora_inicio, hora_fim)
+                 VALUES (?, ?, ?, ?)',
+            );
+
+            foreach ($sessoes as $sessao) {
+                $stmtSessao->bind_param(
+                    'isss',
+                    $idSolicitacao,
+                    $sessao['data_evento'],
+                    $sessao['hora_inicio'],
+                    $sessao['hora_fim'],
+                );
+                executarStatementApi($stmtSessao);
+            }
+
+            $stmtSessao->close();
+            $conn->commit();
+            $transacaoIniciada = false;
         } catch (UploadInvalidoException $erro) {
+            if ($transacaoIniciada) {
+                $conn->rollback();
+            }
             responder(['erro' => $erro->getMessage()], 400);
         } catch (Throwable $erro) {
+            if ($transacaoIniciada) {
+                $conn->rollback();
+            }
             if ($fotoSalva !== null) {
                 removerArquivoUpload($fotoSalva['caminho_arquivo']);
             }
@@ -1649,6 +1787,30 @@ switch ($metodo) {
                     executarStatementApi($stmt);
                     $idEvento = $conn->insert_id;
                     $stmt->close();
+
+                    $stmt = $conn->prepare(
+                        'INSERT INTO evento_sessoes (evento_id, data_evento, hora_inicio, hora_fim)
+                         SELECT ?, data_evento, hora_inicio, hora_fim
+                         FROM solicitacao_sessoes
+                         WHERE solicitacao_id = ?
+                         ORDER BY data_evento ASC, hora_inicio ASC',
+                    );
+                    $stmt->bind_param('ii', $idEvento, $id);
+                    executarStatementApi($stmt);
+                    $possuiSessoes = $stmt->affected_rows > 0;
+                    $stmt->close();
+
+                    if (!$possuiSessoes) {
+                        $horaInicio = normalizarHoraSessao($solicitacao['horario_evento']) ?? '00:00:00';
+                        $stmt = $conn->prepare(
+                            'INSERT INTO evento_sessoes (evento_id, data_evento, hora_inicio, hora_fim)
+                             VALUES (?, ?, ?, ?)',
+                        );
+                        $horaFim = calcularHoraFimSessao($horaInicio);
+                        $stmt->bind_param('isss', $idEvento, $solicitacao['data_evento'], $horaInicio, $horaFim);
+                        executarStatementApi($stmt);
+                        $stmt->close();
+                    }
 
                     $nomeArtista =
                         $solicitacao['nome_artista_solicitado'] === null

@@ -40,7 +40,7 @@ As páginas ficam na raiz e usam PHP principalmente para sessão, includes e con
 | Cadastro de usuário | `cadastro.php` | `googleLogin.js` | Pública |
 | Recuperação de senha | `recuperarSenha.php` | formulário PHP + `emailHelper.php` | Pública |
 | Redefinição de senha | `redefinirSenha.php` | formulário PHP + token | Pública |
-| Páginas legais | `termos.php`, `politicaPrivacidade.php` | `paginasLegais.css` | Públicas |
+| Páginas legais | `termosUso.php`, `politicaPrivacidade.php` | `paginasLegais.css` | Públicas |
 | Perfil | `perfilUsuario.php` | `perfil.js` | Somente usuário comum |
 | Meus Eventos | `meusEventos.php` | `meusEventos.js` | Somente usuário comum |
 | Cadastro de evento | `cadastroEvento.php` | `cadastroEvento.js` | Somente usuário comum |
@@ -77,7 +77,7 @@ O `.htaccess` de `api/` publica URLs amigáveis e encaminha para arquivos camelC
 
 ### 2.3 Banco de dados
 
-O schema base fica em `assets/banco/showme.sql` e contém a estrutura final do banco. Para bases já existentes, a recuperação de senha possui a migração `assets/banco/migracaoRecuperacaoSenha.sql`, e a limpeza final possui `assets/banco/migracaoLimpezaFinal.sql`.
+O schema completo fica em `assets/banco/showme.sql` e é a única referência de estrutura do banco. Não há arquivos de migração separados.
 
 | Tabela | Uso atual |
 |---|---|
@@ -95,7 +95,7 @@ O schema base fica em `assets/banco/showme.sql` e contém a estrutura final do b
 | `comunidade_denuncia` | Denúncia de publicação, resposta ou mídia e decisão administrativa |
 | `google_calendar_token` | Tokens da Agenda por usuário |
 
-As relações principais usam `ON DELETE CASCADE`. A origem do evento aprovado é preservada por `evento.id_solicitacao_origem`, com FK e `UNIQUE`. As colunas `evento.num_evento` e `artista.imagem_artista` e a tabela `preferencias` foram removidas do schema e da migração de limpeza.
+As relações principais usam `ON DELETE CASCADE`. A origem do evento aprovado é preservada por `evento.id_solicitacao_origem`, com FK e `UNIQUE`. As colunas `evento.num_evento` e `artista.imagem_artista` e a tabela `preferencias` não fazem parte do schema atual.
 
 ## 3. Navegação
 
@@ -241,7 +241,7 @@ O Perfil também conecta/desconecta o Google Agenda. O endpoint de excluir a con
 8. Ao reprovar, a foto é removida fisicamente e a solicitação permanece como histórico recusado.
 9. Aprovação/reprovação envia e-mail; falha de SMTP é registrada sem desfazer a decisão.
 
-O campo de participantes é o mesmo para todas as categorias e aceita bandas, palestrantes, facilitadores, expositores ou coletivos. Na tela de detalhes, a seção é exibida como “Quem Estará Lá”; quando não há participante, aparece um estado vazio próprio. O rótulo “Gênero musical dos participantes” continua aparecendo apenas em categorias musicais.
+O campo de participantes é o mesmo para todas as categorias e aceita bandas, palestrantes, facilitadores, expositores ou coletivos. Na tela de detalhes, a seção é exibida como “Quem estará lá”; quando não há participante, aparece um estado vazio próprio. O rótulo “Gênero musical dos participantes” continua aparecendo apenas em categorias musicais.
 
 Depois de publicado, o admin pode editar ou excluir o evento com confirmação. O autor recebe e-mail. Evento excluído deixa “Aprovados” e aparece no filtro virtual “Removidos”: a solicitação continua aprovada, mas seu `LEFT JOIN` já não encontra `evento`.
 
@@ -265,7 +265,6 @@ Meus Eventos possui abas Favoritos, Planejados e Calendário:
 
 - favoritos podem ser removidos;
 - planejados mostram todo o histórico, ordenado dos mais recentes para os mais antigos;
-- o contador de Planejados considera somente eventos ainda ativos/futuros;
 - passados ficam em escala de cinza e não permitem editar o planejamento;
 - o calendário usa apenas `rota`, soma os custos do mês e permite abrir o resumo ou remover.
 
@@ -443,11 +442,11 @@ A auditoria antiga permanece em `docs/historico/auditoriaBackend.md` justamente 
 - A recuperação de senha foi validada com token válido, expirado, reutilizado e inválido, além do limite de solicitações; as respostas não revelaram se o e-mail existia.
 - A faixa de preço foi exercitada por arrasto e por teclado, com atualização da URL, tags removíveis e ocultação ao selecionar “Gratuitos”; a API rejeitou mínimo maior que máximo quando aplicável.
 - Home, detalhes, Comunidades, Perfil, Admin, Termos e Política de Privacidade foram verificados em 1440, 1200, 1000, 900, 850, 800, 768, 520 e 320 px, sem overflow horizontal.
-- O rodapé foi conferido com links sociais e legais, alvos de 44px e contraste no hover; “Quem Estará Lá” foi validado com e sem participantes.
+- O rodapé foi conferido com links sociais e legais, alvos de 44px e contraste no hover; “Quem estará lá” foi validado com e sem participantes.
 - O limite de login foi exercitado por HTTP: cinco senhas incorretas retornaram 401 e a sexta retornou 429 com `Retry-After` e `tentar_novamente_em`; após login válido, o contador foi reiniciado.
 - O limite de denúncias foi exercitado por HTTP: três denúncias persistidas na mesma sessão retornaram 201 e a quarta denúncia válida retornou 429.
 - `DELETE /api/usuarios/{id}` passou a responder 405, sem apagar o usuário.
-- A migração `migracaoLimpezaFinal.sql` foi aplicada no MySQL local; `preferencias`, `evento.num_evento` e `artista.imagem_artista` não existem mais, e a FK `fk_evento_solicitacao` permanece em `evento.id_solicitacao_origem`.
+- O schema consolidado em `showme.sql` não inclui `preferencias`, `evento.num_evento` nem `artista.imagem_artista`, e a FK `fk_evento_solicitacao` permanece em `evento.id_solicitacao_origem`.
 - `GET /api/eventos/` e `GET /api/eventos/{id}` continuaram respondendo 200 após a remoção das colunas.
 - `git diff --check` não apontou erro de whitespace antes do commit funcional.
 

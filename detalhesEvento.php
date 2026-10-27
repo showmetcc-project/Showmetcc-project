@@ -69,7 +69,7 @@ $idUsuarioSessao = isset($_SESSION['id_user']) ? (int) $_SESSION['id_user'] : 0;
                         </section>
 
                         <section class="secao secao-artistas" aria-labelledby="tituloQuemEstaraLa">
-                            <h2 id="tituloQuemEstaraLa">Quem Estará Lá</h2>
+                            <h2 id="tituloQuemEstaraLa">Quem estará lá</h2>
                             <div id="listaArtistas"></div>
                         </section>
 
@@ -120,6 +120,34 @@ $idUsuarioSessao = isset($_SESSION['id_user']) ? (int) $_SESSION['id_user'] : 0;
             </div>
         </div>
     </div>
+
+    <dialog id="modalSelecaoSessao" class="modal-selecao-sessao" aria-labelledby="tituloModalSelecaoSessao">
+        <form id="formSelecaoSessao" class="conteudo-modal-selecao" method="dialog">
+            <button type="button" class="fechar-modal-selecao" data-fechar-selecao-sessao
+                aria-label="Fechar seleção de sessão">
+                <i class="bi bi-x-lg" aria-hidden="true"></i>
+            </button>
+
+            <h2 id="tituloModalSelecaoSessao">Escolha a sessão do evento</h2>
+            <p id="descricaoModalSelecaoSessao">Selecione a data e o horário da sessão que você vai usar no planejamento.</p>
+
+            <fieldset class="opcoes-sessoes-evento">
+                <legend id="legendaSessoesEvento">Sessões disponíveis</legend>
+                <div id="opcoesSessoesEvento"></div>
+            </fieldset>
+
+            <p id="erroSelecaoSessao" class="erro-selecao-sessao" role="alert"></p>
+
+            <div class="acoes-modal-selecao">
+                <button type="button" class="botao-cancelar-sessao" data-fechar-selecao-sessao>
+                    Cancelar
+                </button>
+                <button type="submit" class="botao-confirmar-sessao" id="botaoConfirmarSessao">
+                    Continuar para o planejamento
+                </button>
+            </div>
+        </form>
+    </dialog>
 
     <script src="assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
     <script src="assets/vendor/aos/aos.js"></script>

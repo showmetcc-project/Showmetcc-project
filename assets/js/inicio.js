@@ -283,7 +283,11 @@
 
         informacoes.append(
             criarLinhaInformacao('bi bi-geo-alt-fill', local, 'evento-localizacao'),
-            criarLinhaInformacao('bi bi-calendar-event', formatarData(evento.data_evento), 'evento-data'),
+            criarLinhaInformacao(
+                'bi bi-calendar-event',
+                formatarData(proximaSessaoEvento(evento)?.data_evento || evento.data_evento),
+                'evento-data',
+            ),
         );
         conteudo.append(titulo, informacoes);
         link.append(selo, badge, imagem, conteudo);
@@ -352,6 +356,37 @@
         const mes = String(data.getMonth() + 1).padStart(2, '0');
         const dia = String(data.getDate()).padStart(2, '0');
         return `${ano}-${mes}-${dia}`;
+    }
+
+    function sessoesDoEvento(evento) {
+        const sessoes = Array.isArray(evento.sessoes) ? evento.sessoes : [];
+
+        return sessoes
+            .filter((sessao) => sessao && sessao.data_evento)
+            .slice()
+            .sort((a, b) =>
+                `${a.data_evento} ${a.hora_inicio || ''}`.localeCompare(`${b.data_evento} ${b.hora_inicio || ''}`),
+            );
+    }
+
+    function datasSessoesEvento(evento) {
+        const datas = sessoesDoEvento(evento)
+            .map((sessao) => String(sessao.data_evento).slice(0, 10))
+            .filter(Boolean);
+
+        if (datas.length) {
+            return datas;
+        }
+
+        const dataEvento = String(evento.data_evento || '').slice(0, 10);
+        return dataEvento ? [dataEvento] : [];
+    }
+
+    function proximaSessaoEvento(evento) {
+        const sessoes = sessoesDoEvento(evento);
+        const hoje = dataLocalISO();
+
+        return sessoes.find((sessao) => String(sessao.data_evento).slice(0, 10) >= hoje) || sessoes[0] || null;
     }
 
     function opcoesDeCidade(eventos) {
@@ -456,20 +491,17 @@
                 if (!categoriasEvento.includes(categoriaSelecionada)) return false;
             }
 
-            const dataEvento = String(evento.data_evento || '').slice(0, 10);
-            if (filtros.data === 'hoje' && dataEvento !== hoje) return false;
-            if (filtros.data === 'amanha' && dataEvento !== amanha) return false;
-            if (filtros.data === 'fim-de-semana' && (dataEvento < inicioFimDeSemana || dataEvento > fimFimDeSemana))
+            const datasEvento = datasSessoesEvento(evento);
+            const possuiDataEntre = (inicio, fim) => datasEvento.some((data) => data >= inicio && data <= fim);
+
+            if (filtros.data === 'hoje' && !datasEvento.includes(hoje)) return false;
+            if (filtros.data === 'amanha' && !datasEvento.includes(amanha)) return false;
+            if (filtros.data === 'fim-de-semana' && !possuiDataEntre(inicioFimDeSemana, fimFimDeSemana)) return false;
+            if (filtros.data === 'nesta-semana' && !possuiDataEntre(hoje, fimNestaSemana)) return false;
+            if (filtros.data === 'proxima-semana' && !possuiDataEntre(inicioProximaSemana, fimProximaSemana))
                 return false;
-            if (filtros.data === 'nesta-semana' && (dataEvento < hoje || dataEvento > fimNestaSemana)) return false;
-            if (
-                filtros.data === 'proxima-semana' &&
-                (dataEvento < inicioProximaSemana || dataEvento > fimProximaSemana)
-            )
-                return false;
-            if (filtros.data === 'neste-mes' && (dataEvento < hoje || dataEvento > fimNesteMes)) return false;
-            if (filtros.data === 'proximo-mes' && (dataEvento < inicioProximoMes || dataEvento > fimProximoMes))
-                return false;
+            if (filtros.data === 'neste-mes' && !possuiDataEntre(hoje, fimNesteMes)) return false;
+            if (filtros.data === 'proximo-mes' && !possuiDataEntre(inicioProximoMes, fimProximoMes)) return false;
             return true;
         });
     }
@@ -764,14 +796,8 @@
 
     function eventoPertenceASecao(evento, secao) {
         if (secao.id === 'emBreve') {
-            const partes = String(evento.data_evento || '')
-                .split('-')
-                .map(Number);
-            if (partes.length !== 3 || partes.some((parte) => !Number.isInteger(parte))) return false;
-            const dataEvento = new Date(partes[0], partes[1] - 1, partes[2]);
-            const hoje = new Date();
-            hoje.setHours(0, 0, 0, 0);
-            return dataEvento >= hoje;
+            const hoje = dataLocalISO();
+            return datasSessoesEvento(evento).some((data) => data >= hoje);
         }
 
         const categoria = normalizarTexto(evento.categoria_evento);
@@ -793,7 +819,11 @@
         }
 
         // "Em Breve" sempre ordenado pelas datas mais próximas.
-        return filtrados.slice().sort((a, b) => String(a.data_evento || '').localeCompare(String(b.data_evento || '')));
+        return filtrados.slice().sort((a, b) => {
+            const dataA = proximaSessaoEvento(a)?.data_evento || a.data_evento || '';
+            const dataB = proximaSessaoEvento(b)?.data_evento || b.data_evento || '';
+            return String(dataA).localeCompare(String(dataB));
+        });
     }
 
     function pesoDaSecao(secao, categoriasRecomendadas) {

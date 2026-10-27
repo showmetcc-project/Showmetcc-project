@@ -9,6 +9,7 @@
     let mapaAtual = null;
     let eventoEncerrado = false;
     let planejamentoDoEvento = null;
+    let sessoesEvento = [];
 
     function caminhoImagem(caminho) {
         const valor = String(caminho || '').trim();
@@ -42,6 +43,55 @@
         const hoje = new Date();
         hoje.setHours(0, 0, 0, 0);
         return evento < hoje;
+    }
+    function formatarHora(valor) {
+        const partes = String(valor || '').split(':');
+        const hora = Number(partes[0]);
+        const minuto = Number(partes[1] || 0);
+
+        if (!Number.isInteger(hora)) return '';
+
+        return minuto > 0 ? `${hora}h${String(minuto).padStart(2, '0')}` : `${hora}h`;
+    }
+    function formatarSessao(sessao) {
+        const data = formatarData(sessao?.data_evento);
+        const inicio = formatarHora(sessao?.hora_inicio);
+        const fim = formatarHora(sessao?.hora_fim);
+
+        if (!inicio) return data;
+        return fim ? `${data} — ${inicio} às ${fim}` : `${data} — ${inicio}`;
+    }
+    function formatarHorarioSessao(sessao) {
+        const inicio = formatarHora(sessao?.hora_inicio);
+        const fim = formatarHora(sessao?.hora_fim);
+
+        if (!inicio) return 'Horário não informado';
+        return fim ? `${inicio} às ${fim}` : inicio;
+    }
+    function normalizarSessoes(evento) {
+        const sessoes = Array.isArray(evento.sessoes) ? evento.sessoes : [];
+        const normalizadas = sessoes
+            .filter((sessao) => sessao && sessao.data_evento)
+            .map((sessao) => ({
+                id: Number(sessao.id) || null,
+                data_evento: sessao.data_evento,
+                hora_inicio: sessao.hora_inicio || '',
+                hora_fim: sessao.hora_fim || '',
+            }))
+            .sort((a, b) => `${a.data_evento} ${a.hora_inicio}`.localeCompare(`${b.data_evento} ${b.hora_inicio}`));
+
+        if (normalizadas.length) return normalizadas;
+
+        return evento.data_evento
+            ? [
+                  {
+                      id: null,
+                      data_evento: evento.data_evento,
+                      hora_inicio: evento.horario_evento || '',
+                      hora_fim: '',
+                  },
+              ]
+            : [];
     }
     function localidade(evento) {
         const cidade = String(evento.cidade_evento || '').trim();
@@ -114,6 +164,92 @@
             card.append(bloco);
             lista.append(card);
         });
+    }
+    function partesData(valor) {
+        const correspondencia = /^(\d{4})-(\d{2})-(\d{2})/.exec(String(valor || ''));
+        if (!correspondencia) return null;
+
+        const ano = Number(correspondencia[1]);
+        const mes = Number(correspondencia[2]);
+        const dia = Number(correspondencia[3]);
+        const data = new Date(ano, mes - 1, dia);
+
+        if (data.getFullYear() !== ano || data.getMonth() !== mes - 1 || data.getDate() !== dia) return null;
+
+        return { ano, mes, dia, timestamp: Date.UTC(ano, mes - 1, dia) };
+    }
+    function juntarComConjuncao(itens) {
+        if (!itens.length) return '';
+        if (itens.length === 1) return itens[0];
+        if (itens.length === 2) return `${itens[0]} e ${itens[1]}`;
+        return `${itens.slice(0, -1).join(', ')} e ${itens[itens.length - 1]}`;
+    }
+    function textoDatasSessoes(sessoes) {
+        const datasPorTimestamp = new Map();
+
+        sessoes.forEach(function (sessao) {
+            const data = partesData(sessao.data_evento);
+            if (data && !datasPorTimestamp.has(data.timestamp)) datasPorTimestamp.set(data.timestamp, data);
+        });
+
+        const datas = Array.from(datasPorTimestamp.values()).sort(function (a, b) {
+            return a.timestamp - b.timestamp;
+        });
+
+        if (!datas.length) return 'Data não informada';
+
+        const mesmoAno = datas.every((data) => data.ano === datas[0].ano);
+        const mesmoMes = mesmoAno && datas.every((data) => data.mes === datas[0].mes);
+        const formatarDia = function (data) {
+            const dia = String(data.dia).padStart(2, '0');
+            if (mesmoMes) return dia;
+            const diaMes = `${dia}/${String(data.mes).padStart(2, '0')}`;
+            return mesmoAno ? diaMes : `${diaMes}/${data.ano}`;
+        };
+        const blocos = [];
+        let indice = 0;
+
+        while (indice < datas.length) {
+            let fim = indice;
+
+            while (fim + 1 < datas.length && datas[fim + 1].timestamp - datas[fim].timestamp === 24 * 60 * 60 * 1000) {
+                fim += 1;
+            }
+
+            if (fim - indice + 1 >= 3) {
+                blocos.push(`${formatarDia(datas[indice])} a ${formatarDia(datas[fim])}`);
+            } else {
+                for (let atual = indice; atual <= fim; atual += 1) blocos.push(formatarDia(datas[atual]));
+            }
+
+            indice = fim + 1;
+        }
+
+        const texto = juntarComConjuncao(blocos);
+
+        if (mesmoMes) return `${texto}/${String(datas[0].mes).padStart(2, '0')}/${datas[0].ano}`;
+        if (mesmoAno) return `${texto}/${datas[0].ano}`;
+        return texto;
+    }
+    function textoHorariosSessoes(sessoes) {
+        const horarios = new Map();
+
+        sessoes.forEach(function (sessao) {
+            const horario = formatarHora(sessao.hora_inicio);
+            if (horario && !horarios.has(horario)) horarios.set(horario, String(sessao.hora_inicio || ''));
+        });
+
+        const ordenados = Array.from(horarios.entries()).sort(function (a, b) {
+            return a[1].localeCompare(b[1]);
+        });
+
+        return ordenados.length ? ` • ${juntarComConjuncao(ordenados.map(([horario]) => horario))}` : '';
+    }
+    function resumoSessoes() {
+        return `${textoDatasSessoes(sessoesEvento)}${textoHorariosSessoes(sessoesEvento)}`;
+    }
+    function descricaoSessoes() {
+        return sessoesEvento.map(formatarSessao).join('; ');
     }
     function endereco(evento) {
         const cidade = String(evento.cidade_evento || '').trim(),
@@ -216,12 +352,150 @@
             alvo.textContent = 'Não foi possível localizar este endereço no mapa.';
         }
     }
+    function sessoesDisponiveisParaPlanejamento() {
+        return sessoesEvento.filter((sessao) => sessao.id && !terminou(sessao.data_evento));
+    }
+
+    function irParaPlanejamentoComSessao(sessao) {
+        if (!sessao?.id) return false;
+        window.location.href = `planejamento.php?id=${idEvento}&sessao_id=${sessao.id}`;
+        return true;
+    }
+
+    function abrirSelecaoOuContinuar() {
+        const disponiveis = sessoesDisponiveisParaPlanejamento();
+
+        if (disponiveis.length === 1 && irParaPlanejamentoComSessao(disponiveis[0])) return;
+
+        abrirModalSelecaoSessao();
+    }
+
+    function abrirModalSelecaoSessao() {
+        const modal = document.getElementById('modalSelecaoSessao');
+        const opcoes = document.getElementById('opcoesSessoesEvento');
+        const erro = document.getElementById('erroSelecaoSessao');
+        const confirmar = document.getElementById('botaoConfirmarSessao');
+        const titulo = document.getElementById('tituloModalSelecaoSessao');
+        const descricao = document.getElementById('descricaoModalSelecaoSessao');
+        const legenda = document.getElementById('legendaSessoesEvento');
+        const disponiveis = sessoesDisponiveisParaPlanejamento();
+        const datasUnicas = new Set(disponiveis.map((sessao) => sessao.data_evento));
+        const possuiDataUnica = datasUnicas.size === 1;
+
+        if (!modal || !opcoes || !erro || !confirmar) return;
+        if (modal.open) return;
+
+        if (typeof modal.showModal !== 'function') {
+            if (disponiveis[0]) {
+                irParaPlanejamentoComSessao(disponiveis[0]);
+            }
+            return;
+        }
+
+        if (titulo) {
+            titulo.textContent = !disponiveis.length
+                ? 'Escolha a sessão do evento'
+                : possuiDataUnica
+                  ? 'Escolha o horário da sessão'
+                  : 'Escolha a data e o horário';
+        }
+
+        if (descricao) {
+            descricao.textContent = possuiDataUnica
+                ? 'Este evento tem apenas uma data. Selecione o horário da sessão que você vai usar no planejamento.'
+                : 'Selecione a data e o horário da sessão que você vai usar no planejamento.';
+        }
+
+        if (legenda) {
+            legenda.textContent = possuiDataUnica ? 'Horários disponíveis' : 'Sessões disponíveis';
+        }
+
+        opcoes.replaceChildren();
+        erro.textContent = '';
+        confirmar.disabled = true;
+
+        if (!disponiveis.length) {
+            const mensagem = document.createElement('p');
+            mensagem.className = 'sem-sessoes-disponiveis';
+            mensagem.textContent = 'Não há sessões futuras disponíveis para planejamento.';
+            opcoes.append(mensagem);
+        }
+
+        disponiveis.forEach(function (sessao) {
+            const rotulo = document.createElement('label');
+            rotulo.className = 'opcao-sessao-evento';
+
+            const radio = document.createElement('input');
+            radio.type = 'radio';
+            radio.name = 'sessaoSelecionada';
+            radio.value = String(sessao.id);
+
+            const texto = document.createElement('span');
+            texto.textContent = possuiDataUnica ? formatarHorarioSessao(sessao) : formatarSessao(sessao);
+
+            rotulo.append(radio, texto);
+            opcoes.append(rotulo);
+        });
+
+        opcoes.querySelectorAll('input[name="sessaoSelecionada"]').forEach(function (radio) {
+            radio.addEventListener('change', function () {
+                confirmar.disabled = false;
+                erro.textContent = '';
+            });
+        });
+
+        modal.showModal();
+    }
+
+    function iniciarSelecaoSessao() {
+        const modal = document.getElementById('modalSelecaoSessao');
+        const formulario = document.getElementById('formSelecaoSessao');
+        const erro = document.getElementById('erroSelecaoSessao');
+
+        if (!modal || !formulario) return;
+
+        modal.querySelectorAll('[data-fechar-selecao-sessao]').forEach(function (botao) {
+            botao.addEventListener('click', function () {
+                modal.close();
+            });
+        });
+
+        formulario.addEventListener('submit', function (evento) {
+            evento.preventDefault();
+
+            const selecionada = formulario.querySelector('input[name="sessaoSelecionada"]:checked');
+
+            if (!selecionada) {
+                if (erro) erro.textContent = 'Selecione uma sessão para continuar.';
+                formulario.querySelector('input[name="sessaoSelecionada"]')?.focus();
+                return;
+            }
+
+            window.location.href = `planejamento.php?id=${idEvento}&sessao_id=${selecionada.value}`;
+        });
+    }
+
+    function iniciarPlanejamento() {
+        const link = document.getElementById('linkPlanejamento');
+
+        if (!link) return;
+
+        link.addEventListener('click', function (evento) {
+            if (link.getAttribute('aria-disabled') === 'true' || planejamentoDoEvento) return;
+            if (!sessoesEvento.length) return;
+
+            evento.preventDefault();
+            abrirSelecaoOuContinuar();
+        });
+    }
+
     function configurarBotaoPlanejamento() {
         const link = document.getElementById('linkPlanejamento');
         if (!link) return;
 
         const possuiPlanejamento = Boolean(planejamentoDoEvento);
-        const desabilitado = eventoEncerrado && !possuiPlanejamento;
+        const possuiSessaoDisponivel = sessoesDisponiveisParaPlanejamento().length > 0;
+        const desabilitado = !possuiPlanejamento && (eventoEncerrado || !possuiSessaoDisponivel);
 
         link.classList.toggle('btn-planejamento-concluido', possuiPlanejamento);
         link.classList.toggle('acao-desabilitada', desabilitado);
@@ -230,12 +504,18 @@
         if (desabilitado) {
             link.removeAttribute('href');
         } else {
-            link.href = `planejamento.php?id=${idEvento}`;
+            const parametros = new URLSearchParams({ id: String(idEvento) });
+
+            if (possuiPlanejamento && planejamentoDoEvento?.sessao_id) {
+                parametros.set('sessao_id', String(planejamentoDoEvento.sessao_id));
+            }
+
+            link.href = `planejamento.php?${parametros}`;
         }
 
         if (possuiPlanejamento) {
             link.innerHTML =
-                '<i class="bi bi-map-fill" aria-hidden="true"></i> Ver Meu Planejamento <i class="bi bi-check-circle-fill selo-planejamento-concluido" aria-hidden="true"></i>';
+                '<i class="bi bi-map-fill" aria-hidden="true"></i> Ver meu planejamento';
             link.setAttribute('aria-label', 'Ver meu planejamento deste evento, já planejado');
         } else {
             link.innerHTML = '<i class="bi bi-map-fill" aria-hidden="true"></i> Planejar Viagem';
@@ -296,7 +576,11 @@
         }
     }
     function renderizarEvento(evento) {
-        eventoEncerrado = terminou(evento.data_evento);
+        sessoesEvento = normalizarSessoes(evento);
+        const ultimaData = sessoesEvento.length
+            ? sessoesEvento[sessoesEvento.length - 1].data_evento
+            : evento.data_evento;
+        eventoEncerrado = terminou(ultimaData);
         document.title = `${evento.nome_evento || 'Evento'} - ShowMe`;
         const imagem = document.getElementById('imagemEvento');
         configurarImagem(imagem, evento.imagem_evento, window.ShowMeA11y.textoAltImagemEvento(evento));
@@ -318,7 +602,13 @@
         badgeClassificacao.hidden = !valorClassificacao;
         document.getElementById('badgeEncerrado').hidden = !eventoEncerrado;
         document.getElementById('tituloEvento').textContent = evento.nome_evento || 'Evento sem nome';
-        document.querySelector('#infoData span').textContent = formatarData(evento.data_evento);
+        const infoData = document.getElementById('infoData');
+        infoData.querySelector('span').textContent = resumoSessoes();
+        const descricaoDatas = descricaoSessoes();
+        if (descricaoDatas) {
+            infoData.title = descricaoDatas;
+            infoData.setAttribute('aria-label', `Datas e horários: ${descricaoDatas}`);
+        }
         document.querySelector('#infoCidade span').textContent = localidade(evento);
         const local = document.getElementById('infoLocal');
         local.hidden = true;
@@ -417,11 +707,20 @@
             if (!resposta.ok || !dados.evento) throw new Error(dados.erro || 'Evento não encontrado.');
             renderizarEvento(dados.evento);
             await Promise.all([carregarFavorito(), carregarPlanejamentoDoEvento()]);
+
+            const solicitarSelecao =
+                parametros.get('selecionarSessao') === '1' || parametros.get('selecionar_sessao') === '1';
+
+            if (solicitarSelecao && !eventoEncerrado) {
+                abrirSelecaoOuContinuar();
+            }
         } catch (erro) {
             mostrarErro(erro.message || 'Não foi possível carregar o evento.');
         }
     }
     if (typeof window.AOS !== 'undefined') window.AOS.init();
     iniciarFavorito();
+    iniciarSelecaoSessao();
+    iniciarPlanejamento();
     carregarPagina();
 })();

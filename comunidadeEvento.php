@@ -53,6 +53,10 @@ require __DIR__ . '/cabecalho.php';
         </section>
 
         <div class="container comunidade-evento-conteudo">
+        <p id="avisoArquivoComunidade" class="comunidade-aviso-arquivo" role="status" hidden>
+            <i class="bi bi-clock-history" aria-hidden="true"></i>
+            <span>Este evento terminou há mais de 48 horas. A comunidade está em modo arquivo: novas publicações estão desativadas, mas o histórico e a galeria continuam disponíveis.</span>
+        </p>
         <div class="comunidade-abas" role="tablist">
             <button type="button" class="ativa" data-aba-comunidade="publicacoes" role="tab" aria-selected="true"><i class="bi bi-chat-dots"></i> Publicações</button>
             <button type="button" data-aba-comunidade="galeria" role="tab" aria-selected="false"><i class="bi bi-images"></i> Galeria</button>
@@ -76,7 +80,7 @@ require __DIR__ . '/cabecalho.php';
                     <button type="button" data-categoria="Relato">Relato</button>
                 </div>
                 <?php if (!$usuarioAdmin): ?>
-                    <button type="button" class="btn-showme btn-criar-post" data-bs-toggle="modal" data-bs-target="#modalPublicacao"><i class="bi bi-plus-lg"></i> Criar publicação</button>
+                    <button type="button" id="btnCriarPublicacao" class="btn-showme btn-criar-post" data-bs-toggle="modal" data-bs-target="#modalPublicacao" hidden><i class="bi bi-plus-lg"></i> Criar publicação</button>
                 <?php endif; ?>
             </div>
             <div id="feedComunidade" class="comunidade-feed" aria-live="polite"></div>

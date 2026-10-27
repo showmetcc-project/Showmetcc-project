@@ -34,9 +34,8 @@ $bytesMp4Corrompido = [byte[]](@(
 ```
 
 Antes de testar mídias de comunidades, importe a versão atual do schema único
-`assets/banco/showme.sql` no banco de desenvolvimento. Para bases já existentes, aplique
-uma vez as migrações ainda pendentes em `assets/banco/`, além das atualizações pontuais
-descritas adiante.
+`assets/banco/showme.sql` no banco de desenvolvimento. O arquivo contém o schema completo;
+não há migrações separadas.
 Use arquivos pequenos: a aplicação limita fotos a 10 MB, vídeos a 30 MB e a requisição
 completa a 38 MB.
 

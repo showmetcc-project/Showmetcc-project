@@ -199,30 +199,82 @@ require_once __DIR__ . '/config/classificacoesIndicativas.php';
                     </div>
                 </div>
 
-                <div class="row">
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label" for="dataEvento">Data <span class="campo-obrigatorio" aria-hidden="true">*</span></label>
+                <fieldset class="mb-3 sessoes-evento" id="secaoSessoesEvento" aria-describedby="ajudaSessoesEvento">
+                    <legend class="form-label">
+                        Datas e horários <span class="campo-obrigatorio" aria-hidden="true">*</span>
+                    </legend>
+                    <p id="ajudaSessoesEvento" class="form-text">
+                        Adicione uma ou mais sessões. Cada sessão precisa ter data, início e fim.
+                    </p>
 
-                        <input id="dataEvento" name="data_evento" type="date" class="form-control w-100" required>
+                    <div id="listaSessoesEvento" class="lista-sessoes-cadastro">
+                        <div class="sessao-cadastro" data-sessao>
+                            <div class="campo-sessao">
+                                <label class="form-label" for="dataSessaoEvento0">Data</label>
+                                <input id="dataSessaoEvento0" type="date" class="form-control"
+                                    name="sessoes[0][data_evento]" data-campo="data_evento" required>
+                            </div>
+
+                            <div class="campo-sessao">
+                                <label class="form-label" for="inicioSessaoEvento0">Início</label>
+                                <input id="inicioSessaoEvento0" type="time" class="form-control"
+                                    name="sessoes[0][hora_inicio]" data-campo="hora_inicio" step="60" required>
+                            </div>
+
+                            <div class="campo-sessao">
+                                <label class="form-label" for="fimSessaoEvento0">Fim</label>
+                                <input id="fimSessaoEvento0" type="time" class="form-control"
+                                    name="sessoes[0][hora_fim]" data-campo="hora_fim" step="60" required>
+                            </div>
+
+                            <button type="button" class="botao-remover-sessao" data-remover-sessao
+                                aria-label="Remover sessão" hidden>
+                                <i class="bi bi-trash3" aria-hidden="true"></i>
+                            </button>
+                        </div>
                     </div>
 
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label" for="horarioEvento">Horário <span class="campo-obrigatorio" aria-hidden="true">*</span></label>
+                    <button type="button" id="botaoAdicionarSessao" class="botao-adicionar-sessao">
+                        <i class="bi bi-plus-circle" aria-hidden="true"></i>
+                        Adicionar outra data
+                    </button>
+                    <div id="erroSessoesEvento" class="form-text erro" aria-live="polite"></div>
+                </fieldset>
 
-                        <input id="horarioEvento" name="horario_evento" type="time" class="form-control w-100" required>
+                <template id="templateSessaoEvento">
+                    <div class="sessao-cadastro" data-sessao>
+                        <div class="campo-sessao">
+                            <label class="form-label">Data</label>
+                            <input type="date" class="form-control" data-campo="data_evento" required>
+                        </div>
+
+                        <div class="campo-sessao">
+                            <label class="form-label">Início</label>
+                            <input type="time" class="form-control" data-campo="hora_inicio" step="60" required>
+                        </div>
+
+                        <div class="campo-sessao">
+                            <label class="form-label">Fim</label>
+                            <input type="time" class="form-control" data-campo="hora_fim" step="60" required>
+                        </div>
+
+                        <button type="button" class="botao-remover-sessao" data-remover-sessao
+                            aria-label="Remover sessão">
+                            <i class="bi bi-trash3" aria-hidden="true"></i>
+                        </button>
                     </div>
-                </div>
+                </template>
 
                 <div class="mb-3">
                     <label class="form-label">
                         Tipo de evento <span class="campo-obrigatorio" aria-hidden="true">*</span>
                     </label>
 
-                    <div class="tipo-ingresso">
+                    <div class="tipo-ingresso" id="tipoIngressoEvento">
                         <input type="radio" name="gratuidade" id="gratuito" value="true" checked>
 
                         <label for="gratuito" class="opcao">
-                            Gratuito
+                            Gratuito / Entrada Livre
                         </label>
 
                         <input type="radio" name="gratuidade" id="pago" value="false">

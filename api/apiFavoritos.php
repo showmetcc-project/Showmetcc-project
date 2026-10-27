@@ -18,14 +18,23 @@ switch ($metodo) {
         }
 
         $stmt = $conn->prepare(
-            'SELECT f.id_favorito, e.id_evento, e.nome_evento, e.endereco_evento,
+            "SELECT f.id_favorito, e.id_evento, e.nome_evento, e.endereco_evento,
                     e.numero_endereco,
-                    e.cidade_evento, e.uf, e.data_evento, e.classificacao_indicativa,
+                    e.cidade_evento, e.uf,
+                    COALESCE(
+                        (SELECT s.data_evento
+                         FROM evento_sessoes s
+                         WHERE s.evento_id = e.id_evento AND s.data_evento >= CURDATE()
+                         ORDER BY s.data_evento ASC, s.hora_inicio ASC
+                         LIMIT 1),
+                        e.data_evento
+                    ) AS data_evento,
+                    e.classificacao_indicativa,
                     e.gratuidade, e.imagem_evento, e.alt_imagem
              FROM favoritos f
              INNER JOIN evento e ON e.id_evento = f.id_evento
              WHERE f.id_user = ?
-             ORDER BY e.data_evento DESC, f.id_favorito DESC',
+             ORDER BY data_evento DESC, f.id_favorito DESC",
         );
         $stmt->bind_param('i', $idUsuario);
         executarStatementApi($stmt);

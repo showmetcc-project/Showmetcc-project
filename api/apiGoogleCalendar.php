@@ -8,10 +8,11 @@ use Google\Service\Exception as GoogleServiceException;
 require_once __DIR__ . '/middleware/apiCommon.php';
 require_once dirname(__DIR__) . '/config/conexao.php';
 require_once __DIR__ . '/middleware/apiHelper.php';
+require_once __DIR__ . '/middleware/sessoesEventoHelper.php';
 require_once __DIR__ . '/middleware/verificaLogin.php';
 require_once __DIR__ . '/middleware/googleCalendarHelper.php';
 
-function buscarEventoParaAgenda(mysqli $conn, int $idEvento): ?array
+function buscarEventoParaAgenda(mysqli $conn, int $idEvento, ?int $idSessao = null): ?array
 {
     $stmt = $conn->prepare(
         'SELECT id_evento, nome_evento, endereco_evento, numero_endereco,
@@ -26,6 +27,26 @@ function buscarEventoParaAgenda(mysqli $conn, int $idEvento): ?array
     $evento = $stmt->get_result()->fetch_assoc() ?: null;
     $stmt->close();
 
+    if ($evento === null) {
+        return null;
+    }
+
+    if ($idSessao === null) {
+        $sessoes = obterSessoesEvento($conn, $idEvento, $evento);
+        $sessao = $sessoes[0] ?? null;
+    } else {
+        $sessao = buscarSessaoEvento($conn, $idEvento, $idSessao);
+    }
+
+    if ($sessao === null) {
+        return null;
+    }
+
+    $evento['sessao_id'] = $sessao['id'];
+    $evento['data_evento'] = $sessao['data_evento'];
+    $evento['horario_evento'] = $sessao['hora_inicio'];
+    $evento['hora_fim'] = $sessao['hora_fim'];
+
     return $evento;
 }
 
@@ -35,6 +56,7 @@ function janelaEventoGoogleCalendar(array $evento, int $tempoDeslocamento = 0): 
     $fuso = new DateTimeZone($configuracao['timezone'] ?: API_FUSO_HORARIO);
     $data = trim((string) ($evento['data_evento'] ?? ''));
     $horario = trim((string) ($evento['horario_evento'] ?? ''));
+    $horarioFim = normalizarHoraSessao($evento['hora_fim'] ?? '');
 
     if ($data === '') {
         responder(['erro' => 'O evento não possui data definida'], 422);
@@ -49,14 +71,65 @@ function janelaEventoGoogleCalendar(array $evento, int $tempoDeslocamento = 0): 
 
     $inicioEvento = new DateTimeImmutable($data . ' ' . $horario, $fuso);
     $inicio = $inicioEvento->modify('-' . max(0, $tempoDeslocamento) . ' minutes');
+    $fimEvento =
+        $horarioFim === null
+            ? $inicioEvento->modify('+2 hours')
+            : new DateTimeImmutable($data . ' ' . $horarioFim, $fuso);
+
+    if ($fimEvento <= $inicioEvento) {
+        $fimEvento = $inicioEvento->modify('+2 hours');
+    }
 
     return [
         'inicio' => $inicio,
-        // O schema atual não possui horário final; duas horas é a duração operacional padrão.
-        'fim' => $inicioEvento->modify('+2 hours'),
+        'fim' => $fimEvento,
         'inicio_evento' => $inicioEvento,
         'dia_inteiro' => false,
     ];
+}
+
+function descreverSessaoGoogleCalendar(array $evento): string
+{
+    $data = trim((string) ($evento['data_evento'] ?? ''));
+    $horaInicio = normalizarHoraSessao($evento['horario_evento'] ?? '');
+    $horaFim = normalizarHoraSessao($evento['hora_fim'] ?? '');
+
+    if ($data === '') {
+        return '';
+    }
+
+    $dataFormatada = DateTimeImmutable::createFromFormat('!Y-m-d', $data);
+
+    if ($dataFormatada === false) {
+        return '';
+    }
+
+    $descricao = $dataFormatada->format('d/m/Y');
+
+    if ($horaInicio !== null) {
+        $descricao .= ' — ' . substr($horaInicio, 0, 5) . 'h';
+
+        if ($horaFim !== null) {
+            $descricao .= ' às ' . substr($horaFim, 0, 5) . 'h';
+        }
+    }
+
+    return $descricao;
+}
+
+function idSessaoGoogleCalendar(array $dados): ?int
+{
+    if (!array_key_exists('sessao_id', $dados) || $dados['sessao_id'] === null || $dados['sessao_id'] === '') {
+        return null;
+    }
+
+    $idSessao = filter_var($dados['sessao_id'], FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
+
+    if ($idSessao === false) {
+        responder(['erro' => 'sessao_id deve ser um inteiro positivo'], 400);
+    }
+
+    return (int) $idSessao;
 }
 
 function enderecoEventoGoogleCalendar(array $evento): string
@@ -229,15 +302,16 @@ switch ($metodo) {
                 $tempo = filter_var($dados['tempo_estimado'] ?? 0, FILTER_VALIDATE_INT, [
                     'options' => ['min_range' => 0],
                 ]);
+                $idSessao = idSessaoGoogleCalendar($dados);
 
                 if ($idEvento === false || $tempo === false) {
                     responder(['erro' => 'id_evento e tempo_estimado devem ser inteiros válidos'], 400);
                 }
 
-                $evento = buscarEventoParaAgenda($conn, (int) $idEvento);
+                $evento = buscarEventoParaAgenda($conn, (int) $idEvento, $idSessao);
 
                 if ($evento === null) {
-                    responder(['erro' => 'Evento não encontrado'], 404);
+                    responder(['erro' => 'Evento ou sessão não encontrados'], 404);
                 }
 
                 $idRotaIgnorar = idRotaIgnorarGoogleAgenda($dados);
@@ -291,10 +365,11 @@ switch ($metodo) {
                     responder(['erro' => 'id_evento deve ser um inteiro válido'], 400);
                 }
 
-                $evento = buscarEventoParaAgenda($conn, (int) $idEvento);
+                $idSessao = idSessaoGoogleCalendar($dados);
+                $evento = buscarEventoParaAgenda($conn, (int) $idEvento, $idSessao);
 
                 if ($evento === null) {
-                    responder(['erro' => 'Evento não encontrado'], 404);
+                    responder(['erro' => 'Evento ou sessão não encontrados'], 404);
                 }
 
                 $data = trim((string) ($evento['data_evento'] ?? ''));
@@ -358,12 +433,15 @@ switch ($metodo) {
             }
 
             $stmt = $conn->prepare(
-                'SELECT r.id_rota, r.id_evento, r.tempo_estimado,
+                'SELECT r.id_rota, r.id_evento, r.sessao_id, r.tempo_estimado,
                         e.nome_evento, e.endereco_evento, e.numero_endereco,
-                        e.rua_evento, e.cidade_evento,
-                        e.uf, e.data_evento, e.horario_evento, e.link_oficial
+                        e.rua_evento, e.cidade_evento, e.uf,
+                        COALESCE(s.data_evento, e.data_evento) AS data_evento,
+                        COALESCE(s.hora_inicio, e.horario_evento) AS horario_evento,
+                        s.hora_fim, e.link_oficial
                  FROM rota r
                  INNER JOIN evento e ON e.id_evento = r.id_evento
+                 LEFT JOIN evento_sessoes s ON s.id = r.sessao_id
                  WHERE r.id_rota = ? AND r.id_user = ?
                  LIMIT 1',
             );
@@ -378,6 +456,11 @@ switch ($metodo) {
 
             $janela = janelaEventoGoogleCalendar($planejamento);
             $descricao = 'Evento adicionado pelo ShowMe.';
+            $sessaoDescricao = descreverSessaoGoogleCalendar($planejamento);
+
+            if ($sessaoDescricao !== '') {
+                $descricao .= "\nSessão: " . $sessaoDescricao;
+            }
 
             if (!empty($planejamento['link_oficial'])) {
                 $descricao .= "\n" . $planejamento['link_oficial'];

@@ -95,6 +95,21 @@ CREATE TABLE evento (
     )
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+CREATE TABLE evento_sessoes (
+    id          INT PRIMARY KEY AUTO_INCREMENT,
+    evento_id   INT NOT NULL,
+    data_evento DATE NOT NULL,
+    hora_inicio TIME NOT NULL,
+    hora_fim    TIME NOT NULL,
+
+    UNIQUE KEY uk_evento_sessao_horario (evento_id, data_evento, hora_inicio),
+    INDEX idx_evento_sessoes_data (data_evento),
+
+    FOREIGN KEY (evento_id)
+        REFERENCES evento(id_evento)
+        ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 CREATE TABLE artista_evento (
     id_artista INT,
     id_evento  INT,
@@ -130,6 +145,7 @@ CREATE TABLE rota (
     id_rota          INT PRIMARY KEY AUTO_INCREMENT,
     id_user          INT NOT NULL,
     id_evento        INT NOT NULL,
+    sessao_id        INT NULL,
     meio_transporte  VARCHAR(30),
     distancia_km     DECIMAL(10,2),
     tempo_estimado   INT,
@@ -148,6 +164,10 @@ CREATE TABLE rota (
     FOREIGN KEY (id_evento)
         REFERENCES evento(id_evento)
         ON DELETE CASCADE,
+
+    FOREIGN KEY (sessao_id)
+        REFERENCES evento_sessoes(id)
+        ON DELETE SET NULL,
 
     UNIQUE KEY uk_rota (id_user, id_evento)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -269,6 +289,20 @@ CREATE TABLE solicitacao (
             AND (valor_ingresso_maximo IS NULL OR valor_ingresso_maximo >= valor_ingresso_minimo)
         )
     )
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE solicitacao_sessoes (
+    id              INT PRIMARY KEY AUTO_INCREMENT,
+    solicitacao_id  INT NOT NULL,
+    data_evento     DATE NOT NULL,
+    hora_inicio     TIME NOT NULL,
+    hora_fim        TIME NOT NULL,
+
+    UNIQUE KEY uk_solicitacao_sessao_horario (solicitacao_id, data_evento, hora_inicio),
+
+    FOREIGN KEY (solicitacao_id)
+        REFERENCES solicitacao(id_solicitacao)
+        ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 ALTER TABLE evento

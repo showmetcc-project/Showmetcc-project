@@ -907,15 +907,20 @@ body {
     }
 
     .aba {
-        min-height: 48px;
-        gap: 4px;
-        padding: 8px 4px;
-        font-size: clamp(0.68rem, 2vw, 0.82rem);
-        white-space: nowrap;
+        min-height: 56px;
+        gap: 5px;
+        padding: 8px 3px;
+        font-size: clamp(0.9rem, 3.4vw, 1rem);
+        line-height: 1.15;
+    }
+
+    .aba-rotulo {
+        white-space: normal;
+        overflow-wrap: normal;
     }
 
     .aba i {
-        font-size: 0.85rem;
+        font-size: 0.95rem;
     }
 
     .topo {
@@ -1021,6 +1026,13 @@ body {
     .calendario-evento-detalhe,
     .resumo-mes-card {
         padding: 16px;
+    }
+}
+
+@media (max-width: 359.98px) {
+    .aba {
+        flex-direction: column;
+        gap: 3px;
     }
 }
 

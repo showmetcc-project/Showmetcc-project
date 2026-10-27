@@ -127,7 +127,7 @@ function normalizarPlanejamentoApi(array $planejamento): array
 {
     return normalizarRegistroApi(
         $planejamento,
-        ['id_rota', 'id_evento', 'tempo_estimado'],
+        ['id_rota', 'id_evento', 'sessao_id', 'tempo_estimado'],
         ['gratuidade', 'hospedagem_necessaria'],
         [
             'distancia_km',

@@ -18,7 +18,6 @@ document.querySelectorAll('.aba').forEach((btn) => {
 });
 
 const listaFavoritos = document.getElementById('favoritos');
-const contadorFavoritos = document.getElementById('contadorFavoritos');
 const imagemPadrao = 'assets/img/bannerEventoPadrao.png';
 
 async function lerRespostaJson(resposta) {
@@ -147,9 +146,6 @@ function criarCardFavorito(favorito) {
             }
 
             coluna.remove();
-            if (contadorFavoritos) {
-                contadorFavoritos.textContent = Math.max(0, Number(contadorFavoritos.textContent) - 1);
-            }
 
             if (!listaFavoritos.querySelector('.card-evento')) {
                 mostrarFavoritosVazios();
@@ -196,9 +192,6 @@ async function carregarFavoritos() {
         }
 
         listaFavoritos.replaceChildren();
-        if (contadorFavoritos) {
-            contadorFavoritos.textContent = dados.favoritos.length;
-        }
 
         if (dados.favoritos.length === 0) {
             mostrarFavoritosVazios();
@@ -210,9 +203,6 @@ async function carregarFavoritos() {
         });
     } catch (erro) {
         listaFavoritos.replaceChildren();
-        if (contadorFavoritos) {
-            contadorFavoritos.textContent = '0';
-        }
         const mensagem = document.createElement('p');
         mensagem.textContent = erro.message;
         listaFavoritos.append(mensagem);
@@ -220,7 +210,6 @@ async function carregarFavoritos() {
 }
 
 const listaPlanejados = document.getElementById('planejados');
-const contadorPlanejados = document.getElementById('contadorPlanejados');
 let planejamentosCarregados = [];
 
 function formatarDataEvento(data) {
@@ -231,6 +220,37 @@ function formatarDataEvento(data) {
     const partes = data.split('-').map(Number);
     const dataLocal = new Date(partes[0], partes[1] - 1, partes[2]);
     return dataLocal.toLocaleDateString('pt-BR');
+}
+
+function formatarHoraEvento(valor) {
+    const partes = String(valor || '').split(':');
+    const hora = Number(partes[0]);
+    const minuto = Number(partes[1] || 0);
+
+    if (!Number.isInteger(hora)) {
+        return '';
+    }
+
+    return minuto > 0 ? `${hora}h${String(minuto).padStart(2, '0')}` : `${hora}h`;
+}
+
+function formatarDataHoraEvento(planejamento) {
+    const data = formatarDataEvento(planejamento.data_evento);
+    const inicio = formatarHoraEvento(planejamento.horario_evento);
+    const fim = formatarHoraEvento(planejamento.hora_fim);
+
+    if (!inicio) return data;
+    return fim ? `${data} · ${inicio} às ${fim}` : `${data} · ${inicio}`;
+}
+
+function urlPlanejamento(planejamento) {
+    const parametros = new URLSearchParams({ id: String(planejamento.id_evento), resumo: '1' });
+
+    if (planejamento.sessao_id) {
+        parametros.set('sessao_id', String(planejamento.sessao_id));
+    }
+
+    return `planejamento.php?${parametros}`;
 }
 
 function formatarMoeda(valor) {
@@ -357,7 +377,7 @@ function criarCardPlanejado(planejamento) {
             .filter(Boolean)
             .join(', ') || 'Local não informado',
     );
-    const data = criarInformacao('bi bi-calendar3', formatarDataEvento(planejamento.data_evento));
+    const data = criarInformacao('bi bi-calendar3', formatarDataHoraEvento(planejamento));
     const deslocamento = criarInformacao('bi bi-map-fill', textoDeslocamento(planejamento));
 
     const botoes = document.createElement('div');
@@ -365,7 +385,7 @@ function criarCardPlanejado(planejamento) {
 
     const detalhes = document.createElement('a');
     detalhes.className = 'btn-detalhes';
-    detalhes.href = `planejamento.php?id=${planejamento.id_evento}&resumo=1`;
+    detalhes.href = urlPlanejamento(planejamento);
     detalhes.innerHTML = '<i class="bi bi-map-fill" aria-hidden="true"></i> Ver planejamento';
 
     const verCalendario = document.createElement('a');
@@ -434,7 +454,6 @@ async function carregarPlanejados() {
 
         planejamentosCarregados = Array.isArray(dados.planejamentos) ? dados.planejamentos : [];
         listaPlanejados.replaceChildren();
-        contadorPlanejados.textContent = planejamentosCarregados.filter(planejamentoEstaAtivo).length;
 
         if (!planejamentosCarregados.length) {
             const vazio = document.createElement('p');
@@ -451,7 +470,6 @@ async function carregarPlanejados() {
     } catch (erro) {
         planejamentosCarregados = [];
         listaPlanejados.replaceChildren();
-        contadorPlanejados.textContent = '0';
         const mensagem = document.createElement('p');
         mensagem.textContent = erro.message;
         listaPlanejados.append(mensagem);
@@ -574,6 +592,21 @@ function criarDetalhePlanejamento(planejamento) {
     local.innerHTML = '<i class="bi bi-geo-alt-fill" aria-hidden="true"></i>';
     local.append(document.createTextNode(localPlanejamento(planejamento)));
 
+    const horario = document.createElement('p');
+    horario.className = 'calendario-evento-info';
+    horario.innerHTML = '<i class="bi bi-clock" aria-hidden="true"></i>';
+    const inicioHorario = formatarHoraEvento(planejamento.horario_evento);
+    const fimHorario = formatarHoraEvento(planejamento.hora_fim);
+    horario.append(
+        document.createTextNode(
+            inicioHorario
+                ? fimHorario
+                    ? `${inicioHorario} às ${fimHorario}`
+                    : `A partir das ${inicioHorario}`
+                : 'Horário não informado',
+        ),
+    );
+
     const investimento = document.createElement('p');
     investimento.className = 'calendario-evento-info';
     investimento.innerHTML = '<i class="bi bi-wallet2" aria-hidden="true"></i>';
@@ -583,10 +616,10 @@ function criarDetalhePlanejamento(planejamento) {
 
     const link = document.createElement('a');
     link.className = 'calendario-link-planejamento';
-    link.href = `planejamento.php?id=${planejamento.id_evento}&resumo=1`;
+    link.href = urlPlanejamento(planejamento);
     link.textContent = 'Ver planejamento completo →';
 
-    card.append(cabecalho, local, investimento, link);
+    card.append(cabecalho, local, horario, investimento, link);
     return card;
 }
 

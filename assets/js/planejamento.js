@@ -10,11 +10,25 @@ const evento = {
     cep: '',
     data: '',
     horario: '',
+    horaFim: '',
+    sessaoId: null,
     endereco: '',
     gratuidade: true,
     valorMinimo: 0,
     valorMaximo: null,
 };
+
+const parametrosPlanejamento = new URLSearchParams(window.location.search);
+const sessaoIdUrl = Number(parametrosPlanejamento.get('sessao_id') || 0);
+let sessoesEvento = [];
+let sessaoSelecionada = null;
+
+const CHAVE_ESTADO_PLANEJAMENTO = `showme:planejamento:${evento.id}`;
+const VERSAO_ESTADO_PLANEJAMENTO = 1;
+let estadoPlanejamentoPronto = false;
+let etapaRestauradaPlanejamento = null;
+let timerSalvarEstadoPlanejamento = null;
+let sessaoInicialPendente = false;
 
 function atualizarLinksTransporte() {
     const destinoEvento = evento.endereco || [evento.cidade, evento.uf].filter(Boolean).join(' - ') || evento.nome;
@@ -51,6 +65,488 @@ function atualizarLinksHospedagem() {
     });
 }
 
+function normalizarSessoesPlanejamento(eventoApi) {
+    const recebidas = Array.isArray(eventoApi.sessoes) ? eventoApi.sessoes : [];
+    const sessoes = recebidas
+        .filter((sessao) => sessao && sessao.data_evento)
+        .map((sessao) => ({
+            id: Number(sessao.id) || null,
+            data_evento: sessao.data_evento,
+            hora_inicio: sessao.hora_inicio || '',
+            hora_fim: sessao.hora_fim || '',
+        }))
+        .sort((a, b) => `${a.data_evento} ${a.hora_inicio}`.localeCompare(`${b.data_evento} ${b.hora_inicio}`));
+
+    if (sessoes.length) return sessoes;
+
+    return eventoApi.data_evento
+        ? [
+              {
+                  id: null,
+                  data_evento: eventoApi.data_evento,
+                  hora_inicio: eventoApi.horario_evento || '',
+                  hora_fim: '',
+              },
+          ]
+        : [];
+}
+
+function formatarDataCurta(data) {
+    const partes = String(data || '')
+        .split('-')
+        .map(Number);
+
+    if (partes.length !== 3 || partes.some((parte) => !Number.isInteger(parte))) {
+        return 'Data não informada';
+    }
+
+    return `${String(partes[2]).padStart(2, '0')}/${String(partes[1]).padStart(2, '0')}/${partes[0]}`;
+}
+
+function formatarHoraCurta(valor) {
+    const partes = String(valor || '').split(':');
+    const hora = Number(partes[0]);
+    const minuto = Number(partes[1] || 0);
+
+    if (!Number.isInteger(hora)) return '';
+
+    return minuto > 0 ? `${hora}h${String(minuto).padStart(2, '0')}` : `${hora}h`;
+}
+
+function formatarSessaoPlanejamento(sessao) {
+    const data = formatarDataCurta(sessao?.data_evento);
+    const inicio = formatarHoraCurta(sessao?.hora_inicio);
+    const fim = formatarHoraCurta(sessao?.hora_fim);
+
+    if (!inicio) return data;
+    return fim ? `${data} — ${inicio} às ${fim}` : `${data} — ${inicio}`;
+}
+
+function buscarSessaoPorId(id) {
+    return sessoesEvento.find((sessao) => Number(sessao.id) === Number(id)) || null;
+}
+
+function dataPlanejamentoPassada(dataEvento) {
+    const data = String(dataEvento || '').slice(0, 10);
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(data)) return false;
+
+    const hoje = new Date();
+    const dataHoje = [
+        hoje.getFullYear(),
+        String(hoje.getMonth() + 1).padStart(2, '0'),
+        String(hoje.getDate()).padStart(2, '0'),
+    ].join('-');
+
+    return data < dataHoje;
+}
+
+function sessoesDisponiveisPlanejamento() {
+    return sessoesEvento.filter((sessao) => sessao.id && !dataPlanejamentoPassada(sessao.data_evento));
+}
+
+function eventoComDataUnica() {
+    const datas = new Set(
+        sessoesEvento
+            .map((sessao) => String(sessao.data_evento || '').slice(0, 10))
+            .filter(Boolean),
+    );
+
+    return datas.size <= 1;
+}
+
+function atualizarBotaoAlterarSessao() {
+    const botao = document.getElementById('botaoAlterarSessao');
+    if (!botao) return;
+
+    const disponiveis = sessoesDisponiveisPlanejamento();
+    const possuiOutraData = disponiveis.some(
+        (sessao) => Number(sessao.id) !== Number(evento.sessaoId),
+    );
+    const podeAlterar = Boolean(sessaoSelecionada) && possuiOutraData && !eventoComDataUnica();
+    botao.hidden = !podeAlterar;
+    botao.setAttribute('aria-hidden', String(!podeAlterar));
+}
+
+function atualizarSessaoNaUrl(sessaoId) {
+    try {
+        const url = new URL(window.location.href);
+        if (sessaoId) {
+            url.searchParams.set('sessao_id', String(sessaoId));
+        } else {
+            url.searchParams.delete('sessao_id');
+        }
+        window.history.replaceState(window.history.state, '', url);
+    } catch (_) {
+        /* A sessão também fica persistida no sessionStorage. */
+    }
+}
+
+function aplicarSessaoSelecionada(sessao) {
+    if (!sessao) return false;
+
+    sessaoSelecionada = sessao;
+    evento.sessaoId = sessao.id ? Number(sessao.id) : null;
+    evento.data = sessao.data_evento;
+    evento.horario = sessao.hora_inicio;
+    evento.horaFim = sessao.hora_fim;
+
+    const bloco = document.getElementById('sessaoPlanejamentoSelecionada');
+    const texto = document.getElementById('textoSessaoPlanejamento');
+
+    if (bloco) bloco.hidden = eventoComDataUnica();
+    if (texto) texto.textContent = formatarSessaoPlanejamento(sessao);
+
+    atualizarBotaoAlterarSessao();
+
+    const resumo = document.getElementById('resumoDataHorarioEvento');
+    if (resumo) {
+        resumo.textContent = formatarDataHorarioEvento(evento.data, evento.horario, evento.horaFim);
+    }
+
+    return true;
+}
+
+function criarOpcaoSessaoModal(sessao) {
+    const opcao = document.createElement('label');
+    opcao.className = 'opcao-alterar-sessao';
+    opcao.htmlFor = `sessao-alterar-${sessao.id}`;
+
+    const radio = document.createElement('input');
+    radio.type = 'radio';
+    radio.name = 'sessaoAlterarPlanejamento';
+    radio.id = `sessao-alterar-${sessao.id}`;
+    radio.value = String(sessao.id);
+    radio.checked = Number(sessao.id) === Number(evento.sessaoId);
+    radio.addEventListener('change', () => {
+        const erro = document.getElementById('erroAlterarSessao');
+        const confirmar = document.getElementById('botaoConfirmarAlteracaoSessao');
+        if (erro) erro.textContent = '';
+        if (confirmar) confirmar.disabled = false;
+    });
+
+    const conteudo = document.createElement('span');
+    conteudo.className = 'conteudo-opcao-alterar-sessao';
+
+    const dataHora = document.createElement('strong');
+    dataHora.textContent = formatarSessaoPlanejamento(sessao);
+
+    const detalhe = document.createElement('small');
+    detalhe.textContent =
+        Number(sessao.id) === Number(evento.sessaoId)
+            ? 'Sessão selecionada atualmente'
+            : 'Selecionar esta sessão';
+
+    conteudo.append(dataHora, detalhe);
+    opcao.append(radio, conteudo);
+
+    return opcao;
+}
+
+function abrirModalAlterarSessao() {
+    const modal = document.getElementById('modalAlterarSessao');
+    const opcoes = document.getElementById('opcoesAlterarSessao');
+    const erro = document.getElementById('erroAlterarSessao');
+    const confirmar = document.getElementById('botaoConfirmarAlteracaoSessao');
+
+    if (!modal || !opcoes || !confirmar) return;
+
+    const disponiveis = sessoesDisponiveisPlanejamento();
+    opcoes.replaceChildren();
+
+    if (erro) erro.textContent = '';
+    confirmar.disabled = true;
+
+    if (!disponiveis.length) {
+        const vazio = document.createElement('p');
+        vazio.className = 'sem-sessoes-alterar';
+        vazio.textContent = 'Não há outras sessões disponíveis para este evento.';
+        opcoes.append(vazio);
+    } else {
+        disponiveis.forEach((sessao) => {
+            opcoes.append(criarOpcaoSessaoModal(sessao));
+        });
+
+        const selecionada = disponiveis.find((sessao) => Number(sessao.id) === Number(evento.sessaoId));
+        confirmar.disabled = !selecionada;
+    }
+
+    if (modal.open) return;
+
+    if (typeof modal.showModal === 'function') {
+        modal.showModal();
+    } else {
+        modal.setAttribute('open', '');
+    }
+
+    const foco =
+        opcoes.querySelector('input[name="sessaoAlterarPlanejamento"]:checked') ||
+        opcoes.querySelector('input[name="sessaoAlterarPlanejamento"]');
+    if (foco) {
+        window.setTimeout(() => foco.focus(), 0);
+    }
+}
+
+function fecharModalAlterarSessao() {
+    const modal = document.getElementById('modalAlterarSessao');
+    if (!modal) return;
+
+    if (typeof modal.close === 'function' && modal.open) {
+        modal.close();
+    } else {
+        modal.removeAttribute('open');
+    }
+}
+
+function confirmarAlteracaoSessao(eventoSubmit) {
+    eventoSubmit.preventDefault();
+
+    const modal = document.getElementById('modalAlterarSessao');
+    const erro = document.getElementById('erroAlterarSessao');
+    const selecionada = document.querySelector('input[name="sessaoAlterarPlanejamento"]:checked');
+    const novaSessao = selecionada ? buscarSessaoPorId(selecionada.value) : null;
+
+    if (!novaSessao) {
+        if (erro) erro.textContent = 'Escolha uma sessão para atualizar o planejamento.';
+        return;
+    }
+
+    const sessaoAnterior = evento.sessaoId;
+    if (!aplicarSessaoSelecionada(novaSessao)) {
+        if (erro) erro.textContent = 'Não foi possível atualizar a data escolhida.';
+        return;
+    }
+
+    atualizarSessaoNaUrl(novaSessao.id);
+    atualizarResumo();
+    salvarEstadoPlanejamento();
+    fecharModalAlterarSessao();
+
+    if (sessaoInicialPendente) {
+        sessaoInicialPendente = false;
+        document.getElementById('botaoFinalizarPlanejamento').disabled = eventoPlanejamentoEncerrado();
+    }
+
+    if (Number(sessaoAnterior) !== Number(novaSessao.id)) {
+        window.ShowMeUI.toast('Data atualizada. Os dados preenchidos foram mantidos.', { variante: 'sucesso' });
+        verificarCompromissosDaData().catch(() => {});
+    }
+}
+
+function lerEstadoPlanejamentoSalvo() {
+    try {
+        const bruto = window.sessionStorage.getItem(CHAVE_ESTADO_PLANEJAMENTO);
+        if (!bruto) return null;
+
+        const estado = JSON.parse(bruto);
+        if (
+            !estado ||
+            Number(estado.versao) !== VERSAO_ESTADO_PLANEJAMENTO ||
+            Number(estado.eventoId) !== Number(evento.id)
+        ) {
+            return null;
+        }
+
+        return estado;
+    } catch (_) {
+        return null;
+    }
+}
+
+function limparEstadoPlanejamento() {
+    if (timerSalvarEstadoPlanejamento) {
+        window.clearTimeout(timerSalvarEstadoPlanejamento);
+        timerSalvarEstadoPlanejamento = null;
+    }
+
+    try {
+        window.sessionStorage.removeItem(CHAVE_ESTADO_PLANEJAMENTO);
+    } catch (_) {
+        /* Armazenamento indisponível: o planejamento continua funcionando. */
+    }
+}
+
+function obterEtapaAtivaPlanejamento() {
+    const etapa = document.querySelector('.etapa.ativa');
+    return Number(String(etapa?.id || '').replace('etapa', '')) || 1;
+}
+
+function salvarEstadoPlanejamento() {
+    if (!estadoPlanejamentoPronto) return;
+    if (idPlanejamentoExistente && !modoEdicaoPlanejamento) return;
+
+    if (timerSalvarEstadoPlanejamento) {
+        window.clearTimeout(timerSalvarEstadoPlanejamento);
+        timerSalvarEstadoPlanejamento = null;
+    }
+
+    const valor = (id) => document.getElementById(id)?.value ?? '';
+
+    try {
+        const estado = {
+            versao: VERSAO_ESTADO_PLANEJAMENTO,
+            eventoId: evento.id,
+            sessaoId: evento.sessaoId,
+            modoEdicao: modoEdicaoPlanejamento,
+            salvoEm: Date.now(),
+            etapaAtual: obterEtapaAtivaPlanejamento(),
+            etapaConcluida: { ...etapaConcluida },
+            campos: {
+                orcamento: valor('orcamento'),
+                custoIngresso: valor('custoIngresso'),
+                ingressoGratuito: Boolean(document.getElementById('ingressoGratuito')?.checked),
+                custoTransporte: valor('custoTransporte'),
+                meioTransporte: valor('meioTransportePlanejamento'),
+                distancia: valor('distanciaPlanejamento'),
+                tempo: valor('tempoPlanejamento'),
+                origemManual: valor('origemManual'),
+                custoHospedagem: valor('custoHospedagem'),
+            },
+            transporteSelecionado,
+            hospedagemSelecionada,
+            hospedagemDecidida,
+            hospedagemNome,
+            rotaCalculada,
+            tempoAutomatico,
+            valorIngressoAntesGratuito,
+            origem: origem
+                ? {
+                      lat: origem.lat ?? null,
+                      lng: origem.lng ?? null,
+                      descricao: origem.descricao ?? '',
+                  }
+                : null,
+        };
+
+        window.sessionStorage.setItem(CHAVE_ESTADO_PLANEJAMENTO, JSON.stringify(estado));
+    } catch (_) {
+        /* O sessionStorage pode estar indisponível em navegação privada. */
+    }
+}
+
+function agendarSalvarEstadoPlanejamento() {
+    if (!estadoPlanejamentoPronto) return;
+
+    if (timerSalvarEstadoPlanejamento) {
+        window.clearTimeout(timerSalvarEstadoPlanejamento);
+    }
+
+    timerSalvarEstadoPlanejamento = window.setTimeout(() => {
+        timerSalvarEstadoPlanejamento = null;
+        salvarEstadoPlanejamento();
+    }, 120);
+}
+
+function restaurarEstadoPlanejamento() {
+    const estado = lerEstadoPlanejamentoSalvo();
+    if (!estado) return false;
+    if (idPlanejamentoExistente && estado.modoEdicao !== true) return false;
+
+    const campos = estado.campos && typeof estado.campos === 'object' ? estado.campos : {};
+
+    if (estado.sessaoId && !sessaoIdUrl) {
+        const sessaoSalva = buscarSessaoPorId(estado.sessaoId);
+        if (sessaoSalva) {
+            aplicarSessaoSelecionada(sessaoSalva);
+        }
+    }
+
+    const definirValor = (id, valorCampo) => {
+        if (valorCampo === undefined || valorCampo === null) return;
+
+        const campo = document.getElementById(id);
+        if (campo) campo.value = String(valorCampo);
+    };
+
+    definirValor('orcamento', campos.orcamento);
+    definirValor('custoIngresso', campos.custoIngresso);
+    definirValor('custoTransporte', campos.custoTransporte);
+    definirValor('custoHospedagem', campos.custoHospedagem);
+    definirValor('distanciaPlanejamento', campos.distancia);
+    definirValor('tempoPlanejamento', campos.tempo);
+    definirValor('origemManual', campos.origemManual);
+
+    const campoIngresso = document.getElementById('custoIngresso');
+    const opcaoIngressoGratuito = document.getElementById('ingressoGratuito');
+
+    if (!evento.gratuidade && campoIngresso && opcaoIngressoGratuito) {
+        const marcadoComoGratuito = Boolean(campos.ingressoGratuito);
+        opcaoIngressoGratuito.checked = marcadoComoGratuito;
+        campoIngresso.disabled = marcadoComoGratuito;
+
+        if (marcadoComoGratuito) {
+            campoIngresso.value = '0.00';
+        }
+    }
+
+    if (Number.isFinite(Number(estado.valorIngressoAntesGratuito))) {
+        valorIngressoAntesGratuito = Number(estado.valorIngressoAntesGratuito);
+    }
+
+    transporteSelecionado = String(estado.transporteSelecionado || campos.meioTransporte || '');
+    renderizarTransporteSelecionado(transporteSelecionado);
+
+    hospedagemSelecionada = Boolean(estado.hospedagemSelecionada);
+    hospedagemDecidida = Boolean(estado.hospedagemDecidida);
+    hospedagemNome = String(estado.hospedagemNome || '');
+
+    const opcoesHospedagem = document.getElementById('opcoesHospedagem');
+    const textoHospedagem = document.getElementById('hospedagemSelecionada');
+
+    if (opcoesHospedagem) opcoesHospedagem.hidden = !hospedagemSelecionada;
+    if (textoHospedagem) {
+        textoHospedagem.textContent = hospedagemSelecionada
+            ? `Hospedagem selecionada: ${hospedagemNome || 'não informada'}`
+            : hospedagemDecidida
+              ? 'Você escolheu continuar sem hospedagem.'
+              : 'Escolha se precisa de hospedagem.';
+    }
+
+    if (estado.origem && typeof estado.origem === 'object') {
+        origem = {
+            lat: estado.origem.lat === null ? null : Number(estado.origem.lat),
+            lng: estado.origem.lng === null ? null : Number(estado.origem.lng),
+            descricao: String(estado.origem.descricao || ''),
+        };
+    } else if (campos.origemManual) {
+        origem = { lat: null, lng: null, descricao: String(campos.origemManual) };
+    }
+
+    const origemComCoordenadas =
+        origem &&
+        origem.lat !== null &&
+        origem.lng !== null &&
+        Number.isFinite(Number(origem.lat)) &&
+        Number.isFinite(Number(origem.lng));
+    const descricaoOrigem =
+        origem?.descricao || campos.origemManual || (origemComCoordenadas ? 'Localização salva' : 'Não definida');
+    const textoOrigem = document.getElementById('origemTexto');
+    const resumoOrigem = document.getElementById('resumoOrigem');
+    if (textoOrigem) textoOrigem.textContent = descricaoOrigem;
+    if (resumoOrigem) resumoOrigem.textContent = descricaoOrigem;
+
+    rotaCalculada = Boolean(estado.rotaCalculada);
+    tempoAutomatico = Boolean(estado.tempoAutomatico);
+
+    const navegacao = document.getElementById('navegacaoBox');
+    if (navegacao) navegacao.hidden = !rotaCalculada;
+
+    if (estado.etapaConcluida && typeof estado.etapaConcluida === 'object') {
+        Object.keys(etapaConcluida).forEach((numero) => {
+            if (typeof estado.etapaConcluida[numero] !== 'undefined') {
+                etapaConcluida[numero] = Boolean(estado.etapaConcluida[numero]);
+            }
+        });
+    }
+
+    etapaRestauradaPlanejamento = Math.min(5, Math.max(1, Number(estado.etapaAtual) || 1));
+
+    atualizarEstadoHospedagem();
+    atualizarResumoRota();
+    atualizarResumo();
+
+    return true;
+}
+
 async function carregarEvento() {
     const resposta = await fetch(`api/eventos/${evento.id}`);
     const dados = await resposta.json();
@@ -60,6 +556,7 @@ async function carregarEvento() {
     }
 
     const eventoApi = dados.evento;
+    sessoesEvento = normalizarSessoesPlanejamento(eventoApi);
     const enderecoBase =
         eventoApi.endereco_evento ||
         [eventoApi.rua_evento, eventoApi.cidade_evento, eventoApi.uf].filter(Boolean).join(', ');
@@ -82,6 +579,8 @@ async function carregarEvento() {
         cep: eventoApi.cep_evento || '',
         data: eventoApi.data_evento || '',
         horario: eventoApi.horario_evento || '',
+        horaFim: '',
+        sessaoId: null,
         endereco: enderecoComNumero,
         gratuidade: Boolean(eventoApi.gratuidade),
         valorMinimo: Number(eventoApi.valor_ingresso_minimo || 0),
@@ -97,7 +596,20 @@ async function carregarEvento() {
     campoIngresso.value = valorInicialIngresso.toFixed(2);
     campoIngresso.disabled = evento.gratuidade;
     opcaoIngressoGratuito.checked = evento.gratuidade;
+    opcaoIngressoGratuito.disabled = evento.gratuidade;
     valorIngressoAntesGratuito = evento.valorMinimo;
+
+    const campoIngressoPlanejamento = document.getElementById('campoIngressoPlanejamento');
+    const avisoIngressoGratuito = document.getElementById('avisoIngressoGratuito');
+
+    if (campoIngressoPlanejamento) {
+        campoIngressoPlanejamento.hidden = evento.gratuidade;
+        campoIngressoPlanejamento.setAttribute('aria-hidden', String(evento.gratuidade));
+    }
+
+    if (avisoIngressoGratuito) {
+        avisoIngressoGratuito.hidden = !evento.gratuidade;
+    }
 
     atualizarLinksTransporte();
     atualizarLinksHospedagem();
@@ -109,6 +621,7 @@ async function carregarEvento() {
     document.getElementById('resumoDataHorarioEvento').textContent = formatarDataHorarioEvento(
         evento.data,
         evento.horario,
+        evento.horaFim,
     );
     document.getElementById('resumoLocalEvento').textContent = evento.endereco || 'Local não informado';
     document.getElementById('resumoDestino').textContent = evento.endereco || evento.nome;
@@ -135,7 +648,7 @@ async function carregarEvento() {
     atualizarResumo();
 }
 
-function formatarDataHorarioEvento(dataEvento, horarioEvento) {
+function formatarDataHorarioEvento(dataEvento, horarioEvento, horarioFim) {
     const partesData = String(dataEvento || '')
         .split('-')
         .map(Number);
@@ -154,8 +667,11 @@ function formatarDataHorarioEvento(dataEvento, horarioEvento) {
         }
     }
 
-    const horario = String(horarioEvento || '').slice(0, 5);
-    return horario ? `${dataFormatada}, às ${horario}` : dataFormatada;
+    const horario = formatarHoraCurta(horarioEvento);
+    const fim = formatarHoraCurta(horarioFim);
+
+    if (!horario) return dataFormatada;
+    return fim ? `${dataFormatada}, das ${horario} às ${fim}` : `${dataFormatada}, às ${horario}`;
 }
 
 let valorIngressoAntesGratuito = 0;
@@ -167,7 +683,7 @@ function lerValorMonetario(id) {
 }
 
 function lerCustoIngresso() {
-    return lerValorMonetario('custoIngresso');
+    return evento.gratuidade ? 0 : lerValorMonetario('custoIngresso');
 }
 
 function lerCustoTransporte() {
@@ -210,6 +726,7 @@ let rotaCalculada = false;
 let tempoAutomatico = false;
 
 let idPlanejamentoExistente = null;
+let modoEdicaoPlanejamento = false;
 
 /*
     Controle para impedir
@@ -237,6 +754,15 @@ function alternarIngressoGratuito() {
     const campo = document.getElementById('custoIngresso');
     const opcao = document.getElementById('ingressoGratuito');
 
+    if (evento.gratuidade) {
+        opcao.checked = true;
+        campo.value = '0.00';
+        campo.disabled = true;
+        atualizarResumo();
+        agendarSalvarEstadoPlanejamento();
+        return;
+    }
+
     if (opcao.checked) {
         valorIngressoAntesGratuito = lerCustoIngresso() || valorIngressoAntesGratuito;
         campo.value = '0.00';
@@ -248,6 +774,7 @@ function alternarIngressoGratuito() {
     }
 
     atualizarResumo();
+    agendarSalvarEstadoPlanejamento();
 }
 
 function mostrarMensagem(texto, erro = false) {
@@ -361,8 +888,8 @@ function proximaEtapa(numero) {
         const opcaoIngressoGratuito = document.getElementById('ingressoGratuito');
 
         const orcamento = Number(campoOrcamento.value);
-        const ingresso = campoIngresso.value === '' ? 0 : Number(campoIngresso.value);
-        const ingressoGratuito = opcaoIngressoGratuito.checked;
+        const ingresso = evento.gratuidade ? 0 : campoIngresso.value === '' ? 0 : Number(campoIngresso.value);
+        const ingressoGratuito = evento.gratuidade || opcaoIngressoGratuito.checked;
 
         if (!orcamento || orcamento <= 0) {
             notificarErroPlanejamento('Informe seu orçamento antes de continuar.');
@@ -530,6 +1057,8 @@ function proximaEtapa(numero) {
     if (numero === 5) {
         atualizarResumo();
     }
+
+    salvarEstadoPlanejamento();
 }
 
 function voltarEtapa(numero) {
@@ -554,6 +1083,8 @@ function voltarEtapa(numero) {
     if (numero === 3 && mapa) {
         setTimeout(() => mapa.invalidateSize(), 100);
     }
+
+    salvarEstadoPlanejamento();
 }
 
 function atualizarTimeline(etapaAtual) {
@@ -574,21 +1105,31 @@ function atualizarTimeline(etapaAtual) {
     });
 }
 
-function selecionarTransporte(tipo) {
-    transporteSelecionado = tipo;
+function renderizarTransporteSelecionado(tipo) {
+    const texto = document.getElementById('transporteSelecionado');
+    const campo = document.getElementById('meioTransportePlanejamento');
 
-    document.getElementById('transporteSelecionado').textContent = `Transporte selecionado: ${tipo}`;
+    if (texto) {
+        texto.textContent = tipo ? `Transporte selecionado: ${tipo}` : 'Nenhum transporte selecionado.';
+    }
+    if (campo) campo.value = tipo || '';
 
-    document.getElementById('meioTransportePlanejamento').value = tipo;
     document.querySelectorAll('[data-transporte]').forEach((opcao) => {
         const selecionada = opcao.dataset.transporte === tipo;
         opcao.classList.toggle('selecionada', selecionada);
         opcao.setAttribute('aria-pressed', String(selecionada));
     });
 
-    ajustarTempoParaTransporte();
-
     calcularEstimativaTransporte();
+    atualizarInstrucoesDadosRota();
+}
+
+function selecionarTransporte(tipo) {
+    transporteSelecionado = tipo;
+    renderizarTransporteSelecionado(tipo);
+    ajustarTempoParaTransporte();
+    calcularEstimativaTransporte();
+    agendarSalvarEstadoPlanejamento();
 }
 
 function calcularEstimativaTransporte() {
@@ -668,6 +1209,8 @@ function atualizarResumoRota() {
 }
 
 function mostrarResumoPlanejamentoSalvo() {
+    modoEdicaoPlanejamento = false;
+    limparEstadoPlanejamento();
     document.querySelectorAll('.etapa').forEach((etapa) => {
         etapa.classList.remove('ativa');
     });
@@ -705,6 +1248,7 @@ function mostrarHospedagem() {
     atualizarEstadoHospedagem();
 
     atualizarHospedagem();
+    agendarSalvarEstadoPlanejamento();
 }
 
 function semHospedagem() {
@@ -723,6 +1267,7 @@ function semHospedagem() {
     atualizarEstadoHospedagem();
 
     atualizarResumo();
+    agendarSalvarEstadoPlanejamento();
 }
 
 function selecionarHospedagem(nome) {
@@ -735,6 +1280,7 @@ function selecionarHospedagem(nome) {
     atualizarEstadoHospedagem();
 
     atualizarResumo();
+    agendarSalvarEstadoPlanejamento();
 }
 
 async function atualizarHospedagem() {
@@ -956,6 +1502,8 @@ function usarMinhaLocalizacao() {
                 lat: position.coords.latitude,
 
                 lng: position.coords.longitude,
+
+                descricao: 'Sua localização atual',
             };
 
             document.getElementById('origemTexto').textContent = 'Sua localização atual';
@@ -1044,6 +1592,8 @@ async function calcularRotaManual() {
             lat: Number(locais[0].lat),
 
             lng: Number(locais[0].lon),
+
+            descricao: endereco,
         };
 
         document.getElementById('origemTexto').textContent = endereco;
@@ -1181,6 +1731,8 @@ async function calcularRota() {
         } else {
             mostrarMensagem(`Distância calculada. Informe o tempo estimado para ${transporteSelecionado}.`);
         }
+
+        agendarSalvarEstadoPlanejamento();
     } catch (erro) {
         console.error(erro);
 
@@ -1243,18 +1795,13 @@ function atualizarResumo() {
 
     const saldo = orcamento - total;
 
+    const textoIngresso = evento.gratuidade ? 'R$ 0,00 (Cortesia)' : moeda(ingresso);
+
     document.getElementById('valorOrcamento').textContent = moeda(orcamento);
 
     document.getElementById('restante').textContent = moeda(saldo);
 
-    document.getElementById('totalGastosEtapa').textContent = moeda(total);
-
-    document.getElementById('saldoGastosEtapa').textContent = `Saldo do orçamento: ${moeda(saldo)}`;
-
-    document.getElementById('composicaoGastosEtapa').textContent =
-        `Ingresso ${moeda(ingresso)} + Transporte ${moeda(transporte)} + Hospedagem ${moeda(hospedagem)}`;
-
-    document.getElementById('resumoIngresso').textContent = moeda(ingresso);
+    document.getElementById('resumoIngresso').textContent = textoIngresso;
 
     document.getElementById('resumoTransporte').textContent = moeda(transporte);
 
@@ -1287,23 +1834,37 @@ function abrirEtapaPlanejamento(numero) {
         window.setTimeout(async () => {
             if (!destino) await localizarEvento();
             if (destino) await iniciarMapa();
+
+            const origemTemCoordenadas =
+                origem && Number.isFinite(Number(origem.lat)) && Number.isFinite(Number(origem.lng));
+
+            if (origemTemCoordenadas && mapa) {
+                if (marcadorOrigem) {
+                    marcadorOrigem.setLatLng([origem.lat, origem.lng]);
+                } else {
+                    marcadorOrigem = L.marker([origem.lat, origem.lng])
+                        .addTo(mapa)
+                        .bindPopup('<strong>Origem</strong>');
+                }
+            }
+
+            if (rotaCalculada && !rotaLayer && origemTemCoordenadas) {
+                await calcularRota();
+            }
+
             mapa?.invalidateSize();
         }, 150);
     }
+
+    if (numero === 4 && hospedagemSelecionada) {
+        atualizarHospedagem();
+    }
+
+    salvarEstadoPlanejamento();
 }
 
 function eventoPlanejamentoEncerrado() {
-    const dataEvento = String(evento.data || '').slice(0, 10);
-    if (!/^\d{4}-\d{2}-\d{2}$/.test(dataEvento)) return false;
-
-    const hoje = new Date();
-    const dataHoje = [
-        hoje.getFullYear(),
-        String(hoje.getMonth() + 1).padStart(2, '0'),
-        String(hoje.getDate()).padStart(2, '0'),
-    ].join('-');
-
-    return dataEvento < dataHoje;
+    return dataPlanejamentoPassada(evento.data);
 }
 
 function configurarBotaoPlanejamentoFinalizado() {
@@ -1317,6 +1878,19 @@ function configurarBotaoPlanejamentoFinalizado() {
     botao.hidden = eventoEncerrado;
     document.getElementById('botaoVoltarResumo').hidden = true;
     document.getElementById('botaoImprimirPlanejamento').hidden = false;
+}
+
+function ativarModoEdicaoPlanejamento() {
+    modoEdicaoPlanejamento = true;
+    const botao = document.getElementById('botaoFinalizarPlanejamento');
+    botao.type = 'submit';
+    botao.dataset.estado = 'editando';
+    botao.disabled = false;
+    botao.hidden = false;
+    botao.innerHTML = '<i class="bi bi-check2-circle" aria-hidden="true"></i><span>Salvar alterações</span>';
+    document.getElementById('botaoVoltarResumo').hidden = false;
+    document.getElementById('botaoImprimirPlanejamento').hidden = true;
+    document.getElementById('mensagemPlanejamento').textContent = '';
 }
 
 async function habilitarEdicaoPlanejamento() {
@@ -1336,13 +1910,7 @@ async function habilitarEdicaoPlanejamento() {
     });
     if (!deveEditar) return;
 
-    const botao = document.getElementById('botaoFinalizarPlanejamento');
-    botao.type = 'submit';
-    botao.dataset.estado = 'editando';
-    botao.innerHTML = '<i class="bi bi-check2-circle" aria-hidden="true"></i><span>Salvar alterações</span>';
-    document.getElementById('botaoVoltarResumo').hidden = false;
-    document.getElementById('botaoImprimirPlanejamento').hidden = true;
-    document.getElementById('mensagemPlanejamento').textContent = '';
+    ativarModoEdicaoPlanejamento();
     abrirEtapaPlanejamento(1);
 }
 
@@ -1461,8 +2029,27 @@ async function carregarPlanejamentoExistente() {
 
     if (existente) {
         idPlanejamentoExistente = Number(existente.id_rota);
+        const sessaoDaUrl = buscarSessaoPorId(sessaoIdUrl);
+        const sessaoExistente =
+            sessaoDaUrl ||
+            sessoesEvento.find((sessao) => Number(sessao.id) === Number(existente.sessao_id)) ||
+            sessoesEvento.find(
+                (sessao) =>
+                    sessao.data_evento === existente.data_evento &&
+                    String(sessao.hora_inicio).slice(0, 5) === String(existente.horario_evento || '').slice(0, 5),
+            ) ||
+            (existente.data_evento
+                ? {
+                      id: existente.sessao_id ? Number(existente.sessao_id) : null,
+                      data_evento: existente.data_evento,
+                      hora_inicio: existente.horario_evento || '',
+                      hora_fim: existente.hora_fim || '',
+                  }
+                : null);
 
-        const ingressoExistente = Number(existente.custo_ingresso ?? evento.valorMinimo) || 0;
+        aplicarSessaoSelecionada(sessaoExistente);
+
+        const ingressoExistente = evento.gratuidade ? 0 : Number(existente.custo_ingresso ?? evento.valorMinimo) || 0;
         const transporteExistente = Number(existente.custo_transporte) || 0;
         const hospedagemExistente = Number(existente.custo_hospedagem) || 0;
         const campoIngresso = document.getElementById('custoIngresso');
@@ -1473,8 +2060,9 @@ async function carregarPlanejamentoExistente() {
         document.getElementById('custoHospedagem').value = (
             Boolean(existente.hospedagem_necessaria) ? hospedagemExistente : 0
         ).toFixed(2);
-        opcaoIngressoGratuito.checked = ingressoExistente <= 0;
-        campoIngresso.disabled = opcaoIngressoGratuito.checked;
+        opcaoIngressoGratuito.checked = evento.gratuidade || ingressoExistente <= 0;
+        campoIngresso.disabled = evento.gratuidade || opcaoIngressoGratuito.checked;
+        opcaoIngressoGratuito.disabled = evento.gratuidade;
         valorIngressoAntesGratuito = ingressoExistente > 0 ? ingressoExistente : evento.valorMinimo;
 
         document.getElementById('orcamento').value = existente.orcamento_total ?? 0;
@@ -1553,6 +2141,7 @@ async function verificarConflitoGoogleAgenda(tempo) {
         body: JSON.stringify({
             acao: 'verificar_conflito',
             id_evento: evento.id,
+            sessao_id: evento.sessaoId,
             id_rota:
                 Number.isInteger(idPlanejamentoExistente) && idPlanejamentoExistente > 0
                     ? idPlanejamentoExistente
@@ -1656,12 +2245,13 @@ async function finalizarPlanejamento(eventoSubmit) {
             headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
             body: JSON.stringify({
                 id_evento: evento.id,
+                sessao_id: evento.sessaoId,
                 meio_transporte: meioTransporte,
                 distancia_km: distancia,
                 tempo_estimado: tempo,
                 origem: origemInformada,
                 orcamento_total: orcamento,
-                custo_ingresso: custoIngresso,
+                custo_ingresso: evento.gratuidade ? 0 : custoIngresso,
                 custo_transporte: custoTransporte,
                 hospedagem_necessaria: hospedagemSelecionada,
                 nome_hospedagem: hospedagemNome,
@@ -1684,6 +2274,10 @@ async function finalizarPlanejamento(eventoSubmit) {
                   ? 'Planejamento atualizado com sucesso.'
                   : 'Planejamento finalizado com sucesso.';
         configurarBotaoPlanejamentoFinalizado();
+        if (resposta.status !== 409) {
+            modoEdicaoPlanejamento = false;
+            limparEstadoPlanejamento();
+        }
 
         if (resposta.status !== 409) {
             const opcoesToast = { variante: 'sucesso' };
@@ -1732,6 +2326,32 @@ document.getElementById('custoTransporte').addEventListener('input', atualizarRe
 document.getElementById('custoHospedagem').addEventListener('input', atualizarResumo);
 
 document.getElementById('ingressoGratuito').addEventListener('change', alternarIngressoGratuito);
+
+document.getElementById('botaoAlterarSessao').addEventListener('click', abrirModalAlterarSessao);
+
+document.getElementById('formAlterarSessao').addEventListener('submit', confirmarAlteracaoSessao);
+
+document.querySelectorAll('[data-fechar-modal-alterar-sessao]').forEach((botao) => {
+    botao.addEventListener('click', fecharModalAlterarSessao);
+});
+
+document.getElementById('modalAlterarSessao').addEventListener('click', (eventoClique) => {
+    if (eventoClique.target === eventoClique.currentTarget) {
+        fecharModalAlterarSessao();
+    }
+});
+
+[
+    'orcamento',
+    'custoIngresso',
+    'custoTransporte',
+    'custoHospedagem',
+    'origemManual',
+    'distanciaPlanejamento',
+    'tempoPlanejamento',
+].forEach((id) => {
+    document.getElementById(id).addEventListener('input', agendarSalvarEstadoPlanejamento);
+});
 
 document.getElementById('distanciaPlanejamento').addEventListener('input', atualizarResumoRota);
 
@@ -1853,6 +2473,7 @@ async function verificarCompromissosDaData() {
                 body: JSON.stringify({
                     acao: 'verificar_data',
                     id_evento: evento.id,
+                    sessao_id: evento.sessaoId,
                     id_rota:
                         Number.isInteger(idPlanejamentoExistente) && idPlanejamentoExistente > 0
                             ? idPlanejamentoExistente
@@ -1886,10 +2507,46 @@ async function verificarCompromissosDaData() {
 
 async function inicializarPlanejamento() {
     let planejamentoExistente = null;
+    let estadoRestaurado = false;
+    let precisaEscolherSessao = false;
 
     try {
         await carregarEvento();
+
+        const sessaoDaUrl = buscarSessaoPorId(sessaoIdUrl);
+        if (sessaoDaUrl) {
+            aplicarSessaoSelecionada(sessaoDaUrl);
+        }
+
         planejamentoExistente = await carregarPlanejamentoExistente();
+        estadoRestaurado = restaurarEstadoPlanejamento();
+
+        if (!planejamentoExistente) {
+            if (!sessaoSelecionada) {
+                const disponiveis = sessoesDisponiveisPlanejamento();
+
+                if (disponiveis.length === 1) {
+                    aplicarSessaoSelecionada(disponiveis[0]);
+                } else if (disponiveis.length > 1) {
+                    aplicarSessaoSelecionada(disponiveis[0]);
+                    sessaoInicialPendente = true;
+                    precisaEscolherSessao = true;
+                }
+            }
+
+            const botaoFinalizar = document.getElementById('botaoFinalizarPlanejamento');
+
+            if (!sessaoSelecionada) {
+                botaoFinalizar.disabled = true;
+                notificarErroPlanejamento('Não há sessões futuras disponíveis para planejar este evento.');
+            } else if (eventoPlanejamentoEncerrado()) {
+                botaoFinalizar.disabled = true;
+                notificarErroPlanejamento('Este evento já foi encerrado e não pode ser planejado.');
+            } else if (sessaoInicialPendente) {
+                botaoFinalizar.disabled = true;
+            }
+        }
+
         atualizarInstrucoesDadosRota();
 
         /* Checagem complementar: um aviso nunca bloqueia o carregamento. */
@@ -1901,10 +2558,24 @@ async function inicializarPlanejamento() {
     }
 
     atualizarResumo();
+
     if (planejamentoExistente) {
-        mostrarResumoPlanejamentoSalvo();
+        if (estadoRestaurado && !eventoPlanejamentoEncerrado()) {
+            ativarModoEdicaoPlanejamento();
+            abrirEtapaPlanejamento(etapaRestauradaPlanejamento || 1);
+        } else {
+            mostrarResumoPlanejamentoSalvo();
+        }
+    } else if (estadoRestaurado) {
+        abrirEtapaPlanejamento(etapaRestauradaPlanejamento || 1);
     } else {
         atualizarTimeline(1);
+    }
+
+    estadoPlanejamentoPronto = true;
+
+    if (precisaEscolherSessao) {
+        abrirModalAlterarSessao();
     }
 }
 

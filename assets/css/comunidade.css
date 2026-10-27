@@ -809,6 +809,25 @@ body.pagina-comunidade-evento {
 .comunidade-aviso-somente-leitura i {
     color: var(--com-verde);
 }
+.comunidade-aviso-arquivo {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    margin: 0 0 18px;
+    padding: 13px 16px;
+    border: 1px solid rgba(255, 0, 110, 0.42);
+    border-radius: 14px;
+    background: rgba(255, 0, 110, 0.07);
+    color: #e3e3e3;
+    line-height: 1.55;
+}
+.comunidade-aviso-arquivo[hidden] {
+    display: none;
+}
+.comunidade-aviso-arquivo i {
+    margin-top: 0.1em;
+    color: var(--com-rosa);
+}
 .resposta-acoes,
 .form-edicao-acoes {
     display: flex;

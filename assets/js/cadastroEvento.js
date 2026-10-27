@@ -23,8 +23,13 @@
     const painelCategorias = document.getElementById('painelCategoriasEvento');
     const resumoCategorias = document.getElementById('resumoCategoriasEvento');
     const erroCategorias = document.getElementById('erroCategoriasEvento');
+    const listaSessoes = document.getElementById('listaSessoesEvento');
+    const templateSessao = document.getElementById('templateSessaoEvento');
+    const botaoAdicionarSessao = document.getElementById('botaoAdicionarSessao');
+    const erroSessoes = document.getElementById('erroSessoesEvento');
     const tiposFotoAceitos = ['image/jpeg', 'image/png', 'image/webp'];
     const limiteFoto = 10 * 1024 * 1024;
+    const limiteSessoes = 30;
     let cepConsultado = '';
     let consultaCepAtual = 0;
 
@@ -177,6 +182,119 @@
     });
     inputFoto.addEventListener('change', atualizarFotoSelecionada);
 
+    function linhasSessoes() {
+        return listaSessoes ? [...listaSessoes.querySelectorAll('[data-sessao]')] : [];
+    }
+
+    function reindexarSessoes() {
+        const linhas = linhasSessoes();
+
+        linhas.forEach(function (linha, indice) {
+            const campos = [...linha.querySelectorAll('[data-campo]')];
+
+            campos.forEach(function (campo) {
+                const sufixo = campo.dataset.campo || 'campo';
+                const identificador = `sessaoEvento${indice}-${sufixo}`;
+                const rotulo = campo.closest('.campo-sessao')?.querySelector('label');
+
+                campo.id = identificador;
+                campo.name = `sessoes[${indice}][${sufixo}]`;
+
+                if (rotulo) {
+                    rotulo.htmlFor = identificador;
+                }
+            });
+
+            const remover = linha.querySelector('[data-remover-sessao]');
+
+            if (remover) {
+                remover.hidden = linhas.length === 1;
+                remover.disabled = linhas.length === 1;
+            }
+        });
+    }
+
+    function atualizarErroSessoes(mensagem) {
+        if (erroSessoes) {
+            erroSessoes.textContent = mensagem;
+        }
+    }
+
+    function adicionarSessao() {
+        if (!listaSessoes || !templateSessao) return;
+        if (linhasSessoes().length >= limiteSessoes) {
+            atualizarErroSessoes(`Adicione no máximo ${limiteSessoes} datas/sessões.`);
+            return;
+        }
+
+        const novaSessao = templateSessao.content.firstElementChild.cloneNode(true);
+        listaSessoes.appendChild(novaSessao);
+        reindexarSessoes();
+        atualizarErroSessoes('');
+        novaSessao.querySelector('[data-campo="data_evento"]')?.focus();
+    }
+
+    botaoAdicionarSessao?.addEventListener('click', adicionarSessao);
+
+    listaSessoes?.addEventListener('click', function (evento) {
+        const botaoRemover = evento.target.closest('[data-remover-sessao]');
+
+        if (!botaoRemover) return;
+
+        const linhas = linhasSessoes();
+
+        if (linhas.length <= 1) return;
+
+        botaoRemover.closest('[data-sessao]')?.remove();
+        reindexarSessoes();
+        atualizarErroSessoes('');
+    });
+
+    function validarSessoes() {
+        const linhas = linhasSessoes();
+
+        if (!linhas.length) {
+            throw new Error('Informe ao menos uma data e um horário para o evento.');
+        }
+
+        const horarios = new Set();
+
+        for (const linha of linhas) {
+            const data = linha.querySelector('[data-campo="data_evento"]')?.value || '';
+            const inicio = linha.querySelector('[data-campo="hora_inicio"]')?.value || '';
+            const fim = linha.querySelector('[data-campo="hora_fim"]')?.value || '';
+
+            if (!data || !inicio || !fim) {
+                throw new Error('Preencha a data, o início e o fim de todas as sessões.');
+            }
+
+            if (fim <= inicio) {
+                throw new Error('O horário de fim precisa ser posterior ao horário de início.');
+            }
+
+            const chave = `${data} ${inicio}`;
+
+            if (horarios.has(chave)) {
+                throw new Error('Não repita a mesma data com o mesmo horário de início.');
+            }
+
+            horarios.add(chave);
+        }
+    }
+
+    function limparSessoesExtras() {
+        const linhas = linhasSessoes();
+
+        linhas.slice(1).forEach(function (linha) {
+            linha.remove();
+        });
+
+        reindexarSessoes();
+        atualizarErroSessoes('');
+    }
+
+    reindexarSessoes();
+
     function limparEndereco(mensagem) {
         inputEndereco.value = '';
         inputRua.value = '';
@@ -251,6 +369,8 @@
     function atualizarCamposValor() {
         const pago = document.getElementById('pago').checked;
         camposValor.hidden = !pago;
+        camposValor.setAttribute('aria-hidden', String(!pago));
+        formulario.dataset.gratuidade = String(!pago);
         valorMinimo.required = pago;
         valorMinimo.disabled = !pago;
         valorMaximo.disabled = !pago;
@@ -285,6 +405,7 @@
         }
 
         try {
+            validarSessoes();
             validarFoto();
             if (!categorias.some((categoria) => categoria.checked)) {
                 erroCategorias.textContent = 'Selecione pelo menos uma categoria.';
@@ -324,6 +445,7 @@
 
             formulario.reset();
             cepConsultado = '';
+            limparSessoesExtras();
             atualizarFotoSelecionada();
             atualizarCamposValor();
             atualizarResumoCategorias();

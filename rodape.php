@@ -65,7 +65,7 @@
       <div class="col-12 col-lg-4 footer-links">
         <h4>Informações</h4>
         <ul>
-          <li><a href="termos.php">Termos de Uso</a></li>
+          <li><a href="termosUso.php">Termos de Uso</a></li>
           <li><a href="politicaPrivacidade.php">Política de Privacidade</a></li>
         </ul>
         <p class="copyright-text">© 2026 ShowMe. Todos os direitos reservados.</p>

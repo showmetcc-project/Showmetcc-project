@@ -53,9 +53,22 @@ $idEvento = (int) $idInformado;
         require __DIR__ . '/cabecalho.php';
         ?>
 
-        <p id="tituloEvento" class="planejamento-evento-atual">
-            Carregando evento...
-        </p>
+        <div class="cabecalho-planejamento-evento">
+            <p id="tituloEvento" class="planejamento-evento-atual">
+                Carregando evento...
+            </p>
+
+            <div id="sessaoPlanejamentoSelecionada" class="sessao-planejamento-selecionada" hidden>
+                <div>
+                    <span>Data escolhida para a viagem</span>
+                    <strong id="textoSessaoPlanejamento"></strong>
+                </div>
+                <button type="button" id="botaoAlterarSessao" class="link-alterar-sessao" aria-haspopup="dialog" aria-controls="modalAlterarSessao">
+                    <i class="bi bi-calendar2-week" aria-hidden="true"></i>
+                    Alterar data
+                </button>
+            </div>
+        </div>
 
         <main class="planejamento-container container">
             <div class="row g-4 g-xl-5 align-items-start">
@@ -145,7 +158,7 @@ $idEvento = (int) $idInformado;
                         <input type="number" id="orcamento" placeholder="500" min="0" step="0.01" inputmode="decimal" required>
 
                         <div class="campos-gastos-planejamento">
-                            <div class="campo-gasto">
+                            <div class="campo-gasto" id="campoIngressoPlanejamento">
                                 <label for="custoIngresso">Valor do Ingresso / Entrada (R$)</label>
                                 <input type="number" id="custoIngresso" value="0" min="0" step="0.01" inputmode="decimal" aria-describedby="custoMinimoEvento">
                                 <div class="alerta alerta-custo-evento" id="custoMinimoEvento" role="status" aria-live="polite">
@@ -158,11 +171,12 @@ $idEvento = (int) $idInformado;
                             </div>
                         </div>
 
-                        <div class="orcamento-restante resumo-gastos-etapa">
-                            <span>Total de gastos</span>
-                            <strong id="totalGastosEtapa" aria-live="polite">R$ 0,00</strong>
-                            <small id="composicaoGastosEtapa">Ingresso + Transporte + Hospedagem</small>
-                            <small id="saldoGastosEtapa">Saldo do orçamento: R$ 0,00</small>
+                        <div id="avisoIngressoGratuito" class="aviso-evento-gratuito" hidden>
+                            <i class="bi bi-ticket-perforated" aria-hidden="true"></i>
+                            <div>
+                                <strong>Evento gratuito</strong>
+                                <span>Ingresso: R$ 0,00 (Cortesia). Não é necessário informar valor de entrada.</span>
+                            </div>
                         </div>
                     </div>
 
@@ -551,7 +565,7 @@ $idEvento = (int) $idInformado;
                         </div>
 
                         <div class="linha-resumo">
-                            <span>Data e horário</span>
+                            <span>Data e sessão</span>
                             <span id="resumoDataHorarioEvento">Carregando...</span>
                         </div>
 
@@ -750,6 +764,36 @@ $idEvento = (int) $idInformado;
             </div>
             </div>
         </main>
+
+        <dialog id="modalAlterarSessao" class="modal-alterar-sessao" aria-labelledby="tituloModalAlterarSessao" aria-describedby="descricaoModalAlterarSessao">
+            <form id="formAlterarSessao" class="conteudo-modal-alterar-sessao">
+                <button type="button" class="fechar-modal-alterar-sessao" data-fechar-modal-alterar-sessao aria-label="Fechar alteração de data">
+                    <i class="bi bi-x-lg" aria-hidden="true"></i>
+                </button>
+
+                <i class="bi bi-calendar2-week icone-modal-alterar-sessao" aria-hidden="true"></i>
+                <h2 id="tituloModalAlterarSessao">Alterar data do evento</h2>
+                <p id="descricaoModalAlterarSessao">
+                    Escolha outra data ou sessão para a viagem. Os dados já preenchidos no planejamento serão mantidos.
+                </p>
+
+                <fieldset class="opcoes-alterar-sessao">
+                    <legend>Datas e sessões disponíveis</legend>
+                    <div id="opcoesAlterarSessao"></div>
+                </fieldset>
+
+                <p id="erroAlterarSessao" class="erro-alterar-sessao" role="alert"></p>
+
+                <div class="acoes-modal-alterar-sessao">
+                    <button type="button" class="botao-cancelar-alterar-sessao" data-fechar-modal-alterar-sessao>
+                        Cancelar
+                    </button>
+                    <button type="submit" id="botaoConfirmarAlteracaoSessao" class="botao-confirmar-alterar-sessao" disabled>
+                        Usar esta data
+                    </button>
+                </div>
+            </form>
+        </dialog>
 
         <dialog id="modalConflitoAgenda" class="modal-conflito-agenda" aria-labelledby="tituloConflitoAgenda">
             <form method="dialog">

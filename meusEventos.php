@@ -38,12 +38,12 @@
         <div class="abas" role="tablist" aria-label="Categorias dos meus eventos">
             <button class="aba ativa" data-tab="favoritos" role="tab" aria-selected="true" aria-controls="favoritos">
                 <i class="bi bi-heart" aria-hidden="true"></i>
-                <span class="aba-rotulo">Favoritos (<span id="contadorFavoritos">0</span>)</span>
+                <span class="aba-rotulo">Favoritos</span>
             </button>
 
             <button class="aba" data-tab="planejados" role="tab" aria-selected="false" aria-controls="planejados">
                 <i class="bi bi-map-fill" aria-hidden="true"></i>
-                <span class="aba-rotulo">Planejados (<span id="contadorPlanejados">0</span>)</span>
+                <span class="aba-rotulo">Planejados</span>
             </button>
 
             <button class="aba" data-tab="calendario" role="tab" aria-selected="false" aria-controls="calendario">

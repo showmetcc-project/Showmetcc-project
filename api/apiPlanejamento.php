@@ -76,6 +76,7 @@ function validarPlanejamento(array $dados): array
 
 require_once dirname(__DIR__) . '/config/conexao.php';
 require_once __DIR__ . '/middleware/apiHelper.php';
+require_once __DIR__ . '/middleware/sessoesEventoHelper.php';
 require_once __DIR__ . '/middleware/verificaLogin.php';
 
 $metodo = $_SERVER['REQUEST_METHOD'];
@@ -90,19 +91,23 @@ switch ($metodo) {
         }
 
         $stmt = $conn->prepare(
-            'SELECT r.id_rota, r.id_evento, r.meio_transporte, r.distancia_km,
+            'SELECT r.id_rota, r.id_evento, r.sessao_id, r.meio_transporte, r.distancia_km,
                     r.tempo_estimado, r.origem, r.orcamento_total, r.custo_ingresso,
                     r.custo_transporte, r.hospedagem_necessaria, r.nome_hospedagem,
                     r.custo_hospedagem,
                     (r.custo_ingresso + r.custo_transporte + r.custo_hospedagem) AS investimento_total,
                     e.nome_evento, e.cep_evento, e.endereco_evento,
-                    e.numero_endereco, e.cidade_evento, e.uf, e.data_evento, e.horario_evento,
+                    e.numero_endereco, e.cidade_evento, e.uf,
+                    COALESCE(s.data_evento, e.data_evento) AS data_evento,
+                    COALESCE(s.hora_inicio, e.horario_evento) AS horario_evento,
+                    s.hora_fim,
                     e.classificacao_indicativa, e.imagem_evento, e.alt_imagem, e.gratuidade,
                     e.valor_ingresso_minimo, e.valor_ingresso_maximo, e.status_evento
              FROM rota r
              INNER JOIN evento e ON e.id_evento = r.id_evento
+             LEFT JOIN evento_sessoes s ON s.id = r.sessao_id
              WHERE r.id_user = ?
-             ORDER BY e.data_evento DESC, r.id_rota DESC',
+             ORDER BY COALESCE(s.data_evento, e.data_evento) DESC, r.id_rota DESC',
         );
         $stmt->bind_param('i', $idUsuario);
         executarStatementApi($stmt);
@@ -128,10 +133,18 @@ switch ($metodo) {
             responder(['erro' => 'id_evento deve ser um inteiro positivo'], 400);
         }
 
+        $idSessao = filter_var($dados['sessao_id'] ?? null, FILTER_VALIDATE_INT, [
+            'options' => ['min_range' => 1],
+        ]);
+
+        if ($idSessao === false) {
+            responder(['erro' => 'sessao_id é obrigatório e deve ser um inteiro positivo'], 400);
+        }
+
         $planejamento = validarPlanejamento($dados);
 
         $stmt = $conn->prepare(
-            'SELECT id_evento, status_evento, (data_evento < CURDATE()) AS evento_encerrado
+            'SELECT id_evento, status_evento, gratuidade
              FROM evento WHERE id_evento = ? LIMIT 1',
         );
         $stmt->bind_param('i', $idEvento);
@@ -143,8 +156,25 @@ switch ($metodo) {
             responder(['erro' => 'Evento não encontrado'], 404);
         }
 
-        if ($evento['status_evento'] !== 'ativo' || (bool) $evento['evento_encerrado']) {
+        if ($evento['status_evento'] !== 'ativo') {
             responder(['erro' => 'Não é possível planejar um evento encerrado ou indisponível'], 409);
+        }
+
+        $sessao = buscarSessaoEvento($conn, $idEvento, $idSessao);
+
+        if ($sessao === null) {
+            responder(['erro' => 'A sessão selecionada não pertence ao evento'], 422);
+        }
+
+        $dataHoje = new DateTimeImmutable('today', new DateTimeZone(API_FUSO_HORARIO));
+        $hoje = $dataHoje->format('Y-m-d');
+
+        if ($sessao['data_evento'] < $hoje) {
+            responder(['erro' => 'Não é possível planejar uma sessão que já aconteceu'], 409);
+        }
+
+        if ((bool) $evento['gratuidade']) {
+            $planejamento['custo_ingresso'] = 0.0;
         }
 
         $stmt = $conn->prepare('SELECT id_rota FROM rota WHERE id_user = ? AND id_evento = ? LIMIT 1');
@@ -165,15 +195,16 @@ switch ($metodo) {
 
         $stmt = $conn->prepare(
             'INSERT INTO rota
-                (id_user, id_evento, meio_transporte, distancia_km, tempo_estimado,
+                (id_user, id_evento, sessao_id, meio_transporte, distancia_km, tempo_estimado,
                  origem, orcamento_total, custo_ingresso, custo_transporte,
                  hospedagem_necessaria, nome_hospedagem, custo_hospedagem)
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
         );
         $stmt->bind_param(
-            'iisdisdddisd',
+            'iiisdisdddisd',
             $idUsuario,
             $idEvento,
+            $idSessao,
             $planejamento['meio_transporte'],
             $planejamento['distancia_km'],
             $planejamento['tempo_estimado'],
@@ -205,6 +236,10 @@ switch ($metodo) {
             [
                 'id_rota' => $idRota,
                 'id_evento' => $idEvento,
+                'sessao_id' => $idSessao,
+                'data_evento' => $sessao['data_evento'],
+                'horario_evento' => $sessao['hora_inicio'],
+                'hora_fim' => $sessao['hora_fim'],
             ] + $planejamento,
         );
 
@@ -233,6 +268,7 @@ switch ($metodo) {
             'hospedagem_necessaria',
             'nome_hospedagem',
             'custo_hospedagem',
+            'sessao_id',
         ];
         $possuiCampoEditavel = false;
 
@@ -248,10 +284,10 @@ switch ($metodo) {
         }
 
         $stmt = $conn->prepare(
-            'SELECT r.meio_transporte, r.distancia_km, r.tempo_estimado, r.origem,
-                    r.orcamento_total, r.custo_ingresso, r.custo_transporte,
-                    r.hospedagem_necessaria, r.nome_hospedagem, r.custo_hospedagem,
-                    e.status_evento, (e.data_evento < CURDATE()) AS evento_encerrado
+            'SELECT r.id_evento, r.sessao_id, r.meio_transporte, r.distancia_km,
+                    r.tempo_estimado, r.origem, r.orcamento_total, r.custo_ingresso,
+                    r.custo_transporte, r.hospedagem_necessaria, r.nome_hospedagem,
+                    r.custo_hospedagem, e.status_evento, e.gratuidade
              FROM rota r
              INNER JOIN evento e ON e.id_evento = r.id_evento
              WHERE r.id_rota = ? AND r.id_user = ? LIMIT 1',
@@ -265,8 +301,44 @@ switch ($metodo) {
             responder(['erro' => 'Planejamento não encontrado'], 404);
         }
 
-        if ($atual['status_evento'] !== 'ativo' || (bool) $atual['evento_encerrado']) {
+        if ($atual['status_evento'] !== 'ativo') {
             responder(['erro' => 'O planejamento de um evento encerrado não pode ser alterado'], 409);
+        }
+
+        $idSessao = $atual['sessao_id'] === null ? null : (int) $atual['sessao_id'];
+
+        if (array_key_exists('sessao_id', $dados)) {
+            $sessaoInformada = filter_var($dados['sessao_id'], FILTER_VALIDATE_INT, [
+                'options' => ['min_range' => 1],
+            ]);
+
+            if ($sessaoInformada === false) {
+                responder(['erro' => 'sessao_id deve ser um inteiro positivo'], 400);
+            }
+
+            $idSessao = $sessaoInformada;
+        }
+
+        if ($idSessao === null) {
+            $sessoesEvento = obterSessoesEvento($conn, (int) $atual['id_evento']);
+            $idSessao = isset($sessoesEvento[0]) ? (int) $sessoesEvento[0]['id'] : null;
+        }
+
+        if ($idSessao === null) {
+            responder(['erro' => 'Nenhuma sessão disponível para este evento'], 422);
+        }
+
+        $sessao = buscarSessaoEvento($conn, (int) $atual['id_evento'], $idSessao);
+
+        if ($sessao === null) {
+            responder(['erro' => 'A sessão selecionada não pertence ao evento'], 422);
+        }
+
+        $dataHoje = new DateTimeImmutable('today', new DateTimeZone(API_FUSO_HORARIO));
+        $hoje = $dataHoje->format('Y-m-d');
+
+        if ($sessao['data_evento'] < $hoje) {
+            responder(['erro' => 'O planejamento de uma sessão encerrada não pode ser alterado'], 409);
         }
 
         $planejamento = validarPlanejamento([
@@ -282,15 +354,20 @@ switch ($metodo) {
             'custo_hospedagem' => $dados['custo_hospedagem'] ?? $atual['custo_hospedagem'],
         ]);
 
+        if ((bool) $atual['gratuidade']) {
+            $planejamento['custo_ingresso'] = 0.0;
+        }
+
         $stmt = $conn->prepare(
             'UPDATE rota
              SET meio_transporte = ?, distancia_km = ?, tempo_estimado = ?, origem = ?,
                  orcamento_total = ?, custo_ingresso = ?, custo_transporte = ?,
-                 hospedagem_necessaria = ?, nome_hospedagem = ?, custo_hospedagem = ?
+                 hospedagem_necessaria = ?, nome_hospedagem = ?, custo_hospedagem = ?,
+                 sessao_id = ?
              WHERE id_rota = ? AND id_user = ?',
         );
         $stmt->bind_param(
-            'sdisdddisdii',
+            'sdisdddisdiii',
             $planejamento['meio_transporte'],
             $planejamento['distancia_km'],
             $planejamento['tempo_estimado'],
@@ -301,6 +378,7 @@ switch ($metodo) {
             $planejamento['hospedagem_necessaria'],
             $planejamento['nome_hospedagem'],
             $planejamento['custo_hospedagem'],
+            $idSessao,
             $id,
             $idUsuario,
         );
@@ -309,7 +387,15 @@ switch ($metodo) {
 
         responder([
             'mensagem' => 'Planejamento atualizado com sucesso',
-            'planejamento' => normalizarPlanejamentoApi(['id_rota' => $id] + $planejamento),
+            'planejamento' => normalizarPlanejamentoApi(
+                [
+                    'id_rota' => $id,
+                    'sessao_id' => $idSessao,
+                    'data_evento' => $sessao['data_evento'],
+                    'horario_evento' => $sessao['hora_inicio'],
+                    'hora_fim' => $sessao['hora_fim'],
+                ] + $planejamento,
+            ),
         ]);
 
     case 'DELETE':

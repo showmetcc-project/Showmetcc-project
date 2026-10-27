@@ -126,7 +126,7 @@ $googleClientId = is_array($googleConfig) ? trim((string) ($googleConfig['client
 
           <div class="cadastro-termos-consentimento">
             <input id="aceiteTermos" name="aceiteTermos" type="checkbox" value="1" required>
-            <label for="aceiteTermos">Li e concordo com os <a href="termos.php" target="_blank" rel="noopener">Termos de Uso</a> e a <a href="politicaPrivacidade.php" target="_blank" rel="noopener">Política de Privacidade</a></label>
+            <label for="aceiteTermos">Li e concordo com os <a href="termosUso.php" target="_blank" rel="noopener">Termos de Uso</a> e a <a href="politicaPrivacidade.php" target="_blank" rel="noopener">Política de Privacidade</a></label>
           </div>
 
           <button type="submit" class="cadastro-btn">

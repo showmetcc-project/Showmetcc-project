@@ -4,7 +4,7 @@ require_once __DIR__ . '/config/classificacoesIndicativas.php';
 $usuarioLogado = isset($_SESSION['id_user']);
 $usuarioAdmin = $usuarioLogado && ($_SESSION['tipo_usuario'] ?? '') === 'admin';
 $urlAreaUsuario = $usuarioAdmin ? 'admin.php' : 'perfilUsuario.php';
-$rotuloAreaUsuario = $usuarioAdmin ? 'Painel admin' : 'Usuário';
+$rotuloAreaUsuario = $usuarioAdmin ? 'Painel admin' : 'Perfil';
 $termoBuscaCabecalho =
     isset($_GET['busca']) && is_string($_GET['busca'])
         ? htmlspecialchars(trim($_GET['busca']), ENT_QUOTES, 'UTF-8')
@@ -255,14 +255,16 @@ $atributosRequerLogin = !$usuarioLogado ? ' data-requer-login="true" aria-haspop
                   <span>Cadastrar Evento</span>
                 </a>
               </li>
-              <li><a href="meusEventos.php"<?= $atributosRequerLogin ?>><i class="bi bi-calendar-event" aria-hidden="true"></i><span>Meus Eventos</span></a></li>
               <?php endif; ?>
+              <li><a href="institucional.php">Institucional</a></li>
               <?php if ($menuComunidades): ?>
                 <li><a href="index.php" class="nav-inicio"><i class="bi bi-house-door" aria-hidden="true"></i><span>Início</span></a></li>
               <?php else: ?>
                 <li><a href="comunidade.php"<?= $atributosRequerLogin ?>><i class="bi bi-people" aria-hidden="true"></i><span>Comunidade</span></a></li>
               <?php endif; ?>
-              <li><a href="institucional.php">Institucional</a></li>
+              <?php if (!$usuarioAdmin): ?>
+              <li><a href="meusEventos.php"<?= $atributosRequerLogin ?>><i class="bi bi-calendar-event" aria-hidden="true"></i><span>Meus Eventos</span></a></li>
+              <?php endif; ?>
               <?php if ($usuarioLogado): ?>
                 <li>
                   <a href="<?= $urlAreaUsuario ?>" class="nav-usuario-direto" aria-label="Abrir <?= $usuarioAdmin
@@ -293,15 +295,7 @@ $atributosRequerLogin = !$usuarioLogado ? ' data-requer-login="true" aria-haspop
                   <span>Cadastrar Evento</span>
                 </a>
               </li>
-              <li><a href="meusEventos.php"<?= $atributosRequerLogin ?>><i class="bi bi-calendar-event" aria-hidden="true"></i><span>Meus Eventos</span></a></li>
               <?php endif; ?>
-              <li>
-                <a href="index.php" class="nav-inicio">
-                  <i class="bi bi-house-door" aria-hidden="true"></i>
-                  <span>Início</span>
-                </a>
-              </li>
-              <li><a href="comunidade.php"<?= $atributosRequerLogin ?>><i class="bi bi-people" aria-hidden="true"></i><span>Comunidade</span></a></li>
               <li class="dropdown institucional-dropdown">
                 <a href="institucional.php#sobre">
                   <span>Institucional</span>
@@ -315,6 +309,16 @@ $atributosRequerLogin = !$usuarioLogado ? ' data-requer-login="true" aria-haspop
                   <li><a href="institucional.php#contato">Contato</a></li>
                 </ul>
               </li>
+              <li>
+                <a href="index.php" class="nav-inicio">
+                  <i class="bi bi-house-door" aria-hidden="true"></i>
+                  <span>Início</span>
+                </a>
+              </li>
+              <li><a href="comunidade.php"<?= $atributosRequerLogin ?>><i class="bi bi-people" aria-hidden="true"></i><span>Comunidade</span></a></li>
+              <?php if (!$usuarioAdmin): ?>
+              <li><a href="meusEventos.php"<?= $atributosRequerLogin ?>><i class="bi bi-calendar-event" aria-hidden="true"></i><span>Meus Eventos</span></a></li>
+              <?php endif; ?>
               <?php if ($usuarioLogado): ?>
                 <li>
                   <a href="<?= $urlAreaUsuario ?>" class="nav-usuario-direto" aria-label="Abrir <?= $usuarioAdmin
@@ -363,14 +367,16 @@ $atributosRequerLogin = !$usuarioLogado ? ' data-requer-login="true" aria-haspop
                     <span>Cadastrar Evento</span>
                   </a>
                 </li>
-                <li><a href="meusEventos.php"<?= $atributosRequerLogin ?>><i class="bi bi-calendar-event" aria-hidden="true"></i><span>Meus Eventos</span></a></li>
                 <?php endif; ?>
+                <li><a href="institucional.php">Institucional</a></li>
                 <?php if ($menuComunidades): ?>
                   <li><a href="index.php" class="nav-inicio"><i class="bi bi-house-door" aria-hidden="true"></i><span>Início</span></a></li>
                 <?php else: ?>
                   <li><a href="comunidade.php"<?= $atributosRequerLogin ?>><i class="bi bi-people" aria-hidden="true"></i><span>Comunidade</span></a></li>
                 <?php endif; ?>
-                <li><a href="institucional.php">Institucional</a></li>
+                <?php if (!$usuarioAdmin): ?>
+                <li><a href="meusEventos.php"<?= $atributosRequerLogin ?>><i class="bi bi-calendar-event" aria-hidden="true"></i><span>Meus Eventos</span></a></li>
+                <?php endif; ?>
                 <?php if ($usuarioLogado): ?>
                   <li>
                     <a href="<?= $urlAreaUsuario ?>" class="nav-usuario-direto" aria-label="Abrir <?= $usuarioAdmin
@@ -407,15 +413,7 @@ $atributosRequerLogin = !$usuarioLogado ? ' data-requer-login="true" aria-haspop
                     <span>Cadastrar Evento</span>
                   </a>
                 </li>
-                <li><a href="meusEventos.php"<?= $atributosRequerLogin ?>><i class="bi bi-calendar-event" aria-hidden="true"></i><span>Meus Eventos</span></a></li>
                 <?php endif; ?>
-                <li>
-                  <a href="index.php" class="nav-inicio">
-                    <i class="bi bi-house-door" aria-hidden="true"></i>
-                    <span>Início</span>
-                  </a>
-                </li>
-                <li><a href="comunidade.php"<?= $atributosRequerLogin ?>><i class="bi bi-people" aria-hidden="true"></i><span>Comunidade</span></a></li>
                 <li class="cabecalho-menu-institucional">
                   <div>
                     <a href="institucional.php#sobre">Institucional</a>
@@ -437,6 +435,16 @@ $atributosRequerLogin = !$usuarioLogado ? ' data-requer-login="true" aria-haspop
                     <li><a href="institucional.php#contato">Contato</a></li>
                   </ul>
                 </li>
+                <li>
+                  <a href="index.php" class="nav-inicio">
+                    <i class="bi bi-house-door" aria-hidden="true"></i>
+                    <span>Início</span>
+                  </a>
+                </li>
+                <li><a href="comunidade.php"<?= $atributosRequerLogin ?>><i class="bi bi-people" aria-hidden="true"></i><span>Comunidade</span></a></li>
+                <?php if (!$usuarioAdmin): ?>
+                <li><a href="meusEventos.php"<?= $atributosRequerLogin ?>><i class="bi bi-calendar-event" aria-hidden="true"></i><span>Meus Eventos</span></a></li>
+                <?php endif; ?>
                 <?php if ($usuarioLogado): ?>
                   <li>
                     <a href="<?= $urlAreaUsuario ?>" class="nav-usuario-direto" aria-label="Abrir <?= $usuarioAdmin

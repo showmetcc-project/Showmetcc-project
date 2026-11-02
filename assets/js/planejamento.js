@@ -1923,8 +1923,23 @@ async function lerRespostaJson(resposta) {
     }
 }
 
+const TEMPO_LIMITE_GOOGLE_AGENDA = 5000;
+
+async function buscarGoogleAgenda(url, opcoes = {}) {
+    const controlador = new AbortController();
+    const temporizador = window.setTimeout(() => controlador.abort(), TEMPO_LIMITE_GOOGLE_AGENDA);
+
+    try {
+        return await fetch(url, { ...opcoes, signal: controlador.signal });
+    } finally {
+        window.clearTimeout(temporizador);
+    }
+}
+
 async function obterStatusGoogleAgenda() {
-    const resposta = await fetch('api/google-calendar', { headers: { Accept: 'application/json' } });
+    const resposta = await buscarGoogleAgenda('api/google-calendar', {
+        headers: { Accept: 'application/json' },
+    });
     const dados = await lerRespostaJson(resposta);
 
     if (resposta.status === 401) {
@@ -2095,7 +2110,9 @@ async function carregarPlanejamentoExistente() {
         atualizarEstadoHospedagem();
         atualizarResumo();
         configurarBotaoPlanejamentoFinalizado();
-        await exibirAcoesGoogleAgenda(existente.id_rota);
+        exibirAcoesGoogleAgenda(existente.id_rota).catch((erro) => {
+            console.warn('Não foi possível atualizar o estado do Google Agenda.', erro);
+        });
         return existente;
     }
 
@@ -2130,32 +2147,38 @@ function confirmarFinalizacaoComConflito(conflitos) {
 }
 
 async function verificarConflitoGoogleAgenda(tempo) {
-    const status = statusGoogleAgenda || (await obterStatusGoogleAgenda());
-    if (!status?.conectado) {
+    try {
+        const status = statusGoogleAgenda || (await obterStatusGoogleAgenda());
+        if (!status?.conectado) {
+            return true;
+        }
+
+        const resposta = await buscarGoogleAgenda('api/google-calendar', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+            body: JSON.stringify({
+                acao: 'verificar_conflito',
+                id_evento: evento.id,
+                sessao_id: evento.sessaoId,
+                id_rota:
+                    Number.isInteger(idPlanejamentoExistente) && idPlanejamentoExistente > 0
+                        ? idPlanejamentoExistente
+                        : null,
+                tempo_estimado: Number(tempo),
+            }),
+        });
+        const dados = await lerRespostaJson(resposta);
+
+        if (!resposta.ok) {
+            console.warn('Google Agenda indisponível; seguindo sem verificação de conflito.', dados.erro);
+            return true;
+        }
+
+        return dados.conflito ? confirmarFinalizacaoComConflito(dados.conflitos || []) : true;
+    } catch (erro) {
+        console.warn('Não foi possível verificar conflitos no Google Agenda; seguindo com o planejamento.', erro);
         return true;
     }
-
-    const resposta = await fetch('api/google-calendar', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-        body: JSON.stringify({
-            acao: 'verificar_conflito',
-            id_evento: evento.id,
-            sessao_id: evento.sessaoId,
-            id_rota:
-                Number.isInteger(idPlanejamentoExistente) && idPlanejamentoExistente > 0
-                    ? idPlanejamentoExistente
-                    : null,
-            tempo_estimado: Number(tempo),
-        }),
-    });
-    const dados = await lerRespostaJson(resposta);
-
-    if (!resposta.ok) {
-        throw new Error(dados.erro || 'Não foi possível verificar conflitos na agenda.');
-    }
-
-    return dados.conflito ? confirmarFinalizacaoComConflito(dados.conflitos || []) : true;
 }
 
 async function adicionarAoGoogleAgenda() {
@@ -2294,7 +2317,9 @@ async function finalizarPlanejamento(eventoSubmit) {
             );
         }
 
-        await exibirAcoesGoogleAgenda(idRota);
+        exibirAcoesGoogleAgenda(idRota).catch((erro) => {
+            console.warn('Planejamento salvo, mas o Google Agenda não respondeu.', erro);
+        });
     } catch (erro) {
         mensagem.textContent = erro.message;
         mensagem.classList.add('erro');

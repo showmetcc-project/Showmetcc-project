@@ -4865,6 +4865,11 @@ main small,
     color: #ffffff !important;
 }
 
+.inicio .badge-evento.gratuito {
+    background: var(--showme-primary) !important;
+    color: #111111 !important;
+}
+
 .inicio .selo-classificacao {
     position: absolute;
     top: 10px !important;

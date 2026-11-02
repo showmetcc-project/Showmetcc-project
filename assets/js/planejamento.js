@@ -1037,6 +1037,7 @@ function proximaEtapa(numero) {
     proxima.classList.add('ativa');
 
     atualizarTimeline(numero);
+    window.scrollTo(0, 0);
 
     if (numero === 3) {
         setTimeout(async () => {
@@ -1079,6 +1080,7 @@ function voltarEtapa(numero) {
     document.getElementById(`etapa${numero}`).classList.add('ativa');
 
     atualizarTimeline(numero);
+    window.scrollTo(0, 0);
 
     if (numero === 3 && mapa) {
         setTimeout(() => mapa.invalidateSize(), 100);
@@ -1829,6 +1831,7 @@ function abrirEtapaPlanejamento(numero) {
     document.querySelectorAll('.etapa').forEach((etapa) => etapa.classList.remove('ativa'));
     document.getElementById(`etapa${numero}`).classList.add('ativa');
     atualizarTimeline(numero);
+    window.scrollTo(0, 0);
 
     if (numero === 3) {
         window.setTimeout(async () => {

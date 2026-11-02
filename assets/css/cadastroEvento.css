@@ -110,6 +110,56 @@ body {
     margin-bottom: 34px;
 }
 
+.aviso-rascunho-evento {
+    align-items: center;
+    background: rgba(0, 255, 0, 0.06);
+    border: 1px solid rgba(0, 255, 0, 0.35);
+    border-radius: 8px;
+    color: #d8d8d8;
+    display: flex;
+    flex-wrap: wrap;
+    font-family: 'Open Sans', sans-serif;
+    font-size: 13px;
+    gap: 8px 10px;
+    margin: -16px 0 24px;
+    padding: 10px 14px;
+}
+
+.aviso-rascunho-evento[hidden] {
+    display: none;
+}
+
+.aviso-rascunho-evento > i {
+    color: var(--green);
+    flex: 0 0 auto;
+}
+
+#statusRascunhoEvento {
+    flex: 1 1 220px;
+    line-height: 1.45;
+    min-width: 0;
+}
+
+.botao-descartar-rascunho {
+    background: transparent;
+    border: 0;
+    color: var(--pink);
+    cursor: pointer;
+    flex: 0 0 auto;
+    font: inherit;
+    font-size: 12px;
+    font-weight: 700;
+    padding: 4px 0;
+    text-decoration: underline;
+}
+
+.botao-descartar-rascunho:hover,
+.botao-descartar-rascunho:focus-visible {
+    color: #fff;
+    outline: 2px solid var(--pink);
+    outline-offset: 3px;
+}
+
 .form-label {
     display: block;
     color: #bdbdbd;

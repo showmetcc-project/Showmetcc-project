@@ -47,11 +47,20 @@ require_once __DIR__ . '/config/classificacoesIndicativas.php';
                 Preencha as informações abaixo. Nossa equipe analisará e aprovará seu evento.
             </p>
 
+            <div id="avisoRascunhoEvento" class="aviso-rascunho-evento" hidden>
+                <i class="bi bi-cloud-check" aria-hidden="true"></i>
+                <span id="statusRascunhoEvento" role="status" aria-live="polite"></span>
+                <button type="button" id="botaoDescartarRascunho" class="botao-descartar-rascunho">
+                    Descartar rascunho
+                </button>
+            </div>
+
             <form
                 id="formEvento"
                 action="api/eventos/"
                 method="post"
                 enctype="multipart/form-data"
+                data-usuario-id="<?= (int) ($_SESSION['id_user'] ?? 0) ?>"
                 novalidate>
 
                 <div class="mb-3">

@@ -83,9 +83,10 @@ $idEvento = (int) $idInformado;
                             1
                         </div>
 
-                        <span>
-                    Orçamento
-                </span>
+                        <span class="rotulo-passo">
+                            <span class="rotulo-passo-longo">Orçamento</span>
+                            <span class="rotulo-passo-curto" aria-hidden="true">Custos</span>
+                        </span>
                     </div>
 
                     <div class="passo" id="passo2">
@@ -93,9 +94,10 @@ $idEvento = (int) $idInformado;
                             2
                         </div>
 
-                        <span>
-                    Transporte
-                </span>
+                        <span class="rotulo-passo">
+                            <span class="rotulo-passo-longo">Transporte</span>
+                            <span class="rotulo-passo-curto" aria-hidden="true">Transporte</span>
+                        </span>
                     </div>
 
                     <div class="passo" id="passo3">
@@ -103,9 +105,10 @@ $idEvento = (int) $idInformado;
                             3
                         </div>
 
-                        <span>
-                    Rota
-                </span>
+                        <span class="rotulo-passo">
+                            <span class="rotulo-passo-longo">Rota</span>
+                            <span class="rotulo-passo-curto" aria-hidden="true">Rota</span>
+                        </span>
                     </div>
 
                     <div class="passo" id="passo4">
@@ -113,9 +116,10 @@ $idEvento = (int) $idInformado;
                             4
                         </div>
 
-                        <span>
-                    Hospedagem
-                </span>
+                        <span class="rotulo-passo">
+                            <span class="rotulo-passo-longo">Hospedagem</span>
+                            <span class="rotulo-passo-curto" aria-hidden="true">Estadia</span>
+                        </span>
                     </div>
 
                     <div class="passo" id="passo5">
@@ -123,9 +127,10 @@ $idEvento = (int) $idInformado;
                             5
                         </div>
 
-                        <span>
-                    Resumo
-                </span>
+                        <span class="rotulo-passo">
+                            <span class="rotulo-passo-longo">Resumo</span>
+                            <span class="rotulo-passo-curto" aria-hidden="true">Resumo</span>
+                        </span>
                     </div>
                 </div>
             </aside>
@@ -180,9 +185,15 @@ $idEvento = (int) $idInformado;
                         </div>
                     </div>
 
-                    <button onclick="proximaEtapa(2)">
-                Continuar
-            </button>
+                    <div class="botoes">
+                        <a class="botao-voltar-planejamento" href="detalhesEvento.php?id=<?= $idEvento ?>">
+                            Voltar
+                        </a>
+
+                        <button type="button" onclick="proximaEtapa(2)">
+                            Continuar
+                        </button>
+                    </div>
                 </div>
 
                 <div class="etapa" id="etapa2">
@@ -752,7 +763,8 @@ $idEvento = (int) $idInformado;
 
                         <div class="botoes">
                             <button id="botaoVoltarResumo" type="button" onclick="voltarEtapa(4)">Voltar</button>
-                            <button id="botaoImprimirPlanejamento" class="botao-imprimir-planejamento" type="button" hidden>
+                            <button id="botaoImprimirPlanejamento" class="botao-imprimir-planejamento" type="button"
+                                aria-label="Imprimir ou baixar PDF" hidden>
                                 <i class="bi bi-printer" aria-hidden="true"></i>
                                 <span>Imprimir / Baixar PDF</span>
                             </button>

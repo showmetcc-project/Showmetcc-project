@@ -208,19 +208,19 @@ $atributosRequerLogin = !$usuarioLogado ? ' data-requer-login="true" aria-haspop
                         </div>
                       </div>
                     </fieldset>
-                    <fieldset class="grupo-filtros-busca">
-                      <legend>Período</legend>
-                      <div class="chips-filtro" role="group" aria-label="Filtrar por período">
-                        <button type="button" class="chip-filtro ativo" data-filtro-data="qualquer" aria-pressed="true">Qualquer data</button>
-                        <button type="button" class="chip-filtro" data-filtro-data="hoje" aria-pressed="false">Hoje</button>
-                        <button type="button" class="chip-filtro" data-filtro-data="amanha" aria-pressed="false">Amanhã</button>
-                        <button type="button" class="chip-filtro" data-filtro-data="fim-de-semana" aria-pressed="false">Este fim de semana</button>
-                        <button type="button" class="chip-filtro" data-filtro-data="nesta-semana" aria-pressed="false">Nesta semana</button>
-                        <button type="button" class="chip-filtro" data-filtro-data="proxima-semana" aria-pressed="false">Na próxima semana</button>
-                        <button type="button" class="chip-filtro" data-filtro-data="neste-mes" aria-pressed="false">Neste mês</button>
-                        <button type="button" class="chip-filtro" data-filtro-data="proximo-mes" aria-pressed="false">No próximo mês</button>
-                      </div>
-                    </fieldset>
+                    <label class="grupo-filtros-busca" for="filtroPeriodoBusca">
+                      <span>Período</span>
+                      <select id="filtroPeriodoBusca">
+                        <option value="qualquer">Qualquer data</option>
+                        <option value="hoje">Hoje</option>
+                        <option value="amanha">Amanhã</option>
+                        <option value="fim-de-semana">Este fim de semana</option>
+                        <option value="nesta-semana">Nesta semana</option>
+                        <option value="proxima-semana">Na próxima semana</option>
+                        <option value="neste-mes">Neste mês</option>
+                        <option value="proximo-mes">No próximo mês</option>
+                      </select>
+                    </label>
                     <div class="filtros-localidade">
                       <label class="grupo-filtros-busca" for="filtroUfBusca">
                         <span>UF</span>

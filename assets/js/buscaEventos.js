@@ -33,6 +33,7 @@
         const backdropBusca = document.querySelector('[data-backdrop-busca]');
         const filtroCategoria = document.getElementById('filtroCategoriaBusca');
         const filtroClassificacao = document.getElementById('filtroClassificacaoBusca');
+        const filtroPeriodo = document.getElementById('filtroPeriodoBusca');
         const filtroUf = document.getElementById('filtroUfBusca');
         const filtroCidade = document.getElementById('filtroCidadeBusca');
         const sliderPreco = document.getElementById('filtroPrecoMaximo');
@@ -351,11 +352,7 @@
                 botao.classList.toggle('ativo', ativo);
                 botao.setAttribute('aria-pressed', String(ativo));
             });
-            formulario.querySelectorAll('[data-filtro-data]').forEach((botao) => {
-                const ativo = botao.dataset.filtroData === filtros.data;
-                botao.classList.toggle('ativo', ativo);
-                botao.setAttribute('aria-pressed', String(ativo));
-            });
+            if (filtroPeriodo) filtroPeriodo.value = filtros.data;
             if (filtroClassificacao) filtroClassificacao.value = filtros.classificacao;
             if (filtroCategoria) filtroCategoria.value = filtros.categoria;
             if (filtroUf) filtroUf.value = filtros.uf;
@@ -648,11 +645,9 @@
             });
         });
 
-        formulario.querySelectorAll('[data-filtro-data]').forEach((botao) => {
-            botao.addEventListener('click', () => {
-                filtros.data = botao.dataset.filtroData;
-                aplicarFiltros();
-            });
+        filtroPeriodo?.addEventListener('change', () => {
+            filtros.data = PERIODOS_VALIDOS.includes(filtroPeriodo.value) ? filtroPeriodo.value : 'qualquer';
+            aplicarFiltros();
         });
 
         filtroClassificacao?.addEventListener('change', () => {

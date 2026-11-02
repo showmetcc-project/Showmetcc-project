@@ -27,11 +27,20 @@
     const templateSessao = document.getElementById('templateSessaoEvento');
     const botaoAdicionarSessao = document.getElementById('botaoAdicionarSessao');
     const erroSessoes = document.getElementById('erroSessoesEvento');
+    const avisoRascunho = document.getElementById('avisoRascunhoEvento');
+    const statusRascunho = document.getElementById('statusRascunhoEvento');
+    const botaoDescartarRascunho = document.getElementById('botaoDescartarRascunho');
     const tiposFotoAceitos = ['image/jpeg', 'image/png', 'image/webp'];
     const limiteFoto = 10 * 1024 * 1024;
     const limiteSessoes = 30;
+    const versaoRascunho = 1;
+    const chaveRascunho = `showme:cadastroEvento:rascunho:v${versaoRascunho}:${
+        formulario?.dataset.usuarioId || 'anonimo'
+    }`;
+    const valoresIniciais = new Map();
     let cepConsultado = '';
     let consultaCepAtual = 0;
+    let temporizadorRascunho = null;
 
     if (!formulario || !inputFoto || !dropzoneFoto || !botaoEnviar) {
         return;
@@ -231,6 +240,7 @@
         listaSessoes.appendChild(novaSessao);
         reindexarSessoes();
         atualizarErroSessoes('');
+        agendarSalvarRascunho();
         novaSessao.querySelector('[data-campo="data_evento"]')?.focus();
     }
 
@@ -248,6 +258,7 @@
         botaoRemover.closest('[data-sessao]')?.remove();
         reindexarSessoes();
         atualizarErroSessoes('');
+        agendarSalvarRascunho();
     });
 
     function validarSessoes() {
@@ -294,6 +305,270 @@
     }
 
     reindexarSessoes();
+
+    function camposPersistiveisRascunho() {
+        return [...formulario.querySelectorAll('input[name], select[name], textarea[name]')].filter(function (campo) {
+            if (campo.type === 'file' || campo.type === 'radio' || campo.type === 'checkbox') return false;
+            return !campo.name.startsWith('sessoes[');
+        });
+    }
+
+    function capturarValoresIniciaisRascunho() {
+        camposPersistiveisRascunho().forEach(function (campo) {
+            valoresIniciais.set(campo.name, campo.value);
+        });
+    }
+
+    function capturarSessoesRascunho() {
+        return linhasSessoes().map(function (linha) {
+            return {
+                data_evento: linha.querySelector('[data-campo="data_evento"]')?.value || '',
+                hora_inicio: linha.querySelector('[data-campo="hora_inicio"]')?.value || '',
+                hora_fim: linha.querySelector('[data-campo="hora_fim"]')?.value || '',
+            };
+        });
+    }
+
+    function formularioTemConteudoRascunho() {
+        const algumCampoAlterado = camposPersistiveisRascunho().some(function (campo) {
+            return campo.value !== (valoresIniciais.get(campo.name) ?? '');
+        });
+        const algumaCategoria = categorias.some((categoria) => categoria.checked);
+        const tipoGratuito = formulario.querySelector('input[name="gratuidade"][value="true"]');
+        const tipoAlterado = Boolean(tipoGratuito && !tipoGratuito.checked);
+        const algumaSessaoPreenchida = linhasSessoes().some(function (linha) {
+            return ['data_evento', 'hora_inicio', 'hora_fim'].some(function (campo) {
+                return Boolean(linha.querySelector(`[data-campo="${campo}"]`)?.value);
+            });
+        });
+
+        return algumCampoAlterado || algumaCategoria || tipoAlterado || algumaSessaoPreenchida;
+    }
+
+    function atualizarAvisoRascunho(mensagem) {
+        if (!avisoRascunho || !statusRascunho) return;
+
+        if (!mensagem) {
+            avisoRascunho.hidden = true;
+            statusRascunho.textContent = '';
+            return;
+        }
+
+        avisoRascunho.hidden = false;
+        statusRascunho.textContent = mensagem;
+    }
+
+    function removerRascunhoSalvo() {
+        if (temporizadorRascunho) {
+            window.clearTimeout(temporizadorRascunho);
+            temporizadorRascunho = null;
+        }
+
+        try {
+            window.localStorage.removeItem(chaveRascunho);
+        } catch (_) {
+            /* O rascunho é uma conveniência local; o formulário segue funcionando sem ele. */
+        }
+    }
+
+    function salvarRascunho() {
+        if (temporizadorRascunho) {
+            window.clearTimeout(temporizadorRascunho);
+            temporizadorRascunho = null;
+        }
+
+        if (!formularioTemConteudoRascunho()) {
+            removerRascunhoSalvo();
+            atualizarAvisoRascunho('');
+            return;
+        }
+
+        const campos = {};
+        camposPersistiveisRascunho().forEach(function (campo) {
+            campos[campo.name] = campo.value;
+        });
+
+        const tipoEvento = formulario.querySelector('input[name="gratuidade"]:checked')?.value || 'true';
+        const dados = {
+            versao: versaoRascunho,
+            usuarioId: Number(formulario.dataset.usuarioId || 0),
+            atualizadoEm: new Date().toISOString(),
+            tipoEvento,
+            categorias: categorias.filter((categoria) => categoria.checked).map((categoria) => categoria.value),
+            sessoes: capturarSessoesRascunho(),
+            cepConsultado,
+            campos,
+        };
+
+        try {
+            window.localStorage.setItem(chaveRascunho, JSON.stringify(dados));
+        } catch (_) {
+            atualizarAvisoRascunho('Não foi possível salvar o rascunho neste navegador.');
+            return;
+        }
+
+        const hora = new Date().toLocaleTimeString('pt-BR', {
+            hour: '2-digit',
+            minute: '2-digit',
+        });
+        atualizarAvisoRascunho(`Rascunho salvo automaticamente às ${hora} neste navegador.`);
+    }
+
+    function agendarSalvarRascunho(evento) {
+        if (evento?.target === inputFoto) return;
+
+        if (temporizadorRascunho) {
+            window.clearTimeout(temporizadorRascunho);
+        }
+
+        temporizadorRascunho = window.setTimeout(function () {
+            temporizadorRascunho = null;
+            salvarRascunho();
+        }, 500);
+    }
+
+    function restaurarSessoesRascunho(sessoes) {
+        if (!Array.isArray(sessoes) || !listaSessoes || !templateSessao) return;
+
+        const quantidade = Math.min(limiteSessoes, Math.max(1, sessoes.length));
+        let linhas = linhasSessoes();
+
+        while (linhas.length < quantidade) {
+            listaSessoes.appendChild(templateSessao.content.firstElementChild.cloneNode(true));
+            linhas = linhasSessoes();
+        }
+
+        while (linhas.length > quantidade) {
+            linhas.pop()?.remove();
+            linhas = linhasSessoes();
+        }
+
+        reindexarSessoes();
+
+        linhasSessoes().forEach(function (linha, indice) {
+            const dadosSessao = sessoes[indice] && typeof sessoes[indice] === 'object' ? sessoes[indice] : {};
+            ['data_evento', 'hora_inicio', 'hora_fim'].forEach(function (campo) {
+                const input = linha.querySelector(`[data-campo="${campo}"]`);
+                if (!input) return;
+                const valor = dadosSessao[campo];
+                input.value = typeof valor === 'string' ? valor : '';
+            });
+        });
+    }
+
+    function restaurarRascunhoSalvo() {
+        let dados = null;
+        let bruto = '';
+
+        try {
+            bruto = window.localStorage.getItem(chaveRascunho) || '';
+            if (!bruto) return false;
+            dados = JSON.parse(bruto);
+        } catch (_) {
+            removerRascunhoSalvo();
+            return false;
+        }
+
+        if (
+            !dados ||
+            Number(dados.versao) !== versaoRascunho ||
+            Number(dados.usuarioId) !== Number(formulario.dataset.usuarioId || 0)
+        ) {
+            return false;
+        }
+
+        const mapaCampos = new Map(
+            camposPersistiveisRascunho().map(function (campo) {
+                return [campo.name, campo];
+            }),
+        );
+        const campos = dados.campos && typeof dados.campos === 'object' ? dados.campos : {};
+        let restaurouAlgo = false;
+
+        Object.entries(campos).forEach(function ([nome, valor]) {
+            const campo = mapaCampos.get(nome);
+            if (!campo || valor === null || valor === undefined || typeof valor === 'object') return;
+            campo.value = String(valor);
+            restaurouAlgo = true;
+        });
+
+        if (Array.isArray(dados.categorias)) {
+            const categoriasSalvas = new Set(dados.categorias.map((categoria) => String(categoria)));
+            categorias.forEach(function (categoria) {
+                categoria.checked = categoriasSalvas.has(categoria.value);
+            });
+            restaurouAlgo = restaurouAlgo || categoriasSalvas.size > 0;
+        }
+
+        if (typeof dados.tipoEvento === 'string') {
+            const tipo = [...formulario.querySelectorAll('input[name="gratuidade"]')].find(function (radio) {
+                return radio.value === dados.tipoEvento;
+            });
+            if (tipo) {
+                tipo.checked = true;
+                restaurouAlgo = true;
+            }
+        }
+
+        if (Array.isArray(dados.sessoes)) {
+            restaurarSessoesRascunho(dados.sessoes);
+            restaurouAlgo = restaurouAlgo || dados.sessoes.some(function (sessao) {
+                return sessao && ['data_evento', 'hora_inicio', 'hora_fim'].some((campo) => sessao[campo]);
+            });
+        }
+
+        atualizarCamposValor();
+        atualizarResumoCategorias();
+        atualizarCampoGeneroArtista();
+
+        const cepSalvo = String(dados.cepConsultado || '').replace(/\D/g, '');
+        if (
+            cepSalvo.length === 8 &&
+            inputCep.value.replace(/\D/g, '') === cepSalvo &&
+            inputEndereco.value.trim() !== ''
+        ) {
+            cepConsultado = cepSalvo;
+            statusCep.textContent = 'Endereço restaurado do rascunho.';
+            statusCep.classList.remove('erro');
+            statusCep.classList.add('sucesso');
+        }
+
+        if (!restaurouAlgo) return false;
+
+        atualizarAvisoRascunho('Rascunho restaurado. Revise os dados e selecione a foto novamente.');
+        return true;
+    }
+
+    async function descartarRascunho() {
+        const confirmado =
+            typeof window.ShowMeUI?.confirmar === 'function'
+                ? await window.ShowMeUI.confirmar({
+                      titulo: 'Descartar rascunho?',
+                      texto: 'Todos os dados preenchidos neste formulário serão apagados.',
+                      confirmarTexto: 'Descartar',
+                      cancelarTexto: 'Manter rascunho',
+                      variante: 'destrutiva',
+                  })
+                : window.confirm('Descartar todos os dados preenchidos neste formulário?');
+
+        if (!confirmado) return;
+
+        removerRascunhoSalvo();
+        consultaCepAtual++;
+        cepConsultado = '';
+        formulario.reset();
+        limparSessoesExtras();
+        atualizarFotoSelecionada();
+        atualizarCamposValor();
+        atualizarResumoCategorias();
+        atualizarCampoGeneroArtista();
+        definirPainelCategoriasAberto(false);
+        botaoCategorias?.setAttribute('aria-invalid', 'false');
+        erroCategorias.textContent = '';
+        limparEndereco('Digite o CEP para preencher o endereço automaticamente.');
+        atualizarAvisoRascunho('');
+        window.ShowMeUI?.toast?.('Rascunho descartado.', { variante: 'sucesso' });
+    }
 
     function limparEndereco(mensagem) {
         inputEndereco.value = '';
@@ -347,6 +622,7 @@
             cepConsultado = cep;
             statusCep.textContent = 'Endereço preenchido pela BrasilAPI.';
             statusCep.classList.add('sucesso');
+            agendarSalvarRascunho();
         } catch (erro) {
             if (identificadorConsulta !== consultaCepAtual) return;
             cepConsultado = '';
@@ -397,6 +673,20 @@
     atualizarResumoCategorias();
     atualizarCampoGeneroArtista();
 
+    capturarValoresIniciaisRascunho();
+    restaurarRascunhoSalvo();
+
+    botaoDescartarRascunho?.addEventListener('click', descartarRascunho);
+    formulario.addEventListener('input', agendarSalvarRascunho);
+    formulario.addEventListener('change', agendarSalvarRascunho);
+    window.addEventListener('pagehide', function () {
+        if (temporizadorRascunho) {
+            window.clearTimeout(temporizadorRascunho);
+            temporizadorRascunho = null;
+            salvarRascunho();
+        }
+    });
+
     formulario.addEventListener('submit', async function (evento) {
         evento.preventDefault();
         if (!formulario.checkValidity()) {
@@ -443,6 +733,8 @@
                 throw new Error(dados.erro || 'Não foi possível enviar o evento.');
             }
 
+            removerRascunhoSalvo();
+            atualizarAvisoRascunho('');
             formulario.reset();
             cepConsultado = '';
             limparSessoesExtras();

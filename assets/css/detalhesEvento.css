@@ -607,9 +607,9 @@ a {
 }
 
 @media (max-width: 991.98px) {
-    /* A ordem do DOM mantém ingressos depois do conteúdo principal. */
+    /* No mobile, as ações principais vêm antes do conteúdo longo do evento. */
     .conteudo-principal > .row > .col-lg-4 {
-        order: 0;
+        order: -1;
     }
 
     .detalhes-lateral-sticky {
@@ -617,7 +617,11 @@ a {
     }
 
     .detalhes-conteudo-grid > .col-lg-4 {
-        margin-top: 24px;
+        margin: 8px 0 18px;
+    }
+
+    .detalhes-conteudo-grid > .col-lg-8 {
+        order: 0;
     }
 
     .acesso-evento-card {

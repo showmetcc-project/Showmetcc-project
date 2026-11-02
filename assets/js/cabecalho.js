@@ -27,7 +27,7 @@
     window.addEventListener('load', sincronizarAlturaCabecalho, { once: true });
 
     const CHAVE_ULTIMA_PAGINA = 'showme:ultima-pagina';
-    const PAGINA_VOLTAR_SEM_REGISTRO = /\/(?:termos|politicaPrivacidade)\.php$/i;
+    const PAGINA_VOLTAR_SEM_REGISTRO = /\/(?:termosUso|termos|politicaPrivacidade)\.php$/i;
 
     function urlDeOutraOrigem(url) {
         try {

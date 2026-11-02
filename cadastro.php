@@ -122,11 +122,19 @@ $googleClientId = is_array($googleConfig) ? trim((string) ($googleConfig['client
             <small id="ajudaSenha" class="cadastro-ajuda-senha">
               A senha deve ter no mínimo 6 caracteres, contendo letras e números.
             </small>
+
+            <input
+              type="text"
+              id="rascunhoSenha"
+              name="rascunhoSenha"
+              class="cadastro-rascunho-senha"
+              tabindex="-1"
+              aria-hidden="true">
           </div>
 
           <div class="cadastro-termos-consentimento">
             <input id="aceiteTermos" name="aceiteTermos" type="checkbox" value="1" required>
-            <label for="aceiteTermos">Li e concordo com os <a href="termosUso.php" target="_blank" rel="noopener">Termos de Uso</a> e a <a href="politicaPrivacidade.php" target="_blank" rel="noopener">Política de Privacidade</a></label>
+            <label for="aceiteTermos">Li e concordo com os <a href="termosUso.php">Termos de Uso</a> e a <a href="politicaPrivacidade.php">Política de Privacidade</a></label>
           </div>
 
           <button type="submit" class="cadastro-btn">

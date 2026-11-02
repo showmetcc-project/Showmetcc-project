@@ -882,6 +882,14 @@
         });
     }
 
+    function aplicarCoresAlternadasSecoes() {
+        document.querySelectorAll('.secao-eventos-home .titulo-secao-home').forEach((titulo, indice) => {
+            const rosa = indice % 2 === 0;
+            titulo.classList.toggle('titulo-rosa', rosa);
+            titulo.classList.toggle('titulo-verde', !rosa);
+        });
+    }
+
     function mostrarErro(mensagem) {
         mostrarBannerVazio(mensagem);
 
@@ -920,6 +928,7 @@
             });
 
             reordenarSecoesPorRecomendacao(dados.recomendacoes, dados.eventos);
+            aplicarCoresAlternadasSecoes();
         } catch (erro) {
             console.error('Falha ao carregar eventos na home:', erro);
             mostrarErro('Não foi possível carregar os eventos. Verifique se a API está disponível e tente novamente.');

@@ -3,16 +3,16 @@ require_once __DIR__ . '/config/sessao.php';
 iniciarSessaoSegura();
 
 $secoesHome = [
-    ['id' => 'emBreve', 'titulo' => 'Em Breve', 'cor' => 'rosa'],
-    ['id' => 'musicaShows', 'titulo' => 'Música e Shows', 'cor' => 'verde'],
-    ['id' => 'cinemaAudiovisual', 'titulo' => 'Cinema e Audiovisual', 'cor' => 'rosa'],
-    ['id' => 'teatroDanca', 'titulo' => 'Teatro e Dança', 'cor' => 'verde'],
-    ['id' => 'artesVisuais', 'titulo' => 'Artes Visuais e Exposições', 'cor' => 'rosa'],
-    ['id' => 'literatura', 'titulo' => 'Literatura', 'cor' => 'verde'],
-    ['id' => 'gastronomia', 'titulo' => 'Gastronomia', 'cor' => 'rosa'],
-    ['id' => 'oficinasWorkshops', 'titulo' => 'Oficinas e Workshops', 'cor' => 'verde'],
-    ['id' => 'culturaPopular', 'titulo' => 'Tradições Regionais', 'cor' => 'rosa'],
-    ['id' => 'geekCulturaPop', 'titulo' => 'Geek e Cultura Pop', 'cor' => 'verde'],
+    ['id' => 'emBreve', 'titulo' => 'Em Breve'],
+    ['id' => 'musicaShows', 'titulo' => 'Música e Shows'],
+    ['id' => 'cinemaAudiovisual', 'titulo' => 'Cinema e Audiovisual'],
+    ['id' => 'teatroDanca', 'titulo' => 'Teatro e Dança'],
+    ['id' => 'artesVisuais', 'titulo' => 'Artes Visuais e Exposições'],
+    ['id' => 'literatura', 'titulo' => 'Literatura'],
+    ['id' => 'gastronomia', 'titulo' => 'Gastronomia'],
+    ['id' => 'oficinasWorkshops', 'titulo' => 'Oficinas e Workshops'],
+    ['id' => 'culturaPopular', 'titulo' => 'Tradições Regionais'],
+    ['id' => 'geekCulturaPop', 'titulo' => 'Geek e Cultura Pop'],
 ];
 ?>
 <!doctype html>
@@ -87,14 +87,15 @@ $secoesHome = [
                 aria-busy="false"></div>
         </section>
 
-        <?php foreach ($secoesHome as $secao): ?>
+        <?php foreach ($secoesHome as $indiceSecao => $secao): ?>
+            <?php $corTituloSecao = $indiceSecao % 2 === 0 ? 'rosa' : 'verde'; ?>
             <section
                 id="secao<?= htmlspecialchars($secao['id'], ENT_QUOTES, 'UTF-8') ?>"
                 class="eventos secao-eventos-home"
                 data-secao-categoria="<?= htmlspecialchars($secao['id'], ENT_QUOTES, 'UTF-8') ?>"
                 data-visao-home="normal"
                 aria-busy="true">
-                <h3 class="titulo-secao-home titulo-<?= htmlspecialchars($secao['cor'], ENT_QUOTES, 'UTF-8') ?>">
+                <h3 class="titulo-secao-home titulo-<?= $corTituloSecao ?>">
                     <?= htmlspecialchars($secao['titulo'], ENT_QUOTES, 'UTF-8') ?>
                 </h3>
 

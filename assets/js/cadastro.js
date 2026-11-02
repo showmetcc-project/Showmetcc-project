@@ -4,10 +4,29 @@
     const formularioCadastro = document.getElementById('formCadastro');
     const mensagemCadastro = document.getElementById('mensagemCadastro');
     const campoSenha = document.getElementById('senha');
+    const campoRascunhoSenha = document.getElementById('rascunhoSenha');
 
     if (!formularioCadastro || !mensagemCadastro || !campoSenha) {
         return;
     }
+
+    function sincronizarRascunhoSenha() {
+        if (campoRascunhoSenha) {
+            campoRascunhoSenha.value = campoSenha.value;
+        }
+    }
+
+    function restaurarRascunhoSenha() {
+        if (!campoRascunhoSenha || !campoRascunhoSenha.value || campoSenha.value) {
+            return;
+        }
+
+        campoSenha.value = campoRascunhoSenha.value;
+    }
+
+    campoSenha.addEventListener('input', sincronizarRascunhoSenha);
+    window.addEventListener('pageshow', restaurarRascunhoSenha);
+    restaurarRascunhoSenha();
 
     const MENSAGEM_SENHA_FRACA = 'Sua senha precisa ter no mínimo 6 caracteres e combinar letras e números.';
 

@@ -1,102 +1,105 @@
-(function () {
-    'use strict';
-    const imagemPadrao = 'assets/img/bannerEventoPadrao.png';
-    const idUsuario = Number(document.body.dataset.userId || 0);
-    const parametros = new URLSearchParams(window.location.search);
-    const valorId = parametros.get('id') || parametros.get('id_evento') || '';
-    const idEvento = /^\d+$/.test(valorId) && Number(valorId) > 0 ? Number(valorId) : null;
-    let favoritoAtual = null;
-    let mapaAtual = null;
-    let eventoEncerrado = false;
-    let planejamentoDoEvento = null;
-    let sessoesEvento = [];
+(function() {
+        'use strict';
+        const imagemPadrao = 'assets/img/bannerEventoPadrao.png';
+        const idUsuario = Number(document.body.dataset.userId || 0);
+        const parametros = new URLSearchParams(window.location.search);
+        const valorId = parametros.get('id') || parametros.get('id_evento') || '';
+        const idEvento = /^\d+$/.test(valorId) && Number(valorId) > 0 ? Number(valorId) : null;
+        let favoritoAtual = null;
+        let mapaAtual = null;
+        let eventoEncerrado = false;
+        let planejamentoDoEvento = null;
+        let sessoesEvento = [];
 
-    function caminhoImagem(caminho) {
-        const valor = String(caminho || '').trim();
-        if (!valor) return imagemPadrao;
-        if (/^(?:https?:)?\/\//i.test(valor) || valor.startsWith('/') || valor.includes('/') || valor.includes('\\'))
-            return valor;
-        return `assets/img/${valor}`;
-    }
-    async function lerJson(resposta) {
-        try {
-            return await resposta.json();
-        } catch (_) {
-            return {};
+        function caminhoImagem(caminho) {
+            const valor = String(caminho || '').trim();
+            if (!valor) return imagemPadrao;
+            if (/^(?:https?:)?\/\//i.test(valor) || valor.startsWith('/') || valor.includes('/') || valor.includes('\\'))
+                return valor;
+            return `assets/img/${valor}`;
         }
-    }
-    function formatarData(valor) {
-        const partes = String(valor || '')
-            .split(/[ T]/)[0]
-            .split('-')
-            .map(Number);
-        return partes.length === 3 && partes.every(Number.isInteger)
-            ? new Date(partes[0], partes[1] - 1, partes[2]).toLocaleDateString('pt-BR')
-            : 'Data não informada';
-    }
-    function terminou(dataEvento) {
-        const partes = String(dataEvento || '')
-            .split('-')
-            .map(Number);
-        if (partes.length !== 3 || partes.some((n) => !Number.isInteger(n))) return false;
-        const evento = new Date(partes[0], partes[1] - 1, partes[2]);
-        const hoje = new Date();
-        hoje.setHours(0, 0, 0, 0);
-        return evento < hoje;
-    }
-    function formatarHora(valor) {
-        const partes = String(valor || '').split(':');
-        const hora = Number(partes[0]);
-        const minuto = Number(partes[1] || 0);
+        async function lerJson(resposta) {
+            try {
+                return await resposta.json();
+            } catch (_) {
+                return {};
+            }
+        }
 
-        if (!Number.isInteger(hora)) return '';
+        function formatarData(valor) {
+            const partes = String(valor || '')
+                .split(/[ T]/)[0]
+                .split('-')
+                .map(Number);
+            return partes.length === 3 && partes.every(Number.isInteger) ?
+                new Date(partes[0], partes[1] - 1, partes[2]).toLocaleDateString('pt-BR') :
+                'Data não informada';
+        }
 
-        return minuto > 0 ? `${hora}h${String(minuto).padStart(2, '0')}` : `${hora}h`;
-    }
-    function formatarSessao(sessao) {
-        const data = formatarData(sessao?.data_evento);
-        const inicio = formatarHora(sessao?.hora_inicio);
-        const fim = formatarHora(sessao?.hora_fim);
+        function terminou(dataEvento) {
+            const partes = String(dataEvento || '')
+                .split('-')
+                .map(Number);
+            if (partes.length !== 3 || partes.some((n) => !Number.isInteger(n))) return false;
+            const evento = new Date(partes[0], partes[1] - 1, partes[2]);
+            const hoje = new Date();
+            hoje.setHours(0, 0, 0, 0);
+            return evento < hoje;
+        }
 
-        if (!inicio) return data;
-        return fim ? `${data} — ${inicio} às ${fim}` : `${data} — ${inicio}`;
-    }
-    function formatarHorarioSessao(sessao) {
-        const inicio = formatarHora(sessao?.hora_inicio);
-        const fim = formatarHora(sessao?.hora_fim);
+        function formatarHora(valor) {
+            const partes = String(valor || '').split(':');
+            const hora = Number(partes[0]);
+            const minuto = Number(partes[1] || 0);
 
-        if (!inicio) return 'Horário não informado';
-        return fim ? `${inicio} às ${fim}` : inicio;
-    }
-    function normalizarSessoes(evento) {
-        const sessoes = Array.isArray(evento.sessoes) ? evento.sessoes : [];
-        const normalizadas = sessoes
-            .filter((sessao) => sessao && sessao.data_evento)
-            .map((sessao) => ({
-                id: Number(sessao.id) || null,
-                data_evento: sessao.data_evento,
-                hora_inicio: sessao.hora_inicio || '',
-                hora_fim: sessao.hora_fim || '',
-            }))
-            .sort((a, b) => `${a.data_evento} ${a.hora_inicio}`.localeCompare(`${b.data_evento} ${b.hora_inicio}`));
+            if (!Number.isInteger(hora)) return '';
 
-        if (normalizadas.length) return normalizadas;
+            return minuto > 0 ? `${hora}h${String(minuto).padStart(2, '0')}` : `${hora}h`;
+        }
 
-        return evento.data_evento
-            ? [
-                  {
-                      id: null,
-                      data_evento: evento.data_evento,
-                      hora_inicio: evento.horario_evento || '',
-                      hora_fim: '',
-                  },
-              ]
-            : [];
-    }
-    function localidade(evento) {
-        const cidade = String(evento.cidade_evento || '').trim();
-        const uf = String(evento.uf || '').trim();
-        return cidade ? `${cidade}${uf ? ` - ${uf}` : ''}` : 'Cidade não informada';
+        function formatarSessao(sessao) {
+            const data = formatarData(sessao ? .data_evento);
+            const inicio = formatarHora(sessao ? .hora_inicio);
+            const fim = formatarHora(sessao ? .hora_fim);
+
+            if (!inicio) return data;
+            return fim ? `${data} — ${inicio} às ${fim}` : `${data} — ${inicio}`;
+        }
+
+        function formatarHorarioSessao(sessao) {
+            const inicio = formatarHora(sessao ? .hora_inicio);
+            const fim = formatarHora(sessao ? .hora_fim);
+
+            if (!inicio) return 'Horário não informado';
+            return fim ? `${inicio} às ${fim}` : inicio;
+        }
+
+        function normalizarSessoes(evento) {
+            const sessoes = Array.isArray(evento.sessoes) ? evento.sessoes : [];
+            const normalizadas = sessoes
+                .filter((sessao) => sessao && sessao.data_evento)
+                .map((sessao) => ({
+                    id: Number(sessao.id) || null,
+                    data_evento: sessao.data_evento,
+                    hora_inicio: sessao.hora_inicio || '',
+                    hora_fim: sessao.hora_fim || '',
+                }))
+                .sort((a, b) => `${a.data_evento} ${a.hora_inicio}`.localeCompare(`${b.data_evento} ${b.hora_inicio}`));
+
+            if (normalizadas.length) return normalizadas;
+
+            return evento.data_evento ? [{
+                id: null,
+                data_evento: evento.data_evento,
+                hora_inicio: evento.horario_evento || '',
+                hora_fim: '',
+            }, ] : [];
+        }
+
+        function localidade(evento) {
+            const cidade = String(evento.cidade_evento || '').trim();
+            const uf = String(evento.uf || '').trim();
+            return cidade ? `${cidade}${uf ? ` - ${uf}` : ''}` : 'Cidade não informada';
     }
     function formatarValor(valor) {
         return Number(valor).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
@@ -318,40 +321,102 @@
         return coordenadasValidas(latitude, longitude) ? { latitude, longitude } : null;
     }
 
-    async function carregarMapa(evento) {
-        const alvo = document.getElementById('mapaEventoBanco'),
-            texto = endereco(evento);
-        if (!texto) {
-            alvo.textContent = 'Localização não disponível.';
-            return;
-        }
-        if (typeof window.L === 'undefined') {
-            alvo.textContent = 'Não foi possível iniciar o mapa.';
-            return;
-        }
-        alvo.textContent = 'Carregando mapa...';
-        try {
-            const coordenadas = (await localizarPorEndereco(evento)) || (await localizarPorCep(evento.cep_evento));
-            if (!coordenadas) throw new Error('Endereço não localizado.');
+    
+async function carregarMapa(evento) {
+    const alvo = document.getElementById('mapaEventoBanco');
+    const texto = endereco(evento);
 
-            alvo.replaceChildren();
-            if (mapaAtual) mapaAtual.remove();
-            mapaAtual = window.L.map('mapaEventoBanco').setView([coordenadas.latitude, coordenadas.longitude], 15);
-            window.L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-                attribution: '&copy; OpenStreetMap &copy; CARTO',
-                subdomains: 'abcd',
-                maxZoom: 20,
-            }).addTo(mapaAtual);
-            window.L.marker([coordenadas.latitude, coordenadas.longitude])
-                .addTo(mapaAtual)
-                .bindPopup(texto)
-                .openPopup();
-            window.setTimeout(() => mapaAtual?.invalidateSize(), 0);
-        } catch (erro) {
-            console.error('Falha ao carregar o mapa do evento:', erro);
-            alvo.textContent = 'Não foi possível localizar este endereço no mapa.';
-        }
+    if (!texto) {
+        alvo.textContent = 'Localização não disponível.';
+        return;
     }
+
+    if (!window.google?.maps) {
+        alvo.textContent = 'Não foi possível iniciar o Google Maps.';
+        return;
+    }
+
+    alvo.textContent = 'Carregando mapa...';
+
+    try {
+        const coordenadas =
+            (await localizarPorEndereco(evento)) ||
+            (await localizarPorCep(evento.cep_evento));
+
+        if (!coordenadas) {
+            throw new Error('Endereço não localizado.');
+        }
+
+        const latitude = Number(coordenadas.latitude);
+        const longitude = Number(coordenadas.longitude);
+
+        if (!coordenadasValidas(latitude, longitude)) {
+            throw new Error('Coordenadas inválidas.');
+        }
+
+        // Descarta a instância anterior
+        mapaAtual = null;
+
+        alvo.replaceChildren();
+
+        // Inicializa o Google Maps
+        mapaAtual = new google.maps.Map(alvo, {
+            center: {
+                lat: latitude,
+                lng: longitude
+            },
+            zoom: 15,
+            mapId: '7a0fd48c-f87f-4e75-a3ff-1c77b48c7978',
+            disableDefaultUI: false,
+            zoomControl: true,
+            streetViewControl: false,
+            mapTypeControl: false,
+            fullscreenControl: true
+        });
+
+        // Cria o marcador
+        const { AdvancedMarkerElement } =
+            await google.maps.importLibrary('marker');
+
+        const marcador = new AdvancedMarkerElement({
+            map: mapaAtual,
+            position: {
+                lat: latitude,
+                lng: longitude
+            },
+            title: texto
+        });
+
+        // Informações do local
+        const janela = new google.maps.InfoWindow({
+            content: ''
+        });
+
+        const titulo = document.createElement('strong');
+        titulo.textContent = texto;
+
+        janela.setContent(titulo);
+
+        marcador.addListener('click', () => {
+            janela.open({
+                anchor: marcador,
+                map: mapaAtual
+            });
+        });
+
+        janela.open({
+            anchor: marcador,
+            map: mapaAtual
+        });
+
+    } catch (erro) {
+        console.error('Falha ao carregar o mapa do evento:', erro);
+
+        alvo.textContent =
+            'Não foi possível localizar este endereço no mapa.';
+    }
+}
+
     function sessoesDisponiveisParaPlanejamento() {
         return sessoesEvento.filter((sessao) => sessao.id && !terminou(sessao.data_evento));
     }

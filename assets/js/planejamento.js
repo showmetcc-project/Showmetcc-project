@@ -39,7 +39,7 @@ function atualizarLinksTransporte() {
         'dropoff[formatted_address]': destinoEvento,
     });
     const links = {
-        Ônibus: `https://www.google.com/search?q=${encodeURIComponent(`passagens de ônibus para ${destinoResumido}`)}`,
+            Ônibus: `https://www.google.com/search?q=${encodeURIComponent(`passagens de ônibus para ${destinoResumido}`)}`,
         Carro: `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(destinoEvento)}`,
         Avião: `https://www.google.com/travel/flights?q=${encodeURIComponent(`voos para ${destinoResumido}`)}`,
         Uber: `https://m.uber.com/ul/?${parametrosUber}`,
@@ -1417,51 +1417,81 @@ async function iniciarMapa() {
         }
     }
 
+    // Se o mapa já existe, apenas atualiza sua dimensão
     if (mapa !== null) {
-        mapa.invalidateSize();
+        google.maps.event.trigger(mapa, 'resize');
 
         return;
     }
 
-    mapa = L.map('mapaRota').setView([destino.lat, destino.lng], 14);
+    const { Map, InfoWindow } =
+        await google.maps.importLibrary('maps');
 
-    L.tileLayer(
-        'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
+    const { AdvancedMarkerElement } =
+        await google.maps.importLibrary('marker');
 
-        {
-            attribution: '&copy; OpenStreetMap &copy; CARTO',
-
-            subdomains: 'abcd',
-
-            maxZoom: 20,
+    // Cria o mapa
+    mapa = new Map(document.getElementById('mapaRota'), {
+        center: {
+            lat: Number(destino.lat),
+            lng: Number(destino.lng)
         },
-    ).addTo(mapa);
 
-    marcadorDestino = L.marker(
-        [destino.lat, destino.lng],
+        zoom: 14,
 
-        {
-            icon: iconeEvento,
+        mapId: '7a0fd48c-f87f-4e75-a3ff-1c77b48c7978',
+
+        disableDefaultUI: false,
+        zoomControl: true,
+        streetViewControl: false,
+        mapTypeControl: false,
+        fullscreenControl: true
+    });
+
+    // Conteúdo do marcador
+    const conteudo = document.createElement('div');
+
+    const titulo = document.createElement('strong');
+    titulo.textContent = evento.local || evento.nome;
+
+    const cidade = document.createElement('div');
+    cidade.textContent =
+        `${evento.cidade || ''} - ${evento.uf || ''}`;
+
+    conteudo.append(titulo, cidade);
+
+    // Janela de informações
+    const janela = new InfoWindow({
+        content: conteudo
+    });
+
+    // Marcador do destino
+    marcadorDestino = new AdvancedMarkerElement({
+        map: mapa,
+
+        position: {
+            lat: Number(destino.lat),
+            lng: Number(destino.lng)
         },
-    )
-        .addTo(mapa)
-        .bindPopup(
-            `
 
-    <strong>
-        ${escapeHtml(evento.local || evento.nome)}
-    </strong>
+        title: evento.local || evento.nome
+    });
 
-    <br>
+    // Abre as informações ao clicar no marcador
+    marcadorDestino.addListener('click', () => {
+        janela.open({
+            map: mapa,
+            anchor: marcadorDestino
+        });
+    });
 
-    ${escapeHtml(evento.cidade || '')}
-    -
-    ${escapeHtml(evento.uf || '')}
-
-`,
-        )
-        .openPopup();
+    // Abre automaticamente ao iniciar
+    janela.open({
+        map: mapa,
+        anchor: marcadorDestino
+    });
 }
+
 
 async function centralizarEvento() {
     if (!destino) {
@@ -1474,14 +1504,21 @@ async function centralizarEvento() {
 
     await iniciarMapa();
 
-    mapa.setView(
-        [destino.lat, destino.lng],
+    if (!mapa) {
+        return;
+    }
 
-        16,
-    );
+    // Centraliza novamente no evento
+    mapa.setCenter({
+        lat: Number(destino.lat),
+        lng: Number(destino.lng)
+    });
 
+    mapa.setZoom(16);
+
+    // Reabre as informações do destino
     if (marcadorDestino) {
-        marcadorDestino.openPopup();
+        google.maps.event.trigger(marcadorDestino, 'click');
     }
 }
 

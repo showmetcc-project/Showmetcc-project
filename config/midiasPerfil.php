@@ -7,9 +7,14 @@ function catalogoMidiasPerfil(): array
             'Vozes em Destaque' => [
                 'icone' => 'bi-mic-fill',
                 'imagens' => [
-                    ['caminho' => 'assets/img/prontos/perfil/vozes-destaque-01.webp', 'legenda' => 'Voz em cena'],
-                    ['caminho' => 'assets/img/prontos/perfil/vozes-destaque-02.webp', 'legenda' => 'Luz do palco'],
-                    ['caminho' => 'assets/img/prontos/perfil/vozes-destaque-03.webp', 'legenda' => 'Som ao vivo'],
+                    ['caminho' => 'assets/img/prontos/perfil/1.png', 'legenda' => 'RI'],
+                    ['caminho' => 'assets/img/prontos/perfil/2.png', 'legenda' => 'JV'],
+                    ['caminho' => 'assets/img/prontos/perfil/3.png', 'legenda' => 'CP'],
+                    ['caminho' => 'assets/img/prontos/perfil/4.png', 'legenda' => 'AV'],
+                    ['caminho' => 'assets/img/prontos/perfil/5.png', 'legenda' => 'LO'],
+                    ['caminho' => 'assets/img/prontos/perfil/6.png', 'legenda' => 'THI'],
+                    ['caminho' => 'assets/img/prontos/perfil/7.png', 'legenda' => 'PA'],
+
                 ],
             ],
             'Ritmos do Brasil' => [

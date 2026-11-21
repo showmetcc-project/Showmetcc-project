@@ -449,8 +449,13 @@
 
         async function carregarLocais() {
             if (locaisCarregados || requisicaoLocais) return requisicaoLocais;
+
+            const controlador = new AbortController();
+            const temporizador = window.setTimeout(() => controlador.abort(), 10000);
+
             requisicaoLocais = fetch('api/eventos?listar_locais=1', {
                 headers: { Accept: 'application/json' },
+                signal: controlador.signal,
             })
                 .then(async (resposta) => {
                     const dados = await resposta.json();
@@ -461,6 +466,9 @@
                 .catch((erro) => {
                     console.error('Falha ao carregar locais e categorias dos eventos:', erro);
                     requisicaoLocais = null;
+                })
+                .finally(() => {
+                    window.clearTimeout(temporizador);
                 });
             return requisicaoLocais;
         }

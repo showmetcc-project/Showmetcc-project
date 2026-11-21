@@ -32,6 +32,8 @@ $idEvento = (int) $idInformado;
 
         <link rel="stylesheet" href="assets/css/planejamento.css">
 
+        <link rel="stylesheet" href="assets/css/mapaFallback.css">
+
         <!-- CSS compartilhado por último para preservar o cabeçalho -->
 
         <link rel="stylesheet" href="assets/css/main.css">
@@ -825,6 +827,8 @@ $idEvento = (int) $idInformado;
 
         <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js">
         </script>
+
+        <script src="assets/js/mapaFallback.js"></script>
 
         <script src="assets/js/planejamento.js"></script>
 

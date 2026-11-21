@@ -548,7 +548,7 @@ function restaurarEstadoPlanejamento() {
 }
 
 async function carregarEvento() {
-    const resposta = await fetch(`api/eventos/${evento.id}`);
+    const resposta = await buscarComLimite(`api/eventos/${evento.id}`, {}, 12000);
     const dados = await resposta.json();
 
     if (!resposta.ok) {
@@ -706,6 +706,8 @@ let marcadorDestino = null;
 
 let rotaLayer = null;
 
+let mapaIndisponivel = false;
+
 let transporteSelecionado = '';
 
 let hospedagemSelecionada = false;
@@ -800,13 +802,92 @@ function coordenadasValidas(latitude, longitude) {
     );
 }
 
+async function buscarComLimite(url, opcoes = {}, limiteMs = 8000) {
+    const controlador = new AbortController();
+    const temporizador = window.setTimeout(() => controlador.abort(), limiteMs);
+
+    try {
+        return await fetch(url, { ...opcoes, signal: controlador.signal });
+    } finally {
+        window.clearTimeout(temporizador);
+    }
+}
+
+function enderecoFallbackEvento() {
+    const enderecoCompleto = String(evento.endereco || '').trim();
+
+    if (enderecoCompleto) {
+        return enderecoCompleto;
+    }
+
+    const partes = [evento.rua, evento.numero, evento.cidade, evento.uf].map((parte) => String(parte || '').trim()).filter(Boolean);
+
+    if (partes.length) {
+        return partes.join(', ');
+    }
+
+    return [evento.cidade, evento.uf].filter(Boolean).join(' - ') || evento.nome || '';
+}
+
+function opcoesFallbackMapa() {
+    const opcoes = {
+        endereco: enderecoFallbackEvento(),
+        nome: evento.nome,
+    };
+
+    if (destino) {
+        opcoes.latitude = destino.lat;
+        opcoes.longitude = destino.lng;
+    }
+
+    if (origem) {
+        opcoes.origem = { latitude: origem.lat, longitude: origem.lng };
+    }
+
+    const modos = {
+        'Ônibus': 'transit',
+        'Avião': 'transit',
+        Carro: 'driving',
+        Uber: 'driving',
+    };
+
+    if (modos[transporteSelecionado]) {
+        opcoes.modo = modos[transporteSelecionado];
+    }
+
+    return opcoes;
+}
+
+function exibirFallbackMapa() {
+    const container = document.getElementById('mapaRota');
+
+    if (!container) {
+        return;
+    }
+
+    if (!window.ShowMeMapa?.exibirFallback) {
+        container.textContent = enderecoFallbackEvento() || 'Endereço não informado.';
+        return;
+    }
+
+    window.ShowMeMapa.exibirFallback(container, opcoesFallbackMapa());
+}
+
+function atualizarFallbackMapaSeAtivo() {
+    const container = document.getElementById('mapaRota');
+
+    if (container?.classList.contains('mapa-fallback-container')) {
+        exibirFallbackMapa();
+    }
+}
+
 async function localizarEventoPorCep() {
     const cep = String(evento.cep || '').replace(/\D/g, '');
     if (cep.length !== 8) {
         return false;
     }
 
-    const resposta = await fetch(`https://brasilapi.com.br/api/cep/v2/${cep}`, {
+    const resposta = await buscarComLimite(`https://brasilapi.com.br/api/cep/v2/${cep}`, {
         headers: { Accept: 'application/json' },
     });
     if (!resposta.ok) {
@@ -834,7 +915,7 @@ async function localizarEvento() {
             '&countrycodes=br' +
             '&q=' +
             encodeURIComponent(endereco);
-        const resposta = await fetch(url, {
+        const resposta = await buscarComLimite(url, {
             headers: { Accept: 'application/json' },
         });
         const locais = await resposta.json();
@@ -860,6 +941,7 @@ async function localizarEvento() {
             console.error(erroCep);
         }
         console.error(erro);
+        exibirFallbackMapa();
         mostrarMensagem('Não foi possível localizar automaticamente o endereço do evento.', true);
         return false;
     }
@@ -1131,6 +1213,7 @@ function selecionarTransporte(tipo) {
     renderizarTransporteSelecionado(tipo);
     ajustarTempoParaTransporte();
     calcularEstimativaTransporte();
+    atualizarFallbackMapaSeAtivo();
     agendarSalvarEstadoPlanejamento();
 }
 
@@ -1311,11 +1394,15 @@ async function atualizarHospedagem() {
             out center tags;
         `;
 
-        const resposta = await fetch('https://overpass-api.de/api/interpreter', {
-            method: 'POST',
+        const resposta = await buscarComLimite(
+            'https://overpass-api.de/api/interpreter',
+            {
+                method: 'POST',
 
-            body: query,
-        });
+                body: query,
+            },
+            12000,
+        );
 
         const dados = await resposta.json();
 
@@ -1386,10 +1473,12 @@ async function atualizarHospedagem() {
     }
 }
 
-const iconeEvento = L.divIcon({
-    className: 'pin-evento',
+const iconeEvento =
+    typeof L !== 'undefined'
+        ? L.divIcon({
+              className: 'pin-evento',
 
-    html: `
+              html: `
 
 <div class="pin-neon">
 
@@ -1401,12 +1490,13 @@ const iconeEvento = L.divIcon({
 
         `,
 
-    iconSize: [40, 40],
+              iconSize: [40, 40],
 
-    iconAnchor: [20, 40],
+              iconAnchor: [20, 40],
 
-    popupAnchor: [0, -40],
-});
+              popupAnchor: [0, -40],
+          })
+        : null;
 
 async function iniciarMapa() {
     if (!destino) {
@@ -1417,78 +1507,67 @@ async function iniciarMapa() {
         }
     }
 
-    // Se o mapa já existe, apenas atualiza sua dimensão
-    if (mapa !== null) {
-        google.maps.event.trigger(mapa, 'resize');
+    if (mapaIndisponivel) {
+        return;
+    }
+
+    if (typeof L === 'undefined') {
+        mapaIndisponivel = true;
+        exibirFallbackMapa();
+        mostrarMensagem('Não foi possível carregar o mapa neste momento.', true);
 
         return;
     }
 
-    const { Map, InfoWindow } =
-        await google.maps.importLibrary('maps');
+    const elementoMapa = document.getElementById('mapaRota');
 
-    const { AdvancedMarkerElement } =
-        await google.maps.importLibrary('marker');
+    if (!elementoMapa) {
+        return;
+    }
 
-    // Cria o mapa
-    mapa = new Map(document.getElementById('mapaRota'), {
-        center: {
-            lat: Number(destino.lat),
-            lng: Number(destino.lng)
-        },
+    // Se o mapa já existe, apenas atualiza sua dimensão
+    if (mapa !== null) {
+        window.setTimeout(() => mapa.invalidateSize(), 0);
 
-        zoom: 14,
+        return;
+    }
 
-        mapId: '7a0fd48c-f87f-4e75-a3ff-1c77b48c7978',
+    window.ShowMeMapa?.removerFallback(elementoMapa);
 
-        disableDefaultUI: false,
-        zoomControl: true,
-        streetViewControl: false,
-        mapTypeControl: false,
-        fullscreenControl: true
-    });
+    mapa = L.map(elementoMapa).setView([Number(destino.lat), Number(destino.lng)], 14);
 
-    // Conteúdo do marcador
-    const conteudo = document.createElement('div');
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+        attribution: '&copy; OpenStreetMap &copy; CARTO',
+        subdomains: 'abcd',
+        maxZoom: 20,
+    }).addTo(mapa);
 
-    const titulo = document.createElement('strong');
-    titulo.textContent = evento.local || evento.nome;
+    const titulo = escapeHtml(evento.local || evento.nome || 'Evento');
+    const cidade = escapeHtml([evento.cidade, evento.uf].filter(Boolean).join(' - '));
+    const conteudo = `<strong>${titulo}</strong>${cidade ? `<br>${cidade}` : ''}`;
 
-    const cidade = document.createElement('div');
-    cidade.textContent =
-        `${evento.cidade || ''} - ${evento.uf || ''}`;
+    marcadorDestino = L.marker([Number(destino.lat), Number(destino.lng)], {
+        icon: iconeEvento || undefined,
+        title: evento.local || evento.nome || 'Evento',
+    })
+        .addTo(mapa)
+        .bindPopup(conteudo);
 
-    conteudo.append(titulo, cidade);
+    marcadorDestino.openPopup();
 
-    // Janela de informações
-    const janela = new InfoWindow({
-        content: conteudo
-    });
+    window.ShowMeMapa?.monitorarTiles(mapa, elementoMapa, opcoesFallbackMapa(), () => {
+        mapaIndisponivel = true;
 
-    // Marcador do destino
-    marcadorDestino = new AdvancedMarkerElement({
-        map: mapa,
+        if (mapa) {
+            mapa.remove();
+            mapa = null;
+        }
 
-        position: {
-            lat: Number(destino.lat),
-            lng: Number(destino.lng)
-        },
+        marcadorOrigem = null;
+        marcadorDestino = null;
+        rotaLayer = null;
 
-        title: evento.local || evento.nome
-    });
-
-    // Abre as informações ao clicar no marcador
-    marcadorDestino.addListener('click', () => {
-        janela.open({
-            map: mapa,
-            anchor: marcadorDestino
-        });
-    });
-
-    // Abre automaticamente ao iniciar
-    janela.open({
-        map: mapa,
-        anchor: marcadorDestino
+        exibirFallbackMapa();
     });
 }
 
@@ -1508,17 +1587,10 @@ async function centralizarEvento() {
         return;
     }
 
-    // Centraliza novamente no evento
-    mapa.setCenter({
-        lat: Number(destino.lat),
-        lng: Number(destino.lng)
-    });
+    mapa.setView([Number(destino.lat), Number(destino.lng)], 16);
 
-    mapa.setZoom(16);
-
-    // Reabre as informações do destino
     if (marcadorDestino) {
-        google.maps.event.trigger(marcadorDestino, 'click');
+        marcadorDestino.openPopup();
     }
 }
 
@@ -1549,14 +1621,18 @@ function usarMinhaLocalizacao() {
 
             document.getElementById('resumoOrigem').textContent = 'Sua localização atual';
 
+            atualizarFallbackMapaSeAtivo();
+
             await iniciarMapa();
 
-            if (marcadorOrigem) {
-                marcadorOrigem.setLatLng([origem.lat, origem.lng]);
-            } else {
-                marcadorOrigem = L.marker([origem.lat, origem.lng])
-                    .addTo(mapa)
-                    .bindPopup('<strong>Você está aqui</strong>');
+            if (typeof L !== 'undefined' && mapa) {
+                if (marcadorOrigem) {
+                    marcadorOrigem.setLatLng([origem.lat, origem.lng]);
+                } else {
+                    marcadorOrigem = L.marker([origem.lat, origem.lng])
+                        .addTo(mapa)
+                        .bindPopup('<strong>Você está aqui</strong>');
+                }
             }
 
             calcularRota();
@@ -1611,7 +1687,7 @@ async function calcularRotaManual() {
             '&q=' +
             encodeURIComponent(endereco);
 
-        const resposta = await fetch(
+        const resposta = await buscarComLimite(
             url,
 
             {
@@ -1639,12 +1715,16 @@ async function calcularRotaManual() {
 
         document.getElementById('resumoOrigem').textContent = endereco;
 
+        atualizarFallbackMapaSeAtivo();
+
         await iniciarMapa();
 
-        if (marcadorOrigem) {
-            marcadorOrigem.setLatLng([origem.lat, origem.lng]);
-        } else {
-            marcadorOrigem = L.marker([origem.lat, origem.lng]).addTo(mapa).bindPopup('<strong>Origem</strong>');
+        if (typeof L !== 'undefined' && mapa) {
+            if (marcadorOrigem) {
+                marcadorOrigem.setLatLng([origem.lat, origem.lng]);
+            } else {
+                marcadorOrigem = L.marker([origem.lat, origem.lng]).addTo(mapa).bindPopup('<strong>Origem</strong>');
+            }
         }
 
         calcularRota();
@@ -1692,7 +1772,7 @@ async function calcularRota() {
         `?overview=full&geometries=geojson`;
 
     try {
-        const resposta = await fetch(url);
+        const resposta = await buscarComLimite(url, {}, 12000);
 
         const dados = await resposta.json();
 
@@ -1702,31 +1782,33 @@ async function calcularRota() {
 
         const rota = dados.routes[0];
 
-        if (rotaLayer) {
-            mapa.removeLayer(rotaLayer);
-        }
+        if (typeof L !== 'undefined' && mapa) {
+            if (rotaLayer) {
+                mapa.removeLayer(rotaLayer);
+            }
 
-        rotaLayer = L.geoJSON(
-            rota.geometry,
+            rotaLayer = L.geoJSON(
+                rota.geometry,
 
-            {
-                style: {
-                    color: '#00ff00',
+                {
+                    style: {
+                        color: '#00ff00',
 
-                    weight: 5,
+                        weight: 5,
 
-                    opacity: 0.9,
+                        opacity: 0.9,
+                    },
                 },
-            },
-        ).addTo(mapa);
+            ).addTo(mapa);
 
-        mapa.fitBounds(
-            rotaLayer.getBounds(),
+            mapa.fitBounds(
+                rotaLayer.getBounds(),
 
-            {
-                padding: [30, 30],
-            },
-        );
+                {
+                    padding: [30, 30],
+                },
+            );
+        }
 
         const distanciaKm = rota.distance / 1000;
 
@@ -1771,6 +1853,7 @@ async function calcularRota() {
             mostrarMensagem(`Distância calculada. Informe o tempo estimado para ${transporteSelecionado}.`);
         }
 
+        atualizarFallbackMapaSeAtivo();
         agendarSalvarEstadoPlanejamento();
     } catch (erro) {
         console.error(erro);
@@ -2014,7 +2097,7 @@ function definirEstadoGoogleAgenda(exportado, htmlLink = '') {
 }
 
 async function consultarGoogleAgendaExportado(idRota) {
-    const resposta = await fetch('api/google-calendar', {
+    const resposta = await buscarGoogleAgenda('api/google-calendar', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
         body: JSON.stringify({ acao: 'verificar_exportado', id_rota: Number(idRota) }),
@@ -2071,7 +2154,11 @@ async function exibirAcoesGoogleAgenda(idRota) {
 }
 
 async function carregarPlanejamentoExistente() {
-    const resposta = await fetch('api/planejamento/', { headers: { Accept: 'application/json' } });
+    const resposta = await buscarComLimite(
+        'api/planejamento/',
+        { headers: { Accept: 'application/json' } },
+        12000,
+    );
     const dados = await lerRespostaJson(resposta);
 
     if (!resposta.ok) {
@@ -2228,7 +2315,7 @@ async function adicionarAoGoogleAgenda() {
     texto.textContent = 'Adicionando ao Google Agenda...';
 
     try {
-        const resposta = await fetch('api/google-calendar', {
+        const resposta = await buscarGoogleAgenda('api/google-calendar', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
             body: JSON.stringify({ acao: 'exportar', id_rota: idRotaGoogleAgenda }),
@@ -2303,24 +2390,28 @@ async function finalizarPlanejamento(eventoSubmit) {
         const endpointPlanejamento = atualizandoPlanejamento
             ? `api/planejamento/${idPlanejamentoExistente}`
             : 'api/planejamento/';
-        const resposta = await fetch(endpointPlanejamento, {
-            method: atualizandoPlanejamento ? 'PUT' : 'POST',
-            headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-            body: JSON.stringify({
-                id_evento: evento.id,
-                sessao_id: evento.sessaoId,
-                meio_transporte: meioTransporte,
-                distancia_km: distancia,
-                tempo_estimado: tempo,
-                origem: origemInformada,
-                orcamento_total: orcamento,
-                custo_ingresso: evento.gratuidade ? 0 : custoIngresso,
-                custo_transporte: custoTransporte,
-                hospedagem_necessaria: hospedagemSelecionada,
-                nome_hospedagem: hospedagemNome,
-                custo_hospedagem: custoHospedagem,
-            }),
-        });
+        const resposta = await buscarComLimite(
+            endpointPlanejamento,
+            {
+                method: atualizandoPlanejamento ? 'PUT' : 'POST',
+                headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+                body: JSON.stringify({
+                    id_evento: evento.id,
+                    sessao_id: evento.sessaoId,
+                    meio_transporte: meioTransporte,
+                    distancia_km: distancia,
+                    tempo_estimado: tempo,
+                    origem: origemInformada,
+                    orcamento_total: orcamento,
+                    custo_ingresso: evento.gratuidade ? 0 : custoIngresso,
+                    custo_transporte: custoTransporte,
+                    hospedagem_necessaria: hospedagemSelecionada,
+                    nome_hospedagem: hospedagemNome,
+                    custo_hospedagem: custoHospedagem,
+                }),
+            },
+            12000,
+        );
         const dados = await lerRespostaJson(resposta);
 
         if (!resposta.ok && !(resposta.status === 409 && dados.id_rota)) {
@@ -2510,7 +2601,11 @@ async function verificarCompromissosDaData() {
     }
 
     try {
-        const resposta = await fetch('api/planejamento/', { headers: { Accept: 'application/json' } });
+        const resposta = await buscarComLimite(
+            'api/planejamento/',
+            { headers: { Accept: 'application/json' } },
+            12000,
+        );
         const dados = await lerRespostaJson(resposta);
 
         if (resposta.ok) {
@@ -2532,7 +2627,7 @@ async function verificarCompromissosDaData() {
         const status = statusGoogleAgenda || (await obterStatusGoogleAgenda());
 
         if (status?.conectado) {
-            const resposta = await fetch('api/google-calendar', {
+            const resposta = await buscarGoogleAgenda('api/google-calendar', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
                 body: JSON.stringify({

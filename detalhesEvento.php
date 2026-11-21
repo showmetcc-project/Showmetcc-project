@@ -21,6 +21,7 @@ $idUsuarioSessao = isset($_SESSION['id_user']) ? (int) $_SESSION['id_user'] : 0;
     <link href="assets/vendor/aos/aos.css" rel="stylesheet">
     <link href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" rel="stylesheet">
     <link href="assets/css/detalhesEvento.css" rel="stylesheet">
+    <link href="assets/css/mapaFallback.css" rel="stylesheet">
 
     <link href="assets/css/main.css" rel="stylesheet">
 </head>
@@ -153,6 +154,7 @@ $idUsuarioSessao = isset($_SESSION['id_user']) ? (int) $_SESSION['id_user'] : 0;
     <script src="assets/vendor/aos/aos.js"></script>
     <script src="assets/js/main.js"></script>
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="assets/js/mapaFallback.js"></script>
     <script src="assets/js/detalhesEvento.js"></script>
 </body>
 </html>

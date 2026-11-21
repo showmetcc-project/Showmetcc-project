@@ -1,0 +1,135 @@
+#mapaEventoBanco.mapa-fallback-container,
+#mapaRota.mapa-fallback-container {
+    height: auto;
+    min-height: 260px;
+}
+
+.mapa-fallback-container {
+    display: flex;
+    align-items: stretch;
+    overflow: hidden;
+}
+
+.mapa-fallback {
+    position: relative;
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+    gap: 12px;
+    width: 100%;
+    padding: 26px 28px;
+    background:
+        radial-gradient(circle at top left, rgba(0, 255, 0, 0.1), transparent 42%),
+        radial-gradient(circle at bottom right, rgba(255, 0, 110, 0.12), transparent 45%),
+        #0d0d0d;
+    color: #fff;
+}
+
+.mapa-fallback__icone {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    border: 1px solid rgba(0, 255, 0, 0.45);
+    border-radius: 50%;
+    background: rgba(0, 255, 0, 0.08);
+    color: #00ff00;
+    font-size: 21px;
+    box-shadow: 0 0 18px rgba(0, 255, 0, 0.14);
+}
+
+.mapa-fallback__titulo {
+    color: #fff;
+    font-size: 15px;
+    letter-spacing: 0.02em;
+}
+
+.mapa-fallback .mapa-fallback__endereco {
+    max-width: 58ch;
+    margin: 0;
+    color: #cfcfcf;
+    font-size: 14px;
+    line-height: 1.65;
+    overflow-wrap: anywhere;
+}
+
+.mapa-fallback__acoes {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 6px;
+}
+
+.mapa-fallback__botao {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-height: 42px;
+    padding: 10px 16px;
+    border: 1px solid transparent;
+    border-radius: 999px;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 1;
+    text-decoration: none;
+    transition:
+        transform 0.2s ease,
+        background-color 0.2s ease,
+        border-color 0.2s ease,
+        color 0.2s ease;
+}
+
+.mapa-fallback__botao i {
+    font-size: 15px;
+}
+
+.mapa-fallback__botao--principal {
+    background: #00ff00;
+    color: #090909;
+    box-shadow: 0 0 18px rgba(0, 255, 0, 0.18);
+}
+
+.mapa-fallback__botao--principal:hover,
+.mapa-fallback__botao--principal:focus-visible {
+    background: #38ff38;
+    color: #000;
+    transform: translateY(-1px);
+}
+
+.mapa-fallback__botao--secundario {
+    border-color: rgba(255, 0, 110, 0.7);
+    background: transparent;
+    color: #ff4d94;
+}
+
+.mapa-fallback__botao--secundario:hover,
+.mapa-fallback__botao--secundario:focus-visible {
+    background: rgba(255, 0, 110, 0.12);
+    color: #fff;
+    transform: translateY(-1px);
+}
+
+.mapa-fallback__botao:focus-visible {
+    outline: 2px solid #fff;
+    outline-offset: 3px;
+}
+
+@media (max-width: 575.98px) {
+    .mapa-fallback {
+        padding: 22px 18px;
+    }
+
+    .mapa-fallback__acoes {
+        width: 100%;
+        flex-direction: column;
+    }
+
+    .mapa-fallback__botao {
+        width: 100%;
+    }
+}

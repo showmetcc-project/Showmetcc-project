@@ -66,7 +66,7 @@
     }
 
     window.ShowMeCsrf = {
-        pronto: carregarToken(),
+        pronto: carregarToken().catch(() => null),
         atualizar: () => carregarToken(true),
     };
 
@@ -78,15 +78,31 @@
             return fetchNativo(entrada, opcoes);
         }
 
-        const token = await carregarToken();
-        const cabecalhos = new Headers(opcoes.headers || (entrada instanceof Request ? entrada.headers : undefined));
-        cabecalhos.set('X-CSRF-Token', token);
+        const requisitar = async (token) => {
+            const cabecalhos = new Headers(
+                opcoes.headers || (entrada instanceof Request ? entrada.headers : undefined),
+            );
+            cabecalhos.set('X-CSRF-Token', token);
 
-        const resposta = await fetchNativo(entrada, {
-            ...opcoes,
-            headers: cabecalhos,
-            credentials: opcoes.credentials || 'same-origin',
-        });
+            return fetchNativo(entrada instanceof Request ? entrada.clone() : entrada, {
+                ...opcoes,
+                headers: cabecalhos,
+                credentials: opcoes.credentials || 'same-origin',
+            });
+        };
+
+        let resposta = await requisitar(await carregarToken());
+
+        if (resposta.status === 403) {
+            const dados = await resposta
+                .clone()
+                .json()
+                .catch(() => null);
+
+            if (dados && /csrf/i.test(String(dados.erro || ''))) {
+                resposta = await requisitar(await carregarToken(true));
+            }
+        }
 
         await atualizarTokenDaResposta(resposta);
         return resposta;

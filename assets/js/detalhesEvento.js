@@ -58,17 +58,17 @@
         }
 
         function formatarSessao(sessao) {
-            const data = formatarData(sessao ? .data_evento);
-            const inicio = formatarHora(sessao ? .hora_inicio);
-            const fim = formatarHora(sessao ? .hora_fim);
+            const data = formatarData(sessao?.data_evento);
+            const inicio = formatarHora(sessao?.hora_inicio);
+            const fim = formatarHora(sessao?.hora_fim);
 
             if (!inicio) return data;
             return fim ? `${data} — ${inicio} às ${fim}` : `${data} — ${inicio}`;
         }
 
         function formatarHorarioSessao(sessao) {
-            const inicio = formatarHora(sessao ? .hora_inicio);
-            const fim = formatarHora(sessao ? .hora_fim);
+            const inicio = formatarHora(sessao?.hora_inicio);
+            const fim = formatarHora(sessao?.hora_fim);
 
             if (!inicio) return 'Horário não informado';
             return fim ? `${inicio} às ${fim}` : inicio;
@@ -287,19 +287,35 @@
         );
     }
 
+    async function buscarComLimite(url, opcoes = {}, limiteMs = 8000) {
+        const controlador = new AbortController();
+        const temporizador = setTimeout(() => controlador.abort(), limiteMs);
+
+        try {
+            return await fetch(url, { ...opcoes, signal: controlador.signal });
+        } finally {
+            clearTimeout(temporizador);
+        }
+    }
+
     async function localizarPorCep(cep) {
         const cepNumerico = String(cep || '').replace(/\D/g, '');
         if (cepNumerico.length !== 8) return null;
 
-        const resposta = await fetch(`https://brasilapi.com.br/api/cep/v2/${cepNumerico}`, {
-            headers: { Accept: 'application/json' },
-        });
-        if (!resposta.ok) return null;
+        try {
+            const resposta = await buscarComLimite(`https://brasilapi.com.br/api/cep/v2/${cepNumerico}`, {
+                headers: { Accept: 'application/json' },
+            });
+            if (!resposta.ok) return null;
 
-        const dados = await resposta.json();
-        const latitude = Number(dados?.location?.coordinates?.latitude);
-        const longitude = Number(dados?.location?.coordinates?.longitude);
-        return coordenadasValidas(latitude, longitude) ? { latitude, longitude } : null;
+            const dados = await resposta.json();
+            const latitude = Number(dados?.location?.coordinates?.latitude);
+            const longitude = Number(dados?.location?.coordinates?.longitude);
+            return coordenadasValidas(latitude, longitude) ? { latitude, longitude } : null;
+        } catch (erro) {
+            console.warn('Não foi possível consultar o CEP do evento:', erro);
+            return null;
+        }
     }
 
     async function localizarPorEndereco(evento) {
@@ -309,113 +325,121 @@
         if (!consulta) return null;
 
         const qs = new URLSearchParams({ format: 'json', limit: '1', countrycodes: 'br', q: consulta });
-        const resposta = await fetch(`https://nominatim.openstreetmap.org/search?${qs}`, {
-            headers: { Accept: 'application/json' },
-        });
-        if (!resposta.ok) return null;
 
-        const dados = await resposta.json();
-        if (!Array.isArray(dados) || !dados.length) return null;
-        const latitude = Number(dados[0].lat);
-        const longitude = Number(dados[0].lon);
-        return coordenadasValidas(latitude, longitude) ? { latitude, longitude } : null;
-    }
-
-    
-async function carregarMapa(evento) {
-    const alvo = document.getElementById('mapaEventoBanco');
-    const texto = endereco(evento);
-
-    if (!texto) {
-        alvo.textContent = 'Localização não disponível.';
-        return;
-    }
-
-    if (!window.google?.maps) {
-        alvo.textContent = 'Não foi possível iniciar o Google Maps.';
-        return;
-    }
-
-    alvo.textContent = 'Carregando mapa...';
-
-    try {
-        const coordenadas =
-            (await localizarPorEndereco(evento)) ||
-            (await localizarPorCep(evento.cep_evento));
-
-        if (!coordenadas) {
-            throw new Error('Endereço não localizado.');
-        }
-
-        const latitude = Number(coordenadas.latitude);
-        const longitude = Number(coordenadas.longitude);
-
-        if (!coordenadasValidas(latitude, longitude)) {
-            throw new Error('Coordenadas inválidas.');
-        }
-
-        // Descarta a instância anterior
-        mapaAtual = null;
-
-        alvo.replaceChildren();
-
-        // Inicializa o Google Maps
-        mapaAtual = new google.maps.Map(alvo, {
-            center: {
-                lat: latitude,
-                lng: longitude
-            },
-            zoom: 15,
-            mapId: '7a0fd48c-f87f-4e75-a3ff-1c77b48c7978',
-            disableDefaultUI: false,
-            zoomControl: true,
-            streetViewControl: false,
-            mapTypeControl: false,
-            fullscreenControl: true
-        });
-
-        // Cria o marcador
-        const { AdvancedMarkerElement } =
-            await google.maps.importLibrary('marker');
-
-        const marcador = new AdvancedMarkerElement({
-            map: mapaAtual,
-            position: {
-                lat: latitude,
-                lng: longitude
-            },
-            title: texto
-        });
-
-        // Informações do local
-        const janela = new google.maps.InfoWindow({
-            content: ''
-        });
-
-        const titulo = document.createElement('strong');
-        titulo.textContent = texto;
-
-        janela.setContent(titulo);
-
-        marcador.addListener('click', () => {
-            janela.open({
-                anchor: marcador,
-                map: mapaAtual
+        try {
+            const resposta = await buscarComLimite(`https://nominatim.openstreetmap.org/search?${qs}`, {
+                headers: { Accept: 'application/json' },
             });
-        });
+            if (!resposta.ok) return null;
 
-        janela.open({
-            anchor: marcador,
-            map: mapaAtual
-        });
-
-    } catch (erro) {
-        console.error('Falha ao carregar o mapa do evento:', erro);
-
-        alvo.textContent =
-            'Não foi possível localizar este endereço no mapa.';
+            const dados = await resposta.json();
+            if (!Array.isArray(dados) || !dados.length) return null;
+            const latitude = Number(dados[0].lat);
+            const longitude = Number(dados[0].lon);
+            return coordenadasValidas(latitude, longitude) ? { latitude, longitude } : null;
+        } catch (erro) {
+            console.warn('Não foi possível localizar o endereço do evento:', erro);
+            return null;
+        }
     }
-}
+
+    function exibirFallbackMapa(alvo, opcoes) {
+        if (window.ShowMeMapa?.exibirFallback) {
+            window.ShowMeMapa.exibirFallback(alvo, opcoes);
+            return;
+        }
+
+        alvo.textContent = opcoes.endereco || 'Localização não disponível.';
+    }
+
+    async function carregarMapa(evento) {
+        const alvo = document.getElementById('mapaEventoBanco');
+
+        if (!alvo) {
+            return;
+        }
+
+        const texto = endereco(evento);
+        const opcoesFallback = {
+            endereco:
+                texto ||
+                [evento.cidade_evento, evento.uf].filter(Boolean).join(' - ') ||
+                evento.nome_evento ||
+                '',
+            nome: evento.nome_evento,
+        };
+
+        if (typeof window.L === 'undefined') {
+            exibirFallbackMapa(alvo, opcoesFallback);
+            return;
+        }
+
+        alvo.textContent = 'Carregando mapa...';
+
+        try {
+            const coordenadas =
+                (await localizarPorEndereco(evento)) ||
+                (await localizarPorCep(evento.cep_evento));
+
+            if (!coordenadas) {
+                throw new Error('Endereço não localizado.');
+            }
+
+            const latitude = Number(coordenadas.latitude);
+            const longitude = Number(coordenadas.longitude);
+
+            if (!coordenadasValidas(latitude, longitude)) {
+                throw new Error('Coordenadas inválidas.');
+            }
+
+            opcoesFallback.latitude = latitude;
+            opcoesFallback.longitude = longitude;
+
+            if (mapaAtual) {
+                mapaAtual.remove();
+                mapaAtual = null;
+            }
+
+            if (window.ShowMeMapa?.removerFallback) {
+                window.ShowMeMapa.removerFallback(alvo);
+            } else {
+                alvo.replaceChildren();
+            }
+
+            mapaAtual = window.L.map(alvo).setView([latitude, longitude], 15);
+
+            window.L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+                attribution: '&copy; OpenStreetMap &copy; CARTO',
+                subdomains: 'abcd',
+                maxZoom: 20,
+            }).addTo(mapaAtual);
+
+            window.L.marker([latitude, longitude])
+                .addTo(mapaAtual)
+                .bindPopup(texto || opcoesFallback.endereco)
+                .openPopup();
+
+            window.setTimeout(() => mapaAtual?.invalidateSize(), 0);
+
+            window.ShowMeMapa?.monitorarTiles(mapaAtual, alvo, opcoesFallback, () => {
+                if (mapaAtual) {
+                    mapaAtual.remove();
+                    mapaAtual = null;
+                }
+
+                exibirFallbackMapa(alvo, opcoesFallback);
+            });
+        } catch (erro) {
+            console.error('Falha ao carregar o mapa do evento:', erro);
+
+            if (mapaAtual) {
+                mapaAtual.remove();
+                mapaAtual = null;
+            }
+
+            exibirFallbackMapa(alvo, opcoesFallback);
+        }
+    }
 
     function sessoesDisponiveisParaPlanejamento() {
         return sessoesEvento.filter((sessao) => sessao.id && !terminou(sessao.data_evento));

@@ -24,11 +24,15 @@
                 textoBotao.textContent = 'Enviando...';
             }
 
+            const controlador = new AbortController();
+            const temporizador = window.setTimeout(() => controlador.abort(), 15000);
+
             try {
                 const resposta = await fetch(formulario.action, {
                     method: 'POST',
                     headers: { Accept: 'application/json' },
                     body: new FormData(formulario),
+                    signal: controlador.signal,
                 });
 
                 let dados;
@@ -46,10 +50,14 @@
                 formulario.reset();
                 window.ShowMeUI.toast('Mensagem enviada com sucesso!', { variante: 'sucesso' });
             } catch (erro) {
-                window.ShowMeUI.toast(erro.message || 'Não foi possível enviar a mensagem.', {
-                    variante: 'erro',
-                });
+                const mensagem =
+                    erro.name === 'AbortError'
+                        ? 'O envio demorou demais. Tente novamente em instantes.'
+                        : erro.message || 'Não foi possível enviar a mensagem.';
+
+                window.ShowMeUI.toast(mensagem, { variante: 'erro' });
             } finally {
+                window.clearTimeout(temporizador);
                 botao.disabled = false;
 
                 if (textoBotao) {

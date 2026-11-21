@@ -572,6 +572,11 @@
         requisicaoBusca?.abort();
         requisicaoBusca = new AbortController();
         const controleDaBusca = requisicaoBusca;
+        let tempoEsgotado = false;
+        const temporizadorBusca = window.setTimeout(() => {
+            tempoEsgotado = true;
+            controleDaBusca.abort();
+        }, 12000);
         alternarVisaoHome(true);
         atualizarCabecalhoBusca(termo);
         document.title = termo ? `Busca: ${termo} | ShowMe` : 'Eventos filtrados | ShowMe';
@@ -615,14 +620,21 @@
 
             grade.replaceChildren(...eventosFiltrados.map(criarCardEvento));
         } catch (erro) {
-            if (erro.name !== 'AbortError') {
+            if (erro.name !== 'AbortError' || tempoEsgotado) {
                 console.error('Falha na busca de eventos:', erro);
                 grade.replaceChildren(
-                    criarEstadoBusca('Não foi possível buscar os eventos agora. Tente novamente.', true),
+                    criarEstadoBusca(
+                        tempoEsgotado
+                            ? 'A busca demorou demais para responder. Tente novamente.'
+                            : 'Não foi possível buscar os eventos agora. Tente novamente.',
+                        true,
+                    ),
                 );
                 atualizarCabecalhoBusca(termo, 0);
             }
         } finally {
+            window.clearTimeout(temporizadorBusca);
+
             if (requisicaoBusca === controleDaBusca) {
                 grade.setAttribute('aria-busy', 'false');
             }
@@ -754,6 +766,8 @@
             return;
         }
 
+        const secao = carrossel.closest('.secao-eventos-home');
+
         destruirCarrosselCategoria(idCarrossel);
         carrossel.classList.remove('carrossel-poucos-itens');
         carrossel.classList.remove('carrossel-item-unico');
@@ -763,6 +777,15 @@
             trilho.className = 'swiper-wrapper';
             carrossel.replaceChildren(trilho);
         }
+
+        if (eventos.length === 0 && !erro) {
+            secao?.classList.add('d-none');
+            trilho.replaceChildren();
+            atualizarNavegacao(idCarrossel, false);
+            return;
+        }
+
+        secao?.classList.remove('d-none');
 
         if (eventos.length === 0) {
             const slideEstado = document.createElement('div');
@@ -883,7 +906,7 @@
     }
 
     function aplicarCoresAlternadasSecoes() {
-        document.querySelectorAll('.secao-eventos-home .titulo-secao-home').forEach((titulo, indice) => {
+        document.querySelectorAll('.secao-eventos-home:not(.d-none) .titulo-secao-home').forEach((titulo, indice) => {
             const rosa = indice % 2 === 0;
             titulo.classList.toggle('titulo-rosa', rosa);
             titulo.classList.toggle('titulo-verde', !rosa);
@@ -899,9 +922,13 @@
     }
 
     async function carregarEventos() {
+        const controlador = new AbortController();
+        const temporizador = window.setTimeout(() => controlador.abort(), 12000);
+
         try {
             const resposta = await fetch('api/eventos', {
                 headers: { Accept: 'application/json' },
+                signal: controlador.signal,
             });
             const dados = await resposta.json();
 
@@ -933,6 +960,7 @@
             console.error('Falha ao carregar eventos na home:', erro);
             mostrarErro('Não foi possível carregar os eventos. Verifique se a API está disponível e tente novamente.');
         } finally {
+            window.clearTimeout(temporizador);
             document.querySelectorAll('[data-secao-categoria]').forEach((secao) => {
                 secao.setAttribute('aria-busy', 'false');
             });

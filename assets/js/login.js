@@ -13,11 +13,14 @@
         mensagemLogin.className = 'alert d-none';
 
         const dadosFormulario = new FormData(formularioLogin);
+        const controlador = new AbortController();
+        const temporizador = window.setTimeout(() => controlador.abort(), 15000);
 
         try {
             const resposta = await fetch('api/sessoes/', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
+                signal: controlador.signal,
                 body: JSON.stringify({
                     email: dadosFormulario.get('email'),
                     senha: dadosFormulario.get('senha'),
@@ -31,8 +34,13 @@
 
             window.location.href = 'index.php';
         } catch (erro) {
-            mensagemLogin.textContent = erro.message;
+            mensagemLogin.textContent =
+                erro.name === 'AbortError'
+                    ? 'O servidor demorou para responder. Tente novamente.'
+                    : erro.message;
             mensagemLogin.className = 'alert alert-danger';
+        } finally {
+            window.clearTimeout(temporizador);
         }
     });
 })();

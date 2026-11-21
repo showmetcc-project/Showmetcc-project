@@ -17,11 +17,15 @@
     async function concluirLogin(respostaGoogle, configuracao) {
         mostrarMensagem(configuracao.errorTarget, 'Validando sua conta Google...', 'info');
 
+        const controlador = new AbortController();
+        const temporizador = window.setTimeout(() => controlador.abort(), 15000);
+
         try {
             const resposta = await fetch(configuracao.endpoint, {
                 method: 'POST',
                 credentials: 'same-origin',
                 headers: { 'Content-Type': 'application/json' },
+                signal: controlador.signal,
                 body: JSON.stringify({ google_token: respostaGoogle.credential }),
             });
             const dados = await resposta.json();
@@ -32,7 +36,14 @@
 
             window.location.href = configuracao.successUrl;
         } catch (erro) {
-            mostrarMensagem(configuracao.errorTarget, erro.message, 'danger');
+            const mensagem =
+                erro.name === 'AbortError'
+                    ? 'O Google demorou para responder. Tente novamente.'
+                    : erro.message;
+
+            mostrarMensagem(configuracao.errorTarget, mensagem, 'danger');
+        } finally {
+            window.clearTimeout(temporizador);
         }
     }
 

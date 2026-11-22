@@ -17,7 +17,7 @@
             texto: 'Tem certeza que deseja sair?',
             confirmarTexto: 'Sair',
             cancelarTexto: 'Cancelar',
-            variante: 'destrutiva',
+            variante: 'destrutiva'
         });
 
         if (!deveSair) {
@@ -28,10 +28,10 @@
         this.setAttribute('aria-busy', 'true');
 
         try {
-            const resposta = await fetch('api/sessoes/', {
+            const resposta = await fetch('../api/apiSessoes.php', {
                 method: 'DELETE',
                 credentials: 'same-origin',
-                headers: { Accept: 'application/json' },
+                headers: {Accept: 'application/json'}
             });
 
             if (resposta.ok || resposta.status === 401) {
@@ -50,10 +50,10 @@
             throw new Error(dados.erro || 'Não foi possível encerrar a sessão.');
         } catch (erro) {
             window.ShowMeUI.toast(erro.message || 'Não foi possível encerrar a sessão.', {
-                variante: 'erro',
+                variante: 'erro'
             });
             this.disabled = false;
             this.removeAttribute('aria-busy');
         }
     });
-})();
+}());

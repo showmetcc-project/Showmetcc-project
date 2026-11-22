@@ -99,7 +99,7 @@ function validarTokenCsrf(): void
 }
 
 // Limites simples por sessão para mitigar spam e tentativas excessivas.
-const SHOWME_LIMITE_LOGIN = 5;
+const SHOWME_LIMITE_LOGIN = 10;
 const SHOWME_JANELA_LOGIN = 900;
 const SHOWME_LIMITE_DENUNCIAS = 3;
 const SHOWME_JANELA_DENUNCIAS = 600;

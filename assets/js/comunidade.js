@@ -104,7 +104,7 @@
         campoBusca.focus();
     });
 
-    fetch('api/comunidade-posts?resumo=1', { headers: { Accept: 'application/json' } })
+    fetch('api/apiComunidadePosts.php?resumo=1', { headers: { Accept: 'application/json' } })
         .then(async (resposta) => {
             const dados = await resposta.json();
             if (!resposta.ok) throw new Error(dados.erro || 'Não foi possível carregar as comunidades.');

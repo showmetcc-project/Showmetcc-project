@@ -7,6 +7,7 @@
     font-family: 'Open Sans', 'Segoe UI', sans-serif;
 }
 
+
 body {
     background: #0a0a0a !important;
     color: #fff !important;
@@ -829,4 +830,58 @@ a {
     .acoes-modal-selecao button {
         width: 100%;
     }
+}
+
+/* ==========================================
+   SHOWME — PIN NEON PREMIUM
+========================================== */
+
+.showme-marker-container {
+    background: transparent !important;
+    border: none !important;
+}
+
+.showme-pin-wrapper {
+    position: relative;
+    width: 64px;
+    height: 76px;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+}
+
+/* Brilho externo */
+.showme-pin-glow {
+    position: absolute;
+    top: 7px;
+    left: 12px;
+    width: 40px;
+    height: 40px;
+    background: #a8ff00;
+    border-radius: 50%;
+    filter: blur(18px);
+    opacity: 0.35;
+}
+
+/* Pulso */
+.showme-pin-pulse {
+    position: absolute;
+    top: 11px;
+    left: 16px;
+    width: 32px;
+    height: 32px;
+    border: 2px solid #a8ff00;
+    border-radius: 50%;
+    animation: showmePinPulse 2s ease-out infinite;
+}
+
+.showme-marker-container {
+    background: transparent !important;
+    border: none !important;
+}
+
+.showme-marker-simple {
+    color: #a8ff00;
+    font-size: 38px;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.6));
 }

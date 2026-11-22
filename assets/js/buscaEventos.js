@@ -453,7 +453,7 @@
             const controlador = new AbortController();
             const temporizador = window.setTimeout(() => controlador.abort(), 10000);
 
-            requisicaoLocais = fetch('api/eventos?listar_locais=1', {
+            requisicaoLocais = fetch('api/apiEventos.php?listar_locais=1', {
                 headers: { Accept: 'application/json' },
                 signal: controlador.signal,
             })
@@ -543,72 +543,151 @@
             return link;
         }
 
-        async function executarBusca() {
-            const termo = campo.value.trim();
+       async function executarBusca() {
+    const termo = campo.value.trim();
 
-            if (!termo && !filtrosAtivos()) {
-                requisicaoAtual?.abort();
-                requisicaoAtual = null;
-                mostrarMensagem('Digite para buscar eventos ou selecione filtros.');
-                return;
-            }
+    if (!termo && !filtrosAtivos()) {
+        requisicaoAtual?.abort();
+        requisicaoAtual = null;
 
-            requisicaoAtual?.abort();
-            requisicaoAtual = new AbortController();
-            const controleAtual = requisicaoAtual;
-            resultados.setAttribute('aria-busy', 'true');
+        mostrarMensagem('Digite para buscar eventos ou selecione filtros.');
+        resultados.setAttribute('aria-busy', 'false');
+        return;
+    }
 
-            const parametros = new URLSearchParams();
-            if (termo) parametros.set('busca', termo);
-            if (filtros.categoria) parametros.set('categoria', filtros.categoria);
-            if (filtros.classificacao) parametros.set('classificacao', filtros.classificacao);
-            if (filtros.preco !== 'todos') parametros.set('ingresso', filtros.preco);
-            const periodo = periodoDaData(filtros.data);
-            if (periodo) parametros.set('periodo', periodo);
-            if (filtros.uf) parametros.set('uf', filtros.uf);
-            if (filtros.cidade) parametros.set('cidade', filtros.cidade);
-            if (filtros.preco !== 'gratuitos') {
-                if (filtros.precoMin > 0) parametros.set('valor_minimo', String(filtros.precoMin));
-                if (filtros.precoMax < PRECO_MAXIMO_SLIDER) parametros.set('valor_maximo', String(filtros.precoMax));
-            }
-            parametros.set('limite', String(LIMITE_RESULTADOS));
+    // Cancela a requisição anterior sem tratar isso como erro.
+    requisicaoAtual?.abort();
 
-            try {
-                const resposta = await fetch(`api/eventos?${parametros.toString()}`, {
-                    headers: { Accept: 'application/json' },
-                    signal: controleAtual.signal,
-                });
-                const dados = await resposta.json();
+    const controleAtual = new AbortController();
+    requisicaoAtual = controleAtual;
 
-                if (!resposta.ok) {
-                    throw new Error(dados.erro || 'Não foi possível buscar eventos');
-                }
+    resultados.setAttribute('aria-busy', 'true');
 
-                if (requisicaoAtual !== controleAtual) {
-                    return;
-                }
+    const parametros = new URLSearchParams();
 
-                const eventos = Array.isArray(dados.eventos) ? dados.eventos : [];
+    if (termo) {
+        parametros.set('busca', termo);
+    }
 
-                if (eventos.length === 0) {
-                    mostrarMensagem(
-                        termo
-                            ? 'Nenhum evento encontrado com esses critérios.'
-                            : 'Nenhum evento corresponde aos filtros selecionados.',
-                    );
-                    return;
-                }
+    if (filtros.categoria) {
+        parametros.set('categoria_evento', filtros.categoria);
+    }
 
-                resultados.replaceChildren(...eventos.map(criarSugestao));
-            } catch (erro) {
-                if (erro.name !== 'AbortError') {
-                    mostrarMensagem('Não foi possível carregar as sugestões');
-                }
-            } finally {
-                if (requisicaoAtual === controleAtual) resultados.setAttribute('aria-busy', 'false');
-            }
+    if (filtros.classificacao) {
+        parametros.set('classificacao_indicativa', filtros.classificacao);
+    }
+
+    if (filtros.uf) {
+        parametros.set('uf', filtros.uf);
+    }
+
+    if (filtros.cidade) {
+        parametros.set('cidade_evento', filtros.cidade);
+    }
+
+    if (filtros.preco === 'gratuitos') {
+        parametros.set('gratuidade', '1');
+    } else if (filtros.preco === 'pagos') {
+        parametros.set('gratuidade', '0');
+    }
+
+    const periodo = periodoDaData(filtros.data);
+
+    if (periodo) {
+        parametros.set('data_evento_periodo', periodo);
+    }
+
+    if (filtros.preco !== 'gratuitos') {
+        if (filtros.precoMin > 0) {
+            parametros.set(
+                'valor_ingresso_minimo',
+                String(filtros.precoMin)
+            );
         }
 
+        if (filtros.precoMax < PRECO_MAXIMO_SLIDER) {
+            parametros.set(
+                'valor_ingresso_maximo',
+                String(filtros.precoMax)
+            );
+        }
+    }
+
+    parametros.set('limite', String(LIMITE_RESULTADOS));
+
+    try {
+        const url = `api/apiEventos.php?${parametros.toString()}`;
+
+        const resposta = await fetch(url, {
+            headers: {
+                Accept: 'application/json'
+            },
+            signal: controleAtual.signal
+        });
+
+        // Verifica se a requisição HTTP foi bem-sucedida.
+        if (!resposta.ok) {
+            const textoErro = await resposta.text();
+
+            throw new Error(
+                `Erro HTTP ${resposta.status}: ${textoErro.slice(0, 200)}`
+            );
+        }
+
+        // Evita tentar converter páginas HTML em JSON.
+        const contentType = resposta.headers.get('content-type') || '';
+
+        if (!contentType.includes('application/json')) {
+            const textoErro = await resposta.text();
+
+            throw new Error(
+                `A API retornou conteúdo inválido: ${textoErro.slice(0, 200)}`
+            );
+        }
+
+        const dados = await resposta.json();
+
+        // Impede que uma busca antiga altere os resultados atuais.
+        if (requisicaoAtual !== controleAtual) {
+            return;
+        }
+
+        const eventos = Array.isArray(dados.eventos)
+            ? dados.eventos
+            : [];
+
+        if (eventos.length === 0) {
+            mostrarMensagem(
+                termo
+                    ? 'Nenhum evento encontrado com esses critérios.'
+                    : 'Nenhum evento corresponde aos filtros selecionados.'
+            );
+
+            return;
+        }
+
+        resultados.replaceChildren(
+            ...eventos.map(criarSugestao)
+        );
+
+    } catch (erro) {
+        // Cancelamentos são esperados durante buscas rápidas.
+        if (erro.name === 'AbortError') {
+            return;
+        }
+
+        console.error('Erro na busca de eventos:', erro);
+
+        if (requisicaoAtual === controleAtual) {
+            mostrarMensagem('Não foi possível carregar as sugestões.');
+        }
+
+    } finally {
+        if (requisicaoAtual === controleAtual) {
+            resultados.setAttribute('aria-busy', 'false');
+        }
+    }
+}
         function agendarBusca(atualizarHome = false, fecharSeVazio = false) {
             window.clearTimeout(temporizador);
             atualizarBotaoLimpar();

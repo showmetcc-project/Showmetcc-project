@@ -3,3 +3,4 @@
 /config/email.php
 /config/google.php
 /config/googleCalendar.php
+.devcontainer

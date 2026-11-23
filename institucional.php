@@ -238,67 +238,209 @@ iniciarSessaoSegura();
     </section>
 
     <section id="fidelidade" class="clube-fidelidade section">
-      <div class="container section-title" data-aos="fade-up">
-        <h2>
-          <span class="verde">Clube de Fidelidade</span>
-          <span class="rosa">ShowMe+</span>
-        </h2>
-        <p class="clube-fidelidade-introducao">
-          Viva mais experiências culturais com o ShowMe+. Assinantes têm acesso a descontos e cupons em parceiros,
-          redução ou isenção de determinadas taxas quando houver integração comercial com parceiros, sorteios e
-          experiências exclusivas em eventos, além de alertas antecipados sobre vendas, eventos e oportunidades.
-        </p>
+  <div class="container section-title" data-aos="fade-up">
+    <h2>
+      <span class="verde">Planos</span>
+      <span class="rosa">ShowMe</span>
+    </h2>
+
+    <p class="clube-fidelidade-introducao">
+      Escolha o plano ideal para descobrir eventos, planejar suas experiências
+      culturais ou divulgar eventos para mais pessoas. Explore o ShowMe do seu jeito.
+    </p>
+  </div>
+
+  <div class="container clube-fidelidade-planos">
+    <div class="row g-4 justify-content-center">
+
+      <!-- SEM ANÚNCIOS -->
+      <div class="col-12 col-md-6 col-xl-4" data-aos="fade-up" data-aos-delay="100">
+        <article class="plano-fidelidade plano-mensal">
+
+          <header class="plano-fidelidade-cabecalho">
+            <h3>Sem Anúncios</h3>
+          </header>
+
+          <p class="plano-fidelidade-subtitulo">
+            Sua experiência cultural sem interrupções.
+          </p>
+
+          <p class="plano-fidelidade-preco">
+            <strong>R$ 7,90</strong>
+            <span>/ mês</span>
+          </p>
+
+          <p class="plano-fidelidade-cobranca">
+            Cobrança mensal.
+          </p>
+
+          <div class="plano-fidelidade-divisor" aria-hidden="true"></div>
+
+          <p class="plano-fidelidade-beneficio">
+            <i class="bi bi-check-circle-fill" aria-hidden="true"></i>
+            <span>Navegação sem anúncios</span>
+          </p>
+
+          <p class="plano-fidelidade-beneficio">
+            <i class="bi bi-check-circle-fill" aria-hidden="true"></i>
+            <span>Explore eventos culturais sem interrupções publicitárias</span>
+          </p>
+
+          <p class="plano-fidelidade-beneficio">
+            <i class="bi bi-check-circle-fill" aria-hidden="true"></i>
+            <span>Continue descobrindo eventos pelo Brasil</span>
+          </p>
+          <div class="plano-fidelidade-divisor" aria-hidden="true"></div>
+
+<a href="pagamento.php?plano=sem-anuncios"
+   class="btn-plano"
+   aria-label="Assinar plano Sem Anúncios">
+  Assinar plano
+  <i class="bi bi-arrow-right"></i>
+</a>
+        </article>
       </div>
 
-      <div class="container clube-fidelidade-planos">
-        <div class="row g-4 justify-content-center">
-          <div class="col-12 col-lg-6" data-aos="fade-up" data-aos-delay="100">
-            <article class="plano-fidelidade plano-mensal">
-              <header class="plano-fidelidade-cabecalho">
-                <h3>Plano mensal</h3>
-              </header>
-              <p class="plano-fidelidade-subtitulo">Flexibilidade para acompanhar seu ritmo.</p>
+      <!-- SHOWME PLUS -->
+      <div class="col-12 col-md-6 col-xl-4" data-aos="fade-up" data-aos-delay="200">
+        <article class="plano-fidelidade plano-anual">
 
-              <p class="plano-fidelidade-preco">
-                <strong>R$ 15,90</strong>
-                <span>/ mês</span>
-              </p>
-              <p class="plano-fidelidade-cobranca">Cobrança mensal.</p>
+          <header class="plano-fidelidade-cabecalho">
+            <h3>ShowMe Plus</h3>
+            <span class="plano-fidelidade-badge">Experiência Premium</span>
+          </header>
 
-              <div class="plano-fidelidade-divisor" aria-hidden="true"></div>
+          <p class="plano-fidelidade-subtitulo">
+            Para quem quer viver mais experiências e planejar cada detalhe.
+          </p>
 
-              <p class="plano-fidelidade-beneficio">
-                <i class="bi bi-check-circle-fill" aria-hidden="true"></i>
-                <span>Todos os benefícios do ShowMe+</span>
-              </p>
-            </article>
-          </div>
+          <p class="plano-fidelidade-preco">
+            <strong>R$ 20,90</strong>
+            <span>/ mês</span>
+          </p>
 
-          <div class="col-12 col-lg-6" data-aos="fade-up" data-aos-delay="200">
-            <article class="plano-fidelidade plano-anual">
-              <header class="plano-fidelidade-cabecalho">
-                <h3>Plano anual</h3>
-                <span class="plano-fidelidade-badge">Economize R$ 36/ano</span>
-              </header>
-              <p class="plano-fidelidade-subtitulo">Os mesmos benefícios, por menos.</p>
+          <p class="plano-fidelidade-cobranca">
+            Ou R$ 209,90 por ano.
+          </p>
 
-              <p class="plano-fidelidade-preco">
-                <strong>R$ 12,90</strong>
-                <span>/ mês</span>
-              </p>
-              <p class="plano-fidelidade-cobranca">R$ 154,80 cobrados de uma só vez por ano.</p>
+          <div class="plano-fidelidade-divisor" aria-hidden="true"></div>
 
-              <div class="plano-fidelidade-divisor" aria-hidden="true"></div>
+          <p class="plano-fidelidade-beneficio">
+            <i class="bi bi-check-circle-fill" aria-hidden="true"></i>
+            <span>Todos os benefícios do plano gratuito</span>
+          </p>
 
-              <p class="plano-fidelidade-beneficio">
-                <i class="bi bi-check-circle-fill" aria-hidden="true"></i>
-                <span>Todos os benefícios do ShowMe+</span>
-              </p>
-            </article>
-          </div>
-        </div>
+          <p class="plano-fidelidade-beneficio">
+            <i class="bi bi-check-circle-fill" aria-hidden="true"></i>
+            <span>Experiência sem anúncios</span>
+          </p>
+
+          <p class="plano-fidelidade-beneficio">
+            <i class="bi bi-check-circle-fill" aria-hidden="true"></i>
+            <span>Planejamento de viagens ampliado</span>
+          </p>
+
+          <p class="plano-fidelidade-beneficio">
+            <i class="bi bi-check-circle-fill" aria-hidden="true"></i>
+            <span>Cálculo de orçamento de viagens e eventos</span>
+          </p>
+
+          <p class="plano-fidelidade-beneficio">
+            <i class="bi bi-check-circle-fill" aria-hidden="true"></i>
+            <span>Rotas e opções de deslocamento</span>
+          </p>
+
+          <p class="plano-fidelidade-beneficio">
+            <i class="bi bi-check-circle-fill" aria-hidden="true"></i>
+            <span>Pesquisa de hospedagens</span>
+          </p>
+
+          <p class="plano-fidelidade-beneficio">
+            <i class="bi bi-check-circle-fill" aria-hidden="true"></i>
+            <span>Favoritos e eventos planejados ilimitados</span>
+          </p>
+
+          <p class="plano-fidelidade-beneficio">
+            <i class="bi bi-check-circle-fill" aria-hidden="true"></i>
+            <span>Mais sugestões de eventos para a plataforma</span>
+          </p>
+    <div class="plano-fidelidade-divisor" aria-hidden="true"></div>
+
+<a href="pagamento.php?plano=showme-plus"
+   class="btn-plano"
+   aria-label="Assinar plano Sem Anúncios">
+  Assinar plano
+  <i class="bi bi-arrow-right"></i>
+</a>
+        </article>
       </div>
-    </section>
+
+      <!-- ORGANIZADORES -->
+      <div class="col-12 col-md-6 col-xl-4" data-aos="fade-up" data-aos-delay="300">
+        <article class="plano-fidelidade plano-mensal">
+
+          <header class="plano-fidelidade-cabecalho">
+            <h3>ShowMe Organizadores</h3>
+          </header>
+
+          <p class="plano-fidelidade-subtitulo">
+            Mais visibilidade e praticidade para quem faz a cultura acontecer.
+          </p>
+
+          <p class="plano-fidelidade-preco">
+            <strong>R$ 46,90</strong>
+            <span>/ mês</span>
+          </p>
+
+          <p class="plano-fidelidade-cobranca">
+            Ou R$ 379,90 por ano.
+          </p>
+
+          <div class="plano-fidelidade-divisor" aria-hidden="true"></div>
+
+          <p class="plano-fidelidade-beneficio">
+            <i class="bi bi-check-circle-fill" aria-hidden="true"></i>
+            <span>Cadastro e divulgação de eventos na plataforma</span>
+          </p>
+
+          <p class="plano-fidelidade-beneficio">
+            <i class="bi bi-check-circle-fill" aria-hidden="true"></i>
+            <span>Envio ilimitado de eventos para análise e aprovação</span>
+          </p>
+
+          <p class="plano-fidelidade-beneficio">
+            <i class="bi bi-check-circle-fill" aria-hidden="true"></i>
+            <span>Espaço para divulgar diferentes eventos e atrações</span>
+          </p>
+
+          <p class="plano-fidelidade-beneficio">
+            <i class="bi bi-check-circle-fill" aria-hidden="true"></i>
+            <span>Atualização das informações dos eventos cadastrados</span>
+          </p>
+
+          <p class="plano-fidelidade-beneficio">
+            <i class="bi bi-check-circle-fill" aria-hidden="true"></i>
+            <span>Maior alcance para eventos culturais e artistas</span>
+          </p>
+
+          <p class="plano-fidelidade-beneficio">
+            <i class="bi bi-check-circle-fill" aria-hidden="true"></i>
+            <span>Perfil voltado à divulgação de eventos</span>
+          </p>
+          <div class="plano-fidelidade-divisor" aria-hidden="true"></div>
+
+<a href="pagamento.php?plano=organizadores"
+   class="btn-plano"
+   aria-label="Assinar plano Sem Anúncios">
+  Assinar plano
+  <i class="bi bi-arrow-right"></i>
+</a>
+        </article>
+      </div>
+
+    </div>
+  </div>
+</section>
 
     <section id="faq-2" class="faq-2 section">
       <span id="perguntas" class="ancora-secao" aria-hidden="true"></span>

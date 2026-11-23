@@ -48,7 +48,7 @@ require __DIR__ . '/cabecalho.php';
                 <span id="localComunidadeEvento" hidden><i class="bi bi-geo-alt-fill" aria-hidden="true"></i><span></span></span>
                 <span id="categoriaComunidadeEvento" hidden><i class="bi bi-tags-fill" aria-hidden="true"></i><span></span></span>
                 <span id="classificacaoComunidadeEvento" hidden><span class="selo-classificacao"></span></span>
-                <span id="precoComunidadeEvento" hidden><i class="bi bi-currency-dollar" aria-hidden="true"></i><span></span></span>
+                <span id="precoComunidadeEvento" hidden><i class="bi bi-currency-dollar" aria-hidden="true"></i><span></span>
             </div>
         </section>
 

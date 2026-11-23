@@ -147,7 +147,7 @@
         if (categoriaAtual) busca.set('categoria', categoriaAtual);
 
         try {
-            const resposta = await fetch(`api/comunidade-posts?${busca}`, { headers: { Accept: 'application/json' } });
+            const resposta = await fetch(`api/apiComunidadePosts.php?${busca}`, { headers: { Accept: 'application/json' } });
             const dados = await json(resposta);
             if (!resposta.ok) throw new Error(dados.erro || 'Não foi possível carregar as publicações.');
             posts = dados.posts || [];
@@ -223,7 +223,7 @@
             if (!valor) return;
             salvar.disabled = true;
             try {
-                const resposta = await fetch(`api/comunidade-posts/${post.id_post}`, {
+                const resposta = await fetch(`api/apiComunidadePosts.php/${post.id_post}`, {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ categoria: categoria.value, texto: valor }),
@@ -248,7 +248,7 @@
             variante: 'destrutiva',
         });
         if (!deveExcluir) return;
-        const resposta = await fetch(`api/comunidade-posts/${id}`, { method: 'DELETE' });
+        const resposta = await fetch(`api/apiComunidadePosts.php/${id}`, { method: 'DELETE' });
         const dados = await json(resposta);
         if (!resposta.ok) {
             window.ShowMeUI.toast(dados.erro || 'Não foi possível excluir.', { variante: 'erro' });
@@ -290,7 +290,7 @@
             if (!valor) return;
             salvar.disabled = true;
             try {
-                const retorno = await fetch(`api/comunidade-respostas/${resposta.id_resposta}`, {
+                const retorno = await fetch(`api/apiComunidadeRespostas.php/${resposta.id_resposta}`, {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ texto: valor }),
@@ -315,7 +315,7 @@
             variante: 'destrutiva',
         });
         if (!deveExcluir) return;
-        const retorno = await fetch(`api/comunidade-respostas/${id}`, { method: 'DELETE' });
+        const retorno = await fetch(`api/apiComunidadeRespostas.php/${id}`, { method: 'DELETE' });
         const dados = await json(retorno);
         if (!retorno.ok) {
             window.ShowMeUI.toast(dados.erro || 'Não foi possível excluir a resposta.', { variante: 'erro' });
@@ -389,7 +389,7 @@
         curtir.addEventListener('click', async () => {
             curtir.disabled = true;
             try {
-                const retorno = await fetch('api/comunidade-curtidas', {
+                const retorno = await fetch('api/apiComunidadeCurtidas.php', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ id_post: post.id_post }),
@@ -442,7 +442,7 @@
             if (!valor) return;
             enviarResposta.disabled = true;
             try {
-                const retorno = await fetch('api/comunidade-respostas', {
+                const retorno = await fetch('api/apiComunidadeRespostas.php', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ id_post: post.id_post, texto: valor }),
@@ -489,7 +489,7 @@
         enviar.disabled = true;
 
         try {
-            const resposta = await fetch('api/comunidade-denuncias', {
+            const resposta = await fetch('api/apiComunidadeDenuncias.php', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ ...alvoDenunciaAtual, motivo }),
@@ -511,7 +511,7 @@
         const galeria = document.getElementById('galeriaComunidade');
         galeria.innerHTML = '<p class="comunidade-estado">Carregando galeria...</p>';
         try {
-            const resposta = await fetch(`api/comunidade-midias?evento_id=${encodeURIComponent(idEvento)}`);
+            const resposta = await fetch(`api/apiComunidadeMidias.php?id_evento=${encodeURIComponent(idEvento)}`)
             const dados = await json(resposta);
             if (!resposta.ok) throw new Error(dados.erro);
             midias = dados.midias || [];
@@ -600,7 +600,7 @@
             variante: 'destrutiva',
         });
         if (!deveExcluir) return;
-        const resposta = await fetch(`api/comunidade-midias/${id}`, { method: 'DELETE' });
+        const resposta = await fetch(`api/apiComunidadeMidias.php?id=${id}`, { method: 'DELETE' });
         const dados = await json(resposta);
         if (!resposta.ok) {
             window.ShowMeUI.toast(dados.erro || 'Não foi possível excluir.', { variante: 'erro' });
@@ -612,7 +612,7 @@
 
     async function carregarEvento() {
         if (!Number.isInteger(idEvento) || idEvento < 1) throw new Error('Informe um evento válido na URL.');
-        const resposta = await fetch(`api/eventos/${idEvento}`);
+        const resposta = await fetch(`api/apiEventos.php?id=${idEvento}`);
         const dados = await json(resposta);
         if (!resposta.ok || !dados.evento) throw new Error(dados.erro || 'Evento não encontrado.');
         const evento = dados.evento;
@@ -705,7 +705,7 @@
             }
 
             publicar.disabled = true;
-            const resposta = await fetch('api/comunidade-posts', {
+            const resposta = await fetch('api/apiComunidadePosts.php', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ id_evento: idEvento, categoria: categoria.value, texto: texto.value.trim() }),
@@ -734,7 +734,7 @@
             dadosFormulario.set('id_evento', String(idEvento));
             const enviar = formulario.querySelector('button[type="submit"]');
             enviar.disabled = true;
-            const resposta = await fetch('api/comunidade-midias', { method: 'POST', body: dadosFormulario });
+            const resposta = await fetch('api/apiComunidadeMidias.php', { method: 'POST', body: dadosFormulario });
             const dados = await json(resposta);
             if (!resposta.ok) {
                 window.ShowMeUI.toast(dados.erro || 'Não foi possível publicar a foto.', { variante: 'erro' });

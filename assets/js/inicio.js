@@ -2,7 +2,6 @@
     'use strict';
 
     const imagemPadraoCard = 'assets/img/bannerEventoPadrao.png';
-    const PRECO_MAXIMO_FILTRO = 2000;
     const limiteBanner = 5;
     let bannerSwiper = null;
     let requisicaoBusca = null;
@@ -11,41 +10,16 @@
     const carrosseisCategorias = new Map();
 
     const secoesCategorias = [
-        { id: 'emBreve', categoria: null, termos: [] },
-        {
-            id: 'musicaShows',
-            categoria: 'Música e Shows',
-            termos: ['musica e shows', 'musica', 'show', 'festival', 'concerto'],
-        },
-        {
-            id: 'cinemaAudiovisual',
-            categoria: 'Cinema e Audiovisual',
-            termos: ['cinema e audiovisual', 'cinema', 'audiovisual', 'filme'],
-        },
-        { id: 'teatroDanca', categoria: 'Teatro e Dança', termos: ['teatro e danca', 'teatro', 'danca'] },
-        {
-            id: 'artesVisuais',
-            categoria: 'Artes Visuais e Exposições',
-            termos: ['artes visuais e exposicoes', 'artes visuais', 'exposicao', 'exposicoes'],
-        },
-        { id: 'literatura', categoria: 'Literatura', termos: ['literatura', 'literario', 'livro', 'leitura'] },
-        { id: 'gastronomia', categoria: 'Gastronomia', termos: ['gastronomia', 'gastronomico'] },
-        {
-            id: 'oficinasWorkshops',
-            categoria: 'Oficinas e Workshops',
-            termos: ['oficinas e workshops', 'oficina', 'workshop', 'workshops'],
-        },
-        {
-            id: 'culturaPopular',
-            categoria: 'Tradições Regionais',
-            termos: ['tradicoes regionais', 'tradicoes', 'regional'],
-        },
-        {
-            id: 'geekCulturaPop',
-            categoria: 'Geek e Cultura Pop',
-            termos: ['geek e cultura pop', 'geek', 'cultura pop'],
-            excluir: ['popular e regional'],
-        },
+        {id: 'emBreve', categoria: null, termos: []},
+        {id: 'musicaShows', categoria: 'Música e Shows', termos: ['musica e shows', 'musica', 'show', 'festival', 'concerto']},
+        {id: 'cinemaAudiovisual', categoria: 'Cinema e Audiovisual', termos: ['cinema e audiovisual', 'cinema', 'audiovisual', 'filme']},
+        {id: 'teatroDanca', categoria: 'Teatro e Dança', termos: ['teatro e danca', 'teatro', 'danca']},
+        {id: 'artesVisuais', categoria: 'Artes Visuais e Exposições', termos: ['artes visuais e exposicoes', 'artes visuais', 'exposicao', 'exposicoes']},
+        {id: 'literatura', categoria: 'Literatura', termos: ['literatura', 'literario', 'livro', 'leitura']},
+        {id: 'gastronomia', categoria: 'Gastronomia', termos: ['gastronomia', 'gastronomico']},
+        {id: 'oficinasWorkshops', categoria: 'Oficinas e Workshops', termos: ['oficinas e workshops', 'oficina', 'workshop', 'workshops']},
+        {id: 'culturaPopular', categoria: 'Tradições Regionais', termos: ['tradicoes regionais', 'tradicoes', 'regional']},
+        {id: 'geekCulturaPop', categoria: 'Geek e Cultura Pop', termos: ['geek e cultura pop', 'geek', 'cultura pop'], excluir: ['popular e regional']}
     ];
 
     function normalizarTexto(valor) {
@@ -57,8 +31,12 @@
     }
 
     function normalizarClassificacoes(valor) {
-        const recebidas = Array.isArray(valor) ? valor : String(valor || '').split(',');
-        const normalizadas = recebidas.map((item) => String(item || '').trim()).filter(Boolean);
+        const recebidas = Array.isArray(valor)
+            ? valor
+            : String(valor || '').split(',');
+        const normalizadas = recebidas
+            .map((item) => String(item || '').trim())
+            .filter(Boolean);
 
         return [...new Set(normalizadas)];
     }
@@ -70,7 +48,12 @@
             return usarPadrao ? imagemPadraoCard : null;
         }
 
-        if (/^(?:https?:)?\/\//i.test(valor) || valor.startsWith('/') || valor.includes('/') || valor.includes('\\')) {
+        if (
+            /^(?:https?:)?\/\//i.test(valor)
+            || valor.startsWith('/')
+            || valor.includes('/')
+            || valor.includes('\\')
+        ) {
             return valor;
         }
 
@@ -98,15 +81,17 @@
 
         bannerSwiper = new window.Swiper('.banner.swiper', {
             loop: quantidade > 1,
-            autoplay: quantidade > 1 ? { delay: 4500, disableOnInteraction: false } : false,
+            autoplay: quantidade > 1
+                ? {delay: 4500, disableOnInteraction: false}
+                : false,
             pagination: {
                 el: '.banner .swiper-pagination',
-                clickable: true,
+                clickable: true
             },
             navigation: {
                 nextEl: '.banner .swiper-button-next',
-                prevEl: '.banner .swiper-button-prev',
-            },
+                prevEl: '.banner .swiper-button-prev'
+            }
         });
     }
 
@@ -151,22 +136,18 @@
         const imagem = document.createElement('img');
         imagem.src = caminho;
         imagem.alt = window.ShowMeA11y.textoAltImagemEvento(evento);
-        imagem.addEventListener(
-            'error',
-            function () {
-                slide.remove();
-                const quantidadeRestante = document.querySelectorAll('#bannerEventos .swiper-slide').length;
+        imagem.addEventListener('error', function () {
+            slide.remove();
+            const quantidadeRestante = document.querySelectorAll('#bannerEventos .swiper-slide').length;
 
-                if (quantidadeRestante === 0) {
-                    mostrarBannerVazio('Nenhum evento em destaque no momento.');
-                    return;
-                }
+            if (quantidadeRestante === 0) {
+                mostrarBannerVazio('Nenhum evento em destaque no momento.');
+                return;
+            }
 
-                bannerSwiper?.update();
-                atualizarControlesBanner(quantidadeRestante);
-            },
-            { once: true },
-        );
+            bannerSwiper?.update();
+            atualizarControlesBanner(quantidadeRestante);
+        }, {once: true});
 
         link.append(imagem);
         slide.append(link);
@@ -180,7 +161,10 @@
             return;
         }
 
-        const slides = eventos.map(criarSlideBanner).filter(Boolean).slice(0, limiteBanner);
+        const slides = eventos
+            .map(criarSlideBanner)
+            .filter(Boolean)
+            .slice(0, limiteBanner);
 
         if (slides.length === 0) {
             mostrarBannerVazio('Nenhum evento em destaque no momento.');
@@ -193,9 +177,7 @@
     }
 
     function formatarData(dataEvento) {
-        const partes = String(dataEvento || '')
-            .split('-')
-            .map(Number);
+        const partes = String(dataEvento || '').split('-').map(Number);
 
         if (partes.length !== 3 || partes.some((parte) => !Number.isInteger(parte))) {
             return 'Data não informada';
@@ -226,11 +208,13 @@
         }
 
         if (texto.toLowerCase() === 'livre') {
-            return { chave: 'livre', rotulo: 'L' };
+            return {chave: 'livre', rotulo: 'L'};
         }
 
         const numero = texto.match(/\d+/);
-        return numero ? { chave: numero[0], rotulo: numero[0] } : { chave: 'livre', rotulo: texto };
+        return numero
+            ? {chave: numero[0], rotulo: numero[0]}
+            : {chave: 'livre', rotulo: texto};
     }
 
     function criarCardEvento(evento) {
@@ -260,13 +244,9 @@
         imagem.src = caminhoImagem(evento.imagem_evento);
         imagem.alt = window.ShowMeA11y.textoAltImagemEvento(evento);
         imagem.loading = 'lazy';
-        imagem.addEventListener(
-            'error',
-            function () {
-                this.src = imagemPadraoCard;
-            },
-            { once: true },
-        );
+        imagem.addEventListener('error', function () {
+            this.src = imagemPadraoCard;
+        }, {once: true});
 
         const conteudo = document.createElement('div');
         conteudo.className = 'card-conteudo';
@@ -279,15 +259,13 @@
 
         const cidade = String(evento.cidade_evento || '').trim();
         const uf = String(evento.uf || '').trim();
-        const local = cidade ? `${cidade}${uf ? ` - ${uf}` : ''}` : evento.endereco_evento || 'Endereço não informado';
+        const local = cidade
+            ? `${cidade}${uf ? ` - ${uf}` : ''}`
+            : (evento.endereco_evento || 'Endereço não informado');
 
         informacoes.append(
             criarLinhaInformacao('bi bi-geo-alt-fill', local, 'evento-localizacao'),
-            criarLinhaInformacao(
-                'bi bi-calendar-event',
-                formatarData(proximaSessaoEvento(evento)?.data_evento || evento.data_evento),
-                'evento-data',
-            ),
+            criarLinhaInformacao('bi bi-calendar-event', formatarData(evento.data_evento), 'evento-data')
         );
         conteudo.append(titulo, informacoes);
         link.append(selo, badge, imagem, conteudo);
@@ -344,10 +322,9 @@
         }
 
         if (resumo) {
-            resumo.textContent =
-                quantidade === null
-                    ? 'Buscando eventos...'
-                    : `${quantidade} ${quantidade === 1 ? 'evento encontrado' : 'eventos encontrados'}`;
+            resumo.textContent = quantidade === null
+                ? 'Buscando eventos...'
+                : `${quantidade} ${quantidade === 1 ? 'evento encontrado' : 'eventos encontrados'}`;
         }
     }
 
@@ -358,47 +335,14 @@
         return `${ano}-${mes}-${dia}`;
     }
 
-    function sessoesDoEvento(evento) {
-        const sessoes = Array.isArray(evento.sessoes) ? evento.sessoes : [];
-
-        return sessoes
-            .filter((sessao) => sessao && sessao.data_evento)
-            .slice()
-            .sort((a, b) =>
-                `${a.data_evento} ${a.hora_inicio || ''}`.localeCompare(`${b.data_evento} ${b.hora_inicio || ''}`),
-            );
-    }
-
-    function datasSessoesEvento(evento) {
-        const datas = sessoesDoEvento(evento)
-            .map((sessao) => String(sessao.data_evento).slice(0, 10))
-            .filter(Boolean);
-
-        if (datas.length) {
-            return datas;
-        }
-
-        const dataEvento = String(evento.data_evento || '').slice(0, 10);
-        return dataEvento ? [dataEvento] : [];
-    }
-
-    function proximaSessaoEvento(evento) {
-        const sessoes = sessoesDoEvento(evento);
-        const hoje = dataLocalISO();
-
-        return sessoes.find((sessao) => String(sessao.data_evento).slice(0, 10) >= hoje) || sessoes[0] || null;
-    }
-
     function opcoesDeCidade(eventos) {
         const cidades = new Map();
         eventos.forEach((evento) => {
             const cidade = String(evento.cidade_evento || '').trim();
-            const uf = String(evento.uf || '')
-                .trim()
-                .toUpperCase();
+            const uf = String(evento.uf || '').trim().toUpperCase();
             if (!cidade) return;
             const chave = `${cidade}|${uf}`;
-            cidades.set(normalizarTexto(chave), { cidade, uf });
+            cidades.set(normalizarTexto(chave), {cidade, uf});
         });
         return [...cidades.values()].sort((a, b) => a.cidade.localeCompare(b.cidade, 'pt-BR'));
     }
@@ -434,7 +378,7 @@
 
         // Próxima semana: segunda a domingo seguintes.
         const inicioProximaSemanaData = new Date(base);
-        inicioProximaSemanaData.setDate(base.getDate() + ((1 - diaSemana + 7) % 7 || 7));
+        inicioProximaSemanaData.setDate(base.getDate() + (((1 - diaSemana + 7) % 7) || 7));
         const fimProximaSemanaData = new Date(inicioProximaSemanaData);
         fimProximaSemanaData.setDate(inicioProximaSemanaData.getDate() + 6);
         const inicioProximaSemana = dataLocalISO(inicioProximaSemanaData);
@@ -449,11 +393,8 @@
 
         const cidadeSelecionada = normalizarTexto(filtros.cidade || '');
         const categoriaSelecionada = normalizarTexto(filtros.categoria || '');
-        const classificacoesSelecionadas = normalizarClassificacoes(filtros.classificacoes || []).map(normalizarTexto);
-        const precoMinimo = Number.isFinite(Number(filtros.precoMin)) ? Math.max(0, Number(filtros.precoMin)) : 0;
-        const precoMaximo = Number.isFinite(Number(filtros.precoMax))
-            ? Math.max(0, Math.min(PRECO_MAXIMO_FILTRO, Number(filtros.precoMax)))
-            : PRECO_MAXIMO_FILTRO;
+        const classificacoesSelecionadas = normalizarClassificacoes(filtros.classificacoes || [])
+            .map(normalizarTexto);
 
         return eventos.filter((evento) => {
             if (filtros.preco === 'gratuitos' && !Boolean(evento.gratuidade)) return false;
@@ -464,25 +405,10 @@
                 if (!classificacoesSelecionadas.includes(classificacaoEvento)) return false;
             }
 
-            if (
-                filtros.uf &&
-                String(evento.uf || '')
-                    .trim()
-                    .toUpperCase() !== filtros.uf
-            )
-                return false;
+            if (filtros.uf && String(evento.uf || '').trim().toUpperCase() !== filtros.uf) return false;
             if (cidadeSelecionada && normalizarTexto(evento.cidade_evento) !== cidadeSelecionada) return false;
-            if (precoMinimo > 0) {
-                if (Boolean(evento.gratuidade)) return false;
-                const valorMaximoEvento = Number(evento.valor_ingresso_maximo ?? evento.valor_ingresso_minimo ?? 0);
-                if (!Number.isFinite(valorMaximoEvento) || valorMaximoEvento < precoMinimo) return false;
-            }
-            if (
-                !Boolean(evento.gratuidade) &&
-                precoMaximo < PRECO_MAXIMO_FILTRO &&
-                Number(evento.valor_ingresso_minimo || 0) > precoMaximo
-            )
-                return false;
+            if (!Boolean(evento.gratuidade) && filtros.precoMax < 2000
+                && Number(evento.valor_ingresso_minimo || 0) > filtros.precoMax) return false;
 
             if (categoriaSelecionada) {
                 const categoriasEvento = normalizarTexto(evento.categoria_evento)
@@ -491,156 +417,249 @@
                 if (!categoriasEvento.includes(categoriaSelecionada)) return false;
             }
 
-            const datasEvento = datasSessoesEvento(evento);
-            const possuiDataEntre = (inicio, fim) => datasEvento.some((data) => data >= inicio && data <= fim);
-
-            if (filtros.data === 'hoje' && !datasEvento.includes(hoje)) return false;
-            if (filtros.data === 'amanha' && !datasEvento.includes(amanha)) return false;
-            if (filtros.data === 'fim-de-semana' && !possuiDataEntre(inicioFimDeSemana, fimFimDeSemana)) return false;
-            if (filtros.data === 'nesta-semana' && !possuiDataEntre(hoje, fimNestaSemana)) return false;
-            if (filtros.data === 'proxima-semana' && !possuiDataEntre(inicioProximaSemana, fimProximaSemana))
-                return false;
-            if (filtros.data === 'neste-mes' && !possuiDataEntre(hoje, fimNesteMes)) return false;
-            if (filtros.data === 'proximo-mes' && !possuiDataEntre(inicioProximoMes, fimProximoMes)) return false;
+            const dataEvento = String(evento.data_evento || '').slice(0, 10);
+            if (filtros.data === 'hoje' && dataEvento !== hoje) return false;
+            if (filtros.data === 'amanha' && dataEvento !== amanha) return false;
+            if (filtros.data === 'fim-de-semana'
+                && (dataEvento < inicioFimDeSemana || dataEvento > fimFimDeSemana)) return false;
+            if (filtros.data === 'nesta-semana'
+                && (dataEvento < hoje || dataEvento > fimNestaSemana)) return false;
+            if (filtros.data === 'proxima-semana'
+                && (dataEvento < inicioProximaSemana || dataEvento > fimProximaSemana)) return false;
+            if (filtros.data === 'neste-mes'
+                && (dataEvento < hoje || dataEvento > fimNesteMes)) return false;
+            if (filtros.data === 'proximo-mes'
+                && (dataEvento < inicioProximoMes || dataEvento > fimProximoMes)) return false;
             return true;
         });
     }
 
     async function buscarEventosNaHome(termoInformado, filtrosInformados = {}) {
-        const termo = String(termoInformado || '').trim();
-        const preco = ['todos', 'gratuitos', 'pagos'].includes(filtrosInformados.preco)
+    const termo = String(termoInformado || '').trim();
+
+    const filtros = {
+        categoria: String(filtrosInformados.categoria || ''),
+        classificacoes: normalizarClassificacoes(
+            filtrosInformados.classificacoes || filtrosInformados.classificacao || []
+        ),
+        preco: ['todos', 'gratuitos', 'pagos'].includes(filtrosInformados.preco)
             ? filtrosInformados.preco
-            : 'todos';
-        const precoMaxInformado = Number(filtrosInformados.precoMax);
-        const precoMax =
-            preco === 'gratuitos'
-                ? PRECO_MAXIMO_FILTRO
-                : Number.isFinite(precoMaxInformado)
-                  ? Math.max(0, Math.min(PRECO_MAXIMO_FILTRO, precoMaxInformado))
-                  : PRECO_MAXIMO_FILTRO;
-        const precoMinInformado = Number(filtrosInformados.precoMin);
-        const precoMin =
-            preco === 'gratuitos'
-                ? 0
-                : Number.isFinite(precoMinInformado)
-                  ? Math.max(0, Math.min(precoMax, precoMinInformado))
-                  : 0;
-        const filtros = {
-            categoria: String(filtrosInformados.categoria || ''),
-            classificacoes: normalizarClassificacoes(
-                filtrosInformados.classificacoes || filtrosInformados.classificacao || [],
-            ),
-            preco,
-            cidade: String(filtrosInformados.cidade || ''),
-            uf: String(filtrosInformados.uf || '').toUpperCase(),
-            data: [
-                'qualquer',
-                'hoje',
-                'amanha',
-                'fim-de-semana',
-                'nesta-semana',
-                'proxima-semana',
-                'neste-mes',
-                'proximo-mes',
-            ].includes(filtrosInformados.data)
-                ? filtrosInformados.data
-                : 'qualquer',
-            precoMin,
-            precoMax,
-        };
+            : 'todos',
+        cidade: String(filtrosInformados.cidade || ''),
+        uf: String(filtrosInformados.uf || '').toUpperCase(),
+        data: [
+            'qualquer',
+            'hoje',
+            'amanha',
+            'fim-de-semana',
+            'nesta-semana',
+            'proxima-semana',
+            'neste-mes',
+            'proximo-mes'
+        ].includes(filtrosInformados.data)
+            ? filtrosInformados.data
+            : 'qualquer',
+        precoMax: Number.isFinite(Number(filtrosInformados.precoMax))
+            ? Math.max(0, Math.min(2000, Number(filtrosInformados.precoMax)))
+            : 2000
+    };
 
-        const possuiFiltros =
-            filtros.categoria !== '' ||
-            filtros.classificacoes.length > 0 ||
-            filtros.preco !== 'todos' ||
-            filtros.cidade !== '' ||
-            filtros.uf !== '' ||
-            filtros.data !== 'qualquer' ||
-            filtros.precoMin > 0 ||
-            filtros.precoMax < PRECO_MAXIMO_FILTRO;
-        if (!termo && !possuiFiltros) {
-            mostrarVisaoNormal();
-            return;
-        }
+    const possuiFiltros =
+        filtros.categoria !== ''
+        || filtros.classificacoes.length > 0
+        || filtros.preco !== 'todos'
+        || filtros.cidade !== ''
+        || filtros.uf !== ''
+        || filtros.data !== 'qualquer'
+        || filtros.precoMax < 2000;
 
-        const grade = document.getElementById('resultadosBuscaHomeGrid');
-
-        if (!grade) {
-            return;
-        }
-
-        requisicaoBusca?.abort();
-        requisicaoBusca = new AbortController();
-        const controleDaBusca = requisicaoBusca;
-        let tempoEsgotado = false;
-        const temporizadorBusca = window.setTimeout(() => {
-            tempoEsgotado = true;
-            controleDaBusca.abort();
-        }, 12000);
-        alternarVisaoHome(true);
-        atualizarCabecalhoBusca(termo);
-        document.title = termo ? `Busca: ${termo} | ShowMe` : 'Eventos filtrados | ShowMe';
-        grade.setAttribute('aria-busy', 'true');
-
-        const carregando = document.createElement('div');
-        carregando.className = 'resultados-busca-home-estado';
-        carregando.innerHTML = '<span class="spinner-border" aria-hidden="true"></span><p>Buscando eventos...</p>';
-        grade.replaceChildren(carregando);
-
-        try {
-            const parametros = new URLSearchParams();
-            if (termo) parametros.set('busca', termo);
-            const query = parametros.toString();
-            const resposta = await fetch(`api/eventos${query ? `?${query}` : ''}`, {
-                headers: { Accept: 'application/json' },
-                signal: controleDaBusca.signal,
-            });
-            const dados = await resposta.json();
-
-            if (!resposta.ok) {
-                throw new Error(dados.erro || 'Não foi possível concluir a busca.');
-            }
-
-            const eventos = Array.isArray(dados.eventos) ? dados.eventos : [];
-            window.dispatchEvent(
-                new CustomEvent('showme:opcoes-filtro-cidade', {
-                    detail: { opcoes: opcoesDeCidade(eventos) },
-                }),
-            );
-            const eventosFiltrados = filtrarEventos(eventos, filtros);
-            atualizarCabecalhoBusca(termo, eventosFiltrados.length);
-
-            if (eventosFiltrados.length === 0) {
-                const mensagem = termo
-                    ? `Nenhum evento encontrado para “${termo}” com esses filtros. Tente ajustar a busca.`
-                    : 'Nenhum evento corresponde aos filtros selecionados.';
-                grade.replaceChildren(criarEstadoBusca(mensagem));
-                return;
-            }
-
-            grade.replaceChildren(...eventosFiltrados.map(criarCardEvento));
-        } catch (erro) {
-            if (erro.name !== 'AbortError' || tempoEsgotado) {
-                console.error('Falha na busca de eventos:', erro);
-                grade.replaceChildren(
-                    criarEstadoBusca(
-                        tempoEsgotado
-                            ? 'A busca demorou demais para responder. Tente novamente.'
-                            : 'Não foi possível buscar os eventos agora. Tente novamente.',
-                        true,
-                    ),
-                );
-                atualizarCabecalhoBusca(termo, 0);
-            }
-        } finally {
-            window.clearTimeout(temporizadorBusca);
-
-            if (requisicaoBusca === controleDaBusca) {
-                grade.setAttribute('aria-busy', 'false');
-            }
-        }
+    if (!termo && !possuiFiltros) {
+        mostrarVisaoNormal();
+        return;
     }
 
+    const grade = document.getElementById('resultadosBuscaHome');
+
+    if (!grade) {
+        return;
+    }
+
+    requisicaoBusca?.abort();
+    requisicaoBusca = new AbortController();
+
+    const controleDaBusca = requisicaoBusca;
+
+    alternarVisaoHome(true);
+    atualizarCabecalhoBusca(termo);
+    document.title = termo
+        ? `Busca: ${termo} | ShowMe`
+        : 'Eventos filtrados | ShowMe';
+
+    grade.setAttribute('aria-busy', 'true');
+
+    const carregando = document.createElement('div');
+    carregando.className = 'resultados-busca-home-estado';
+    carregando.innerHTML = `
+        <span class="spinner-border" aria-hidden="true"></span>
+        <p>Buscando eventos...</p>
+    `;
+
+    grade.replaceChildren(carregando);
+
+    try {
+        const parametros = new URLSearchParams();
+
+        // Busca textual
+        if (termo) {
+            parametros.set('busca', termo);
+        }
+
+        // Categoria
+        if (filtros.categoria) {
+            parametros.set('categoria', filtros.categoria);
+        }
+
+        // Classificação indicativa
+        if (filtros.classificacoes.length > 0) {
+            parametros.set(
+                'classificacao',
+            filtros.classificacoes.join(',')
+            );
+        }
+
+        // Gratuitos ou pagos
+        if (filtros.preco !== 'todos') {
+            parametros.set('ingresso', filtros.preco);
+        }
+
+        // Estado
+        if (filtros.uf) {
+            parametros.set('uf', filtros.uf);
+        }
+
+        // Cidade
+        if (filtros.cidade) {
+            parametros.set('cidade', filtros.cidade);
+        }
+
+        // Conversão dos períodos para o padrão aceito pela API
+        const periodosAPI = {
+            'hoje': 'hoje',
+            'amanha': 'amanha',
+            'fim-de-semana': 'fim_de_semana',
+            'nesta-semana': 'nesta_semana',
+            'proxima-semana': 'proxima_semana',
+            'neste-mes': 'neste_mes',
+            'proximo-mes': 'proximo_mes'
+        };
+
+        if (
+            filtros.data !== 'qualquer'
+            && periodosAPI[filtros.data]
+        ) {
+            parametros.set('periodo', periodosAPI[filtros.data]);
+        }
+
+        // Valor máximo do ingresso
+        if (filtros.precoMax < 2000) {
+            parametros.set('valor_maximo', filtros.precoMax);
+        }
+
+        // URL correta da API
+        const query = parametros.toString();
+        const url = `api/apiEventos.php${query ? `?${query}` : ''}`;
+
+        const resposta = await fetch(url, {
+            method: 'GET',
+            headers: {
+                Accept: 'application/json'
+            },
+            signal: controleDaBusca.signal
+        });
+
+        // Impede tentar interpretar HTML de erro como JSON
+        const tipoConteudo = resposta.headers.get('content-type') || '';
+
+        if (!tipoConteudo.includes('application/json')) {
+            throw new Error(
+                `Resposta inválida da API. HTTP ${resposta.status}`
+            );
+        }
+
+        const dados = await resposta.json();
+
+        if (!resposta.ok) {
+            throw new Error(
+                dados.erro || 'Não foi possível concluir a busca.'
+            );
+        }
+
+        if (!Array.isArray(dados.eventos)) {
+            throw new Error('A API retornou uma resposta inesperada.');
+        }
+
+        const eventos = dados.eventos;
+
+        // Atualiza as opções de cidades
+        window.dispatchEvent(
+            new CustomEvent('showme:opcoes-filtro-cidade', {
+                detail: {
+                    opcoes: opcoesDeCidade(eventos)
+                }
+            })
+        );
+
+        // Mantém o comportamento dos filtros locais
+        const eventosFiltrados = filtrarEventos(eventos, filtros);
+
+        atualizarCabecalhoBusca(
+            termo,
+            eventosFiltrados.length
+        );
+
+        if (eventosFiltrados.length === 0) {
+            const mensagem = termo
+                ? `Nenhum evento encontrado para “${termo}” com esses filtros. Tente ajustar a busca.`
+                : 'Nenhum evento corresponde aos filtros selecionados.';
+
+            grade.replaceChildren(
+                criarEstadoBusca(mensagem)
+            );
+
+            return;
+        }
+
+        // Renderiza os cards
+        grade.replaceChildren(
+            ...eventosFiltrados.map(criarCardEvento)
+        );
+
+    } catch (erro) {
+
+        // Cancelamento de busca anterior não é erro
+        if (erro.name === 'AbortError') {
+            return;
+        }
+
+        console.error('Falha na busca de eventos:', erro);
+
+        grade.replaceChildren(
+            criarEstadoBusca(
+                'Não foi possível buscar os eventos agora. Tente novamente.',
+                true
+            )
+        );
+
+        atualizarCabecalhoBusca(termo, 0);
+
+    } finally {
+
+        // Evita uma requisição antiga alterar o estado de uma busca nova
+        if (requisicaoBusca === controleDaBusca) {
+            grade.setAttribute('aria-busy', 'false');
+        }
+    }
+}
     function atualizarNavegacao(idCarrossel, possuiEventos) {
         document.querySelectorAll(`[data-carrossel="${idCarrossel}"]`).forEach((botao) => {
             botao.hidden = !possuiEventos;
@@ -656,14 +675,19 @@
     }
 
     function calcularOcupacaoCarrossel(carrossel, quantidade) {
-        const larguraSlide = window.innerWidth < 768 ? Math.min(window.innerWidth * 0.72, 300) : 300;
-        const quantidadeQueCabe = Math.max(1, Math.floor((carrossel.clientWidth + 16) / (larguraSlide + 16)));
+        const larguraSlide = window.innerWidth < 768
+            ? Math.min(window.innerWidth * 0.72, 300)
+            : 300;
+        const quantidadeQueCabe = Math.max(
+            1,
+            Math.floor((carrossel.clientWidth + 16) / (larguraSlide + 16))
+        );
         const poucosItens = quantidade <= quantidadeQueCabe;
 
         return {
             quantidadeQueCabe,
             poucosItens,
-            usarLoop: !poucosItens,
+            usarLoop: !poucosItens
         };
     }
 
@@ -720,7 +744,7 @@
         const carrossel = document.getElementById(idCarrossel);
         if (!carrossel) return;
 
-        const { poucosItens, usarLoop } = calcularOcupacaoCarrossel(carrossel, quantidade);
+        const {poucosItens, usarLoop} = calcularOcupacaoCarrossel(carrossel, quantidade);
         carrossel.classList.toggle('carrossel-poucos-itens', poucosItens);
 
         if (quantidade < 2 || typeof window.Swiper !== 'function') return;
@@ -740,11 +764,11 @@
             watchSlidesProgress: true,
             keyboard: {
                 enabled: true,
-                onlyInViewport: true,
+                onlyInViewport: true
             },
             a11y: {
-                enabled: true,
-            },
+                enabled: true
+            }
         });
 
         /* Os controles ficam fora do elemento Swiper para permanecerem visíveis
@@ -766,8 +790,6 @@
             return;
         }
 
-        const secao = carrossel.closest('.secao-eventos-home');
-
         destruirCarrosselCategoria(idCarrossel);
         carrossel.classList.remove('carrossel-poucos-itens');
         carrossel.classList.remove('carrossel-item-unico');
@@ -777,15 +799,6 @@
             trilho.className = 'swiper-wrapper';
             carrossel.replaceChildren(trilho);
         }
-
-        if (eventos.length === 0 && !erro) {
-            secao?.classList.add('d-none');
-            trilho.replaceChildren();
-            atualizarNavegacao(idCarrossel, false);
-            return;
-        }
-
-        secao?.classList.remove('d-none');
 
         if (eventos.length === 0) {
             const slideEstado = document.createElement('div');
@@ -798,10 +811,15 @@
 
         carrossel.classList.toggle('carrossel-item-unico', eventos.length === 1);
 
-        const { quantidadeQueCabe, usarLoop } = calcularOcupacaoCarrossel(carrossel, eventos.length);
+        const {quantidadeQueCabe, usarLoop} = calcularOcupacaoCarrossel(carrossel, eventos.length);
         const quantidadeMinimaParaLoop = (quantidadeQueCabe + 1) * 2;
-        const repeticoes = usarLoop ? Math.max(2, Math.ceil(quantidadeMinimaParaLoop / eventos.length)) : 1;
-        const eventosVisuais = Array.from({ length: repeticoes }, () => eventos).flat();
+        const repeticoes = usarLoop
+            ? Math.max(2, Math.ceil(quantidadeMinimaParaLoop / eventos.length))
+            : 1;
+        const eventosVisuais = Array.from(
+            {length: repeticoes},
+            () => eventos
+        ).flat();
         const slides = eventosVisuais.map((evento, indice) => {
             const slide = document.createElement('div');
             slide.className = 'swiper-slide';
@@ -819,8 +837,12 @@
 
     function eventoPertenceASecao(evento, secao) {
         if (secao.id === 'emBreve') {
-            const hoje = dataLocalISO();
-            return datasSessoesEvento(evento).some((data) => data >= hoje);
+            const partes = String(evento.data_evento || '').split('-').map(Number);
+            if (partes.length !== 3 || partes.some((parte) => !Number.isInteger(parte))) return false;
+            const dataEvento = new Date(partes[0], partes[1] - 1, partes[2]);
+            const hoje = new Date();
+            hoje.setHours(0, 0, 0, 0);
+            return dataEvento >= hoje;
         }
 
         const categoria = normalizarTexto(evento.categoria_evento);
@@ -842,11 +864,9 @@
         }
 
         // "Em Breve" sempre ordenado pelas datas mais próximas.
-        return filtrados.slice().sort((a, b) => {
-            const dataA = proximaSessaoEvento(a)?.data_evento || a.data_evento || '';
-            const dataB = proximaSessaoEvento(b)?.data_evento || b.data_evento || '';
-            return String(dataA).localeCompare(String(dataB));
-        });
+        return filtrados
+            .slice()
+            .sort((a, b) => String(a.data_evento || '').localeCompare(String(b.data_evento || '')));
     }
 
     function pesoDaSecao(secao, categoriasRecomendadas) {
@@ -870,7 +890,9 @@
             return;
         }
 
-        const categorias = Array.isArray(recomendacoes.categorias) ? recomendacoes.categorias : [];
+        const categorias = Array.isArray(recomendacoes.categorias)
+            ? recomendacoes.categorias
+            : [];
 
         if (categorias.length === 0) {
             return;
@@ -891,7 +913,7 @@
             const pesoA = secoesComEventos.has(a.id) ? pesoDaSecao(a, categorias) : 0;
             const pesoB = secoesComEventos.has(b.id) ? pesoDaSecao(b, categorias) : 0;
             const diferenca = pesoB - pesoA;
-            return diferenca || ordemOriginal.get(a.id) - ordemOriginal.get(b.id);
+            return diferenca || (ordemOriginal.get(a.id) - ordemOriginal.get(b.id));
         });
         const main = document.querySelector('main.inicio');
 
@@ -905,14 +927,6 @@
         });
     }
 
-    function aplicarCoresAlternadasSecoes() {
-        document.querySelectorAll('.secao-eventos-home:not(.d-none) .titulo-secao-home').forEach((titulo, indice) => {
-            const rosa = indice % 2 === 0;
-            titulo.classList.toggle('titulo-rosa', rosa);
-            titulo.classList.toggle('titulo-verde', !rosa);
-        });
-    }
-
     function mostrarErro(mensagem) {
         mostrarBannerVazio(mensagem);
 
@@ -922,13 +936,9 @@
     }
 
     async function carregarEventos() {
-        const controlador = new AbortController();
-        const temporizador = window.setTimeout(() => controlador.abort(), 12000);
-
         try {
-            const resposta = await fetch('api/eventos', {
-                headers: { Accept: 'application/json' },
-                signal: controlador.signal,
+            const resposta = await fetch('../api/apiEventos.php', {
+                headers: {Accept: 'application/json'}
             });
             const dados = await resposta.json();
 
@@ -941,26 +951,26 @@
             }
 
             eventosCarregados = dados.eventos;
-            window.dispatchEvent(
-                new CustomEvent('showme:opcoes-filtro-cidade', {
-                    detail: { opcoes: opcoesDeCidade(dados.eventos) },
-                }),
-            );
+            window.dispatchEvent(new CustomEvent('showme:opcoes-filtro-cidade', {
+                detail: {opcoes: opcoesDeCidade(dados.eventos)}
+            }));
 
             renderizarBanner(dados.eventos);
 
             secoesCategorias.forEach((secao) => {
                 const listaEventos = eventosDaSecao(dados.eventos, secao);
-                renderizarCarrossel(secao.id, listaEventos, 'Nenhum evento cadastrado nesta categoria no momento.');
+                renderizarCarrossel(
+                    secao.id,
+                    listaEventos,
+                    'Nenhum evento cadastrado nesta categoria no momento.'
+                );
             });
 
             reordenarSecoesPorRecomendacao(dados.recomendacoes, dados.eventos);
-            aplicarCoresAlternadasSecoes();
         } catch (erro) {
             console.error('Falha ao carregar eventos na home:', erro);
             mostrarErro('Não foi possível carregar os eventos. Verifique se a API está disponível e tente novamente.');
         } finally {
-            window.clearTimeout(temporizador);
             document.querySelectorAll('[data-secao-categoria]').forEach((secao) => {
                 secao.setAttribute('aria-busy', 'false');
             });
@@ -980,7 +990,7 @@
                 renderizarCarrossel(
                     secao.id,
                     eventosDaSecao(eventosCarregados, secao),
-                    'Nenhum evento cadastrado nesta categoria no momento.',
+                    'Nenhum evento cadastrado nesta categoria no momento.'
                 );
             });
         }, 180);
@@ -994,7 +1004,6 @@
         cidade: parametrosBusca.get('cidade') || '',
         uf: parametrosBusca.get('uf') || '',
         data: parametrosBusca.get('data') || 'qualquer',
-        precoMin: parametrosBusca.get('preco_min') || 0,
-        precoMax: parametrosBusca.get('preco_max') || PRECO_MAXIMO_FILTRO,
+        precoMax: parametrosBusca.get('preco_max') || 2000
     });
-})();
+}());

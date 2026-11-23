@@ -1548,3 +1548,27 @@ body.lightbox-aberto {
         font-size: 0.82rem;
     }
 }
+.senha-feedback {
+    padding: 14px 18px;
+    margin-top: 15px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.senha-feedback.sucesso {
+    color: #a8ff00;
+    background: rgba(168, 255, 0, 0.10);
+    border: 1px solid rgba(168, 255, 0, 0.35);
+}
+
+.senha-feedback.erro {
+    color: #ff7777;
+    background: rgba(255, 70, 70, 0.10);
+    border: 1px solid rgba(255, 70, 70, 0.30);
+}
+
+#formAlterarSenha button:disabled {
+    opacity: 0.65;
+    cursor: wait;
+}

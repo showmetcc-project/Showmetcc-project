@@ -1,9 +1,16 @@
 <?php
 
-require_once __DIR__ . '/middleware/apiCommon.php';
+require_once __DIR__ . '/../config/sessao.php';
 
-if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
-    responder(['erro' => 'Método não permitido'], 405);
+iniciarSessaoSegura();
+
+header('Content-Type: application/json; charset=UTF-8');
+header('Cache-Control: no-store');
+
+if (empty($_SESSION['csrf_token'])) {
+    $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
 }
 
-responder(['csrf_token' => obterTokenCsrf()]);
+echo json_encode([
+    'csrf_token' => $_SESSION['csrf_token']
+], JSON_UNESCAPED_UNICODE);

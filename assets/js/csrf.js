@@ -1,110 +1,150 @@
-/* Proteção CSRF compartilhada para as chamadas mutáveis da API ShowMe. */
-(function () {
+
+/* Proteção CSRF compartilhada — ShowMe */
+(() => {
     'use strict';
 
     const fetchNativo = window.fetch.bind(window);
-    const urlToken = new URL('api/csrf', window.location.href).toString();
+
+    const urlToken = new URL(
+        'api/apiCsrf.php',
+        document.baseURI
+    ).href;
+
     let tokenCsrf = null;
     let carregamentoToken = null;
 
-    function urlDaApi(entrada) {
-        const valor = entrada instanceof Request ? entrada.url : entrada;
-
+    function pertenceApi(entrada) {
         try {
-            const url = new URL(valor, window.location.href);
-            return url.origin === window.location.origin && /\/api(?:\/|$)/.test(url.pathname);
-        } catch (_) {
+            const url = entrada instanceof URL
+                ? entrada
+                : new URL(
+                    typeof entrada === 'string'
+                        ? entrada
+                        : entrada.url,
+                    document.baseURI
+                );
+
+            return (
+                url.origin === window.location.origin &&
+                /\/api\/[^/]+\.php$/.test(url.pathname)
+            );
+        } catch {
             return false;
         }
     }
 
     async function carregarToken(forcar = false) {
-        if (tokenCsrf && !forcar) {
-            return tokenCsrf;
-        }
+        if (tokenCsrf && !forcar) return tokenCsrf;
+        if (carregamentoToken && !forcar) return carregamentoToken;
 
-        if (carregamentoToken && !forcar) {
-            return carregamentoToken;
-        }
-
-        carregamentoToken = fetchNativo(urlToken, {
-            method: 'GET',
-            credentials: 'same-origin',
-            headers: { Accept: 'application/json' },
-        })
-            .then(async (resposta) => {
-                const dados = await resposta.json().catch(() => ({}));
-
-                if (!resposta.ok || typeof dados.csrf_token !== 'string' || !dados.csrf_token) {
-                    throw new Error(dados.erro || 'Não foi possível preparar a proteção da sessão.');
+        carregamentoToken = (async () => {
+            const resposta = await fetchNativo(urlToken, {
+                method: 'GET',
+                credentials: 'same-origin',
+                cache: 'no-store',
+                headers: {
+                    Accept: 'application/json'
                 }
-
-                tokenCsrf = dados.csrf_token;
-                window.csrfToken = tokenCsrf;
-                return tokenCsrf;
-            })
-            .finally(() => {
-                carregamentoToken = null;
             });
+
+            const texto = await resposta.text();
+
+            let dados;
+
+            try {
+                dados = JSON.parse(texto);
+            } catch {
+                throw new Error(
+                    'A API CSRF não retornou JSON válido.'
+                );
+            }
+
+            if (!resposta.ok || !dados.csrf_token) {
+                throw new Error(
+                    dados.erro || 'Não foi possível obter o token CSRF.'
+                );
+            }
+
+            tokenCsrf = dados.csrf_token;
+            window.csrfToken = tokenCsrf;
+
+            return tokenCsrf;
+        })().finally(() => {
+            carregamentoToken = null;
+        });
 
         return carregamentoToken;
     }
 
-    async function atualizarTokenDaResposta(resposta) {
-        if (!resposta || !resposta.headers.get('content-type')?.includes('application/json')) {
-            return;
-        }
+    async function atualizarToken(resposta) {
+        const tipo = resposta.headers.get('content-type') || '';
 
-        const dados = await resposta
-            .clone()
+        if (!tipo.includes('application/json')) return;
+
+        const dados = await resposta.clone()
             .json()
             .catch(() => null);
-        if (dados && typeof dados.csrf_token === 'string' && dados.csrf_token) {
+
+        if (typeof dados?.csrf_token === 'string' &&
+            dados.csrf_token) {
             tokenCsrf = dados.csrf_token;
             window.csrfToken = tokenCsrf;
         }
     }
 
     window.ShowMeCsrf = {
-        pronto: carregarToken().catch(() => null),
-        atualizar: () => carregarToken(true),
+        pronto: carregarToken(),
+        atualizar: () => carregarToken(true)
     };
 
     window.fetch = async function (entrada, opcoes = {}) {
-        const metodo = String(opcoes.method || (entrada instanceof Request ? entrada.method : 'GET')).toUpperCase();
-        const mutavel = ['POST', 'PUT', 'DELETE'].includes(metodo);
+        const requisicaoOriginal =
+            typeof Request !== 'undefined' &&
+            entrada instanceof Request
+                ? entrada
+                : null;
 
-        if (!mutavel || !urlDaApi(entrada)) {
-            return fetchNativo(entrada, opcoes);
-        }
+        const metodo = String(
+            opcoes.method ||
+            requisicaoOriginal?.method ||
+            'GET'
+        ).toUpperCase();
 
-        const requisitar = async (token) => {
-            const cabecalhos = new Headers(
-                opcoes.headers || (entrada instanceof Request ? entrada.headers : undefined),
-            );
-            cabecalhos.set('X-CSRF-Token', token);
+        const mutavel = [
+            'POST',
+            'PUT',
+            'PATCH',
+            'DELETE'
+        ].includes(metodo);
 
-            return fetchNativo(entrada instanceof Request ? entrada.clone() : entrada, {
-                ...opcoes,
-                headers: cabecalhos,
-                credentials: opcoes.credentials || 'same-origin',
-            });
-        };
+        
+if (!mutavel || !pertenceApi(entrada)) {
+    try {
+        return await fetchNativo(entrada, opcoes);
+    } catch (erro) {
+        console.error('[CSRF] Erro na requisição:', erro);
+        throw erro;
+    }
+}
 
-        let resposta = await requisitar(await carregarToken());
+        const token = await carregarToken();
 
-        if (resposta.status === 403) {
-            const dados = await resposta
-                .clone()
-                .json()
-                .catch(() => null);
+        const cabecalhos = new Headers(
+            opcoes.headers ||
+            requisicaoOriginal?.headers ||
+            undefined
+        );
 
-            if (dados && /csrf/i.test(String(dados.erro || ''))) {
-                resposta = await requisitar(await carregarToken(true));
-            }
-        }
+        cabecalhos.set('X-CSRF-Token', token);
 
-        await atualizarTokenDaResposta(resposta);
+        const resposta = await fetchNativo(entrada, {
+            ...opcoes,
+            headers: cabecalhos,
+            credentials: opcoes.credentials || 'same-origin'
+        });
+
+        await atualizarToken(resposta);
+
         return resposta;
     };
 })();

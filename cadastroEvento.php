@@ -57,7 +57,7 @@ require_once __DIR__ . '/config/classificacoesIndicativas.php';
 
             <form
                 id="formEvento"
-                action="api/eventos/"
+                action="api/apiEventos.php"
                 method="post"
                 enctype="multipart/form-data"
                 data-usuario-id="<?= (int) ($_SESSION['id_user'] ?? 0) ?>"
@@ -67,24 +67,39 @@ require_once __DIR__ . '/config/classificacoesIndicativas.php';
                     <label class="form-label" for="imagemEvento">
                         Foto do evento <span class="campo-obrigatorio" aria-hidden="true">*</span>
                     </label>
-                    <div
-                        id="dropzoneFotoEvento"
-                        class="upload-area"
-                        role="button"
-                        tabindex="0"
-                        aria-controls="imagemEvento"
-                        aria-describedby="ajudaFotoEvento nomeFotoEvento">
-                        <input
-                            type="file"
-                            id="imagemEvento"
-                            name="foto"
-                            accept="image/jpeg,image/png,image/webp">
-                        <i class="bi bi-cloud-arrow-up" aria-hidden="true"></i>
-                        <p>Clique ou arraste uma imagem aqui</p>
-                        <small id="ajudaFotoEvento">PNG, JPG, WEBP — máx. 10 MB</small>
-                        <strong id="nomeFotoEvento" class="nome-arquivo-upload" aria-live="polite"></strong>
-                    </div>
-                </div>
+                    <div class="mb-3">
+    
+
+    <div
+        id="dropzoneFotoEvento"
+        class="upload-area"
+        role="button"
+        tabindex="0"
+        aria-controls="imagemEvento"
+        aria-describedby="ajudaFotoEvento nomeFotoEvento">
+
+        <input
+            type="file"
+            id="imagemEvento"
+            name="foto"
+            accept="image/jpeg,image/png,image/webp">
+
+        <div class="preview-foto-evento" id="previewFotoEvento" hidden>
+            <img id="imagemPreviewEvento" src="" alt="Pré-visualização da foto do evento">
+            <button type="button" id="removerFotoEvento" class="remover-foto-evento" aria-label="Remover foto">
+                <i class="bi bi-trash3"></i>
+            </button>
+        </div>
+
+        <div class="conteudo-upload-evento" id="conteudoUploadEvento">
+            <i class="bi bi-cloud-arrow-up icone-upload-evento" aria-hidden="true"></i>
+            <p>Clique ou arraste uma imagem aqui</p>
+            <small id="ajudaFotoEvento">PNG, JPG, WEBP — máx. 10 MB</small>
+        </div>
+
+        <strong id="nomeFotoEvento" class="nome-arquivo-upload" aria-live="polite"></strong>
+    </div>
+</div>
 
                 <div class="mb-3">
                     <label class="form-label" for="altImagemEvento">
@@ -128,7 +143,7 @@ require_once __DIR__ . '/config/classificacoesIndicativas.php';
 
                     <div class="col-md-6 mb-3">
                         <label class="form-label" for="numeroEvento">Número</label>
-                        <input id="numeroEvento" name="numero_endereco" type="text" class="form-control"
+                        <input id="numeroEvento" name="numero_endereco" type="number" min=0 class="form-control"
                             maxlength="20" placeholder="Ex: 1000 (opcional)">
                     </div>
                 </div>
@@ -218,11 +233,17 @@ require_once __DIR__ . '/config/classificacoesIndicativas.php';
 
                     <div id="listaSessoesEvento" class="lista-sessoes-cadastro">
                         <div class="sessao-cadastro" data-sessao>
-                            <div class="campo-sessao">
-                                <label class="form-label" for="dataSessaoEvento0">Data</label>
-                                <input id="dataSessaoEvento0" type="date" class="form-control"
-                                    name="sessoes[0][data_evento]" data-campo="data_evento" required>
-                            </div>
+                           <div class="campo-sessao">
+    <label class="form-label" for="dataSessaoEvento0">Data</label>
+
+    <input
+        id="dataSessaoEvento0"
+        type="date"
+        class="form-control"
+        name="sessoes[0][data_evento]"
+        data-campo="data_evento"
+        required>
+</div>
 
                             <div class="campo-sessao">
                                 <label class="form-label" for="inicioSessaoEvento0">Início</label>

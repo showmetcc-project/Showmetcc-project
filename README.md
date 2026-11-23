@@ -185,3 +185,31 @@ O projeto pretende transformar a forma como pessoas descobrem cultura, criando u
 Discover. Travel. Experience.
 
 </div>
+ sudo apt update
+ sudo apt install mariadb-server -y
+ sudo mariadbd --user=mysql --port=3307 --bind-address=127.0.0.1 --datadir=/var/lib/mysql --socket=/tmp/mariadb3307.sock
+ sudo mariadb --socket=/tmp/mariadb3307.sock
+ 
+ CREATE DATABASE IF NOT EXISTS mariadb
+CHARACTER SET utf8mb4
+COLLATE utf8mb4_unicode_ci;
+
+CREATE USER IF NOT EXISTS 'mariadb'@'localhost'
+IDENTIFIED BY 'mariadb';
+
+CREATE USER IF NOT EXISTS 'mariadb'@'127.0.0.1'
+IDENTIFIED BY 'mariadb';
+
+GRANT ALL PRIVILEGES ON mariadb.* TO 'mariadb'@'localhost';
+
+GRANT ALL PRIVILEGES ON mariadb.* TO 'mariadb'@'127.0.0.1';
+
+FLUSH PRIVILEGES;
+
+mariadb --socket=/tmp/mariadb3307.sock -u mariadb -p mariadb < assets/banco/showme.sql
+
+comentar inicio de sql
+
+ sudo mariadb --socket=/tmp/mariadb3307.sock
+
+ php -S 0.0.0.0:8080

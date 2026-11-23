@@ -1,6 +1,8 @@
 (function () {
     'use strict';
+    const dataSessaoInicial = document.getElementById('dataSessaoEvento0');
 
+configurarDataSessao(dataSessaoInicial);
     const formulario = document.getElementById('formEvento');
     const inputFoto = document.getElementById('imagemEvento');
     const dropzoneFoto = document.getElementById('dropzoneFotoEvento');
@@ -37,6 +39,12 @@
     const chaveRascunho = `showme:cadastroEvento:rascunho:v${versaoRascunho}:${
         formulario?.dataset.usuarioId || 'anonimo'
     }`;
+    const previewFoto = document.getElementById('previewFotoEvento');
+const imagemPreview = document.getElementById('imagemPreviewEvento');
+const removerFoto = document.getElementById('removerFotoEvento');
+const conteudoUpload = document.getElementById('conteudoUploadEvento');
+
+let urlPreviewFoto = null;
     const valoresIniciais = new Map();
     let cepConsultado = '';
     let consultaCepAtual = 0;
@@ -146,16 +154,95 @@
         }
     }
 
-    function atualizarFotoSelecionada() {
-        const foto = inputFoto.files[0];
-        nomeFoto.textContent = foto ? foto.name : '';
-        dropzoneFoto.classList.toggle('arquivo-selecionado', Boolean(foto));
+   function limparPreviewFoto() {
+    if (urlPreviewFoto) {
+        URL.revokeObjectURL(urlPreviewFoto);
+        urlPreviewFoto = null;
     }
 
-    function abrirSeletorFoto(evento) {
-        if (evento.target === inputFoto) return;
-        inputFoto.click();
+    if (imagemPreview) {
+        imagemPreview.src = '';
     }
+
+    if (previewFoto) {
+        previewFoto.hidden = true;
+    }
+
+    if (conteudoUpload) {
+        conteudoUpload.hidden = false;
+    }
+}
+
+function atualizarFotoSelecionada() {
+    const foto = inputFoto.files[0];
+
+    nomeFoto.textContent = foto ? foto.name : '';
+
+    dropzoneFoto.classList.toggle(
+        'arquivo-selecionado',
+        Boolean(foto)
+    );
+
+    limparPreviewFoto();
+
+    if (!foto) return;
+
+    if (!tiposFotoAceitos.includes(foto.type)) {
+        window.ShowMeUI?.toast?.(
+            'Selecione uma imagem JPG, PNG ou WebP.',
+            { variante: 'erro' }
+        );
+
+        inputFoto.value = '';
+        nomeFoto.textContent = '';
+        dropzoneFoto.classList.remove('arquivo-selecionado');
+        return;
+    }
+
+    if (foto.size > limiteFoto) {
+        window.ShowMeUI?.toast?.(
+            'A imagem deve ter no máximo 10 MB.',
+            { variante: 'erro' }
+        );
+
+        inputFoto.value = '';
+        nomeFoto.textContent = '';
+        dropzoneFoto.classList.remove('arquivo-selecionado');
+        return;
+    }
+
+    urlPreviewFoto = URL.createObjectURL(foto);
+
+    imagemPreview.src = urlPreviewFoto;
+    imagemPreview.alt = `Pré-visualização da imagem: ${foto.name}`;
+
+    previewFoto.hidden = false;
+    conteudoUpload.hidden = true;
+}
+
+function abrirSeletorFoto(evento) {
+    if (evento.target.closest('#removerFotoEvento')) return;
+    if (evento.target === inputFoto) return;
+
+    inputFoto.click();
+}
+
+function removerFotoSelecionada(evento) {
+    evento?.stopPropagation();
+
+    inputFoto.value = '';
+    limparPreviewFoto();
+
+    nomeFoto.textContent = '';
+    dropzoneFoto.classList.remove('arquivo-selecionado');
+
+    window.ShowMeUI?.toast?.(
+        'Foto removida. Selecione outra imagem.',
+        { variante: 'sucesso' }
+    );
+}
+
+removerFoto?.addEventListener('click', removerFotoSelecionada);
 
     dropzoneFoto.addEventListener('click', abrirSeletorFoto);
     dropzoneFoto.addEventListener('keydown', function (evento) {
@@ -718,7 +805,7 @@
             botaoEnviar.disabled = true;
             botaoEnviar.textContent = 'Enviando...';
 
-            const resposta = await fetch('api/eventos/', {
+            const resposta = await fetch('api/apiEventos.php', {
                 method: 'POST',
                 body: new FormData(formulario),
             });
@@ -752,7 +839,7 @@
             });
 
             window.setTimeout(function () {
-                window.location.href = 'perfilUsuario.php';
+                window.location.href = 'index.php';
             }, 5200);
         } catch (erro) {
             window.ShowMeUI.toast(erro.message || 'Não foi possível enviar o evento.', {
@@ -763,3 +850,17 @@
         }
     });
 })();
+
+function configurarDataSessao(input) {
+    if (!input) return;
+
+    const hoje = new Date();
+
+    const ano = hoje.getFullYear();
+    const mes = String(hoje.getMonth() + 1).padStart(2, '0');
+    const dia = String(hoje.getDate()).padStart(2, '0');
+
+    const dataMinima = `${ano}-${mes}-${dia}`;
+
+    input.min = dataMinima;
+}

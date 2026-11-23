@@ -281,6 +281,22 @@ a {
     font-size: 1.4rem;
 }
 
+.marcador-evento-showme {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: 0;
+    color: #ff4d94;
+    font-size: 34px;
+    line-height: 1;
+    text-shadow: 0 0 12px rgba(255, 77, 148, 0.7);
+}
+
+.marcador-evento-showme i {
+    line-height: 1;
+}
+
 .comunidade-convite {
     display: flex;
     align-items: center;

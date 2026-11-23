@@ -4,6 +4,20 @@
 
     const TEMPO_SEM_TILES = 6000;
     const MAX_ERROS_TILES = 2;
+    const CLASSES_LEAFLET = [
+        'leaflet-container',
+        'leaflet-touch',
+        'leaflet-fade-anim',
+        'leaflet-grab',
+        'leaflet-touch-drag',
+        'leaflet-touch-zoom',
+    ];
+
+    function limparClassesLeaflet(container) {
+        if (container) {
+            container.classList.remove(...CLASSES_LEAFLET);
+        }
+    }
 
     function limparTexto(valor) {
         return String(valor ?? '')
@@ -119,6 +133,8 @@
             return;
         }
 
+        limparClassesLeaflet(container);
+
         const endereco = montarEndereco(opcoes);
         const bloco = document.createElement('div');
         bloco.className = 'mapa-fallback';
@@ -165,6 +181,7 @@
 
         container.classList.remove('mapa-fallback-container');
         container.replaceChildren();
+        limparClassesLeaflet(container);
     }
 
     function monitorarTiles(mapa, container, opcoes, aoFalhar) {

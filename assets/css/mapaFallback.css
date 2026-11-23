@@ -63,7 +63,7 @@
     margin-top: 6px;
 }
 
-.mapa-fallback__botao {
+.mapa-fallback .mapa-fallback__botao {
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -84,37 +84,37 @@
         color 0.2s ease;
 }
 
-.mapa-fallback__botao i {
+.mapa-fallback .mapa-fallback__botao i {
     font-size: 15px;
 }
 
-.mapa-fallback__botao--principal {
+.mapa-fallback .mapa-fallback__botao--principal {
     background: #00ff00;
     color: #090909;
     box-shadow: 0 0 18px rgba(0, 255, 0, 0.18);
 }
 
-.mapa-fallback__botao--principal:hover,
-.mapa-fallback__botao--principal:focus-visible {
+.mapa-fallback .mapa-fallback__botao--principal:hover,
+.mapa-fallback .mapa-fallback__botao--principal:focus-visible {
     background: #38ff38;
     color: #000;
     transform: translateY(-1px);
 }
 
-.mapa-fallback__botao--secundario {
+.mapa-fallback .mapa-fallback__botao--secundario {
     border-color: rgba(255, 0, 110, 0.7);
     background: transparent;
     color: #ff4d94;
 }
 
-.mapa-fallback__botao--secundario:hover,
-.mapa-fallback__botao--secundario:focus-visible {
+.mapa-fallback .mapa-fallback__botao--secundario:hover,
+.mapa-fallback .mapa-fallback__botao--secundario:focus-visible {
     background: rgba(255, 0, 110, 0.12);
     color: #fff;
     transform: translateY(-1px);
 }
 
-.mapa-fallback__botao:focus-visible {
+.mapa-fallback .mapa-fallback__botao:focus-visible {
     outline: 2px solid #fff;
     outline-offset: 3px;
 }
@@ -129,7 +129,7 @@
         flex-direction: column;
     }
 
-    .mapa-fallback__botao {
+    .mapa-fallback .mapa-fallback__botao {
         width: 100%;
     }
 }

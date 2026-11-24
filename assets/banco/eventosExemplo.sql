@@ -5,6 +5,30 @@ START TRANSACTION;
 -- Limpa eventos de teste anteriores se quiser recarregar do zero (OPCIONAL):
 -- DELETE FROM evento;
 
+
+INSERT INTO usuario
+(nome_user, sobrenome, email_user, senha_user, tipo_usuario)
+VALUES
+('Ana', 'Souza', 'ana.souza@showme.com',
+ '$2y$12$ZO0LcheVu15v2kD.uDMELOeVy85gUKMuKMCVCN43dcfITQNJTZA62', 'comum'),
+
+('Lucas', 'Oliveira', 'lucas.oliveira@showme.com',
+ '$2y$12$ZO0LcheVu15v2kD.uDMELOeVy85gUKMuKMCVCN43dcfITQNJTZA62', 'comum'),
+
+('Mariana', 'Costa', 'mariana.costa@showme.com',
+ '$2y$12$ZO0LcheVu15v2kD.uDMELOeVy85gUKMuKMCVCN43dcfITQNJTZA62', 'comum'),
+
+('Pedro', 'Santos', 'pedro.santos@showme.com',
+ '$2y$12$ZO0LcheVu15v2kD.uDMELOeVy85gUKMuKMCVCN43dcfITQNJTZA62', 'comum'),
+
+('Julia', 'Ferreira', 'julia.ferreira@showme.com',
+ '$2y$12$ZO0LcheVu15v2kD.uDMELOeVy85gUKMuKMCVCN43dcfITQNJTZA62', 'comum'),
+
+('Admin', 'ShowMe', 'admin@showme.com',
+ '$2y$12$26.1vnOHrQO3aUg.mdTq0.JpgtFOE5Y/dW5TrzIP5CMKr10WlrGlG', 'admin');
+
+
+
 INSERT INTO evento (
     id_evento, nome_evento, cep_evento, endereco_evento, numero_endereco, rua_evento,
     cidade_evento, uf, descricao_evento, data_evento, horario_evento,
@@ -20,7 +44,7 @@ INSERT INTO evento (
     'Avenida Francisco Matarazzo', 'São Paulo', 'SP',
     'Festival com artistas brasileiros, música ao vivo e experiências culturais.',
     '2026-11-14', '18:00:00', FALSE, 70.00, 180.00,
-    'Música e Shows', 'Livre', 'https://example.com/festival-sons-da-cidade',
+    'Música e Shows', 'Livre', 'https://www.ticketmaster.com.br/?gad_source=1&gad_campaignid=24190572395&gbraid=0AAAAABhVm5pMX8_YP6rzPA186FoCFRSZ9&gclid=Cj0KCQiAiJXYBhD_ARIsAAx2AHnXuc4GaTGf7go2TpZGuOjkOa3ChcRCkbEqShhdwV6Dq9n3EbGba8waAqLZEALw_wcB',
     'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=800&auto=format&fit=crop&q=60', 'ativo'
 ),
 (
@@ -29,7 +53,7 @@ INSERT INTO evento (
     'Avenida Infante Dom Henrique', 'Rio de Janeiro', 'RJ',
     'Show internacional com ritmos latinos, dança e atrações convidadas.',
     '2026-12-05', '20:30:00', FALSE, 120.00, 350.00,
-    'Música e Shows', '16 anos', 'https://example.com/noite-latina-global',
+    'Música e Shows', '16 anos', 'https://www.ticketmaster.com.br/?gad_source=1&gad_campaignid=24190572395&gbraid=0AAAAABhVm5pMX8_YP6rzPA186FoCFRSZ9&gclid=Cj0KCQiAiJXYBhD_ARIsAAx2AHnXuc4GaTGf7go2TpZGuOjkOa3ChcRCkbEqShhdwV6Dq9n3EbGba8waAqLZEALw_wcB',
     'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=800&auto=format&fit=crop&q=60', 'ativo'
 ),
 (
@@ -38,7 +62,7 @@ INSERT INTO evento (
     'Avenida Alberto Craveiro', 'Fortaleza', 'CE',
     'Encontro musical com artistas internacionais e convidados brasileiros.',
     '2027-03-27', '19:30:00', FALSE, 160.00, 480.00,
-    'Música e Shows', '16 anos', 'https://example.com/vozes-do-mundo',
+    'Música e Shows', '16 anos', 'https://www.ticketmaster.com.br/?gad_source=1&gad_campaignid=24190572395&gbraid=0AAAAABhVm5pMX8_YP6rzPA186FoCFRSZ9&gclid=Cj0KCQiAiJXYBhD_ARIsAAx2AHnXuc4GaTGf7go2TpZGuOjkOa3ChcRCkbEqShhdwV6Dq9n3EbGba8waAqLZEALw_wcBo',
     'https://images.unsplash.com/photo-1501386761578-eac5c94b800a?w=800&auto=format&fit=crop&q=60', 'ativo'
 ),
 (
@@ -47,7 +71,7 @@ INSERT INTO evento (
     'Praça Carlos Gomes', 'Campinas', 'SP',
     'Apresentações gratuitas e oficinas conduzidas por novos artistas da cena nacional.',
     '2027-04-10', '15:00:00', TRUE, NULL, NULL,
-    'Música e Shows', 'Livre', 'https://example.com/encontro-novos-talentos',
+    'Música e Shows', 'Livre', 'https://www.ticketmaster.com.br/?gad_source=1&gad_campaignid=24190572395&gbraid=0AAAAABhVm5pMX8_YP6rzPA186FoCFRSZ9&gclid=Cj0KCQiAiJXYBhD_ARIsAAx2AHnXuc4GaTGf7go2TpZGuOjkOa3ChcRCkbEqShhdwV6Dq9n3EbGba8waAqLZEALw_wcB',
     'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=800&auto=format&fit=crop&q=60', 'ativo'
 ),
 (
@@ -56,7 +80,7 @@ INSERT INTO evento (
     'Avenida Paulista', 'São Paulo', 'SP',
     'Apresentação ao vivo de quartetos de jazz ao pôr do sol no coração da cidade.',
     '2027-04-18', '17:30:00', TRUE, NULL, NULL,
-    'Música e Shows', 'Livre', 'https://example.com/jazz-praca',
+    'Música e Shows', 'Livre', 'https://www.ticketmaster.com.br/?gad_source=1&gad_campaignid=24190572395&gbraid=0AAAAABhVm5pMX8_YP6rzPA186FoCFRSZ9&gclid=Cj0KCQiAiJXYBhD_ARIsAAx2AHnXuc4GaTGf7go2TpZGuOjkOa3ChcRCkbEqShhdwV6Dq9n3EbGba8waAqLZEALw_wcB',
     'https://images.unsplash.com/photo-1511192336575-5a79af67a629?w=800&auto=format&fit=crop&q=60', 'ativo'
 ),
 
@@ -69,7 +93,7 @@ INSERT INTO evento (
     'Avenida Afonso Pena', 'Belo Horizonte', 'MG',
     'Exibições de produções nacionais acompanhadas de conversas sobre criação audiovisual.',
     '2026-11-21', '16:00:00', TRUE, NULL, NULL,
-    'Cinema e Audiovisual', '12 anos', 'https://example.com/mostra-cinema-brasileiro',
+    'Cinema e Audiovisual', '12 anos', 'https://www.ticketmaster.com.br/?gad_source=1&gad_campaignid=24190572395&gbraid=0AAAAABhVm5pMX8_YP6rzPA186FoCFRSZ9&gclid=Cj0KCQiAiJXYBhD_ARIsAAx2AHnXuc4GaTGf7go2TpZGuOjkOa3ChcRCkbEqShhdwV6Dq9n3EbGba8waAqLZEALw_wcB',
     'https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=800&auto=format&fit=crop&q=60', 'ativo'
 ),
 (
@@ -78,7 +102,7 @@ INSERT INTO evento (
     'Avenida Borges de Medeiros', 'Porto Alegre', 'RS',
     'Sessão de cinema ao ar livre com clássicos do cinema sul-americano.',
     '2027-03-13', '18:30:00', TRUE, NULL, NULL,
-    'Cinema e Audiovisual', '14 anos', 'https://example.com/cinema-gastronomia',
+    'Cinema e Audiovisual', '14 anos', 'https://www.ticketmaster.com.br/?gad_source=1&gad_campaignid=24190572395&gbraid=0AAAAABhVm5pMX8_YP6rzPA186FoCFRSZ9&gclid=Cj0KCQiAiJXYBhD_ARIsAAx2AHnXuc4GaTGf7go2TpZGuOjkOa3ChcRCkbEqShhdwV6Dq9n3EbGba8waAqLZEALw_wcB',
     'https://images.unsplash.com/photo-1517604931442-7e0c8ed2963c?w=800&auto=format&fit=crop&q=60', 'ativo'
 ),
 (
@@ -87,7 +111,7 @@ INSERT INTO evento (
     'Avenida Paulista', 'São Paulo', 'SP',
     'Exibição de longas-metragens independentes seguida de debate com diretores.',
     '2027-04-19', '17:00:00', TRUE, NULL, NULL,
-    'Cinema e Audiovisual', '12 anos', 'https://example.com/cine-debate',
+    'Cinema e Audiovisual', '12 anos', 'https://www.ticketmaster.com.br/?gad_source=1&gad_campaignid=24190572395&gbraid=0AAAAABhVm5pMX8_YP6rzPA186FoCFRSZ9&gclid=Cj0KCQiAiJXYBhD_ARIsAAx2AHnXuc4GaTGf7go2TpZGuOjkOa3ChcRCkbEqShhdwV6Dq9n3EbGba8waAqLZEALw_wcB',
     'https://images.unsplash.com/photo-1478720568477-152d9b164e26?w=800&auto=format&fit=crop&q=60', 'ativo'
 ),
 (
@@ -96,7 +120,7 @@ INSERT INTO evento (
     'Rua do Ouvidor', 'Rio de Janeiro', 'RJ',
     'Mostra competitiva de curtas-metragens de todo o território nacional.',
     '2027-05-02', '19:00:00', FALSE, 20.00, 40.00,
-    'Cinema e Audiovisual', 'Livre', 'https://example.com/festival-curtas',
+    'Cinema e Audiovisual', 'Livre', 'https://www.ticketmaster.com.br/?gad_source=1&gad_campaignid=24190572395&gbraid=0AAAAABhVm5pMX8_YP6rzPA186FoCFRSZ9&gclid=Cj0KCQiAiJXYBhD_ARIsAAx2AHnXuc4GaTGf7go2TpZGuOjkOa3ChcRCkbEqShhdwV6Dq9n3EbGba8waAqLZEALw_wcB',
     'https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=800&auto=format&fit=crop&q=60', 'ativo'
 ),
 (
@@ -105,7 +129,7 @@ INSERT INTO evento (
     'Via N1 Leste', 'Brasília', 'DF',
     'Exibição especial de documentários premiados sobre a cultura brasileira.',
     '2027-05-15', '20:00:00', TRUE, NULL, NULL,
-    'Cinema e Audiovisual', 'Livre', 'https://example.com/noite-documentario',
+    'Cinema e Audiovisual', 'Livre', 'https://www.ticketmaster.com.br/?gad_source=1&gad_campaignid=24190572395&gbraid=0AAAAABhVm5pMX8_YP6rzPA186FoCFRSZ9&gclid=Cj0KCQiAiJXYBhD_ARIsAAx2AHnXuc4GaTGf7go2TpZGuOjkOa3ChcRCkbEqShhdwV6Dq9n3EbGba8waAqLZEALw_wcB',
     'https://images.unsplash.com/photo-1524985069026-dd778a71c7b4?w=800&auto=format&fit=crop&q=60', 'ativo'
 ),
 
@@ -118,7 +142,7 @@ INSERT INTO evento (
     'Avenida Paulista', 'São Paulo', 'SP',
     'Adaptação contemporânea do clássico teatral com elementos de dança moderna.',
     '2027-04-12', '20:00:00', FALSE, 30.00, 80.00,
-    'Teatro e Dança', '12 anos', 'https://example.com/auto-da-barca',
+    'Teatro e Dança', '12 anos', 'https://www.ticketmaster.com.br/?gad_source=1&gad_campaignid=24190572395&gbraid=0AAAAABhVm5pMX8_YP6rzPA186FoCFRSZ9&gclid=Cj0KCQiAiJXYBhD_ARIsAAx2AHnXuc4GaTGf7go2TpZGuOjkOa3ChcRCkbEqShhdwV6Dq9n3EbGba8waAqLZEALw_wcB',
     'https://images.unsplash.com/photo-1507676184212-d03ab07a01bf?w=800&auto=format&fit=crop&q=60', 'ativo'
 ),
 (
@@ -127,7 +151,7 @@ INSERT INTO evento (
     'Praça Tiradentes', 'Rio de Janeiro', 'RJ',
     'Apresentações de companhias de dança de todo o país.',
     '2027-04-25', '19:30:00', FALSE, 40.00, 100.00,
-    'Teatro e Dança', 'Livre', 'https://example.com/festival-danca',
+    'Teatro e Dança', 'Livre', 'https://www.ticketmaster.com.br/?gad_source=1&gad_campaignid=24190572395&gbraid=0AAAAABhVm5pMX8_YP6rzPA186FoCFRSZ9&gclid=Cj0KCQiAiJXYBhD_ARIsAAx2AHnXuc4GaTGf7go2TpZGuOjkOa3ChcRCkbEqShhdwV6Dq9n3EbGba8waAqLZEALw_wcB',
     'https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad?w=800&auto=format&fit=crop&q=60', 'ativo'
 ),
 (
@@ -136,7 +160,7 @@ INSERT INTO evento (
     'Rua da Bahia', 'Belo Horizonte', 'MG',
     'Atores renomados apresentam performances intimistas de solo teatral.',
     '2027-05-10', '21:00:00', TRUE, NULL, NULL,
-    'Teatro e Dança', '14 anos', 'https://example.com/mostra-monologos',
+    'Teatro e Dança', '14 anos', 'https://www.ticketmaster.com.br/?gad_source=1&gad_campaignid=24190572395&gbraid=0AAAAABhVm5pMX8_YP6rzPA186FoCFRSZ9&gclid=Cj0KCQiAiJXYBhD_ARIsAAx2AHnXuc4GaTGf7go2TpZGuOjkOa3ChcRCkbEqShhdwV6Dq9n3EbGba8waAqLZEALw_wcB',
     'https://images.unsplash.com/photo-1460723237483-7a6dc9d0b212?w=800&auto=format&fit=crop&q=60', 'ativo'
 ),
 (
@@ -145,7 +169,7 @@ INSERT INTO evento (
     'Rua XV de Novembro', 'Curitiba', 'PR',
     'Apresentação especial do Lago dos Cisnes com orquestra ao vivo.',
     '2027-05-28', '20:00:00', FALSE, 60.00, 150.00,
-    'Teatro e Dança', 'Livre', 'https://example.com/bale-classico',
+    'Teatro e Dança', 'Livre', 'https://www.ticketmaster.com.br/?gad_source=1&gad_campaignid=24190572395&gbraid=0AAAAABhVm5pMX8_YP6rzPA186FoCFRSZ9&gclid=Cj0KCQiAiJXYBhD_ARIsAAx2AHnXuc4GaTGf7go2TpZGuOjkOa3ChcRCkbEqShhdwV6Dq9n3EbGba8waAqLZEALw_wcB',
     'https://images.unsplash.com/photo-1518834107812-67b0b7c58434?w=800&auto=format&fit=crop&q=60', 'ativo'
 ),
 (
@@ -154,7 +178,7 @@ INSERT INTO evento (
     'Rua do Imperador', 'Recife', 'PE',
     'Batalhas de breakdance, hip hop e oficinas abertas ao público.',
     '2027-06-15', '17:00:00', TRUE, NULL, NULL,
-    'Teatro e Dança', 'Livre', 'https://example.com/dancas-urbanas',
+    'Teatro e Dança', 'Livre', 'https://www.ticketmaster.com.br/?gad_source=1&gad_campaignid=24190572395&gbraid=0AAAAABhVm5pMX8_YP6rzPA186FoCFRSZ9&gclid=Cj0KCQiAiJXYBhD_ARIsAAx2AHnXuc4GaTGf7go2TpZGuOjkOa3ChcRCkbEqShhdwV6Dq9n3EbGba8waAqLZEALw_wcB',
     'https://images.unsplash.com/photo-1535525153412-5a42439e210d?w=800&auto=format&fit=crop&q=60', 'ativo'
 ),
 
@@ -167,7 +191,7 @@ INSERT INTO evento (
     'Praça da Sé', 'São Paulo', 'SP',
     'Mostra de pinturas e esculturas modernistas de artistas brasileiros.',
     '2027-04-14', '10:00:00', TRUE, NULL, NULL,
-    'Artes Visuais e Exposições', 'Livre', 'https://example.com/cores-do-brasil',
+    'Artes Visuais e Exposições', 'Livre', 'https://www.ticketmaster.com.br/?gad_source=1&gad_campaignid=24190572395&gbraid=0AAAAABhVm5pMX8_YP6rzPA186FoCFRSZ9&gclid=Cj0KCQiAiJXYBhD_ARIsAAx2AHnXuc4GaTGf7go2TpZGuOjkOa3ChcRCkbEqShhdwV6Dq9n3EbGba8waAqLZEALw_wcB',
     'https://images.unsplash.com/photo-1579783900882-c0d3dad7b119?w=800&auto=format&fit=crop&q=60', 'ativo'
 ),
 (
@@ -176,7 +200,7 @@ INSERT INTO evento (
     'Avenida Rio Branco', 'Rio de Janeiro', 'RJ',
     'Exposição fotográfica retratando o cotidiano das metrópoles.',
     '2027-04-30', '09:00:00', TRUE, NULL, NULL,
-    'Artes Visuais e Exposições', 'Livre', 'https://example.com/foto-urbana',
+    'Artes Visuais e Exposições', 'Livre', 'https://www.ticketmaster.com.br/?gad_source=1&gad_campaignid=24190572395&gbraid=0AAAAABhVm5pMX8_YP6rzPA186FoCFRSZ9&gclid=Cj0KCQiAiJXYBhD_ARIsAAx2AHnXuc4GaTGf7go2TpZGuOjkOa3ChcRCkbEqShhdwV6Dq9n3EbGba8waAqLZEALw_wcB',
     'https://images.unsplash.com/photo-1554188248-986adbb73be4?w=800&auto=format&fit=crop&q=60', 'ativo'
 ),
 (
@@ -185,7 +209,7 @@ INSERT INTO evento (
     'Avenida Afonso Pena', 'Belo Horizonte', 'MG',
     'Instalações artísticas interativas e novas mídias visuais.',
     '2027-05-12', '14:00:00', FALSE, 25.00, 50.00,
-    'Artes Visuais e Exposições', 'Livre', 'https://example.com/arte-contemporanea',
+    'Artes Visuais e Exposições', 'Livre', 'https://www.ticketmaster.com.br/?gad_source=1&gad_campaignid=24190572395&gbraid=0AAAAABhVm5pMX8_YP6rzPA186FoCFRSZ9&gclid=Cj0KCQiAiJXYBhD_ARIsAAx2AHnXuc4GaTGf7go2TpZGuOjkOa3ChcRCkbEqShhdwV6Dq9n3EbGba8waAqLZEALw_wcB',
     'https://images.unsplash.com/photo-1541701494587-cb58502866ab?w=800&auto=format&fit=crop&q=60', 'ativo'
 ),
 (
@@ -194,7 +218,7 @@ INSERT INTO evento (
     'Esplanada', 'Brasília', 'DF',
     'Obras de grandes escultores sul-americanos em praça pública.',
     '2027-06-01', '08:00:00', TRUE, NULL, NULL,
-    'Artes Visuais e Exposições', 'Livre', 'https://example.com/esculturas-bronze',
+    'Artes Visuais e Exposições', 'Livre', 'https://www.ticketmaster.com.br/?gad_source=1&gad_campaignid=24190572395&gbraid=0AAAAABhVm5pMX8_YP6rzPA186FoCFRSZ9&gclid=Cj0KCQiAiJXYBhD_ARIsAAx2AHnXuc4GaTGf7go2TpZGuOjkOa3ChcRCkbEqShhdwV6Dq9n3EbGba8waAqLZEALw_wcB',
     'https://images.unsplash.com/photo-1561839561-b13bcfe95249?w=800&auto=format&fit=crop&q=60', 'ativo'
 ),
 (
@@ -203,7 +227,7 @@ INSERT INTO evento (
     'Rua dos Andradas', 'Porto Alegre', 'RS',
     'Exposição de quadrinhos independentes e artes gráficas originais.',
     '2027-06-20', '11:00:00', TRUE, NULL, NULL,
-    'Artes Visuais e Exposições', 'Livre', 'https://example.com/hq-ilustracao',
+    'Artes Visuais e Exposições', 'Livre', 'https://www.ticketmaster.com.br/?gad_source=1&gad_campaignid=24190572395&gbraid=0AAAAABhVm5pMX8_YP6rzPA186FoCFRSZ9&gclid=Cj0KCQiAiJXYBhD_ARIsAAx2AHnXuc4GaTGf7go2TpZGuOjkOa3ChcRCkbEqShhdwV6Dq9n3EbGba8waAqLZEALw_wcB',
     'https://images.unsplash.com/photo-1563089145-599997674d42?w=800&auto=format&fit=crop&q=60', 'ativo'
 ),
 
@@ -216,7 +240,7 @@ INSERT INTO evento (
     'Praça Marechal Deodoro', 'São Paulo', 'SP',
     'Encontro com escritores independentes, lançamentos de obras e debates.',
     '2027-04-16', '10:00:00', TRUE, NULL, NULL,
-    'Literatura', 'Livre', 'https://example.com/feira-livro-independente',
+    'Literatura', 'Livre', 'https://www.ticketmaster.com.br/?gad_source=1&gad_campaignid=24190572395&gbraid=0AAAAABhVm5pMX8_YP6rzPA186FoCFRSZ9&gclid=Cj0KCQiAiJXYBhD_ARIsAAx2AHnXuc4GaTGf7go2TpZGuOjkOa3ChcRCkbEqShhdwV6Dq9n3EbGba8waAqLZEALw_wcB',
     'https://images.unsplash.com/photo-1495440153380-375a5ffdd1ac?w=800&auto=format&fit=crop&q=60', 'ativo'
 ),
 (
@@ -225,7 +249,7 @@ INSERT INTO evento (
     'Avenida Mem de Sá', 'Rio de Janeiro', 'RJ',
     'Microfone aberto para leitura de poesias e saraus literários.',
     '2027-05-04', '19:00:00', TRUE, NULL, NULL,
-    'Literatura', '14 anos', 'https://example.com/poesia-marginal',
+    'Literatura', '14 anos', 'https://www.ticketmaster.com.br/?gad_source=1&gad_campaignid=24190572395&gbraid=0AAAAABhVm5pMX8_YP6rzPA186FoCFRSZ9&gclid=Cj0KCQiAiJXYBhD_ARIsAAx2AHnXuc4GaTGf7go2TpZGuOjkOa3ChcRCkbEqShhdwV6Dq9n3EbGba8waAqLZEALw_wcB',
     'https://images.unsplash.com/photo-1455390582262-044cdead277a?w=800&auto=format&fit=crop&q=60', 'ativo'
 ),
 (
@@ -234,7 +258,7 @@ INSERT INTO evento (
     'Avenida Contorno', 'Belo Horizonte', 'MG',
     'Painéis de discussão sobre literatura fantástica e ficção científica nacional.',
     '2027-05-22', '15:00:00', FALSE, 20.00, 45.00,
-    'Literatura', 'Livre', 'https://example.com/autores-ficcao',
+    'Literatura', 'Livre', 'https://www.ticketmaster.com.br/?gad_source=1&gad_campaignid=24190572395&gbraid=0AAAAABhVm5pMX8_YP6rzPA186FoCFRSZ9&gclid=Cj0KCQiAiJXYBhD_ARIsAAx2AHnXuc4GaTGf7go2TpZGuOjkOa3ChcRCkbEqShhdwV6Dq9n3EbGba8waAqLZEALw_wcB',
     'https://images.unsplash.com/photo-1512820790803-83ca734da794?w=800&auto=format&fit=crop&q=60', 'ativo'
 ),
 (
@@ -243,7 +267,7 @@ INSERT INTO evento (
     'Rua Carlos Cavalcanti', 'Curitiba', 'PR',
     'Discussão aberta sobre clássicos da literatura brasileira.',
     '2027-06-08', '14:30:00', TRUE, NULL, NULL,
-    'Literatura', 'Livre', 'https://example.com/clube-leitura',
+    'Literatura', 'Livre', 'https://www.ticketmaster.com.br/?gad_source=1&gad_campaignid=24190572395&gbraid=0AAAAABhVm5pMX8_YP6rzPA186FoCFRSZ9&gclid=Cj0KCQiAiJXYBhD_ARIsAAx2AHnXuc4GaTGf7go2TpZGuOjkOa3ChcRCkbEqShhdwV6Dq9n3EbGba8waAqLZEALw_wcB',
     'https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?w=800&auto=format&fit=crop&q=60', 'ativo'
 ),
 (
@@ -252,7 +276,7 @@ INSERT INTO evento (
     'Avenida Beira Mar', 'Fortaleza', 'CE',
     'Declamação de poemas acompanhada de arranjos acústicos.',
     '2027-06-25', '18:00:00', TRUE, NULL, NULL,
-    'Literatura', 'Livre', 'https://example.com/poesia-musica',
+    'Literatura', 'Livre', 'https://www.ticketmaster.com.br/?gad_source=1&gad_campaignid=24190572395&gbraid=0AAAAABhVm5pMX8_YP6rzPA186FoCFRSZ9&gclid=Cj0KCQiAiJXYBhD_ARIsAAx2AHnXuc4GaTGf7go2TpZGuOjkOa3ChcRCkbEqShhdwV6Dq9n3EbGba8waAqLZEALw_wcB',
     'https://images.unsplash.com/photo-1474932430478-367dbb6832c1?w=800&auto=format&fit=crop&q=60', 'ativo'
 ),
 
@@ -265,7 +289,7 @@ INSERT INTO evento (
     'Praça da Sé', 'Salvador', 'BA',
     'Experiência gastronômica com cozinhas regionais e oficinas de preparo.',
     '2027-02-20', '11:00:00', FALSE, 35.00, 90.00,
-    'Gastronomia', 'Livre', 'https://example.com/festival-sabores-brasil',
+    'Gastronomia', 'Livre', 'https://www.ticketmaster.com.br/?gad_source=1&gad_campaignid=24190572395&gbraid=0AAAAABhVm5pMX8_YP6rzPA186FoCFRSZ9&gclid=Cj0KCQiAiJXYBhD_ARIsAAx2AHnXuc4GaTGf7go2TpZGuOjkOa3ChcRCkbEqShhdwV6Dq9n3EbGba8waAqLZEALw_wcBl',
     'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=800&auto=format&fit=crop&q=60', 'ativo'
 ),
 (
@@ -274,7 +298,7 @@ INSERT INTO evento (
     'Avenida Planalto', 'Gramado', 'RS',
     'Degustação guiada de vinhos nacionais e queijos artesanais da serra.',
     '2027-05-20', '18:00:00', FALSE, 150.00, 300.00,
-    'Gastronomia', '18 anos', 'https://example.com/rota-vinho-queijos',
+    'Gastronomia', '18 anos', 'https://www.ticketmaster.com.br/?gad_source=1&gad_campaignid=24190572395&gbraid=0AAAAABhVm5pMX8_YP6rzPA186FoCFRSZ9&gclid=Cj0KCQiAiJXYBhD_ARIsAAx2AHnXuc4GaTGf7go2TpZGuOjkOa3ChcRCkbEqShhdwV6Dq9n3EbGba8waAqLZEALw_wcB',
     'https://images.unsplash.com/photo-1510812431401-41d2bd2722f3?w=800&auto=format&fit=crop&q=60', 'ativo'
 ),
 (
@@ -283,7 +307,7 @@ INSERT INTO evento (
     'Avenida Beira Mar', 'Fortaleza', 'CE',
     'Encontro de food trucks e barracas com o melhor da culinária de rua nordestina.',
     '2027-06-05', '16:00:00', TRUE, NULL, NULL,
-    'Gastronomia', 'Livre', 'https://example.com/feira-comida-rua',
+    'Gastronomia', 'Livre', 'https://www.ticketmaster.com.br/?gad_source=1&gad_campaignid=24190572395&gbraid=0AAAAABhVm5pMX8_YP6rzPA186FoCFRSZ9&gclid=Cj0KCQiAiJXYBhD_ARIsAAx2AHnXuc4GaTGf7go2TpZGuOjkOa3ChcRCkbEqShhdwV6Dq9n3EbGba8waAqLZEALw_wcB',
     'https://images.unsplash.com/photo-1565299585323-38d6b0865b47?w=800&auto=format&fit=crop&q=60', 'ativo'
 ),
 (
@@ -292,7 +316,7 @@ INSERT INTO evento (
     'Avenida Rio Branco', 'Florianópolis', 'SC',
     'Jantares harmonizados e aulas show com renomados chefs da região sul.',
     '2027-06-18', '20:00:00', FALSE, 90.00, 220.00,
-    'Gastronomia', 'Livre', 'https://example.com/chefs-regionais',
+    'Gastronomia', 'Livre', 'https://www.ticketmaster.com.br/?gad_source=1&gad_campaignid=24190572395&gbraid=0AAAAABhVm5pMX8_YP6rzPA186FoCFRSZ9&gclid=Cj0KCQiAiJXYBhD_ARIsAAx2AHnXuc4GaTGf7go2TpZGuOjkOa3ChcRCkbEqShhdwV6Dq9n3EbGba8waAqLZEALw_wcB',
     'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=800&auto=format&fit=crop&q=60', 'ativo'
 ),
 (
@@ -301,7 +325,7 @@ INSERT INTO evento (
     'Avenida Paulista', 'São Paulo', 'SP',
     'Feira artesanal de produtores locais com workshops de alimentação saudável.',
     '2027-07-02', '09:00:00', TRUE, NULL, NULL,
-    'Gastronomia', 'Livre', 'https://example.com/mercado-organicos',
+    'Gastronomia', 'Livre', 'https://www.ticketmaster.com.br/?gad_source=1&gad_campaignid=24190572395&gbraid=0AAAAABhVm5pMX8_YP6rzPA186FoCFRSZ9&gclid=Cj0KCQiAiJXYBhD_ARIsAAx2AHnXuc4GaTGf7go2TpZGuOjkOa3ChcRCkbEqShhdwV6Dq9n3EbGba8waAqLZEALw_wcBs',
     'https://images.unsplash.com/photo-1488459716781-31db52582fe9?w=800&auto=format&fit=crop&q=60', 'ativo'
 ),
 
@@ -314,7 +338,7 @@ INSERT INTO evento (
     'Rua XV de Novembro', 'Curitiba', 'PR',
     'Formação prática sobre arranjos, gravação, mixagem e produção independente.',
     '2027-01-16', '09:00:00', FALSE, 90.00, 150.00,
-    'Oficinas e Workshops', '14 anos', 'https://example.com/workshop-producao-musical',
+    'Oficinas e Workshops', '14 anos', 'https://www.ticketmaster.com.br/?gad_source=1&gad_campaignid=24190572395&gbraid=0AAAAABhVm5pMX8_YP6rzPA186FoCFRSZ9&gclid=Cj0KCQiAiJXYBhD_ARIsAAx2AHnXuc4GaTGf7go2TpZGuOjkOa3ChcRCkbEqShhdwV6Dq9n3EbGba8waAqLZEALw_wcB',
     'https://images.unsplash.com/photo-1598488035139-bdbb2231ce04?w=800&auto=format&fit=crop&q=60', 'ativo'
 ),
 (
@@ -323,7 +347,7 @@ INSERT INTO evento (
     'Praça do Marco Zero', 'Recife', 'PE',
     'Atividade gratuita sobre enquadramento, luz e registro de apresentações culturais.',
     '2027-02-06', '14:00:00', TRUE, NULL, NULL,
-    'Oficinas e Workshops', 'Livre', 'https://example.com/oficina-fotografia-palco',
+    'Oficinas e Workshops', 'Livre', 'https://www.ticketmaster.com.br/?gad_source=1&gad_campaignid=24190572395&gbraid=0AAAAABhVm5pMX8_YP6rzPA186FoCFRSZ9&gclid=Cj0KCQiAiJXYBhD_ARIsAAx2AHnXuc4GaTGf7go2TpZGuOjkOa3ChcRCkbEqShhdwV6Dq9n3EbGba8waAqLZEALw_wcB',
     'https://images.unsplash.com/photo-1452587925148-ce544e77e70d?w=800&auto=format&fit=crop&q=60', 'ativo'
 ),
 (
@@ -332,7 +356,7 @@ INSERT INTO evento (
     'Rua da Consolação', 'São Paulo', 'SP',
     'Aprenda técnicas básicas de modelagem em argila e esmaltação.',
     '2027-05-18', '14:00:00', FALSE, 50.00, 100.00,
-    'Oficinas e Workshops', 'Livre', 'https://example.com/workshop-ceramica',
+    'Oficinas e Workshops', 'Livre', 'https://www.ticketmaster.com.br/?gad_source=1&gad_campaignid=24190572395&gbraid=0AAAAABhVm5pMX8_YP6rzPA186FoCFRSZ9&gclid=Cj0KCQiAiJXYBhD_ARIsAAx2AHnXuc4GaTGf7go2TpZGuOjkOa3ChcRCkbEqShhdwV6Dq9n3EbGba8waAqLZEALw_wcB',
     'https://images.unsplash.com/photo-1565193566173-7a0ee3dbe261?w=800&auto=format&fit=crop&q=60', 'ativo'
 ),
 (
@@ -341,7 +365,7 @@ INSERT INTO evento (
     'Praça Floriano', 'Rio de Janeiro', 'RJ',
     'Exercícios práticos para desenvolvimento de narrativa e criação de personagens.',
     '2027-06-02', '10:00:00', TRUE, NULL, NULL,
-    'Oficinas e Workshops', 'Livre', 'https://example.com/oficina-escrita',
+    'Oficinas e Workshops', 'Livre', 'https://www.ticketmaster.com.br/?gad_source=1&gad_campaignid=24190572395&gbraid=0AAAAABhVm5pMX8_YP6rzPA186FoCFRSZ9&gclid=Cj0KCQiAiJXYBhD_ARIsAAx2AHnXuc4GaTGf7go2TpZGuOjkOa3ChcRCkbEqShhdwV6Dq9n3EbGba8waAqLZEALw_wcB',
     'https://images.unsplash.com/photo-1455390582262-044cdead277a?w=800&auto=format&fit=crop&q=60', 'ativo'
 ),
 (
@@ -350,7 +374,7 @@ INSERT INTO evento (
     'Praça da Liberdade', 'Belo Horizonte', 'MG',
     'Técnicas de transparência, misturas de cores e pintura ao ar livre.',
     '2027-06-12', '09:30:00', FALSE, 40.00, 80.00,
-    'Oficinas e Workshops', 'Livre', 'https://example.com/workshop-aquarela',
+    'Oficinas e Workshops', 'Livre', 'https://www.ticketmaster.com.br/?gad_source=1&gad_campaignid=24190572395&gbraid=0AAAAABhVm5pMX8_YP6rzPA186FoCFRSZ9&gclid=Cj0KCQiAiJXYBhD_ARIsAAx2AHnXuc4GaTGf7go2TpZGuOjkOa3ChcRCkbEqShhdwV6Dq9n3EbGba8waAqLZEALw_wcB',
     'https://images.unsplash.com/photo-1513364776144-60967b0f800f?w=800&auto=format&fit=crop&q=60', 'ativo'
 ),
 
@@ -363,7 +387,7 @@ INSERT INTO evento (
     'Praça Dom Pedro II', 'São Luís', 'MA',
     'Apresentação tradicional com bumba meu boi, tambor de crioula e culinária típica.',
     '2027-06-28', '17:00:00', TRUE, NULL, NULL,
-    'Tradições Regionais', 'Livre', 'https://example.com/bumba-meu-boi',
+    'Tradições Regionais', 'Livre', 'https://www.ticketmaster.com.br/?gad_source=1&gad_campaignid=24190572395&gbraid=0AAAAABhVm5pMX8_YP6rzPA186FoCFRSZ9&gclid=Cj0KCQiAiJXYBhD_ARIsAAx2AHnXuc4GaTGf7go2TpZGuOjkOa3ChcRCkbEqShhdwV6Dq9n3EbGba8waAqLZEALw_wcB',
     'https://images.unsplash.com/photo-1533105079780-92b9be482077?w=800&auto=format&fit=crop&q=60', 'ativo'
 ),
 (
@@ -372,7 +396,7 @@ INSERT INTO evento (
     'Praça da Matriz', 'Itajubá', 'MG',
     'Cortejo tradicional de companhias de Folia de Reis com cantos e violas.',
     '2027-07-05', '09:00:00', TRUE, NULL, NULL,
-    'Tradições Regionais', 'Livre', 'https://example.com/folia-de-reis',
+    'Tradições Regionais', 'Livre', 'https://www.ticketmaster.com.br/?gad_source=1&gad_campaignid=24190572395&gbraid=0AAAAABhVm5pMX8_YP6rzPA186FoCFRSZ9&gclid=Cj0KCQiAiJXYBhD_ARIsAAx2AHnXuc4GaTGf7go2TpZGuOjkOa3ChcRCkbEqShhdwV6Dq9n3EbGba8waAqLZEALw_wcB',
     'https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?w=800&auto=format&fit=crop&q=60', 'ativo'
 ),
 (
@@ -381,7 +405,7 @@ INSERT INTO evento (
     'Rua do Comércio', 'Paraty', 'RJ',
     'Rodas de capoeira angola e apresentações de jongo patrimônio cultural.',
     '2027-07-18', '15:00:00', TRUE, NULL, NULL,
-    'Tradições Regionais', 'Livre', 'https://example.com/capoeira-jongo',
+    'Tradições Regionais', 'Livre', 'https://www.ticketmaster.com.br/?gad_source=1&gad_campaignid=24190572395&gbraid=0AAAAABhVm5pMX8_YP6rzPA186FoCFRSZ9&gclid=Cj0KCQiAiJXYBhD_ARIsAAx2AHnXuc4GaTGf7go2TpZGuOjkOa3ChcRCkbEqShhdwV6Dq9n3EbGba8waAqLZEALw_wcB',
     'https://images.unsplash.com/photo-1547153760-18fc86324498?w=800&auto=format&fit=crop&q=60', 'ativo'
 ),
 (
@@ -390,7 +414,7 @@ INSERT INTO evento (
     'Avenida Brasília', 'Campina Grande', 'PB',
     'Exposição de peças em barro, couro, renda de bilro e xilogravura.',
     '2027-08-02', '10:00:00', TRUE, NULL, NULL,
-    'Tradições Regionais', 'Livre', 'https://example.com/artesanato-nordestino',
+    'Tradições Regionais', 'Livre', 'https://www.ticketmaster.com.br/?gad_source=1&gad_campaignid=24190572395&gbraid=0AAAAABhVm5pMX8_YP6rzPA186FoCFRSZ9&gclid=Cj0KCQiAiJXYBhD_ARIsAAx2AHnXuc4GaTGf7go2TpZGuOjkOa3ChcRCkbEqShhdwV6Dq9n3EbGba8waAqLZEALw_wcB',
     'https://images.unsplash.com/photo-1567696911980-2eed69a46042?w=800&auto=format&fit=crop&q=60', 'ativo'
 ),
 (
@@ -399,7 +423,7 @@ INSERT INTO evento (
     'Avenida João Pessoa', 'Porto Alegre', 'RS',
     'Rodas de chimarrão, danças tradicionais gaúchas e apresentações de gaita.',
     '2027-09-20', '10:00:00', TRUE, NULL, NULL,
-    'Tradições Regionais', 'Livre', 'https://example.com/cultura-gaucha',
+    'Tradições Regionais', 'Livre', 'https://www.ticketmaster.com.br/?gad_source=1&gad_campaignid=24190572395&gbraid=0AAAAABhVm5pMX8_YP6rzPA186FoCFRSZ9&gclid=Cj0KCQiAiJXYBhD_ARIsAAx2AHnXuc4GaTGf7go2TpZGuOjkOa3ChcRCkbEqShhdwV6Dq9n3EbGba8waAqLZEALw_wcB',
     'https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?w=800&auto=format&fit=crop&q=60', 'ativo'
 ),
 
@@ -412,7 +436,7 @@ INSERT INTO evento (
     'Avenida Jabaquara', 'São Paulo', 'SP',
     'Encontro de cultura pop, campeonatos de e-sports, cosplays e artistas de quadrinhos.',
     '2027-04-20', '12:00:00', FALSE, 45.00, 120.00,
-    'Geek e Cultura Pop', 'Livre', 'https://example.com/geek-fest',
+    'Geek e Cultura Pop', 'Livre', 'https://www.ticketmaster.com.br/?gad_source=1&gad_campaignid=24190572395&gbraid=0AAAAABhVm5pMX8_YP6rzPA186FoCFRSZ9&gclid=Cj0KCQiAiJXYBhD_ARIsAAx2AHnXuc4GaTGf7go2TpZGuOjkOa3ChcRCkbEqShhdwV6Dq9n3EbGba8waAqLZEALw_wcB',
     'https://images.unsplash.com/photo-1560932684-5e552e2894e9?w=800&auto=format&fit=crop&q=60', 'ativo'
 ),
 (
@@ -421,7 +445,7 @@ INSERT INTO evento (
     'Rua da Assembleia', 'Rio de Janeiro', 'RJ',
     'Mesas abertas de RPG de mesa, card games e tabuleiro modernos.',
     '2027-05-08', '14:00:00', TRUE, NULL, NULL,
-    'Geek e Cultura Pop', 'Livre', 'https://example.com/noite-rpg',
+    'Geek e Cultura Pop', 'Livre', 'https://www.ticketmaster.com.br/?gad_source=1&gad_campaignid=24190572395&gbraid=0AAAAABhVm5pMX8_YP6rzPA186FoCFRSZ9&gclid=Cj0KCQiAiJXYBhD_ARIsAAx2AHnXuc4GaTGf7go2TpZGuOjkOa3ChcRCkbEqShhdwV6Dq9n3EbGba8waAqLZEALw_wcB',
     'https://images.unsplash.com/photo-1610890716171-6b1bb98ffd09?w=800&auto=format&fit=crop&q=60', 'ativo'
 ),
 (
@@ -430,7 +454,7 @@ INSERT INTO evento (
     'Avenida Amazonas', 'Belo Horizonte', 'MG',
     'Exibições de curtas de animação japonesa e oficinas de desenho estilo mangá.',
     '2027-05-25', '13:00:00', FALSE, 25.00, 60.00,
-    'Geek e Cultura Pop', 'Livre', 'https://example.com/animacao-manga',
+    'Geek e Cultura Pop', 'Livre', 'https://www.ticketmaster.com.br/?gad_source=1&gad_campaignid=24190572395&gbraid=0AAAAABhVm5pMX8_YP6rzPA186FoCFRSZ9&gclid=Cj0KCQiAiJXYBhD_ARIsAAx2AHnXuc4GaTGf7go2TpZGuOjkOa3ChcRCkbEqShhdwV6Dq9n3EbGba8waAqLZEALw_wcB',
     'https://images.unsplash.com/photo-1578632767115-351597cf2477?w=800&auto=format&fit=crop&q=60', 'ativo'
 ),
 (
@@ -439,7 +463,7 @@ INSERT INTO evento (
     'Rua Marechal Deodoro', 'Curitiba', 'PR',
     'Exposição de consoles clássicos dos anos 80, 90 e campeonatos de fliperama.',
     '2027-06-10', '11:00:00', TRUE, NULL, NULL,
-    'Geek e Cultura Pop', 'Livre', 'https://example.com/retro-gaming',
+    'Geek e Cultura Pop', 'Livre', 'https://www.ticketmaster.com.br/?gad_source=1&gad_campaignid=24190572395&gbraid=0AAAAABhVm5pMX8_YP6rzPA186FoCFRSZ9&gclid=Cj0KCQiAiJXYBhD_ARIsAAx2AHnXuc4GaTGf7go2TpZGuOjkOa3ChcRCkbEqShhdwV6Dq9n3EbGba8waAqLZEALw_wcB',
     'https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=800&auto=format&fit=crop&q=60', 'ativo'
 ),
 (
@@ -448,7 +472,7 @@ INSERT INTO evento (
     'Avenida Central', 'Brasília', 'DF',
     'Palestras com autores de sci-fi, debates sobre universos cinematográficos e exposições temáticas.',
     '2027-06-30', '15:00:00', FALSE, 40.00, 90.00,
-    'Geek e Cultura Pop', 'Livre', 'https://example.com/conv-scifi',
+    'Geek e Cultura Pop', 'Livre', 'https://www.ticketmaster.com.br/?gad_source=1&gad_campaignid=24190572395&gbraid=0AAAAABhVm5pMX8_YP6rzPA186FoCFRSZ9&gclid=Cj0KCQiAiJXYBhD_ARIsAAx2AHnXuc4GaTGf7go2TpZGuOjkOa3ChcRCkbEqShhdwV6Dq9n3EbGba8waAqLZEALw_wcB',
     'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=800&auto=format&fit=crop&q=60', 'ativo'
 );
 
@@ -496,3 +520,89 @@ FROM evento
 WHERE nome_evento IN ('Festival Sons da Cidade', 'Mostra de Cinema Brasileiro', 'ShowMe Geek Fest', 'Rota do Vinho e Queijos');
 
 COMMIT;
+
+ INSERT INTO comunidade_post
+(id_evento, id_usuario, categoria, texto, status_post)
+VALUES
+
+(1, 1, 'Duvida',
+ 'Alguém já foi nesse espaço? Como é a organização na entrada e a fila?', 'ativo'),
+
+(1, 2, 'Transporte',
+ 'Qual a melhor forma de chegar ao Espaço Unimed usando transporte público?', 'ativo'),
+
+(1, 3, 'Companhia',
+ 'Vou ao show sozinho! Alguém mais está indo e gostaria de combinar de chegar junto?', 'ativo'),
+
+(1, 4, 'Dica',
+ 'Recomendo chegar com antecedência para evitar filas perto do horário do show.', 'ativo'),
+
+(2, 2, 'Duvida',
+ 'Alguém sabe quais são as melhores opções de transporte para chegar ao Suhai Music Hall?', 'ativo'),
+
+(2, 5, 'Hospedagem',
+ 'Estou procurando hospedagem perto do local do show. Alguém tem alguma recomendação?', 'ativo'),
+
+(2, 1, 'Companhia',
+ 'Mais alguém está contando os dias para esse show? Estou muito animada!', 'ativo'),
+
+(2, 3, 'Relato',
+ 'Já fui a outros shows nesse espaço e a experiência foi muito boa. Vale chegar cedo.', 'ativo');
+
+
+INSERT INTO comunidade_resposta
+(id_post, id_usuario, texto, status_resposta)
+VALUES
+
+(1, 2, 'Já fui lá! O espaço é bem organizado, mas recomendo chegar cedo.', 'ativo'),
+
+(1, 3, 'Também queria saber! Nunca fui nesse local.', 'ativo'),
+
+(2, 4, 'O metrô costuma ser uma opção boa, dependendo de onde você sair.', 'ativo'),
+
+(3, 5, 'Também vou sozinho! Podemos combinar de nos encontrar antes.', 'ativo'),
+
+(5, 1, 'Veja as opções de metrô e ônibus antes do evento.', 'ativo'),
+
+(6, 4, 'Tenta procurar próximo à estação de metrô para facilitar a volta.', 'ativo'),
+
+(7, 5, 'Vai ser incrível! Estou ansiosa também.', 'ativo'),
+
+(8, 2, 'O acesso costuma ser tranquilo, principalmente chegando antes.', 'ativo');
+
+INSERT INTO comunidade_curtida
+(id_post, id_usuario)
+VALUES
+(1, 2),
+(1, 3),
+(1, 4),
+(2, 1),
+(2, 3),
+(3, 5),
+(3, 2),
+(4, 1),
+(4, 5),
+(5, 1),
+(5, 3),
+(6, 4),
+(6, 2),
+(7, 5),
+(7, 1),
+(8, 2),
+(8, 4);
+
+INSERT INTO comunidade_midia
+(id_evento, id_usuario, caminho_arquivo, legenda, permitir_download, status_midia)
+VALUES
+
+(1, 1, 'assets/img/comunidade/show_neworder_1.jpg',
+ 'Expectativa para o show do New Order!', 1, 'ativo'),
+
+(1, 2, 'assets/img/comunidade/show_neworder_2.jpg',
+ 'Preparativos para o evento.', 0, 'ativo'),
+
+(2, 3, 'assets/img/comunidade/show_daniel_caesar_1.jpg',
+ 'Ansiedade para o show de Daniel Caesar.', 1, 'ativo'),
+
+(2, 5, 'assets/img/comunidade/show_daniel_caesar_2.jpg',
+ 'Quem também vai?', 0, 'ativo');

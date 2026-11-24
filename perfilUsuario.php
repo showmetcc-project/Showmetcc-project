@@ -9,16 +9,27 @@ function renderizarModalPersonalizacao(
     string $modalId,
     string $titulo,
     string $inputId,
-    array $categorias
+    array $categorias,
 ): void {
-    $ehAvatar = $tipo === 'foto_perfil';
-    ?>
-    <div class="modal fade personalizacao-modal" id="<?= htmlspecialchars($modalId, ENT_QUOTES, 'UTF-8') ?>" tabindex="-1" aria-labelledby="<?= htmlspecialchars($modalId, ENT_QUOTES, 'UTF-8') ?>Titulo" aria-hidden="true" data-modal-midia="<?= htmlspecialchars($tipo, ENT_QUOTES, 'UTF-8') ?>">
+    $ehAvatar = $tipo === 'foto_perfil'; ?>
+    <div class="modal fade personalizacao-modal" id="<?= htmlspecialchars(
+        $modalId,
+        ENT_QUOTES,
+        'UTF-8',
+    ) ?>" tabindex="-1" aria-labelledby="<?= htmlspecialchars(
+    $modalId,
+    ENT_QUOTES,
+    'UTF-8',
+) ?>Titulo" aria-hidden="true" data-modal-midia="<?= htmlspecialchars($tipo, ENT_QUOTES, 'UTF-8') ?>">
         <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
             <div class="modal-content">
                 <div class="modal-header">
                     <div>
-                        <h2 class="modal-title" id="<?= htmlspecialchars($modalId, ENT_QUOTES, 'UTF-8') ?>Titulo"><?= htmlspecialchars($titulo, ENT_QUOTES, 'UTF-8') ?></h2>
+                        <h2 class="modal-title" id="<?= htmlspecialchars(
+                            $modalId,
+                            ENT_QUOTES,
+                            'UTF-8',
+                        ) ?>Titulo"><?= htmlspecialchars($titulo, ENT_QUOTES, 'UTF-8') ?></h2>
                         <p>Envie uma imagem sua ou escolha uma das opções da ShowMe.</p>
                     </div>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fechar"></button>
@@ -32,7 +43,15 @@ function renderizarModalPersonalizacao(
                         </span>
                         <small>Até 10 MB</small>
                     </label>
-                    <input type="file" id="<?= htmlspecialchars($inputId, ENT_QUOTES, 'UTF-8') ?>" data-input-upload-midia="<?= htmlspecialchars($tipo, ENT_QUOTES, 'UTF-8') ?>" accept="image/jpeg,image/png,image/webp" hidden>
+                    <input type="file" id="<?= htmlspecialchars(
+                        $inputId,
+                        ENT_QUOTES,
+                        'UTF-8',
+                    ) ?>" data-input-upload-midia="<?= htmlspecialchars(
+    $tipo,
+    ENT_QUOTES,
+    'UTF-8',
+) ?>" accept="image/jpeg,image/png,image/webp" hidden>
 
                     <div class="divisor-galeria"><span>OU EXPLORE A GALERIA</span></div>
 
@@ -40,23 +59,49 @@ function renderizarModalPersonalizacao(
                         <?php foreach ($categorias as $categoria => $dadosCategoria): ?>
                             <section class="categoria-galeria">
                                 <h3>
-                                    <i class="bi <?= htmlspecialchars($dadosCategoria['icone'], ENT_QUOTES, 'UTF-8') ?>" aria-hidden="true"></i>
+                                    <i class="bi <?= htmlspecialchars(
+                                        $dadosCategoria['icone'],
+                                        ENT_QUOTES,
+                                        'UTF-8',
+                                    ) ?>" aria-hidden="true"></i>
                                     <?= htmlspecialchars($categoria, ENT_QUOTES, 'UTF-8') ?>
                                 </h3>
-                                <div class="grid-galeria <?= $ehAvatar ? 'grid-galeria-avatar' : 'grid-galeria-banner' ?>">
+                                <div class="grid-galeria <?= $ehAvatar
+                                    ? 'grid-galeria-avatar'
+                                    : 'grid-galeria-banner' ?>">
                                     <?php foreach ($dadosCategoria['imagens'] as $imagem): ?>
                                         <button
                                             type="button"
                                             class="opcao-galeria"
                                             data-galeria-midia="<?= htmlspecialchars($tipo, ENT_QUOTES, 'UTF-8') ?>"
-                                            data-caminho="<?= htmlspecialchars($imagem['caminho'], ENT_QUOTES, 'UTF-8') ?>"
-                                            aria-label="Usar <?= htmlspecialchars($imagem['legenda'], ENT_QUOTES, 'UTF-8') ?>"
+                                            data-caminho="<?= htmlspecialchars(
+                                                $imagem['caminho'],
+                                                ENT_QUOTES,
+                                                'UTF-8',
+                                            ) ?>"
+                                            aria-label="Usar <?= htmlspecialchars(
+                                                $imagem['legenda'],
+                                                ENT_QUOTES,
+                                                'UTF-8',
+                                            ) ?>"
                                         >
                                             <span class="moldura-galeria">
-                                                <img src="<?= htmlspecialchars($imagem['caminho'], ENT_QUOTES, 'UTF-8') ?>" alt="<?= htmlspecialchars($imagem['legenda'], ENT_QUOTES, 'UTF-8') ?>" loading="lazy">
+                                                <img src="<?= htmlspecialchars(
+                                                    $imagem['caminho'],
+                                                    ENT_QUOTES,
+                                                    'UTF-8',
+                                                ) ?>" alt="<?= htmlspecialchars(
+    $imagem['legenda'],
+    ENT_QUOTES,
+    'UTF-8',
+) ?>" loading="lazy">
                                                 <span class="estado-selecao"><i class="bi bi-check-lg" aria-hidden="true"></i></span>
                                             </span>
-                                            <span class="legenda-galeria"><?= htmlspecialchars($imagem['legenda'], ENT_QUOTES, 'UTF-8') ?></span>
+                                            <span class="legenda-galeria"><?= htmlspecialchars(
+                                                $imagem['legenda'],
+                                                ENT_QUOTES,
+                                                'UTF-8',
+                                            ) ?></span>
                                         </button>
                                     <?php endforeach; ?>
                                 </div>
@@ -72,16 +117,13 @@ function renderizarModalPersonalizacao(
 ?>
 <!DOCTYPE html>
 <html lang="pt-BR">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Meu Perfil - ShowMe</title>
 
-    <!-- Favicons -->
     <link href="assets/img/showme.png" rel="icon">
 
-    <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 
@@ -89,7 +131,6 @@ function renderizarModalPersonalizacao(
         href="https://fonts.googleapis.com/css2?family=Anton&family=Oswald:wght@400;500;600;700&family=Open+Sans:wght@300;400;500;600;700;800&family=Poppins:wght@300;400;500;600;700;800&family=Jost:wght@300;400;500;600;700;800&display=swap"
         rel="stylesheet">
 
-    <!-- Vendor CSS -->
     <link href="assets/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
     <link href="assets/vendor/bootstrap-icons/bootstrap-icons.css" rel="stylesheet">
     <link href="assets/vendor/aos/aos.css" rel="stylesheet">
@@ -101,7 +142,6 @@ function renderizarModalPersonalizacao(
 </head>
 
 <body class="com-cabecalho-padrao cabecalho-tipo-c">
-
     <?php
     $tipoCabecalho = 'C';
     $configuracaoCabecalho = [
@@ -113,7 +153,6 @@ function renderizarModalPersonalizacao(
     require __DIR__ . '/cabecalho.php';
     ?>
 
-    
     <div class="banner-wrap">
         <button type="button" class="banner" id="perfilBanner" data-visualizar-midia="foto_banner" aria-label="Ampliar banner atual"></button>
 
@@ -133,8 +172,6 @@ function renderizarModalPersonalizacao(
     </div>
 
     <main class="perfil-container">
-
- 
         <div class="perfil-header">
             <div class="email-principal" id="perfilEmailPrincipal">Carregando...</div>
             <button type="button" class="btn-editar" id="btnEditarPerfil" aria-pressed="false">
@@ -143,40 +180,37 @@ function renderizarModalPersonalizacao(
             </button>
         </div>
 
-     
         <form
             class="perfil-form row g-4"
-    id="perfilForm"
-    data-endpoint="../api/apiUsuarios.php?id=<?= (int) $_SESSION['id_user'] ?>">
-        
+            id="perfilForm"
+            data-endpoint="api/usuarios/<?= (int) $_SESSION['id_user'] ?>"
+        >
 
             <div class="grupo col-12 col-md-6">
-                <label>Nome</label>
+                <label for="perfilNome">Nome</label>
                 <div class="input-icon">
-                    <i class="bi bi-person"></i>
-                    <input id="perfilNome" type="text" value="" maxlength="100" required >
+                    <i class="bi bi-person" aria-hidden="true"></i>
+                    <input id="perfilNome" type="text" value="" maxlength="100" autocomplete="given-name" required readonly>
                 </div>
             </div>
 
             <div class="grupo col-12 col-md-6">
-                <label>Sobrenome</label>
+                <label for="perfilSobrenome">Sobrenome</label>
                 <div class="input-icon">
-                    <i class="bi bi-person"></i>
-                    <input id="perfilSobrenome" type="text" value="" maxlength="100" required >
+                    <i class="bi bi-person" aria-hidden="true"></i>
+                    <input id="perfilSobrenome" type="text" value="" maxlength="100" autocomplete="family-name" required readonly>
                 </div>
             </div>
 
             <div class="grupo full col-12">
-                <label>E-mail</label>
+                <label for="perfilEmail">E-mail</label>
                 <div class="input-icon">
-                    <i class="bi bi-envelope"></i>
-                    <input id="perfilEmail" type="email" value="" maxlength="100" required >
+                    <i class="bi bi-envelope" aria-hidden="true"></i>
+                    <input id="perfilEmail" type="email" value="" maxlength="100" autocomplete="email" required readonly>
                 </div>
             </div>
 
-            <p id="perfilFeedback" class="perfil-feedback col-12" role="status" aria-live="polite" hidden></p>
-
-              <div class="grupo col-12 col-md-6">
+            <div class="grupo col-12 col-md-6">
                 <label for="senhaAtualPerfil">Senha atual</label>
                 <div class="input-icon">
                     <i class="bi bi-lock" aria-hidden="true"></i>
@@ -186,7 +220,7 @@ function renderizarModalPersonalizacao(
                         type="password"
                         autocomplete="current-password"
                         aria-describedby="ajudaNovaSenhaPerfil"
-                        
+                        readonly
                     >
                     <button
                         type="button"
@@ -197,7 +231,7 @@ function renderizarModalPersonalizacao(
                         aria-controls="senhaAtualPerfil"
                         aria-pressed="false"
                         title="Mostrar senha atual"
-                        
+                        disabled
                     ><i class="bi bi-eye" aria-hidden="true"></i></button>
                 </div>
             </div>
@@ -212,7 +246,7 @@ function renderizarModalPersonalizacao(
                         type="password"
                         autocomplete="new-password"
                         aria-describedby="ajudaNovaSenhaPerfil"
-                       
+                        readonly
                     >
                     <button
                         type="button"
@@ -223,7 +257,7 @@ function renderizarModalPersonalizacao(
                         aria-controls="novaSenhaPerfil"
                         aria-pressed="false"
                         title="Mostrar nova senha"
-                        
+                        disabled
                     ><i class="bi bi-eye" aria-hidden="true"></i></button>
                 </div>
             </div>
@@ -238,7 +272,8 @@ function renderizarModalPersonalizacao(
                         type="password"
                         autocomplete="new-password"
                         aria-describedby="ajudaNovaSenhaPerfil"
-                        >
+                        readonly
+                    >
                     <button
                         type="button"
                         class="btn-mostrar-senha"
@@ -248,23 +283,19 @@ function renderizarModalPersonalizacao(
                         aria-controls="confirmarNovaSenhaPerfil"
                         aria-pressed="false"
                         title="Mostrar confirmação da nova senha"
-                       
+                        disabled
                     ><i class="bi bi-eye" aria-hidden="true"></i></button>
                 </div>
             </div>
-            <div class="col-12">
-    
-</div>
 
             <p id="ajudaNovaSenhaPerfil" class="perfil-ajuda-senha col-12">
                 Mínimo 6 caracteres, contendo letras e números. Preencha apenas se quiser alterar a senha;
                 por segurança, a senha salva não é exibida.
             </p>
 
+            <p id="perfilFeedback" class="perfil-feedback col-12" role="status" aria-live="polite" hidden></p>
         </form>
 
-
-        <!-- ESTATÍSTICAS -->
         <section class="integracao-agenda" aria-labelledby="tituloGoogleAgenda">
             <div class="integracao-agenda-icone" aria-hidden="true">
                 <i class="bi bi-calendar2-check"></i>
@@ -283,11 +314,9 @@ function renderizarModalPersonalizacao(
         </section>
 
         <section class="estatisticas">
-
             <h2>Estatísticas</h2>
 
             <div class="stats-grid row g-4">
-
                 <div class="col-12 col-md-4">
                     <div class="stat-card h-100">
                         <i class="bi bi-plus-lg stat-icon"></i>
@@ -311,11 +340,8 @@ function renderizarModalPersonalizacao(
                         <p>Publicações na Comunidade</p>
                     </div>
                 </div>
-
             </div>
-
         </section>
-
     </main>
 
     <?php
@@ -324,14 +350,14 @@ function renderizarModalPersonalizacao(
         'modalPersonalizarPerfil',
         'Personalize sua foto de perfil',
         'inputFotoPerfil',
-        $catalogoMidiasPerfil['foto_perfil']
+        $catalogoMidiasPerfil['foto_perfil'],
     );
     renderizarModalPersonalizacao(
         'foto_banner',
         'modalPersonalizarBanner',
         'Personalize seu banner',
         'inputFotoBanner',
-        $catalogoMidiasPerfil['foto_banner']
+        $catalogoMidiasPerfil['foto_banner'],
     );
     ?>
 
@@ -360,18 +386,14 @@ function renderizarModalPersonalizacao(
         </div>
     </div>
 
-    <!-- Scroll Top -->
     <a href="#" id="scroll-top" class="scroll-top d-flex align-items-center justify-content-center">
         <i class="bi bi-arrow-up-short"></i>
     </a>
 
-    <!-- Vendor JS (mesmo padrão do index) -->
     <script src="assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
     <script src="assets/vendor/aos/aos.js"></script>
     <script src="assets/js/main.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.js"></script>
     <script src="assets/js/perfil.js"></script>
-
 </body>
-
 </html>

@@ -407,129 +407,175 @@
             && longitude <= 180;
     }
 
+    async function buscarComLimite(url, opcoes = {}, limiteMs = 8000) {
+        const controlador = new AbortController();
+        const temporizador = window.setTimeout(() => controlador.abort(), limiteMs);
+
+        try {
+            return await fetch(url, { ...opcoes, signal: controlador.signal });
+        } finally {
+            window.clearTimeout(temporizador);
+        }
+    }
+
     async function localizarPorCep(cep) {
         const cepNumerico = String(cep || '').replace(/\D/g, '');
         if (cepNumerico.length !== 8) return null;
 
-        const resposta = await fetch(`https://brasilapi.com.br/api/cep/v2/${cepNumerico}`, {
-            headers: {Accept: 'application/json'}
-        });
-        if (!resposta.ok) return null;
+        try {
+            const resposta = await buscarComLimite(`https://brasilapi.com.br/api/cep/v2/${cepNumerico}`, {
+                headers: { Accept: 'application/json' },
+            });
+            if (!resposta.ok) return null;
 
-        const dados = await resposta.json();
-        const latitude = Number(dados?.location?.coordinates?.latitude);
-        const longitude = Number(dados?.location?.coordinates?.longitude);
-        return coordenadasValidas(latitude, longitude) ? {latitude, longitude} : null;
+            const dados = await resposta.json();
+            const latitude = Number(dados?.location?.coordinates?.latitude);
+            const longitude = Number(dados?.location?.coordinates?.longitude);
+            return coordenadasValidas(latitude, longitude) ? { latitude, longitude } : null;
+        } catch (erro) {
+            console.warn('Não foi possível consultar o CEP do evento:', erro);
+            return null;
+        }
     }
 
     async function localizarPorEndereco(evento) {
-        const consulta = [
-            evento.rua_evento,
-            evento.numero_endereco,
-            evento.cidade_evento,
-            evento.uf,
-            'Brasil'
-        ].filter((parte) => String(parte || '').trim()).join(', ');
+        const consulta = [evento.rua_evento, evento.numero_endereco, evento.cidade_evento, evento.uf, 'Brasil']
+            .filter((parte) => String(parte || '').trim())
+            .join(', ');
         if (!consulta) return null;
 
-        const qs = new URLSearchParams({format: 'json', limit: '1', countrycodes: 'br', q: consulta});
-        const resposta = await fetch(`https://nominatim.openstreetmap.org/search?${qs}`, {
-            headers: {Accept: 'application/json'}
-        });
-        if (!resposta.ok) return null;
+        const qs = new URLSearchParams({ format: 'json', limit: '1', countrycodes: 'br', q: consulta });
 
-        const dados = await resposta.json();
-        if (!Array.isArray(dados) || !dados.length) return null;
-        const latitude = Number(dados[0].lat);
-        const longitude = Number(dados[0].lon);
-        return coordenadasValidas(latitude, longitude) ? {latitude, longitude} : null;
+        try {
+            const resposta = await buscarComLimite(`https://nominatim.openstreetmap.org/search?${qs}`, {
+                headers: { Accept: 'application/json' },
+            });
+            if (!resposta.ok) return null;
+
+            const dados = await resposta.json();
+            if (!Array.isArray(dados) || !dados.length) return null;
+            const latitude = Number(dados[0].lat);
+            const longitude = Number(dados[0].lon);
+            return coordenadasValidas(latitude, longitude) ? { latitude, longitude } : null;
+        } catch (erro) {
+            console.warn('Não foi possível localizar o endereço do evento:', erro);
+            return null;
+        }
     }
 
-   
-async function carregarMapa(evento) {
-    const alvo = document.getElementById('mapaEventoBanco');
-    if (!alvo) return;
-
-    const texto = endereco(evento);
-
-    if (!texto) {
-        alvo.textContent = 'Localização não disponível.';
-        return;
-    }
-
-    if (typeof window.L === 'undefined') {
-        alvo.textContent = 'Não foi possível iniciar o mapa.';
-        return;
-    }
-
-    alvo.textContent = 'Localizando evento...';
-
-    try {
-        const coordenadas =
-            await localizarPorEndereco(evento) ||
-            await localizarPorCep(evento.cep_evento);
-
-        if (!coordenadas) {
-            throw new Error('Endereço não localizado.');
+    function exibirFallbackMapa(alvo, opcoes) {
+        if (window.ShowMeMapa?.exibirFallback) {
+            window.ShowMeMapa.exibirFallback(alvo, opcoes);
+            return;
         }
 
-        if (mapaAtual) {
-            mapaAtual.remove();
-            mapaAtual = null;
+        alvo.textContent = opcoes.endereco || 'Localização não disponível.';
+    }
+
+    async function carregarMapa(evento) {
+        const alvo = document.getElementById('mapaEventoBanco');
+
+        if (!alvo) {
+            return;
         }
 
-        alvo.replaceChildren();
+        const texto = endereco(evento);
+        const opcoesFallback = {
+            endereco:
+                texto ||
+                [evento.cidade_evento, evento.uf].filter(Boolean).join(' - ') ||
+                evento.nome_evento ||
+                '',
+            nome: evento.nome_evento,
+        };
 
-        mapaAtual = L.map(alvo, {
-            zoomControl: true,
-            scrollWheelZoom: false
-        }).setView(
-            [coordenadas.latitude, coordenadas.longitude],
-            16
-        );
+        if (typeof window.L === 'undefined') {
+            exibirFallbackMapa(alvo, opcoesFallback);
+            return;
+        }
 
-        // Mapa escuro do Stadia Maps.
-        // Requer uma chave de API válida.
-        L.tileLayer(
-            'https://tiles.stadiamaps.com/tiles/alidade_smooth_dark/{z}/{x}/{y}{r}.png?api_key=7a0fd48c-f87f-4e75-a3ff-1c77b48c7978',
-            {
-                attribution:
-                    '&copy; Stadia Maps, &copy; OpenMapTiles, &copy; OpenStreetMap',
-                maxZoom: 20
+        alvo.textContent = 'Carregando mapa...';
+
+        try {
+            const coordenadas =
+                (await localizarPorEndereco(evento)) ||
+                (await localizarPorCep(evento.cep_evento));
+
+            if (!coordenadas) {
+                throw new Error('Endereço não localizado.');
             }
-        ).addTo(mapaAtual);
 
-        // Pin personalizado ShowMe.
-    // Pin personalizado ShowMe — Neon Premium
-const iconeShowMe = L.divIcon({
-    className: 'showme-marker-container',
-    html: `
-        <i class="bi bi-geo-alt-fill showme-marker-simple"></i>
-    `,
-    iconSize: [38, 46],
-    iconAnchor: [19, 46],
-    popupAnchor: [0, -42]
-});
-        L.marker(
-            [coordenadas.latitude, coordenadas.longitude],
-            { icon: iconeShowMe }
-        )
-            .addTo(mapaAtual)
-            .bindPopup(`
-                <div class="showme-popup">
-                    <strong>${escaparHTML(evento.nome_evento || 'Evento ShowMe')}</strong>
-                    <span>${escaparHTML(texto)}</span>
-                </div>
-            `)
-            .openPopup();
+            const latitude = Number(coordenadas.latitude);
+            const longitude = Number(coordenadas.longitude);
 
-        window.setTimeout(() => mapaAtual?.invalidateSize(), 150);
-    } catch (erro) {
-        console.error('[ShowMe] Falha ao carregar mapa:', erro);
-        alvo.textContent =
-            'Não foi possível carregar o mapa deste evento.';
+            if (!coordenadasValidas(latitude, longitude)) {
+                throw new Error('Coordenadas inválidas.');
+            }
+
+            opcoesFallback.latitude = latitude;
+            opcoesFallback.longitude = longitude;
+
+            if (mapaAtual) {
+                mapaAtual.remove();
+                mapaAtual = null;
+            }
+
+            if (window.ShowMeMapa?.removerFallback) {
+                window.ShowMeMapa.removerFallback(alvo);
+            } else {
+                alvo.replaceChildren();
+            }
+
+            mapaAtual = window.L.map(alvo, {
+                zoomControl: true,
+                scrollWheelZoom: false,
+            }).setView([latitude, longitude], 16);
+
+            window.L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+                attribution: '&copy; OpenStreetMap &copy; CARTO',
+                subdomains: 'abcd',
+                maxZoom: 20,
+            }).addTo(mapaAtual);
+
+            const iconeEvento = window.L.divIcon({
+                className: 'marcador-evento-showme',
+                html: '<i class="bi bi-geo-alt-fill" aria-hidden="true"></i>',
+                iconSize: [36, 36],
+                iconAnchor: [18, 36],
+                popupAnchor: [0, -34],
+            });
+
+            window.L.marker([latitude, longitude], { icon: iconeEvento })
+                .addTo(mapaAtual)
+                .bindPopup(`
+                    <div class="showme-popup">
+                        <strong>${escaparHTML(evento.nome_evento || 'Evento ShowMe')}</strong>
+                        <span>${escaparHTML(texto || opcoesFallback.endereco)}</span>
+                    </div>
+                `)
+                .openPopup();
+
+            window.setTimeout(() => mapaAtual?.invalidateSize(), 150);
+
+            window.ShowMeMapa?.monitorarTiles(mapaAtual, alvo, opcoesFallback, () => {
+                if (mapaAtual) {
+                    mapaAtual.remove();
+                    mapaAtual = null;
+                }
+
+                exibirFallbackMapa(alvo, opcoesFallback);
+            });
+        } catch (erro) {
+            console.error('[ShowMe] Falha ao carregar mapa:', erro);
+
+            if (mapaAtual) {
+                mapaAtual.remove();
+                mapaAtual = null;
+            }
+
+            exibirFallbackMapa(alvo, opcoesFallback);
+        }
     }
-}
 
 function escaparHTML(valor) {
     return String(valor).replace(/[&<>"']/g, caractere => ({
@@ -693,7 +739,7 @@ try {
         if (idUsuario < 1 || eventoEncerrado) return;
         definirFavoritosHabilitados(true);
         try {
-            const resposta = await fetch('../api/apiFavoritos.php', {headers: {Accept: 'application/json'}});
+            const resposta = await fetch('./api/apiFavoritos.php', {headers: {Accept: 'application/json'}});
             const dados = await lerJson(resposta); if (!resposta.ok) throw new Error(dados.erro);
             favoritoAtual = (dados.favoritos || []).find((f) => Number(f.id_evento) === idEvento) || null;
             atualizarFavorito();
@@ -706,8 +752,8 @@ try {
                 definirFavoritosHabilitados(true);
                 try {
                     const resposta = favoritoAtual
-                        ? await fetch(`../api/apiFavoritos.php${favoritoAtual.id_favorito}`, {method: 'DELETE'})
-                        : await fetch('../api/apiFavoritos.php', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({id_evento: idEvento})});
+                        ? await fetch(`./api/apiFavoritos.php${favoritoAtual.id_favorito}`, {method: 'DELETE'})
+                        : await fetch('./api/apiFavoritos.php', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({id_evento: idEvento})});
                     const dados = await lerJson(resposta); if (!resposta.ok) throw new Error(dados.erro || 'Não foi possível alterar o favorito.');
                     favoritoAtual = favoritoAtual ? null : dados.favorito; atualizarFavorito();
                 } catch (erro) {
@@ -731,7 +777,7 @@ try {
         console.log('[Detalhes] Consultando API...');
 
         const resposta = await fetch(
-            `../api/apiEventos.php?id=${encodeURIComponent(idEvento)}`,
+            `./api/apiEventos.php?id=${encodeURIComponent(idEvento)}`,
             {
                 headers: { Accept: 'application/json' },
                 credentials: 'same-origin',
